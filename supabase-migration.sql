@@ -308,6 +308,63 @@ CREATE POLICY "ai_access" ON public.ai_conversations FOR ALL USING (workspace_id
 CREATE POLICY "competitors_access" ON public.competitors FOR ALL USING (workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id = auth.uid()));
 CREATE POLICY "competitor_ads_access" ON public.competitor_ads FOR ALL USING (competitor_id IN (SELECT id FROM public.competitors WHERE workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id = auth.uid())));
 
+-- ============================================================
+-- COMPETITOR AD SPY — new tables (drop old competitors/competitor_ads first)
+-- Run if upgrading from previous migration:
+-- DROP TABLE IF EXISTS public.competitor_ads CASCADE;
+-- DROP TABLE IF EXISTS public.competitors CASCADE;
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.competitor_brands (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL,
+  name TEXT NOT NULL,
+  domain TEXT,
+  facebook_page_name TEXT,
+  facebook_page_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_competitor_brands_workspace ON public.competitor_brands(workspace_id);
+
+CREATE TABLE IF NOT EXISTS public.competitor_ads (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  workspace_id UUID NOT NULL,
+  competitor_id UUID REFERENCES public.competitor_brands(id) ON DELETE CASCADE,
+  ad_archive_id TEXT UNIQUE,
+  ad_creative_body TEXT,
+  ad_creative_link_title TEXT,
+  ad_creative_link_description TEXT,
+  page_name TEXT,
+  funding_entity TEXT,
+  ad_delivery_start_time TEXT,
+  ad_delivery_stop_time TEXT,
+  impressions_lower_bound INT,
+  impressions_upper_bound INT,
+  spend_lower_bound INT,
+  spend_upper_bound INT,
+  currency TEXT,
+  platforms TEXT[],
+  media_type TEXT,
+  media_url TEXT,
+  snapshot_url TEXT,
+  ai_angle TEXT,
+  ai_hook TEXT,
+  ai_cta TEXT,
+  ai_tone TEXT,
+  ai_summary TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  scraped_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_competitor_ads_workspace ON public.competitor_ads(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_competitor_ads_competitor ON public.competitor_ads(competitor_id);
+
+ALTER TABLE public.competitor_brands ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.competitor_ads ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "competitor_brands_access" ON public.competitor_brands FOR ALL USING (workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id = auth.uid()));
+CREATE POLICY "competitor_ads_access_new" ON public.competitor_ads FOR ALL USING (workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id = auth.uid()));
+
 -- Auto-create workspace on signup (trigger)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$

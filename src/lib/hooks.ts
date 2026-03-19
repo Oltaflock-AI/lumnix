@@ -115,3 +115,39 @@ export function useGA4Data(workspaceId: string | undefined, type = "overview", d
 
   return { data, loading };
 }
+
+// Fetch competitors list for a workspace
+export function useCompetitors(workspaceId: string | undefined) {
+  const [competitors, setCompetitors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!workspaceId) { setLoading(false); return; }
+    setLoading(true);
+    fetch(`/api/competitors/list?workspace_id=${workspaceId}`)
+      .then(r => r.json())
+      .then(d => { setCompetitors(d.competitors || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [workspaceId, tick]);
+
+  return { competitors, loading, refetch: () => setTick(t => t + 1) };
+}
+
+// Fetch ads for a competitor
+export function useCompetitorAds(workspaceId: string | undefined, competitorId: string | null) {
+  const [ads, setAds] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!workspaceId || !competitorId) { setAds([]); return; }
+    setLoading(true);
+    fetch(`/api/competitors/ads?workspace_id=${workspaceId}&competitor_id=${competitorId}`)
+      .then(r => r.json())
+      .then(d => { setAds(d.ads || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [workspaceId, competitorId, tick]);
+
+  return { ads, loading, refetch: () => setTick(t => t + 1) };
+}
