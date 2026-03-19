@@ -1,7 +1,9 @@
 'use client';
+import { useState } from 'react';
 import { DollarSign, TrendingUp, Target, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { DateRangePicker } from '@/components/DateRangePicker';
 
 const campaigns = [
   { name: 'Brand - Oltaflock', status: 'Active', spend: 1240, clicks: 890, conversions: 42, roas: 5.8, cpc: 1.39 },
@@ -18,8 +20,13 @@ const spendData = Array.from({ length: 7 }, (_, i) => ({
 }));
 
 export default function GoogleAdsPage() {
+  const [days, setDays] = useState(30);
   return (
     <PageShell title="Google Ads" description="Campaign performance & spend tracking" icon={DollarSign}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+        <DateRangePicker value={days} onChange={setDays} />
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
         {[
           { label: 'Total Spend', value: '$6,440', change: '-5.2%', up: false, color: '#f59e0b' },

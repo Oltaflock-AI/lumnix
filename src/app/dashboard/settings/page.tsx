@@ -3,6 +3,46 @@ import { useState, useEffect } from "react";
 import { Search, BarChart3, Target, Share2, Check, X, Plug, User, Bell, Shield, CreditCard, RefreshCw, Loader2 } from "lucide-react";
 import { useWorkspace, useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
 
+function NotificationsTab() {
+  const notifItems = [
+    { id: "traffic", label: "Traffic Alerts", desc: "Get notified when traffic spikes or drops significantly" },
+    { id: "ads", label: "Ad Alerts", desc: "Budget exhaustion, CPC spikes, ROAS drops" },
+    { id: "weekly", label: "Weekly Digest", desc: "A weekly summary of your marketing performance" },
+    { id: "monthly", label: "Monthly Report", desc: "Full monthly marketing report delivered to your inbox" },
+  ];
+  const [toggles, setToggles] = useState<Record<string, boolean>>({ traffic: true, ads: true, weekly: true, monthly: false });
+  const [saved, setSaved] = useState(false);
+
+  function save() {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div style={{ maxWidth: "560px" }}>
+      <div style={{ backgroundColor: "#18181b", border: "1px solid #27272a", borderRadius: "16px", overflow: "hidden", marginBottom: "20px" }}>
+        {notifItems.map((item, i) => (
+          <div key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 24px", borderBottom: i < notifItems.length - 1 ? "1px solid #27272a" : "none" }}>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: 500, color: "#e4e4e7" }}>{item.label}</div>
+              <div style={{ fontSize: "12px", color: "#71717a", marginTop: "2px" }}>{item.desc}</div>
+            </div>
+            <div
+              onClick={() => setToggles(t => ({ ...t, [item.id]: !t[item.id] }))}
+              style={{ width: "42px", height: "24px", borderRadius: "12px", cursor: "pointer", position: "relative", backgroundColor: toggles[item.id] ? "#7c3aed" : "#3f3f46", transition: "background-color 0.2s", flexShrink: 0 }}
+            >
+              <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "white", position: "absolute", top: "3px", left: toggles[item.id] ? "21px" : "3px", transition: "left 0.2s" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <button onClick={save} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 24px", borderRadius: "10px", border: "none", background: saved ? "#22c55e" : "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "white", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>
+        {saved ? <><Check size={16} /> Saved!</> : "Save Preferences"}
+      </button>
+    </div>
+  );
+}
+
 const providers = [
   { id: "gsc", name: "Google Search Console", icon: Search, desc: "Track keyword rankings, clicks, and impressions", color: "#4285F4" },
   { id: "ga4", name: "Google Analytics 4", icon: BarChart3, desc: "Website traffic, sessions, and conversion data", color: "#E37400" },
@@ -150,7 +190,9 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab !== "integrations" && activeTab !== "profile" && (
+      {activeTab === "notifications" && <NotificationsTab />}
+
+      {activeTab !== "integrations" && activeTab !== "profile" && activeTab !== "notifications" && (
         <div style={{ textAlign: "center", padding: "60px 20px", borderRadius: "16px", border: "1px dashed #27272a" }}>
           <p style={{ fontSize: "15px", color: "#52525b" }}>Coming soon — {activeTab} settings</p>
         </div>

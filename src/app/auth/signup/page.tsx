@@ -16,8 +16,18 @@ export default function SignUpPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
     if (error) { setError(error.message); setLoading(false); return; }
+
+    // Auto-create workspace for new user
+    if (data.session) {
+      try {
+        await fetch('/api/workspace', {
+          headers: { Authorization: `Bearer ${data.session.access_token}` },
+        });
+      } catch {}
+    }
+
     router.push('/dashboard');
   }
 

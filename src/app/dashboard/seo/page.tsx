@@ -1,7 +1,9 @@
 'use client';
-import { Search, TrendingUp, TrendingDown, Minus, ArrowUpRight, Globe, FileText, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { Search, TrendingUp, TrendingDown, Minus, ArrowUpRight, Globe, FileText, AlertTriangle, Download } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { DateRangePicker } from '@/components/DateRangePicker';
 
 const mockKeywords = [
   { keyword: 'ai automation agency', position: 3, change: 2, impressions: 12400, clicks: 890, ctr: 7.2 },
@@ -18,9 +20,26 @@ const positionTrend = Array.from({ length: 14 }, (_, i) => ({
   avgPosition: +(8.5 - i * 0.15 + Math.random() * 0.5).toFixed(1),
 }));
 
+function exportKeywordsCSV() {
+  const headers = ['Keyword', 'Position', 'Change', 'Impressions', 'Clicks', 'CTR'];
+  const rows = mockKeywords.map(kw => [kw.keyword, kw.position, kw.change, kw.impressions, kw.clicks, `${kw.ctr}%`]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'krato-keywords.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function SEOPage() {
+  const [days, setDays] = useState(30);
   return (
     <PageShell title="SEO Intelligence" description="Google Search Console data & keyword tracking" icon={Search}>
+      {/* Top bar */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+        <DateRangePicker value={days} onChange={setDays} />
+      </div>
+
       {/* KPI Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
         {[
@@ -42,7 +61,12 @@ export default function SEOPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '16px', marginBottom: '24px' }}>
         {/* Keyword Table */}
         <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5', marginBottom: '16px' }}>Top Keywords</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5' }}>Top Keywords</h2>
+            <button onClick={exportKeywordsCSV} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '8px', border: '1px solid #3f3f46', backgroundColor: '#27272a', color: '#a1a1aa', fontSize: '12px', cursor: 'pointer' }}>
+              <Download size={12} /> Export CSV
+            </button>
+          </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>{['Keyword', 'Pos', 'Δ', 'Impr', 'Clicks', 'CTR'].map(h => (

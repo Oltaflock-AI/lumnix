@@ -1,7 +1,9 @@
 'use client';
-import { BarChart3, Users, Clock, MousePointer, ArrowUpRight } from 'lucide-react';
+import { useState } from 'react';
+import { BarChart3, Users, Clock, MousePointer, ArrowUpRight, Download } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { DateRangePicker } from '@/components/DateRangePicker';
 
 const sessionData = Array.from({ length: 14 }, (_, i) => ({
   day: `Mar ${i + 5}`,
@@ -26,9 +28,26 @@ const pageData = [
   { page: '/contact', views: 1640, avgTime: '1:08', bounce: '52%' },
 ];
 
+function exportPagesCSV() {
+  const headers = ['Page', 'Views', 'Avg Time', 'Bounce Rate'];
+  const rows = pageData.map(p => [p.page, p.views, p.avgTime, p.bounce]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'krato-pages.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AnalyticsPage() {
+  const [days, setDays] = useState(30);
   return (
     <PageShell title="Web Analytics" description="Google Analytics 4 data & insights" icon={BarChart3}>
+      {/* Top bar */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+        <DateRangePicker value={days} onChange={setDays} />
+      </div>
+
       {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
         {[
@@ -88,7 +107,12 @@ export default function AnalyticsPage() {
 
       {/* Top Pages */}
       <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5', marginBottom: '16px' }}>Top Pages</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5' }}>Top Pages</h2>
+          <button onClick={exportPagesCSV} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '8px', border: '1px solid #3f3f46', backgroundColor: '#27272a', color: '#a1a1aa', fontSize: '12px', cursor: 'pointer' }}>
+            <Download size={12} /> Export CSV
+          </button>
+        </div>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>{['Page', 'Views', 'Avg Time', 'Bounce Rate'].map(h => (
