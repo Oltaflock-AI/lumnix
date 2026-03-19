@@ -60,14 +60,20 @@ export function useIntegrations(workspaceId: string | undefined) {
 
 // Connect an integration
 export async function connectIntegration(provider: string, workspaceId: string) {
-  const res = await fetch("/api/integrations/connect", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ provider, workspace_id: workspaceId }),
-  });
-  if (res.ok) {
-    const { url } = await res.json();
-    window.location.href = url;
+  try {
+    const res = await fetch("/api/integrations/connect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ provider, workspace_id: workspaceId }),
+    });
+    const data = await res.json();
+    if (res.ok && data.url) {
+      window.location.href = data.url;
+    } else {
+      alert(`Connect failed: ${data.error || JSON.stringify(data)}`);
+    }
+  } catch (err) {
+    alert(`Connect error: ${err}`);
   }
 }
 

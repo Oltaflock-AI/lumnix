@@ -240,7 +240,10 @@ export default function SettingsPage() {
   const getIntegration = (providerId: string) => integrations.find(i => i.provider === providerId);
 
   async function handleConnect(providerId: string) {
-    if (!workspace?.id) return;
+    if (!workspace?.id) {
+      alert('Workspace not loaded yet. Please wait a moment and try again.');
+      return;
+    }
     await connectIntegration(providerId, workspace.id);
   }
 
@@ -285,6 +288,8 @@ export default function SettingsPage() {
           <p style={{ fontSize: "14px", color: "#71717a", marginBottom: "20px" }}>
             Connect your marketing accounts to start syncing real data.
             {wsLoading && " Loading workspace..."}
+            {!wsLoading && !workspace && " ⚠️ Workspace not found — try refreshing."}
+            {workspace && <span style={{ color: "#10b981" }}> Workspace: {workspace.name}</span>}
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
             {providers.map(p => {
