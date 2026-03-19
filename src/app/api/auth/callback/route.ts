@@ -7,5 +7,6 @@ export async function GET(request: Request) {
     // Supabase handles the exchange client-side via the auth helper
     return NextResponse.redirect(`${origin}/dashboard`);
   }
-  return NextResponse.redirect(`${origin}/auth/signin?error=auth_failed`);
+  // No code param — implicit flow returns hash tokens client-side; redirect to dashboard and let client handle
+  return NextResponse.redirect(`${origin}/dashboard`);
 }

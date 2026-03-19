@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -11,6 +11,21 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    // If hash contains access_token (implicit OAuth flow), Supabase client auto-processes it
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token')) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) router.push('/dashboard');
+      });
+      return;
+    }
+    // Check for an existing valid session (e.g. returning user or after PKCE exchange)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.push('/dashboard');
+    });
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,7 +39,7 @@ export default function SignInPage() {
   async function handleGoogleSignIn() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/api/auth/callback` }
+      options: { redirectTo: `${window.location.origin}/auth/callback` }
     });
   }
 
