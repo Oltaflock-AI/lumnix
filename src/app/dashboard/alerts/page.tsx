@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Bell, Plus, AlertCircle, AlertTriangle, Info, CheckCircle2, X, Check, Toggle } from 'lucide-react';
+import { Bell, Plus, AlertCircle, AlertTriangle, Info, CheckCircle2, X, Check } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 
 type Severity = 'critical' | 'warning' | 'info' | 'success';
