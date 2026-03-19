@@ -26,34 +26,53 @@ export async function GET(req: NextRequest) {
 
     const admin = getSupabaseAdmin();
 
+    // First try workspace_members
     const { data: membership } = await admin
       .from('workspace_members')
-      .select('workspace_id, role, workspaces(id, name, plan, logo_url, brand_color, slug)')
+      .select('workspace_id, role, workspaces(id, name, plan, logo_url, brand_color, slug, owner_id)')
       .eq('user_id', user.id)
       .limit(1)
       .single();
 
-    if (!membership) {
-      const { data: workspace } = await admin
-        .from('workspaces')
-        .insert({ name: `${user.user_metadata?.full_name || 'My'}'s Workspace`, created_by: user.id })
-        .select()
-        .single();
-
-      if (workspace) {
-        await admin.from('workspace_members').insert({
-          workspace_id: workspace.id,
-          user_id: user.id,
-          role: 'owner',
-        });
-        return NextResponse.json({ workspace, role: 'owner' });
-      }
+    if (membership?.workspaces) {
+      return NextResponse.json({ workspace: membership.workspaces, role: membership.role });
     }
 
-    return NextResponse.json({
-      workspace: membership?.workspaces,
-      role: membership?.role,
-    });
+    // Fallback: check workspaces by owner_id directly
+    const { data: ownedWorkspace } = await admin
+      .from('workspaces')
+      .select('id, name, plan, logo_url, brand_color, slug, owner_id')
+      .eq('owner_id', user.id)
+      .limit(1)
+      .single();
+
+    if (ownedWorkspace) {
+      // Create workspace_members record for future lookups
+      await admin.from('workspace_members').upsert({
+        workspace_id: ownedWorkspace.id,
+        user_id: user.id,
+        role: 'owner',
+      }, { onConflict: 'workspace_id,user_id' });
+      return NextResponse.json({ workspace: ownedWorkspace, role: 'owner' });
+    }
+
+    // No workspace — create one
+    const { data: newWorkspace } = await admin
+      .from('workspaces')
+      .insert({ name: `${user.user_metadata?.full_name || 'My'}'s Workspace`, owner_id: user.id, created_by: user.id })
+      .select()
+      .single();
+
+    if (newWorkspace) {
+      await admin.from('workspace_members').insert({
+        workspace_id: newWorkspace.id,
+        user_id: user.id,
+        role: 'owner',
+      });
+      return NextResponse.json({ workspace: newWorkspace, role: 'owner' });
+    }
+
+    return NextResponse.json({ error: 'Could not find or create workspace' }, { status: 404 });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

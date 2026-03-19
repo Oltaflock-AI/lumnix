@@ -94,7 +94,8 @@ export async function GET(req: NextRequest) {
       .single();
 
     if (intError) {
-      return NextResponse.redirect(new URL(`/dashboard/settings?error=db_error`, req.url));
+      console.error('Integration insert error:', intError);
+      return NextResponse.redirect(new URL(`/dashboard/settings?error=${encodeURIComponent(intError.message)}`, req.url));
     }
 
     // Save tokens
