@@ -1,172 +1,224 @@
 'use client';
-import { useState } from 'react';
-import { Bell, Plus, AlertCircle, AlertTriangle, Info, CheckCircle2, X, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, AlertCircle, AlertTriangle, Info, CheckCircle2, TrendingDown, TrendingUp, Search, BarChart3, X, RefreshCw } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
+import { useWorkspace, useGSCData, useGA4Data } from '@/lib/hooks';
 
-type Severity = 'critical' | 'warning' | 'info' | 'success';
+type Alert = {
+  id: string;
+  title: string;
+  detail: string;
+  severity: 'critical' | 'warning' | 'info' | 'success';
+  source: string;
+  dismissed: boolean;
+};
 
-const initialAlerts = [
-  { id: 1, text: 'Traffic spike: +34% on /pricing page', severity: 'info' as Severity, time: '2h ago', source: 'GA4', dismissed: false },
-  { id: 2, text: 'Google Ads CPC increased by 22% vs last week', severity: 'warning' as Severity, time: '5h ago', source: 'Google Ads', dismissed: false },
-  { id: 3, text: 'Meta campaign "Spring" exhausted daily budget at 2PM', severity: 'critical' as Severity, time: '8h ago', source: 'Meta Ads', dismissed: false },
-  { id: 4, text: 'Keyword "ai automation" moved from #8 to #3', severity: 'success' as Severity, time: '1d ago', source: 'GSC', dismissed: false },
-  { id: 5, text: 'SSL certificate expires in 14 days', severity: 'warning' as Severity, time: '1d ago', source: 'Site Health', dismissed: false },
-  { id: 6, text: 'Meta Ads frequency >4 on "Retargeting" — audience fatigue risk', severity: 'warning' as Severity, time: '2d ago', source: 'Meta Ads', dismissed: false },
-  { id: 7, text: 'ROAS dropped below 2x on "Competitor Keywords" campaign', severity: 'critical' as Severity, time: '2d ago', source: 'Google Ads', dismissed: false },
-  { id: 8, text: 'Organic CTR for /ai-receptionist improved to 6.2%', severity: 'success' as Severity, time: '3d ago', source: 'GSC', dismissed: false },
-];
+function generateAlerts(gscKeywords: any[], ga4Data: any[]): Alert[] {
+  const alerts: Alert[] = [];
 
-const initialRules = [
-  { id: 1, metric: 'Organic Traffic', condition: 'drops by more than', threshold: '20%', channel: 'GA4', enabled: true },
-  { id: 2, metric: 'Google Ads CPC', condition: 'exceeds', threshold: '$5.00', channel: 'Google Ads', enabled: true },
-  { id: 3, metric: 'ROAS', condition: 'falls below', threshold: '2x', channel: 'Google Ads', enabled: true },
-  { id: 4, metric: 'Meta Ads Frequency', condition: 'exceeds', threshold: '4', channel: 'Meta Ads', enabled: false },
-  { id: 5, metric: 'Keyword Position', condition: 'improves by more than', threshold: '5 spots', channel: 'GSC', enabled: true },
-];
+  if (!gscKeywords.length && !ga4Data.length) return [];
 
-const severityConfig: Record<Severity, { icon: typeof AlertCircle; color: string; bg: string }> = {
-  critical: { icon: AlertCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
-  warning: { icon: AlertTriangle, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)' },
-  info: { icon: Info, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
-  success: { icon: CheckCircle2, color: '#22c55e', bg: 'rgba(34,197,94,0.1)' },
+  // GSC alerts
+  if (gscKeywords.length > 0) {
+    // Quick wins — positions 4-10 with low CTR
+    const quickWins = gscKeywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < 2);
+    if (quickWins.length > 0) {
+      alerts.push({
+        id: 'qw-1',
+        title: `${quickWins.length} keyword${quickWins.length > 1 ? 's' : ''} on page 1 edge`,
+        detail: `"${quickWins[0]?.query}" ranks #${Math.round(quickWins[0]?.position)} with only ${quickWins[0]?.ctr?.toFixed(1)}% CTR. Improve title/meta to push to page 1.`,
+        severity: 'warning',
+        source: 'GSC',
+        dismissed: false,
+      });
+    }
+
+    // Top 3 winners
+    const top3 = gscKeywords.filter(k => k.position <= 3 && k.clicks > 10);
+    if (top3.length > 0) {
+      alerts.push({
+        id: 'top3-1',
+        title: `${top3.length} keyword${top3.length > 1 ? 's' : ''} ranking in top 3`,
+        detail: `"${top3[0]?.query}" is at #${Math.round(top3[0]?.position)} with ${top3[0]?.clicks} clicks. Protect this ranking.`,
+        severity: 'success',
+        source: 'GSC',
+        dismissed: false,
+      });
+    }
+
+    // Zero-click high impressions
+    const zeroClick = gscKeywords.filter(k => k.impressions > 500 && k.clicks === 0);
+    if (zeroClick.length > 0) {
+      alerts.push({
+        id: 'zc-1',
+        title: `${zeroClick.length} high-impression keyword${zeroClick.length > 1 ? 's' : ''} with zero clicks`,
+        detail: `"${zeroClick[0]?.query}" has ${zeroClick[0]?.impressions?.toLocaleString()} impressions but 0 clicks. Title/meta needs work.`,
+        severity: 'critical',
+        source: 'GSC',
+        dismissed: false,
+      });
+    }
+
+    // Average position check
+    const avgPos = gscKeywords.reduce((s, k) => s + k.position, 0) / gscKeywords.length;
+    if (avgPos > 20) {
+      alerts.push({
+        id: 'pos-1',
+        title: 'Average keyword position is below page 2',
+        detail: `Your average position is #${avgPos.toFixed(1)}. Most traffic comes from page 1. Focus on your top 10 keywords first.`,
+        severity: 'warning',
+        source: 'GSC',
+        dismissed: false,
+      });
+    }
+  }
+
+  // GA4 alerts
+  if (ga4Data.length > 0) {
+    const sessionRows = ga4Data.filter(r => r.metric_type === 'sessions');
+    if (sessionRows.length > 1) {
+      const half = Math.floor(sessionRows.length / 2);
+      const recent = sessionRows.slice(half).reduce((s: number, r: any) => s + r.value, 0);
+      const previous = sessionRows.slice(0, half).reduce((s: number, r: any) => s + r.value, 0);
+      const change = previous > 0 ? ((recent - previous) / previous) * 100 : 0;
+
+      if (change < -20) {
+        alerts.push({
+          id: 'traffic-drop',
+          title: `Traffic dropped ${Math.abs(Math.round(change))}% vs previous period`,
+          detail: `Sessions fell from ${previous.toLocaleString()} to ${recent.toLocaleString()}. Check for algorithm updates or technical issues.`,
+          severity: 'critical',
+          source: 'GA4',
+          dismissed: false,
+        });
+      } else if (change > 30) {
+        alerts.push({
+          id: 'traffic-spike',
+          title: `Traffic spiked +${Math.round(change)}% vs previous period`,
+          detail: `Sessions grew from ${previous.toLocaleString()} to ${recent.toLocaleString()}. Investigate what's driving this growth.`,
+          severity: 'success',
+          source: 'GA4',
+          dismissed: false,
+        });
+      }
+    }
+  }
+
+  if (alerts.length === 0) {
+    alerts.push({
+      id: 'all-good',
+      title: 'Everything looks healthy',
+      detail: 'No anomalies detected in your connected data sources. Keep monitoring.',
+      severity: 'info',
+      source: 'Lumnix AI',
+      dismissed: false,
+    });
+  }
+
+  return alerts;
+}
+
+const severityConfig = {
+  critical: { icon: AlertCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.2)' },
+  warning:  { icon: AlertTriangle, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)' },
+  info:     { icon: Info, color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)' },
+  success:  { icon: CheckCircle2, color: '#22c55e', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)' },
 };
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState(initialAlerts);
-  const [rules, setRules] = useState(initialRules);
-  const [filter, setFilter] = useState('All');
-  const [showAddRule, setShowAddRule] = useState(false);
-  const [newRule, setNewRule] = useState({ metric: '', condition: 'exceeds', threshold: '', channel: 'GA4', notify: true });
+  const { workspace } = useWorkspace();
+  const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
+  const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
-  const filters = ['All', 'Critical', 'Warning', 'Info'];
+  const loading = gscLoading || ga4Loading;
+  const gscKeywords = gscResp?.keywords || [];
+  const ga4Data = ga4Resp?.data || [];
 
-  const visibleAlerts = alerts.filter(a => {
-    if (a.dismissed) return false;
-    if (filter === 'All') return true;
-    return a.severity === filter.toLowerCase();
-  });
+  const allAlerts = generateAlerts(gscKeywords, ga4Data);
+  const activeAlerts = allAlerts.filter(a => !dismissed.has(a.id));
 
-  function dismissAlert(id: number) {
-    setAlerts(prev => prev.map(a => a.id === id ? { ...a, dismissed: true } : a));
-  }
-
-  function toggleRule(id: number) {
-    setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
-  }
-
-  function addRule() {
-    if (!newRule.metric || !newRule.threshold) return;
-    setRules(prev => [...prev, { id: Date.now(), ...newRule, enabled: true }]);
-    setNewRule({ metric: '', condition: 'exceeds', threshold: '', channel: 'GA4', notify: true });
-    setShowAddRule(false);
-  }
-
-  const inputStyle = { padding: '8px 12px', borderRadius: '8px', border: '1px solid #3f3f46', backgroundColor: '#27272a', color: 'white', fontSize: '13px', outline: 'none' };
+  const counts = {
+    critical: activeAlerts.filter(a => a.severity === 'critical').length,
+    warning: activeAlerts.filter(a => a.severity === 'warning').length,
+    success: activeAlerts.filter(a => a.severity === 'success').length,
+  };
 
   return (
-    <PageShell title="Alerts" description="Anomaly detection & threshold alerts" icon={Bell}>
-
-      {/* Filter + Add */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          {filters.map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding: '7px 16px', borderRadius: '8px', border: '1px solid #3f3f46', backgroundColor: filter === f ? '#7c3aed' : '#27272a', color: filter === f ? 'white' : '#a1a1aa', fontSize: '13px', cursor: 'pointer', fontWeight: filter === f ? 600 : 400 }}>{f}</button>
-          ))}
+    <PageShell title="Alerts" description="AI-detected anomalies and opportunities from your live data" icon={Bell}>
+      {/* Summary bar */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+        {[
+          { label: 'Critical', count: counts.critical, color: '#ef4444', bg: 'rgba(239,68,68,0.08)' },
+          { label: 'Warnings', count: counts.warning, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)' },
+          { label: 'Wins', count: counts.success, color: '#22c55e', bg: 'rgba(34,197,94,0.08)' },
+        ].map(s => (
+          <div key={s.label} style={{ padding: '12px 20px', borderRadius: 10, backgroundColor: s.bg, border: `1px solid ${s.color}30`, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: 'var(--font-display)' }}>{s.count}</span>
+            <span style={{ fontSize: 13, color: '#64748b' }}>{s.label}</span>
+          </div>
+        ))}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569' }}>
+          <RefreshCw size={13} />
+          <span>Based on your last sync</span>
         </div>
-        <button onClick={() => setShowAddRule(s => !s)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
-          <Plus size={16} /> Add Alert Rule
-        </button>
       </div>
 
-      {/* Alert Feed */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-        {visibleAlerts.length === 0 && (
-          <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '40px', textAlign: 'center', color: '#52525b', fontSize: '14px' }}>
-            No alerts matching this filter.
-          </div>
-        )}
-        {visibleAlerts.map(alert => {
-          const config = severityConfig[alert.severity];
-          const Icon = config.icon;
-          return (
-            <div key={alert.id} style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: config.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Icon size={18} color={config.color} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '14px', color: '#e4e4e7', fontWeight: 500 }}>{alert.text}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
-                  <span style={{ fontSize: '11px', padding: '1px 6px', borderRadius: '4px', backgroundColor: '#27272a', color: '#a1a1aa' }}>{alert.source}</span>
-                  <span style={{ fontSize: '11px', color: '#52525b' }}>{alert.time}</span>
+      {loading ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[1,2,3].map(i => (
+            <div key={i} style={{ height: 80, backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: 12 }} />
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {activeAlerts.map(alert => {
+            const cfg = severityConfig[alert.severity];
+            return (
+              <div key={alert.id} style={{ padding: '16px 20px', borderRadius: 12, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}`, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                <cfg.icon size={20} color={cfg.color} style={{ flexShrink: 0, marginTop: 1 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#f4f4f5', marginBottom: 4 }}>{alert.title}</div>
+                  <div style={{ fontSize: 13, color: '#71717a', lineHeight: 1.5 }}>{alert.detail}</div>
+                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, backgroundColor: `${cfg.color}15`, color: cfg.color }}>
+                      {alert.source}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#52525b' }}>Live data</span>
+                  </div>
                 </div>
+                <button
+                  onClick={() => setDismissed(prev => new Set([...prev, alert.id]))}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 4, flexShrink: 0 }}
+                  title="Dismiss"
+                >
+                  <X size={16} />
+                </button>
               </div>
-              <button onClick={() => dismissAlert(alert.id)} style={{ padding: '4px', background: 'none', border: 'none', color: '#52525b', cursor: 'pointer', flexShrink: 0 }}>
-                <X size={16} />
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Alert Rules */}
-      <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5', marginBottom: '16px' }}>Alert Rules</h2>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: showAddRule ? '16px' : '0' }}>
-          {rules.map(r => (
-            <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderRadius: '10px', border: '1px solid #27272a', backgroundColor: '#1c1c1f', opacity: r.enabled ? 1 : 0.5 }}>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontSize: '14px', color: '#e4e4e7', fontWeight: 500 }}>{r.metric}</span>
-                <span style={{ fontSize: '14px', color: '#71717a' }}> {r.condition} </span>
-                <span style={{ fontSize: '14px', color: '#a78bfa', fontWeight: 600 }}>{r.threshold}</span>
-              </div>
-              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '6px', backgroundColor: '#27272a', color: '#71717a' }}>{r.channel}</span>
-              {/* Toggle */}
-              <div onClick={() => toggleRule(r.id)} style={{ width: '38px', height: '22px', borderRadius: '11px', cursor: 'pointer', position: 'relative', backgroundColor: r.enabled ? '#7c3aed' : '#3f3f46', transition: 'background-color 0.2s', flexShrink: 0 }}>
-                <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: 'white', position: 'absolute', top: '3px', left: r.enabled ? '19px' : '3px', transition: 'left 0.2s' }} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+      )}
 
-        {/* Add Rule Form */}
-        {showAddRule && (
-          <div style={{ padding: '16px', borderRadius: '12px', border: '1px dashed #3f3f46', backgroundColor: '#1c1c1f' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: '10px', alignItems: 'flex-end' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#71717a', marginBottom: '4px' }}>Metric</label>
-                <input value={newRule.metric} onChange={e => setNewRule(p => ({ ...p, metric: e.target.value }))} placeholder="e.g. Traffic" style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' as const }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#71717a', marginBottom: '4px' }}>Condition</label>
-                <select value={newRule.condition} onChange={e => setNewRule(p => ({ ...p, condition: e.target.value }))} style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' as const }}>
-                  <option>exceeds</option>
-                  <option>falls below</option>
-                  <option>drops by more than</option>
-                  <option>improves by more than</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#71717a', marginBottom: '4px' }}>Threshold</label>
-                <input value={newRule.threshold} onChange={e => setNewRule(p => ({ ...p, threshold: e.target.value }))} placeholder="e.g. 20%" style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' as const }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', color: '#71717a', marginBottom: '4px' }}>Channel</label>
-                <select value={newRule.channel} onChange={e => setNewRule(p => ({ ...p, channel: e.target.value }))} style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' as const }}>
-                  <option>GA4</option>
-                  <option>GSC</option>
-                  <option>Google Ads</option>
-                  <option>Meta Ads</option>
-                </select>
-              </div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button onClick={addRule} style={{ padding: '8px 14px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Add</button>
-                <button onClick={() => setShowAddRule(false)} style={{ padding: '8px', borderRadius: '8px', border: '1px solid #3f3f46', backgroundColor: '#27272a', color: '#a1a1aa', cursor: 'pointer' }}><X size={14} /></button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {!loading && dismissed.size > 0 && (
+        <div style={{ marginTop: 16, textAlign: 'center' }}>
+          <button
+            onClick={() => setDismissed(new Set())}
+            style={{ fontSize: 12, color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          >
+            Restore {dismissed.size} dismissed alert{dismissed.size > 1 ? 's' : ''}
+          </button>
+        </div>
+      )}
+
+      {/* Setup note if no data */}
+      {!loading && gscKeywords.length === 0 && ga4Data.length === 0 && (
+        <div style={{ marginTop: 20, padding: 20, borderRadius: 12, backgroundColor: '#18181b', border: '1px solid #27272a', textAlign: 'center' }}>
+          <Bell size={28} color="#334155" style={{ marginBottom: 10 }} />
+          <p style={{ fontSize: 14, color: '#64748B', marginBottom: 8 }}>Connect and sync GSC or GA4 to get real-time alerts</p>
+          <a href="/dashboard/settings" style={{ fontSize: 13, color: '#7c3aed', textDecoration: 'none', fontWeight: 500 }}>Go to Settings →</a>
+        </div>
+      )}
     </PageShell>
   );
 }
