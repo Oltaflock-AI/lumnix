@@ -13,16 +13,17 @@ export default function SignInPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash && hash.includes('access_token')) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) router.push('/dashboard');
-      });
-      return;
-    }
+    // Check existing session first
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) { router.push('/dashboard'); return; }
+    });
+
+    // Listen for auth state changes (handles OAuth callbacks)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) router.push('/dashboard');
     });
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
