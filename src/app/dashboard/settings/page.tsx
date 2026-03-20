@@ -263,6 +263,27 @@ export default function SettingsPage() {
     setSyncing(null);
   }
 
+  async function handleSyncAll() {
+    if (!workspace?.id) return;
+    setSyncing('all');
+    try {
+      const res = await fetch(`/api/cron/sync?workspace_id=${workspace.id}`, {
+        headers: { Authorization: 'Bearer lumnix-cron-2026' }
+      });
+      const result = await res.json();
+      if (result.success) {
+        const synced = result.results.filter((r: any) => r.status === 'synced');
+        alert(`Auto-sync complete: ${synced.length} source${synced.length !== 1 ? 's' : ''} updated`);
+      } else {
+        alert(`Sync failed: ${result.error}`);
+      }
+      refetch();
+    } catch (err) {
+      alert(`Sync error: ${err}`);
+    }
+    setSyncing(null);
+  }
+
   return (
     <div>
       <div style={{ marginBottom: "28px" }}>
@@ -290,12 +311,24 @@ export default function SettingsPage() {
 
       {activeTab === "integrations" && (
         <div>
-          <p style={{ fontSize: "14px", color: "#71717a", marginBottom: "20px" }}>
-            Connect your marketing accounts to start syncing real data.
-            {wsLoading && " Loading workspace..."}
-            {!wsLoading && !workspace && " ⚠️ Workspace not found — try refreshing."}
-            {workspace && <span style={{ color: "#10b981" }}> Workspace: {workspace.name}</span>}
-          </p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 10 }}>
+            <p style={{ fontSize: "14px", color: "#71717a", margin: 0 }}>
+              Connect your marketing accounts to start syncing real data.
+              {wsLoading && " Loading..."}
+              {workspace && <span style={{ color: "#10b981" }}> · {workspace.name}</span>}
+            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 11, color: "#52525b" }}>Auto-syncs daily at 2AM UTC</span>
+              <button
+                onClick={handleSyncAll}
+                disabled={syncing === 'all'}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "white", fontSize: 13, fontWeight: 600, cursor: syncing === 'all' ? "wait" : "pointer", opacity: syncing === 'all' ? 0.7 : 1 }}
+              >
+                <RefreshCw size={13} style={{ animation: syncing === 'all' ? 'spin 1s linear infinite' : 'none' }} />
+                {syncing === 'all' ? 'Syncing...' : 'Sync All Now'}
+              </button>
+            </div>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
             {providers.map(p => {
               const Icon = p.icon;
