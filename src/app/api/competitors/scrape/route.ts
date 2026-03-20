@@ -121,7 +121,8 @@ export async function POST(req: NextRequest) {
   }
 
   if (adsToUpsert.length > 0) {
-    await db.from('competitor_ads').upsert(adsToUpsert, { onConflict: 'ad_archive_id' }).catch(e => console.error('upsert err:', e));
+    const { error: upsertErr } = await db.from('competitor_ads').upsert(adsToUpsert, { onConflict: 'ad_archive_id' });
+    if (upsertErr) console.error('upsert err:', upsertErr);
   }
 
   // Update ad count
