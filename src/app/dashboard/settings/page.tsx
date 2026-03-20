@@ -252,9 +252,16 @@ export default function SettingsPage() {
     if (!int || !workspace?.id) return;
     setSyncing(providerId);
     try {
-      await syncIntegration(int.id, workspace.id, providerId);
+      const result = await syncIntegration(int.id, workspace.id, providerId);
+      if (result?.error) {
+        alert(`Sync failed: ${result.error}`);
+      } else if (result?.success) {
+        alert(`Synced ${result.rows_synced} rows from ${result.site || result.property || providerId}`);
+      }
       refetch();
-    } catch {}
+    } catch (err) {
+      alert(`Sync error: ${err}`);
+    }
     setSyncing(null);
   }
 
