@@ -63,7 +63,7 @@ export default function MetaAdsPage() {
   const loading = wsLoading || intLoading;
 
   useEffect(() => {
-    if (!workspace?.id || !isConnected) return;
+    if (!workspace?.id) return;
     async function load() {
       setDataLoading(true);
       // Try campaigns first, fall back to adsets
