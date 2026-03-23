@@ -77,9 +77,9 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
 <meta charset="utf-8">
 <title>${name} — SEO Performance Report</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', -apple-system, sans-serif; background: #fff; color: #111827; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
   .cover { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 260px; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; }
   .cover-brand { display: flex; align-items: center; gap: 12px; }
   .cover-dot { width: 10px; height: 10px; border-radius: 50%; background: #7c3aed; }
@@ -270,9 +270,9 @@ function buildAnalyticsReport(
 <meta charset="utf-8">
 <title>${name} — Traffic & Analytics Report</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', -apple-system, sans-serif; background: #fff; color: #111827; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
   .cover { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 260px; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; }
   .cover-brand { display: flex; align-items: center; gap: 12px; }
   .cover-dot { width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; }
@@ -464,9 +464,9 @@ function buildFullReport(
 <meta charset="utf-8">
 <title>${name} — Full Marketing Intelligence Report</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', -apple-system, sans-serif; background: #fff; color: #111827; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
   .cover { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #0f2c2c 100%); min-height: 320px; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; }
   .cover-brand { display: flex; align-items: center; gap: 12px; }
   .cover-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
@@ -709,33 +709,61 @@ function openReport(html: string, filename: string) {
 }
 
 async function downloadPDF(html: string, filename: string) {
-  // Dynamically import html2pdf.js (client-side only, no SSR)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const html2pdf = (await import('html2pdf.js' as string)).default as any;
-
-  // Mount HTML into a hidden off-screen container so fonts/styles render correctly
-  const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;';
-  container.innerHTML = html;
-  document.body.appendChild(container);
-
   const pdfFilename = filename.replace(/\.html$/, '.pdf');
 
-  try {
-    await html2pdf()
-      .set({
-        margin: 0,
-        filename: pdfFilename,
-        image: { type: 'jpeg', quality: 0.97 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait', hotfixes: ['px_scaling'] },
-        pagebreak: { mode: ['avoid-all', 'css'] },
-      })
-      .from(container)
-      .save();
-  } finally {
-    document.body.removeChild(container);
-  }
+  // Render in a hidden iframe so all styles/fonts fully load before capture
+  return new Promise<void>((resolve) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;visibility:hidden;';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) { document.body.removeChild(iframe); resolve(); return; }
+
+    iframeDoc.open();
+    iframeDoc.write(html);
+    iframeDoc.close();
+
+    // Wait for fonts + layout to fully render
+    const capture = async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html2canvas = (await import('html2canvas')).default as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { jsPDF } = await import('jspdf') as any;
+
+        const body = iframeDoc.body;
+        const canvas = await html2canvas(body, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          windowWidth: 794,
+          width: 794,
+          logging: false,
+          allowTaint: false,
+          foreignObjectRendering: false,
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const pageWidth = 794;
+        const pageHeight = Math.round((canvas.height / canvas.width) * pageWidth);
+
+        const pdf = new jsPDF({ unit: 'px', format: [pageWidth, pageHeight], orientation: 'portrait' });
+        pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+        pdf.save(pdfFilename);
+      } catch (e) {
+        console.error('PDF generation failed:', e);
+      } finally {
+        document.body.removeChild(iframe);
+        resolve();
+      }
+    };
+
+    // Give iframe 1.5s to fully render fonts/layout
+    iframe.onload = () => setTimeout(capture, 1500);
+    // Fallback if onload already fired
+    setTimeout(() => { if (document.body.contains(iframe)) capture(); }, 2000);
+  });
 }
 
 export default function ReportsPage() {
@@ -976,3 +1004,5 @@ export default function ReportsPage() {
     </PageShell>
   );
 }
+
+
