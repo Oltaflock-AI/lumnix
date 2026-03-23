@@ -708,13 +708,28 @@ function openReport(html: string, filename: string) {
   }
 }
 
+// Load jsPDF + html2canvas via CDN at runtime (avoids SSR bundling issues)
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.onload = () => resolve(); s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
 async function downloadPDF(html: string, filename: string) {
   const pdfFilename = filename.replace(/\.html$/, '.pdf');
 
-  // Render in a hidden iframe so all styles/fonts fully load before capture
+  // Load libs from CDN — bypasses Next.js SSR bundling entirely
+  await Promise.all([
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
+  ]);
+
   return new Promise<void>((resolve) => {
     const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1123px;border:none;visibility:hidden;';
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;height:1px;border:none;visibility:hidden;';
     document.body.appendChild(iframe);
 
     const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -724,16 +739,17 @@ async function downloadPDF(html: string, filename: string) {
     iframeDoc.write(html);
     iframeDoc.close();
 
-    // Wait for fonts + layout to fully render
     const capture = async () => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html2canvas = (await import('html2canvas')).default as any;
+        const h2c = (window as any).html2canvas;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { jsPDF } = await import('jspdf') as any;
+        const { jsPDF } = (window as any).jspdf;
 
         const body = iframeDoc.body;
-        const canvas = await html2canvas(body, {
+        iframe.style.height = body.scrollHeight + 'px';
+
+        const canvas = await h2c(body, {
           scale: 2,
           useCORS: true,
           backgroundColor: '#ffffff',
@@ -741,15 +757,14 @@ async function downloadPDF(html: string, filename: string) {
           width: 794,
           logging: false,
           allowTaint: false,
-          foreignObjectRendering: false,
         });
 
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const pageWidth = 794;
-        const pageHeight = Math.round((canvas.height / canvas.width) * pageWidth);
+        const pageW = 794;
+        const pageH = Math.round((canvas.height / canvas.width) * pageW);
 
-        const pdf = new jsPDF({ unit: 'px', format: [pageWidth, pageHeight], orientation: 'portrait' });
-        pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+        const pdf = new jsPDF({ unit: 'px', format: [pageW, pageH], orientation: 'portrait' });
+        pdf.addImage(imgData, 'JPEG', 0, 0, pageW, pageH);
         pdf.save(pdfFilename);
       } catch (e) {
         console.error('PDF generation failed:', e);
@@ -759,10 +774,8 @@ async function downloadPDF(html: string, filename: string) {
       }
     };
 
-    // Give iframe 1.5s to fully render fonts/layout
     iframe.onload = () => setTimeout(capture, 1500);
-    // Fallback if onload already fired
-    setTimeout(() => { if (document.body.contains(iframe)) capture(); }, 2000);
+    setTimeout(() => { if (document.body.contains(iframe)) capture(); }, 2500);
   });
 }
 
