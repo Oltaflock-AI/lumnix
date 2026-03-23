@@ -4,6 +4,7 @@ import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle
 import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useGSCData, useGA4Data } from '@/lib/hooks';
 
+
 const reportTypes = [
   {
     id: 'seo',
@@ -214,37 +215,39 @@ function buildSEOReport(gscKeywords: any[], workspace: any): string {
 </html>`;
 }
 
-function buildAnalyticsReport(ga4Data: any[], workspace: any): string {
+function buildAnalyticsReport(
+  overviewData: { date: string; sessions: number; users: number; pageviews: number }[],
+  sourcesData: { source: string; sessions: number; users: number }[],
+  pagesData: { page: string; pageviews: number; bounceRate: number }[],
+  workspace: any
+): string {
   const name = workspace?.name || 'Your Brand';
   const period = getPeriodLabel(30);
   const generated = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-  const sessionRows = ga4Data.filter((r: any) => r.metric_type === 'sessions');
-  const userRows = ga4Data.filter((r: any) => r.metric_type === 'totalUsers');
-  const totalSessions = sessionRows.reduce((s: number, r: any) => s + (r.value || 0), 0);
-  const totalUsers = userRows.reduce((s: number, r: any) => s + (r.value || 0), 0);
-  const newUserRows = ga4Data.filter((r: any) => r.metric_type === 'newUsers');
-  const totalNewUsers = newUserRows.reduce((s: number, r: any) => s + (r.value || 0), 0);
-  const returningUsers = totalUsers - totalNewUsers;
+  // Aggregate from overview rows
+  const totalSessions = overviewData.reduce((s, r) => s + (r.sessions || 0), 0);
+  const totalUsers = overviewData.reduce((s, r) => s + (r.users || 0), 0);
+  const totalNewUsers = 0; // not available in overview aggregation
+  const returningUsers = 0;
 
-  // Top sources
-  const sourceMap: Record<string, number> = {};
-  sessionRows.filter((r: any) => r.dimension_name === 'sessionSource').forEach((r: any) => {
-    sourceMap[r.dimension_value] = (sourceMap[r.dimension_value] || 0) + r.value;
-  });
-  const topSources = Object.entries(sourceMap).sort(([, a], [, b]) => b - a).slice(0, 8);
+  // Top sources from sourcesData
+  const topSources: [string, number][] = sourcesData
+    .sort((a, b) => b.sessions - a.sessions)
+    .slice(0, 8)
+    .map(s => [s.source, s.sessions]);
 
-  // Top pages
-  const pageMap: Record<string, number> = {};
-  sessionRows.filter((r: any) => r.dimension_name === 'pagePath').forEach((r: any) => {
-    pageMap[r.dimension_value] = (pageMap[r.dimension_value] || 0) + r.value;
-  });
-  const topPages = Object.entries(pageMap).sort(([, a], [, b]) => b - a).slice(0, 15);
+  // Top pages from pagesData
+  const topPages: [string, number][] = pagesData
+    .sort((a, b) => b.pageviews - a.pageviews)
+    .slice(0, 15)
+    .map(p => [p.page, p.pageviews]);
 
-  // Daily trend
-  const dateMap: Record<string, number> = {};
-  sessionRows.forEach((r: any) => { if (r.date) dateMap[r.date] = (dateMap[r.date] || 0) + r.value; });
-  const dailyData = Object.entries(dateMap).sort(([a], [b]) => a.localeCompare(b)).slice(-14);
+  // Daily trend — last 14 days from overviewData
+  const dailyData = [...overviewData]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-14)
+    .map(r => [r.date, r.sessions] as [string, number]);
   const maxVal = Math.max(...dailyData.map(([, v]) => v), 1);
   const avgDaily = totalSessions > 0 ? Math.round(totalSessions / 30) : 0;
 
@@ -402,7 +405,13 @@ function buildAnalyticsReport(ga4Data: any[], workspace: any): string {
 </html>`;
 }
 
-function buildFullReport(gscKeywords: any[], ga4Data: any[], workspace: any): string {
+function buildFullReport(
+  gscKeywords: any[],
+  overviewData: { date: string; sessions: number; users: number; pageviews: number }[],
+  sourcesData: { source: string; sessions: number; users: number }[],
+  pagesData: { page: string; pageviews: number; bounceRate: number }[],
+  workspace: any
+): string {
   const name = workspace?.name || 'Your Brand';
   const period = getPeriodLabel(30);
   const generated = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -416,23 +425,19 @@ function buildFullReport(gscKeywords: any[], ga4Data: any[], workspace: any): st
   const quickWins = gscKeywords.filter((k: any) => k.position >= 4 && k.position <= 10 && (k.ctr || 0) < 3);
   const topKeywords = [...gscKeywords].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 15);
 
-  const sessionRows = ga4Data.filter((r: any) => r.metric_type === 'sessions');
-  const userRows = ga4Data.filter((r: any) => r.metric_type === 'totalUsers');
-  const totalSessions = sessionRows.reduce((s: number, r: any) => s + (r.value || 0), 0);
-  const totalUsers = userRows.reduce((s: number, r: any) => s + (r.value || 0), 0);
+  const totalSessions = overviewData.reduce((s, r) => s + (r.sessions || 0), 0);
+  const totalUsers = overviewData.reduce((s, r) => s + (r.users || 0), 0);
   const avgDaily = totalSessions > 0 ? Math.round(totalSessions / 30) : 0;
 
-  const sourceMap: Record<string, number> = {};
-  sessionRows.filter((r: any) => r.dimension_name === 'sessionSource').forEach((r: any) => {
-    sourceMap[r.dimension_value] = (sourceMap[r.dimension_value] || 0) + r.value;
-  });
-  const topSources = Object.entries(sourceMap).sort(([, a], [, b]) => b - a).slice(0, 6);
+  const topSources: [string, number][] = sourcesData
+    .sort((a, b) => b.sessions - a.sessions)
+    .slice(0, 6)
+    .map(s => [s.source, s.sessions]);
 
-  const pageMap: Record<string, number> = {};
-  sessionRows.filter((r: any) => r.dimension_name === 'pagePath').forEach((r: any) => {
-    pageMap[r.dimension_value] = (pageMap[r.dimension_value] || 0) + r.value;
-  });
-  const topPages = Object.entries(pageMap).sort(([, a], [, b]) => b - a).slice(0, 10);
+  const topPages: [string, number][] = pagesData
+    .sort((a, b) => b.pageviews - a.pageviews)
+    .slice(0, 10)
+    .map(p => [p.page, p.pageviews]);
 
   const overallScore = Math.min(100, Math.round(
     (page1.length / Math.max(gscKeywords.length, 1) * 30) +
@@ -703,14 +708,22 @@ function downloadHTML(html: string, filename: string) {
 export default function ReportsPage() {
   const { workspace } = useWorkspace();
   const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
-  const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
+  const { data: ga4Overview, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
+  const { data: ga4Sources } = useGA4Data(workspace?.id, 'sources', 30);
+  const { data: ga4Pages } = useGA4Data(workspace?.id, 'pages', 30);
   const [generating, setGenerating] = useState<string | null>(null);
   const [generated, setGenerated] = useState<Set<string>>(new Set());
 
   const loading = gscLoading || ga4Loading;
   const gscKeywords = gscResp?.keywords || [];
-  const ga4Data = ga4Resp?.data || [];
-  const hasData = gscKeywords.length > 0 || ga4Data.length > 0;
+  // overview rows: [{date, sessions, users, pageviews}, ...]
+  const overviewData: { date: string; sessions: number; users: number; pageviews: number }[] = ga4Overview?.data || [];
+  // sources rows: [{source, sessions, users}, ...]
+  const sourcesData: { source: string; sessions: number; users: number }[] = ga4Sources?.data || [];
+  // pages rows: [{page, pageviews, bounceRate}, ...]
+  const pagesData: { page: string; pageviews: number; bounceRate: number }[] = ga4Pages?.data || [];
+  const hasGA4 = overviewData.length > 0 || sourcesData.length > 0;
+  const hasData = gscKeywords.length > 0 || hasGA4;
 
   async function handleGenerate(type: string, format: 'print' | 'download') {
     setGenerating(`${type}-${format}`);
@@ -726,10 +739,10 @@ export default function ReportsPage() {
       html = buildSEOReport(gscKeywords, workspace);
       filename = `${clientName}-seo-report-${date}.html`;
     } else if (type === 'analytics') {
-      html = buildAnalyticsReport(ga4Data, workspace);
+      html = buildAnalyticsReport(overviewData, sourcesData, pagesData, workspace);
       filename = `${clientName}-analytics-report-${date}.html`;
     } else {
-      html = buildFullReport(gscKeywords, ga4Data, workspace);
+      html = buildFullReport(gscKeywords, overviewData, sourcesData, pagesData, workspace);
       filename = `${clientName}-full-marketing-report-${date}.html`;
     }
 
@@ -757,7 +770,7 @@ export default function ReportsPage() {
       {hasData && (
         <div style={{ padding: '12px 16px', borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', fontSize: 13, color: '#22c55e', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
           <Sparkles size={14} />
-          <span>Data loaded — {gscKeywords.length} keywords from GSC · {ga4Data.length > 0 ? 'GA4 traffic data' : 'No GA4 data'} · Reports will include {workspace?.name || 'your brand name'}</span>
+          <span>Data loaded — {gscKeywords.length} keywords from GSC · {hasGA4 ? 'GA4 traffic data' : 'No GA4 data'} · Reports will include {workspace?.name || 'your brand name'}</span>
         </div>
       )}
 
