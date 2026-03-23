@@ -35,13 +35,14 @@ export default function DashboardPage() {
 
   const loading = wsLoading || ga4Loading || gscLoading;
 
+  // GA4 overview returns [{date, sessions, users, pageviews}, ...]
   const ga4Data: any[] = ga4Resp?.data || [];
   const gscKeywords: any[] = gscResp?.keywords || [];
   const gscOverview: any[] = gscOverviewResp?.overview || [];
 
-  // Aggregate GA4
-  const totalSessions = ga4Data.filter(r => r.metric_type === 'sessions').reduce((s, r) => s + (r.value || 0), 0);
-  const totalUsers = ga4Data.filter(r => r.metric_type === 'totalUsers').reduce((s, r) => s + (r.value || 0), 0);
+  // Aggregate GA4 from overview objects
+  const totalSessions = ga4Data.reduce((s, r) => s + (r.sessions || 0), 0);
+  const totalUsers = ga4Data.reduce((s, r) => s + (r.users || 0), 0);
 
   // Aggregate GSC
   const totalClicks = gscKeywords.reduce((s, k) => s + (k.clicks || 0), 0);

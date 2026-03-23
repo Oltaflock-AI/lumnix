@@ -1,8 +1,8 @@
 'use client';
 import { type LucideIcon } from 'lucide-react';
 
-export function PageShell({ title, description, icon: Icon, badge, children }: {
-  title: string; description: string; icon: LucideIcon; badge?: string; children: React.ReactNode;
+export function PageShell({ title, description, icon: Icon, badge, action, children }: {
+  title: string; description: string; icon: LucideIcon; badge?: string; action?: React.ReactNode; children: React.ReactNode;
 }) {
   return (
     <div style={{ maxWidth: '100%', overflowX: 'hidden' }}>
@@ -19,6 +19,7 @@ export function PageShell({ title, description, icon: Icon, badge, children }: {
             <p style={{ fontSize: '14px', color: '#71717a', marginTop: '2px' }}>{description}</p>
           </div>
         </div>
+        {action && <div style={{ flexShrink: 0 }}>{action}</div>}
       </div>
       {children}
     </div>
