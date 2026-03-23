@@ -79,27 +79,56 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Upsert integration (handle reconnects gracefully)
-    const { data: integration, error: intError } = await getSupabaseAdmin()
+    // Check if integration already exists, update or insert
+    const { data: existing } = await getSupabaseAdmin()
       .from('integrations')
-      .upsert({
-        workspace_id,
-        provider,
-        provider_account_id: providerAccountId,
-        display_name: displayName,
-        status: 'connected',
-        connected_at: new Date().toISOString(),
-      }, { onConflict: 'workspace_id,provider' })
-      .select()
-      .single();
+      .select('id')
+      .eq('workspace_id', workspace_id)
+      .eq('provider', provider)
+      .maybeSingle();
+
+    let integration: any;
+    let intError: any;
+
+    if (existing) {
+      const { data, error } = await getSupabaseAdmin()
+        .from('integrations')
+        .update({
+          provider_account_id: providerAccountId,
+          display_name: displayName,
+          status: 'connected',
+          connected_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      integration = data;
+      intError = error;
+    } else {
+      const { data, error } = await getSupabaseAdmin()
+        .from('integrations')
+        .insert({
+          workspace_id,
+          provider,
+          provider_account_id: providerAccountId,
+          display_name: displayName,
+          status: 'connected',
+          connected_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+      integration = data;
+      intError = error;
+    }
 
     if (intError) {
       console.error('Integration insert error:', intError);
       return NextResponse.redirect(new URL(`/dashboard/settings?error=${encodeURIComponent(intError.message)}`, req.url));
     }
 
-    // Upsert tokens (update on reconnect)
-    await getSupabaseAdmin().from('oauth_tokens').upsert({
+    // Delete old token and insert fresh
+    await getSupabaseAdmin().from('oauth_tokens').delete().eq('integration_id', integration.id);
+    await getSupabaseAdmin().from('oauth_tokens').insert({
       integration_id: integration.id,
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token || null,
