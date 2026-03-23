@@ -66,15 +66,16 @@ export default function MetaAdsPage() {
     if (!workspace?.id || !isConnected) return;
     async function load() {
       setDataLoading(true);
-      const { data } = await supabase
+      // Try campaigns first, fall back to adsets
+    const { data } = await supabase
         .from('analytics_data')
         .select('*')
         .eq('workspace_id', workspace.id)
         .eq('provider', 'meta_ads')
         .order('synced_at', { ascending: false })
         .limit(1)
-        .single();
-      if (data?.data) setCampaigns(data.data);
+        .maybeSingle();
+      if (data?.data && Array.isArray(data.data) && data.data.length > 0) setCampaigns(data.data);
       setDataLoading(false);
     }
     load();
