@@ -130,3 +130,40 @@ code, pre, kbd, samp {
 @media (max-width: 480px) {
   .kpi-grid, .kpi-grid-3, .three-col { grid-template-columns: 1fr 1fr !important; }
 }
+
+/* ── Dark Mode ── */
+[data-theme="dark"] {
+  --bg-page: #0F172A;
+  --bg-sidebar: #0F172A;
+  --bg-card: #1E293B;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: rgba(255,255,255,0.08);
+  --shadow-card: 0 1px 4px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+[data-theme="dark"] body {
+  background-color: #0F172A;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .main-content {
+  background-color: #0F172A !important;
+}
+
+[data-theme="dark"] .desktop-sidebar > div {
+  background-color: #0F172A !important;
+  border-right-color: rgba(255,255,255,0.06) !important;
+}
+
+[data-theme="dark"] table th {
+  background-color: #1E293B !important;
+  color: #64748B !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+[data-theme="dark"] table td {
+  border-color: rgba(255,255,255,0.04) !important;
+  color: #CBD5E1 !important;
+}

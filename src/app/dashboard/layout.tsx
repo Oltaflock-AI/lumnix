@@ -4,9 +4,38 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
-  Menu, X, LogOut, ChevronDown, Plus
+  Menu, X, LogOut, ChevronDown, Plus, Sun, Moon
 } from 'lucide-react';
 import { useWorkspace } from '@/lib/hooks';
+
+function useTheme() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    const saved = localStorage.getItem('lumnix-theme');
+    if (saved === 'dark') setDark(true);
+  }, []);
+  function toggle() {
+    const next = !dark;
+    setDark(next);
+    localStorage.setItem('lumnix-theme', next ? 'dark' : 'light');
+    if (next) {
+      document.documentElement.style.setProperty('--bg-page', '#0F172A');
+      document.documentElement.style.setProperty('--bg-sidebar', '#0F172A');
+      document.documentElement.style.setProperty('--bg-card', '#1E293B');
+      document.body.style.backgroundColor = '#0F172A';
+      document.body.style.color = '#F8FAFC';
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.style.setProperty('--bg-page', '#F7F7F5');
+      document.documentElement.style.setProperty('--bg-sidebar', '#FAFAF9');
+      document.documentElement.style.setProperty('--bg-card', '#FFFFFF');
+      document.body.style.backgroundColor = '#F7F7F5';
+      document.body.style.color = '#111827';
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }
+  return { dark, toggle };
+}
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -89,6 +118,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { workspace } = useWorkspace();
   const accent = workspace?.brand_color || '#7C3AED';
+  const { dark, toggle } = useTheme();
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', accent);
@@ -161,6 +191,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '12px', marginTop: '12px' }}>
+        {/* Theme toggle */}
+        <button
+          onClick={toggle}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px', borderRadius: '7px', border: 'none', backgroundColor: 'transparent', color: '#6b7280', fontSize: '12.5px', cursor: 'pointer', marginBottom: '4px' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.03)')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+        >
+          {dark ? <Sun size={14} /> : <Moon size={14} />}
+          {dark ? 'Light mode' : 'Dark mode'}
+        </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px' }}>
           <div style={{ width: '26px', height: '26px', borderRadius: '7px', backgroundColor: `${accent}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 600, color: accent, flexShrink: 0 }}>
             {workspace?.name ? workspace.name[0].toUpperCase() : 'L'}
