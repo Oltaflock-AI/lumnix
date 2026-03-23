@@ -79,17 +79,17 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Save integration
+    // Upsert integration (handle reconnects gracefully)
     const { data: integration, error: intError } = await getSupabaseAdmin()
       .from('integrations')
-      .insert({
+      .upsert({
         workspace_id,
         provider,
         provider_account_id: providerAccountId,
         display_name: displayName,
         status: 'connected',
         connected_at: new Date().toISOString(),
-      })
+      }, { onConflict: 'workspace_id,provider' })
       .select()
       .single();
 
@@ -98,8 +98,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL(`/dashboard/settings?error=${encodeURIComponent(intError.message)}`, req.url));
     }
 
-    // Save tokens
-    await getSupabaseAdmin().from('oauth_tokens').insert({
+    // Upsert tokens (update on reconnect)
+    await getSupabaseAdmin().from('oauth_tokens').upsert({
       integration_id: integration.id,
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token || null,
