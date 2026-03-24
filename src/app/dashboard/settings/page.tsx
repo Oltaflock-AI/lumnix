@@ -1,7 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Search, BarChart3, Target, Share2, Check, X, Plug, User, Bell, Shield, CreditCard, RefreshCw, Loader2, Palette, Upload, Users, Mail, Crown } from "lucide-react";
-import { useWorkspace, useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
+import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
+import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
 
@@ -63,7 +64,7 @@ function NotificationsTab() {
   );
 }
 
-function BrandTab({ workspace, onSaved }: { workspace: any; onSaved?: () => void }) {
+function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: () => void; onUpdate?: (w: any) => void }) {
   const { c } = useTheme();
   const [brandName, setBrandName] = useState(workspace?.name || '');
   const [brandColor, setBrandColor] = useState(workspace?.brand_color || '#7c3aed');
@@ -130,6 +131,7 @@ function BrandTab({ workspace, onSaved }: { workspace: any; onSaved?: () => void
       if (res.ok) {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+        onUpdate?.({ ...workspace, name: brandName, brand_color: brandColor, logo_url: logoUrl });
         onSaved?.();
         document.documentElement.style.setProperty('--accent', brandColor);
       } else {
@@ -328,7 +330,7 @@ function ProfileTab() {
 export default function SettingsPage() {
   const { c } = useTheme();
   const [activeTab, setActiveTab] = useState("integrations");
-  const { workspace, loading: wsLoading, refetch: refetchWorkspace } = useWorkspace();
+  const { workspace, loading: wsLoading, refetch: refetchWorkspace, setWorkspace } = useWorkspaceCtx();
   const { integrations, loading: intLoading, refetch } = useIntegrations(workspace?.id);
   const [syncing, setSyncing] = useState<string | null>(null);
 
@@ -614,7 +616,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab === "brand" && <BrandTab workspace={workspace} onSaved={refetchWorkspace} />}
+      {activeTab === "brand" && <BrandTab workspace={workspace} onSaved={refetchWorkspace} onUpdate={setWorkspace} />}
 
       {activeTab === "profile" && <ProfileTab />}
 

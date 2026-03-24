@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Bell, AlertCircle, AlertTriangle, Info, CheckCircle2, TrendingDown, TrendingUp, Search, BarChart3, X, RefreshCw } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useGSCData, useGA4Data } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 
 type Alert = {
@@ -127,7 +128,7 @@ const severityConfig = {
 };
 
 export default function AlertsPage() {
-  const { workspace } = useWorkspace();
+  const { workspace } = useWorkspaceCtx();
   const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
   const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());

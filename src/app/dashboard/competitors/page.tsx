@@ -4,6 +4,7 @@ import { Eye, Plus, RefreshCw, Trash2, X, Bell, Lightbulb, BarChart3, Zap, Chevr
 import { PageShell } from '@/components/PageShell';
 import { useTheme } from '@/lib/theme';
 import { useWorkspace } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useCompetitors } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
 
@@ -37,7 +38,7 @@ const STATUS_COLS = ['idea', 'review', 'approved', 'production'] as const;
 
 export default function CompetitorsPage() {
   const { c } = useTheme();
-  const { workspace } = useWorkspace();
+  const { workspace } = useWorkspaceCtx();
   const workspaceId = workspace?.id;
   const { competitors, loading: loadingCompetitors, refetch: refetchCompetitors } = useCompetitors(workspaceId);
 

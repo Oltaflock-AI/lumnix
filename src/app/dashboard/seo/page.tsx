@@ -6,6 +6,7 @@ import { PageShell, EmptyState } from '@/components/PageShell';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, Cell } from 'recharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useWorkspace, useGSCData } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 
 function exportCSV(keywords: any[]) {
@@ -32,7 +33,7 @@ export default function SEOPage() {
   const [filter, setFilter] = useState<'all' | 'quick-wins' | 'top3' | 'low-ctr'>('all');
   const [search, setSearch] = useState('');
   const router = useRouter();
-  const { workspace, loading: wsLoading } = useWorkspace();
+  const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const workspaceId = workspace?.id;
   const { c } = useTheme();
 

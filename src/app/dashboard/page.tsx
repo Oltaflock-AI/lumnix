@@ -2,6 +2,7 @@
 import { BarChart3, TrendingUp, Target, Brain } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { useWorkspace, useGA4Data, useGSCData, useIntegrations } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme';
 
@@ -38,7 +39,7 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo 
 export default function DashboardPage() {
   const router = useRouter();
   const { c } = useTheme();
-  const { workspace, loading: wsLoading } = useWorkspace();
+  const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const { integrations } = useIntegrations(workspace?.id);
   const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
   const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);

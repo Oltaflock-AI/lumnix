@@ -6,6 +6,7 @@ import { PageShell, EmptyState } from '@/components/PageShell';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, Cell, PieChart, Pie } from 'recharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useWorkspace, useGA4Data } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -50,7 +51,7 @@ function exportPagesCSV(pages: any[]) {
 export default function AnalyticsPage() {
   const [days, setDays] = useState(30);
   const router = useRouter();
-  const { workspace, loading: wsLoading } = useWorkspace();
+  const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const workspaceId = workspace?.id;
   const { c } = useTheme();
 

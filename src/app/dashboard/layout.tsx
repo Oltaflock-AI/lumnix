@@ -6,7 +6,7 @@ import {
   Target, Brain, Eye, FileText, Bell, Settings,
   Menu, X, LogOut, ChevronDown, Plus, Sun, Moon
 } from 'lucide-react';
-import { useWorkspace } from '@/lib/hooks';
+import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 
 const navItems = [
@@ -73,7 +73,7 @@ function WorkspaceSwitcher({ workspace, accent }: { workspace: any; accent: stri
 function SidebarInner({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { workspace } = useWorkspace();
+  const { workspace } = useWorkspaceCtx();
   const { c, theme, toggle } = useTheme();
   const accent = workspace?.brand_color || '#7C3AED';
 
@@ -180,8 +180,10 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <DashboardInner>{children}</DashboardInner>
-    </ThemeProvider>
+    <WorkspaceProvider>
+      <ThemeProvider>
+        <DashboardInner>{children}</DashboardInner>
+      </ThemeProvider>
+    </WorkspaceProvider>
   );
 }

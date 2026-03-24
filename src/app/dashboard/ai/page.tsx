@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, type ReactElement } from 'react';
 import { Brain, Send, BarChart3, TrendingUp, Zap, Search, Target, Copy, Check, Trash2, Database, Wifi, WifiOff } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useIntegrations } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 
 const SUGGESTIONS = [
@@ -126,7 +127,7 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function AIPage() {
-  const { workspace } = useWorkspace();
+  const { workspace } = useWorkspaceCtx();
   const { integrations } = useIntegrations(workspace?.id);
   const { c } = useTheme();
   const [input, setInput] = useState('');

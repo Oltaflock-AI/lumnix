@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { DollarSign, TrendingUp, Target, MousePointerClick, RefreshCw, AlertCircle, BarChart3, Zap } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { useWorkspace, useIntegrations } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 
@@ -37,7 +38,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function GoogleAdsPage() {
   const router = useRouter();
-  const { workspace, loading: wsLoading } = useWorkspace();
+  const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
   const { c } = useTheme();
 

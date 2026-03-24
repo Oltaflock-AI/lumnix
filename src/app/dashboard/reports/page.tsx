@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle2, FileDown, Sparkles, Calendar, ChevronDown } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useGSCData, useGA4Data, DateRangeParams } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 
 const DATE_PRESETS = [
@@ -781,7 +782,7 @@ async function downloadPDF(html: string, filename: string) {
 }
 
 export default function ReportsPage() {
-  const { workspace } = useWorkspace();
+  const { workspace } = useWorkspaceCtx();
   const { c } = useTheme();
 
   // Date range state

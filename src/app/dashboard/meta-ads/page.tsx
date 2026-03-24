@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Target, DollarSign, Eye, MousePointer, TrendingUp, RefreshCw, Play, Pause, AlertCircle } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { useWorkspace, useIntegrations } from '@/lib/hooks';
+import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
 
@@ -39,7 +40,7 @@ function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: 
 
 export default function MetaAdsPage() {
   const router = useRouter();
-  const { workspace, loading: wsLoading } = useWorkspace();
+  const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
   const [syncing, setSyncing] = useState(false);
   const [campaigns, setCampaigns] = useState<any[]>([]);
