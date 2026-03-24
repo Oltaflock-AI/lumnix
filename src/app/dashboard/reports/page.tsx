@@ -861,7 +861,7 @@ export default function ReportsPage() {
     <PageShell title="Reports" description="Client-ready marketing reports with real data and AI insights" icon={FileText} badge="Client-Ready">
       {/* ── Date Range Picker ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#71717a', fontSize: 13, fontWeight: 600 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: c.textSecondary, fontSize: 13, fontWeight: 600 }}>
           <Calendar size={15} />
           Reporting Period:
         </div>
@@ -876,7 +876,7 @@ export default function ReportsPage() {
             }}
           >
             <span>{DATE_PRESETS[selectedPreset].days === 0 && customStart ? `${customStart} → ${customEnd}` : DATE_PRESETS[selectedPreset].label}</span>
-            <ChevronDown size={13} color="#71717a" />
+            <ChevronDown size={13} color={c.textMuted} />
           </button>
           {showPresetMenu && (
             <div style={{
@@ -915,7 +915,7 @@ export default function ReportsPage() {
                 backgroundColor: c.bgInput, color: c.text, fontSize: 13,
               }}
             />
-            <span style={{ color: '#52525b', fontSize: 13 }}>→</span>
+            <span style={{ color: c.textMuted, fontSize: 13 }}>→</span>
             <input
               type="date"
               value={customEnd}
@@ -930,7 +930,7 @@ export default function ReportsPage() {
 
         {loading && <Loader2 size={14} color="#7c3aed" style={{ animation: 'spin 1s linear infinite' }} />}
         {!loading && hasData && (
-          <span style={{ fontSize: 12, color: '#52525b' }}>
+          <span style={{ fontSize: 12, color: c.textMuted }}>
             {periodLabel}
           </span>
         )}
@@ -939,8 +939,8 @@ export default function ReportsPage() {
       {!hasData && !loading && (
         <div style={{ padding: 32, borderRadius: 14, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, textAlign: 'center', marginBottom: 24 }}>
           <FileText size={32} color="#334155" style={{ marginBottom: 12 }} />
-          <p style={{ fontSize: 15, fontWeight: 600, color: '#f4f4f5', marginBottom: 6 }}>No data connected yet</p>
-          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>Connect and sync GSC or GA4 to generate branded reports with real data</p>
+          <p style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 6 }}>No data connected yet</p>
+          <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 14 }}>Connect and sync GSC or GA4 to generate branded reports with real data</p>
           <a href="/dashboard/settings" style={{ fontSize: 13, color: '#7c3aed', textDecoration: 'none', fontWeight: 600 }}>Connect integrations →</a>
         </div>
       )}
@@ -962,15 +962,15 @@ export default function ReportsPage() {
                   <Icon size={22} color={rt.color} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, color: '#f4f4f5', marginBottom: 2 }}>{rt.label}</h3>
-                  <p style={{ fontSize: 12, color: '#52525b', margin: 0 }}>{rt.desc}</p>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 2 }}>{rt.label}</h3>
+                  <p style={{ fontSize: 12, color: c.textMuted, margin: 0 }}>{rt.desc}</p>
                 </div>
               </div>
 
               <div style={{ marginBottom: 18 }}>
                 {rt.sections.map(s => (
-                  <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 0', borderBottom: '1px solid #1e1e22', fontSize: 12, color: c.textSecondary }}>
-                    <CheckCircle2 size={11} color="#374151" />
+                  <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 0', borderBottom: `1px solid ${c.borderSubtle}`, fontSize: 12, color: c.textSecondary }}>
+                    <CheckCircle2 size={11} color={c.textMuted} />
                     {s}
                   </div>
                 ))}
@@ -999,7 +999,7 @@ export default function ReportsPage() {
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                     padding: '11px 14px', borderRadius: 9, border: '1px solid #334155',
-                    backgroundColor: '#27272a', color: '#a1a1aa', fontSize: 13, fontWeight: 600,
+                    backgroundColor: c.bgInput, color: c.textSecondary, fontSize: 13, fontWeight: 600,
                     cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
                     opacity: (!hasData || loading) ? 0.4 : 1,
                   }}
@@ -1014,7 +1014,7 @@ export default function ReportsPage() {
       </div>
 
       <div style={{ marginTop: 20, padding: '14px 18px', borderRadius: 10, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, fontSize: 12, color: c.textSecondary, lineHeight: 1.6 }}>
-        💡 <strong style={{ color: '#71717a' }}>How to send to a client:</strong> Click "Open & Print PDF" → the report opens in a new tab → press Cmd/Ctrl+P → select "Save as PDF" → send the PDF. Reports include your brand name, reporting period, and all data with AI recommendations.
+        💡 <strong style={{ color: c.textSecondary }}>How to send to a client:</strong> Click "Open & Print PDF" → the report opens in a new tab → press Cmd/Ctrl+P → select "Save as PDF" → send the PDF. Reports include your brand name, reporting period, and all data with AI recommendations.
       </div>
     </PageShell>
   );
