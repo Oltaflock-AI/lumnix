@@ -113,10 +113,11 @@ function formatInline(text: string, c: any): ReactElement {
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  const { c } = useTheme();
   return (
     <button
       onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: '4px', borderRadius: 4, display: 'flex', alignItems: 'center' }}
+      style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: '4px', borderRadius: 4, display: 'flex', alignItems: 'center' }}
       title="Copy"
     >
       {copied ? <Check size={13} color="#22c55e" /> : <Copy size={13} />}
@@ -234,7 +235,7 @@ export default function AIPage() {
               <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                 <Brain size={28} color="#a78bfa" />
               </div>
-              <h3 style={{ fontSize: 20, fontWeight: 700, color: '#f4f4f5', marginBottom: 8 }}>Ask Lumnix AI</h3>
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: c.text, marginBottom: 8 }}>Ask Lumnix AI</h3>
               <p style={{ fontSize: 14, color: c.textSecondary, maxWidth: 420, lineHeight: 1.6, marginBottom: 32 }}>
                 Your data-aware marketing assistant. Powered by GPT-4o-mini with full context of your connected marketing data.
               </p>
@@ -243,7 +244,7 @@ export default function AIPage() {
                   <button
                     key={s.text}
                     onClick={() => { setInput(s.text); inputRef.current?.focus(); }}
-                    style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 10, border: '1px solid #27272a', backgroundColor: '#1c1c1f', color: '#a1a1aa', fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.4 }}
+                    style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgCardHover, color: c.textSecondary, fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.4 }}
                   >
                     <s.icon size={15} color="#7c3aed" style={{ flexShrink: 0, marginTop: 1 }} />
                     <div>
@@ -267,14 +268,14 @@ export default function AIPage() {
                     <div style={{
                       padding: '12px 16px',
                       borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-                      backgroundColor: msg.role === 'user' ? '#7c3aed' : '#27272a',
+                      backgroundColor: msg.role === 'user' ? '#7c3aed' : c.bgCard,
                     }}>
                       {msg.role === 'user' ? (
                         <p style={{ color: 'white', fontSize: 14, lineHeight: 1.6, margin: 0 }}>{msg.content}</p>
                       ) : msg.content ? (
                         <MarkdownRenderer content={msg.content} />
                       ) : (
-                        <span style={{ color: '#71717a', fontSize: 14 }}>●●●</span>
+                        <span style={{ color: c.textSecondary, fontSize: 14 }}>●●●</span>
                       )}
                       {msg.role === 'assistant' && streaming && i === messages.length - 1 && msg.content && (
                         <span style={{ display: 'inline-block', width: 2, height: 14, backgroundColor: '#a78bfa', marginLeft: 2, verticalAlign: 'middle' }} />
@@ -284,7 +285,7 @@ export default function AIPage() {
                     {msg.role === 'assistant' && msg.content && !streaming && (
                       <div style={{ display: 'flex', gap: 4, marginTop: 4, paddingLeft: 4 }}>
                         <CopyButton text={msg.content} />
-                        <span style={{ fontSize: 11, color: '#3f3f46', alignSelf: 'center' }}>
+                        <span style={{ fontSize: 11, color: c.textMuted, alignSelf: 'center' }}>
                           {msg.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -297,7 +298,7 @@ export default function AIPage() {
                   <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(79,70,229,0.3))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Brain size={14} color="#a78bfa" />
                   </div>
-                  <div style={{ padding: '12px 16px', borderRadius: '14px 14px 14px 4px', backgroundColor: '#27272a', color: '#71717a', fontSize: 13 }}>
+                  <div style={{ padding: '12px 16px', borderRadius: '14px 14px 14px 4px', backgroundColor: c.bgCard, color: c.textSecondary, fontSize: 13 }}>
                     Analysing your data...
                   </div>
                 </div>
@@ -314,12 +315,12 @@ export default function AIPage() {
         )}
 
         {/* Input bar */}
-        <div style={{ padding: '16px 24px', borderTop: '1px solid #27272a' }}>
+        <div style={{ padding: '16px 24px', borderTop: `1px solid ${c.border}` }}>
           {messages.length > 0 && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
               <button
                 onClick={() => { setMessages([]); try { localStorage.removeItem('lumnix-chat-history'); } catch {} }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, border: '1px solid #27272a', backgroundColor: 'transparent', color: '#52525b', fontSize: 12, cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, border: `1px solid ${c.border}`, backgroundColor: 'transparent', color: c.textMuted, fontSize: 12, cursor: 'pointer' }}
               >
                 <Trash2 size={11} /> Clear chat
               </button>
@@ -333,7 +334,7 @@ export default function AIPage() {
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
               placeholder="Ask anything about your marketing data..."
               disabled={!isIdle}
-              style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '1px solid #3f3f46', backgroundColor: '#27272a', color: 'white', fontSize: 14, outline: 'none', opacity: !isIdle ? 0.7 : 1, fontFamily: 'var(--font-body)' }}
+              style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 14, outline: 'none', opacity: !isIdle ? 0.7 : 1, fontFamily: 'var(--font-body)' }}
             />
             <button
               onClick={() => sendMessage(input)}
@@ -343,7 +344,7 @@ export default function AIPage() {
               <Send size={18} />
             </button>
           </div>
-          <p style={{ fontSize: 11, color: '#3f3f46', marginTop: 8, textAlign: 'center' }}>
+          <p style={{ fontSize: 11, color: c.textMuted, marginTop: 8, textAlign: 'center' }}>
             Powered by GPT-4o-mini · Context: {connectedSources.length} data source{connectedSources.length !== 1 ? 's' : ''} connected
           </p>
         </div>
