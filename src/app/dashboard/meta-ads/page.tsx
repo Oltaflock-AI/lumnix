@@ -44,7 +44,7 @@ export default function MetaAdsPage() {
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
   const [syncing, setSyncing] = useState(false);
   const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
 
   const integration = integrations.find(i => i.provider === 'meta_ads');
@@ -103,7 +103,7 @@ export default function MetaAdsPage() {
 
   // Aggregate stats from real data
   const totalSpend = campaigns.reduce((s, c) => {
-    const v = parseFloat(String(c.spend || '0').replace(/[$,]/g, ''));
+    const v = parseFloat(String(c.spend || '0').replace(/[^\d.]/g, ''));
     return s + (isNaN(v) ? 0 : v);
   }, 0);
   const totalClicks = campaigns.reduce((s, c) => {
@@ -114,7 +114,9 @@ export default function MetaAdsPage() {
     const v = parseInt(String(c.impressions || '0').replace(/,/g, ''));
     return s + (isNaN(v) ? 0 : v);
   }, 0);
-  const activeCampaigns = campaigns.filter(c => c.status?.toUpperCase() === 'ACTIVE').length;
+  const activeCampaigns = campaigns.filter(camp => camp.status?.toUpperCase() === 'ACTIVE').length;
+  const detectedCurrency = (campaigns[0]?.currency || 'USD') as string;
+  const currencySymbol = detectedCurrency === 'INR' ? 'Rs. ' : detectedCurrency === 'EUR' ? 'EUR ' : detectedCurrency === 'GBP' ? 'GBP ' : '$';
 
   const { c } = useTheme();
 
@@ -177,7 +179,7 @@ export default function MetaAdsPage() {
     >
       {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
-        <StatCard icon={DollarSign} color="#7C3AED" label="Total Spend" value={`$${totalSpend.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} sub="Last 30 days" />
+        <StatCard icon={DollarSign} color="#7C3AED" label="Total Spend" value={`${currencySymbol}${totalSpend.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`} sub="Last 30 days" />
         <StatCard icon={Eye} color="#3b82f6" label="Impressions" value={totalImpressions.toLocaleString()} sub="All campaigns" />
         <StatCard icon={MousePointer} color="#10B981" label="Total Clicks" value={totalClicks.toLocaleString()} sub="All campaigns" />
         <StatCard icon={TrendingUp} color="#F59E0B" label="Active Campaigns" value={String(activeCampaigns)} sub={`${campaigns.length} total`} />

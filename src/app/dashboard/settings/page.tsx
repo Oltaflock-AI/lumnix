@@ -387,6 +387,11 @@ export default function SettingsPage() {
   }, []);
 
   const isConnected = (providerId: string) => integrations.some(i => i.provider === providerId && i.status === "connected");
+  const isSynced = (providerId: string) => {
+    const int = integrations.find(i => i.provider === providerId && i.status === "connected");
+    if (!int) return false;
+    return !!(int.last_sync_at || int.oauth_meta);
+  };
   const getIntegration = (providerId: string) => integrations.find(i => i.provider === providerId);
 
   async function handleConnect(providerId: string) {
@@ -486,7 +491,7 @@ export default function SettingsPage() {
               const int = getIntegration(p.id);
               const isSyncing = syncing === p.id;
               return (
-                <div key={p.id} style={{ backgroundColor: c.bgCard, border: `1px solid ${connected ? 'rgba(16,185,129,0.3)' : c.border}`, borderRadius: "16px", padding: "24px" }}>
+                <div key={p.id} style={{ backgroundColor: c.bgCard, border: `1px solid ${connected && isSynced(p.id) ? 'rgba(16,185,129,0.3)' : connected ? 'rgba(245,158,11,0.4)' : c.border}`, borderRadius: "16px", padding: "24px" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <div style={{ width: "48px", height: "48px", borderRadius: "14px", backgroundColor: `${p.color}12`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -507,13 +512,13 @@ export default function SettingsPage() {
                     </p>
                   )}
                   <div style={{ display: "flex", gap: "8px" }}>
-                    <button onClick={() => connected ? null : handleConnect(p.id)} style={{
-                      flex: 1, padding: "10px", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer",
-                      background: connected ? "transparent" : "linear-gradient(135deg, #7c3aed, #4f46e5)",
-                      color: connected ? c.textSecondary : "white",
-                      border: connected ? `1px solid ${c.border}` : "none",
+                    <button onClick={() => (connected && isSynced(p.id)) ? null : connected ? handleSync(p.id) : handleConnect(p.id)} style={{
+                      flex: 1, padding: "10px", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: (connected && isSynced(p.id)) ? "default" : "pointer",
+                      background: (connected && isSynced(p.id)) ? "transparent" : connected ? "linear-gradient(135deg, #f59e0b, #d97706)" : "linear-gradient(135deg, #7c3aed, #4f46e5)",
+                      color: (connected && isSynced(p.id)) ? c.textSecondary : "white",
+                      border: (connected && isSynced(p.id)) ? `1px solid ${c.border}` : "none",
                     }}>
-                      {connected ? "Connected ✓" : "Connect"}
+                      {(connected && isSynced(p.id)) ? "Connected ✓" : connected ? "Sync Now" : "Connect"}
                     </button>
                     {connected && (
                       <button onClick={() => handleSync(p.id)} disabled={isSyncing} style={{

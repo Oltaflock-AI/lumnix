@@ -2,7 +2,7 @@
 
 export async function fetchMetaAdAccounts(accessToken: string) {
   const res = await fetch(
-    `https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_status,currency&access_token=${accessToken}`
+    `https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_status,currency,timezone_name&access_token=${accessToken}`
   );
   const data = await res.json();
   return data.data || [];
