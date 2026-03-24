@@ -86,20 +86,30 @@ function BrandTab({ workspace, onSaved }: { workspace: any; onSaved?: () => void
 
   async function handleLogoUpload(file: File) {
     setUploading(true);
+    setError('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      const ext = file.name.split('.').pop();
-      const path = `${session.user.id}/logo.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from('brand-assets')
-        .upload(path, file, { upsert: true });
-      if (!upErr) {
-        const { data } = supabase.storage.from('brand-assets').getPublicUrl(path);
-        setLogoUrl(data.publicUrl);
+      if (!session) { setError('Not signed in'); setUploading(false); return; }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload/logo', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.url) {
+        setLogoUrl(data.url);
         setLogoPreview(URL.createObjectURL(file));
+      } else {
+        setError(data.error || 'Upload failed');
       }
-    } catch {}
+    } catch (e: any) {
+      setError(e.message || 'Upload failed');
+    }
     setUploading(false);
   }
 
