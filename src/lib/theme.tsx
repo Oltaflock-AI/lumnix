@@ -23,33 +23,33 @@ interface ThemeCtx {
 }
 
 const LIGHT = {
-  bgPage: '#F7F7F5',
+  bgPage: '#F5F4F2',
   bgSidebar: '#FAFAF9',
   bgCard: '#FFFFFF',
-  bgCardHover: '#FAFAF9',
-  bgInput: '#F9FAFB',
-  bgTag: 'rgba(0,0,0,0.04)',
-  border: 'rgba(0,0,0,0.07)',
-  borderSubtle: 'rgba(0,0,0,0.04)',
-  text: '#111827',
-  textSecondary: '#6b7280',
-  textMuted: '#9ca3af',
-  shadow: '0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.03)',
+  bgCardHover: '#F9F9F8',
+  bgInput: '#F3F4F6',
+  bgTag: 'rgba(0,0,0,0.05)',
+  border: 'rgba(0,0,0,0.10)',
+  borderSubtle: 'rgba(0,0,0,0.06)',
+  text: '#0F172A',           // near-black, strong contrast
+  textSecondary: '#374151',  // dark gray — readable on white (7.4:1)
+  textMuted: '#6B7280',      // medium gray — still passes AA (4.6:1)
+  shadow: '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)',
 };
 
 const DARK = {
-  bgPage: '#111318',
-  bgSidebar: '#16181d',
-  bgCard: '#1e2028',
-  bgCardHover: '#24262e',
-  bgInput: '#1e2028',
-  bgTag: 'rgba(255,255,255,0.06)',
-  border: 'rgba(255,255,255,0.08)',
+  bgPage: '#0D0F14',
+  bgSidebar: '#13151B',
+  bgCard: '#1A1D25',
+  bgCardHover: '#21242E',
+  bgInput: '#1A1D25',
+  bgTag: 'rgba(255,255,255,0.07)',
+  border: 'rgba(255,255,255,0.09)',
   borderSubtle: 'rgba(255,255,255,0.05)',
   text: '#F1F5F9',
-  textSecondary: '#94A3B8',
+  textSecondary: '#A1AFBD',
   textMuted: '#64748B',
-  shadow: '0 1px 4px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05)',
+  shadow: '0 1px 6px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
 };
 
 const Ctx = createContext<ThemeCtx>({
@@ -80,7 +80,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute('data-theme', theme);
     document.body.style.backgroundColor = c.bgPage;
     document.body.style.color = c.text;
-  }, [theme]);
+  }, [theme, c]);
 
   return <Ctx.Provider value={{ theme, toggle, c }}>{children}</Ctx.Provider>;
 }
