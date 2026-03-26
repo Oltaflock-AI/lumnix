@@ -55,7 +55,44 @@ export async function POST(req: NextRequest) {
 
     const insights = await fetchMetaInsights(accessToken, adAccountId);
 
-    await getSupabaseAdmin().from('analytics_data').delete()
+    const db = getSupabaseAdmin();
+
+    // Store in dedicated meta_ads_data table
+    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const endDate = new Date().toISOString().split('T')[0];
+
+    await db.from('meta_ads_data')
+      .delete()
+      .eq('workspace_id', workspace_id)
+      .gte('date', startDate)
+      .lte('date', endDate);
+
+    if (insights.length > 0) {
+      const rows = insights.map((i: any) => ({
+        workspace_id,
+        integration_id,
+        account_id: adAccountId,
+        campaign_id: '',
+        campaign_name: i.campaign_name,
+        impressions: i.impressions || 0,
+        clicks: i.clicks || 0,
+        spend: i.spend || 0,
+        reach: i.reach || 0,
+        ctr: i.ctr || 0,
+        cpc: i.cpc || 0,
+        conversions: i.conversions || 0,
+        revenue: i.revenue || 0,
+        date: i.date_start || endDate,
+      }));
+
+      const chunkSize = 500;
+      for (let j = 0; j < rows.length; j += chunkSize) {
+        await db.from('meta_ads_data').insert(rows.slice(j, j + chunkSize));
+      }
+    }
+
+    // Also keep analytics_data for backward compat
+    await db.from('analytics_data').delete()
       .eq('workspace_id', workspace_id)
       .eq('provider', 'meta_ads');
 
@@ -91,18 +128,18 @@ export async function POST(req: NextRequest) {
     });
 
     if (campaigns.length > 0 || insights.length > 0) {
-      await getSupabaseAdmin().from('analytics_data').insert({
+      await db.from('analytics_data').insert({
         workspace_id,
         provider: 'meta_ads',
         metric_type: 'campaigns',
         data: campaigns.length > 0 ? campaigns : insights,
-        date_range_start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        date_range_end: new Date().toISOString().split('T')[0],
+        date_range_start: startDate,
+        date_range_end: endDate,
         synced_at: new Date().toISOString(),
       });
     }
 
-    await getSupabaseAdmin().from('integrations').update({
+    await db.from('integrations').update({
       status: 'connected',
       last_sync_at: new Date().toISOString(),
       oauth_meta: { ad_account_id: adAccountId, account_name: account.name, currency },

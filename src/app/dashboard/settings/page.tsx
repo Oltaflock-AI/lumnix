@@ -327,6 +327,148 @@ function ProfileTab() {
   );
 }
 
+function BillingTab() {
+  const { c } = useTheme();
+  const { workspace } = useWorkspaceCtx();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  const currentPlan = workspace?.plan || 'free';
+
+  const plans = [
+    {
+      id: 'free',
+      name: 'Free',
+      price: '$0',
+      period: '/mo',
+      features: ['2 integrations', '30-day data retention', '2 team members', 'Basic insights'],
+      current: currentPlan === 'free',
+    },
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: '$29',
+      period: '/mo',
+      features: ['4 integrations', '90-day data retention', '5 team members', 'AI insights', 'PDF reports'],
+      current: currentPlan === 'starter',
+      popular: false,
+    },
+    {
+      id: 'growth',
+      name: 'Growth',
+      price: '$79',
+      period: '/mo',
+      features: ['All integrations', '1-year data retention', '15 team members', 'AI insights + chat', 'White-label reports', 'Competitor tracking'],
+      current: currentPlan === 'growth',
+      popular: true,
+    },
+    {
+      id: 'agency',
+      name: 'Agency',
+      price: '$199',
+      period: '/mo',
+      features: ['Unlimited integrations', 'Unlimited data retention', 'Unlimited team members', 'Everything in Growth', 'Multi-workspace', 'Priority support', 'API access'],
+      current: currentPlan === 'agency',
+    },
+  ];
+
+  async function handleUpgrade(planId: string) {
+    if (planId === 'free' || planId === currentPlan) return;
+    setLoading(planId);
+    setError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setError('Not signed in'); setLoading(null); return; }
+      const res = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ plan: planId, workspace_id: workspace?.id }),
+      });
+      const data = await res.json();
+      if (data.error === 'billing_not_configured') {
+        setError('Billing is not configured yet. Add STRIPE_SECRET_KEY to enable payments.');
+      } else if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.error || 'Failed to create checkout session');
+      }
+    } catch (e: any) {
+      setError(e.message || 'Failed to start checkout');
+    }
+    setLoading(null);
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ padding: '4px 10px', borderRadius: 6, backgroundColor: currentPlan === 'free' ? 'rgba(113,113,122,0.1)' : 'rgba(124,58,237,0.1)', color: currentPlan === 'free' ? c.textMuted : '#7c3aed', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' }}>
+            {currentPlan} plan
+          </div>
+        </div>
+        <p style={{ fontSize: 13, color: c.textSecondary }}>
+          {currentPlan === 'free' ? 'Upgrade to unlock more integrations, longer data retention, and AI features.' : `You're on the ${currentPlan} plan.`}
+        </p>
+      </div>
+
+      {error && (
+        <div style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 13 }}>
+          {error}
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+        {plans.map(plan => (
+          <div key={plan.id} style={{
+            backgroundColor: c.bgCard,
+            border: `1px solid ${plan.popular ? '#7c3aed' : plan.current ? 'rgba(34,197,94,0.3)' : c.border}`,
+            borderRadius: 16,
+            padding: 24,
+            position: 'relative',
+          }}>
+            {plan.popular && (
+              <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', padding: '3px 12px', borderRadius: 6, backgroundColor: '#7c3aed', color: 'white', fontSize: 11, fontWeight: 600 }}>
+                Most Popular
+              </div>
+            )}
+            <div style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 4 }}>{plan.name}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 16 }}>
+              <span style={{ fontSize: 32, fontWeight: 800, color: c.text, letterSpacing: '-0.03em' }}>{plan.price}</span>
+              <span style={{ fontSize: 13, color: c.textMuted }}>{plan.period}</span>
+            </div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0' }}>
+              {plan.features.map((f, i) => (
+                <li key={i} style={{ fontSize: 13, color: c.textSecondary, padding: '4px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Check size={13} color="#22c55e" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => handleUpgrade(plan.id)}
+              disabled={plan.current || plan.id === 'free' || loading === plan.id}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: 10,
+                border: plan.current ? `1px solid ${c.border}` : 'none',
+                background: plan.current ? 'transparent' : plan.popular ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : c.bgInput,
+                color: plan.current ? c.textMuted : plan.popular ? 'white' : c.text,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: plan.current || plan.id === 'free' ? 'default' : 'pointer',
+                opacity: loading === plan.id ? 0.7 : 1,
+              }}
+            >
+              {plan.current ? 'Current Plan' : plan.id === 'free' ? 'Free' : loading === plan.id ? 'Loading...' : 'Upgrade'}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { c } = useTheme();
   const [activeTab, setActiveTab] = useState("integrations");
@@ -627,7 +769,9 @@ export default function SettingsPage() {
 
       {activeTab === "notifications" && <NotificationsTab />}
 
-      {activeTab !== "integrations" && activeTab !== "brand" && activeTab !== "profile" && activeTab !== "notifications" && (
+      {activeTab === "billing" && <BillingTab />}
+
+      {activeTab !== "integrations" && activeTab !== "brand" && activeTab !== "profile" && activeTab !== "notifications" && activeTab !== "billing" && activeTab !== "team" && (
         <div style={{ textAlign: "center", padding: "60px 20px", borderRadius: "16px", border: `1px dashed ${c.border}` }}>
           <p style={{ fontSize: "15px", color: c.textMuted }}>Coming soon — {activeTab} settings</p>
         </div>

@@ -1,9 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DollarSign, TrendingUp, Target, MousePointerClick, RefreshCw, AlertCircle, BarChart3, Zap } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
-import { useWorkspace, useIntegrations } from '@/lib/hooks';
+import { useIntegrations, useGoogleAdsData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
@@ -40,39 +40,18 @@ export default function GoogleAdsPage() {
   const router = useRouter();
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
+  const { data: adsData, loading: dataLoading, refetch } = useGoogleAdsData(workspace?.id);
   const { c } = useTheme();
 
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [syncedAt, setSyncedAt] = useState<string | null>(null);
-  const [dataLoading, setDataLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const integration = integrations.find(i => i.provider === 'google_ads');
   const loading = wsLoading || intLoading;
 
-  useEffect(() => {
-    if (!workspace?.id) return;
-    async function loadData() {
-      setDataLoading(true);
-      const { data } = await supabase
-        .from('analytics_data')
-        .select('*')
-        .eq('workspace_id', workspace.id)
-        .eq('provider', 'google_ads')
-        .eq('metric_type', 'campaigns')
-        .order('synced_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (data) {
-        setCampaigns(data.data || []);
-        setSyncedAt(data.synced_at);
-      }
-      setDataLoading(false);
-    }
-    loadData();
-  }, [workspace?.id]);
+  const campaigns = adsData?.campaigns || [];
+  const totals = adsData?.totals;
+  const hasData = campaigns.length > 0;
 
   async function handleSync() {
     if (!integration || !workspace) return;
@@ -90,36 +69,20 @@ export default function GoogleAdsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Sync failed');
-
-      const { data } = await supabase
-        .from('analytics_data')
-        .select('*')
-        .eq('workspace_id', workspace.id)
-        .eq('provider', 'google_ads')
-        .eq('metric_type', 'campaigns')
-        .order('synced_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (data) {
-        setCampaigns(data.data || []);
-        setSyncedAt(data.synced_at);
-      }
+      refetch();
     } catch (err: any) {
       setError(err.message || 'Sync failed');
     }
     setSyncing(false);
   }
 
-  const totalSpend = campaigns.reduce((s, c) => s + (c.spend || 0), 0);
-  const totalClicks = campaigns.reduce((s, c) => s + (c.clicks || 0), 0);
-  const totalImpressions = campaigns.reduce((s, c) => s + (c.impressions || 0), 0);
-  const totalConversions = campaigns.reduce((s, c) => s + (c.conversions || 0), 0);
-  const totalConvValue = campaigns.reduce((s, c) => s + (c.conversions_value || 0), 0);
-  const avgCPC = totalClicks > 0 ? totalSpend / totalClicks : 0;
-  const roas = totalSpend > 0 ? totalConvValue / totalSpend : 0;
-
-  const hasData = campaigns.length > 0;
+  const totalSpend = totals?.spend || 0;
+  const totalClicks = totals?.clicks || 0;
+  const totalImpressions = totals?.impressions || 0;
+  const totalConversions = totals?.conversions || 0;
+  const totalConvValue = totals?.conversions_value || 0;
+  const avgCPC = totals?.avg_cpc || 0;
+  const roas = totals?.roas || 0;
 
   return (
     <PageShell title="Google Ads" description="Campaign performance & spend tracking" icon={DollarSign}>
@@ -143,7 +106,7 @@ export default function GoogleAdsPage() {
           {/* Header row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div style={{ fontSize: 13, color: c.textMuted }}>
-              {syncedAt ? `Last synced ${new Date(syncedAt).toLocaleString()}` : 'Never synced'}
+              {integration.last_sync_at ? `Last synced ${new Date(integration.last_sync_at).toLocaleString()}` : 'Never synced'}
             </div>
             <button
               onClick={handleSync}
@@ -168,7 +131,7 @@ export default function GoogleAdsPage() {
                 <div style={{ fontSize: 12, color: c.textSecondary }}>{error}</div>
                 {error.toLowerCase().includes('developer') && (
                   <div style={{ fontSize: 12, color: c.textMuted, marginTop: 4 }}>
-                    ⚠️ Add GOOGLE_ADS_DEVELOPER_TOKEN to your environment variables to enable the Google Ads API.
+                    Add GOOGLE_ADS_DEVELOPER_TOKEN to your environment variables to enable the Google Ads API.
                   </div>
                 )}
               </div>
@@ -191,9 +154,9 @@ export default function GoogleAdsPage() {
                 <StatCard icon={DollarSign} color="#f59e0b" label="Total Spend" value={`$${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub="Last 30 days" />
                 <StatCard icon={MousePointerClick} color="#3b82f6" label="Total Clicks" value={totalClicks.toLocaleString()} sub={`${totalImpressions.toLocaleString()} impressions`} />
                 <StatCard icon={Target} color="#22c55e" label="Conversions" value={totalConversions.toLocaleString()} sub={`$${totalConvValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} value`} />
-                <StatCard icon={TrendingUp} color="#7c3aed" label="ROAS" value={`${roas.toFixed(2)}x`} sub={roas >= 3 ? '✅ Healthy' : roas >= 1 ? '⚠️ Breakeven' : '❌ Losing money'} />
+                <StatCard icon={TrendingUp} color="#7c3aed" label="ROAS" value={`${roas.toFixed(2)}x`} sub={roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'} />
                 <StatCard icon={Zap} color="#ec4899" label="Avg CPC" value={`$${avgCPC.toFixed(2)}`} sub="Per click average" />
-                <StatCard icon={BarChart3} color="#06b6d4" label="Campaigns" value={campaigns.length.toString()} sub={`${campaigns.filter(c => c.status === 'ENABLED').length} active`} />
+                <StatCard icon={BarChart3} color="#06b6d4" label="Campaigns" value={campaigns.length.toString()} sub={`${campaigns.filter((c: any) => c.status === 'ENABLED').length} active`} />
               </div>
 
               {/* Campaign table */}
@@ -209,14 +172,14 @@ export default function GoogleAdsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {campaigns.map((camp, i) => {
-                        const cRoas = camp.spend > 0 ? (camp.conversions_value / camp.spend).toFixed(2) : '—';
-                        const cCpc = camp.clicks > 0 ? (camp.spend / camp.clicks).toFixed(2) : '—';
+                      {campaigns.map((camp: any, i: number) => {
+                        const cRoas = camp.roas > 0 ? camp.roas.toFixed(2) : '—';
+                        const cCpc = camp.avg_cpc > 0 ? camp.avg_cpc.toFixed(2) : '—';
                         return (
-                          <tr key={camp.id || i} style={{ borderBottom: `1px solid ${c.borderSubtle}` }}>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.name}</td>
+                          <tr key={camp.campaign_id || i} style={{ borderBottom: `1px solid ${c.borderSubtle}` }}>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</td>
                             <td style={{ padding: '12px 12px 12px 0' }}><StatusBadge status={camp.status} /></td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 600 }}>${(camp.spend || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 600 }}>${(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary }}>{(camp.clicks || 0).toLocaleString()}</td>
                             <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary }}>{(camp.impressions || 0).toLocaleString()}</td>
                             <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary }}>{(camp.conversions || 0).toFixed(1)}</td>

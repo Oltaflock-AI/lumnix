@@ -35,23 +35,59 @@ export async function POST(req: NextRequest) {
     const customerId = customerIds[0].replace(/-/g, '');
     const campaigns = await fetchGoogleAdsCampaigns(accessToken, customerId);
 
-    // Store in analytics_data as JSONB
-    await getSupabaseAdmin().from('analytics_data').delete()
+    const db = getSupabaseAdmin();
+    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const endDate = new Date().toISOString().split('T')[0];
+
+    // Delete existing data for this workspace in the date range
+    await db.from('google_ads_data')
+      .delete()
+      .eq('workspace_id', workspace_id)
+      .gte('date', startDate)
+      .lte('date', endDate);
+
+    // Insert into dedicated google_ads_data table
+    if (campaigns.length > 0) {
+      const rows = campaigns.map(c => ({
+        workspace_id,
+        integration_id,
+        customer_id: customerId,
+        campaign_id: String(c.id || ''),
+        campaign_name: c.name,
+        status: c.status,
+        impressions: c.impressions || 0,
+        clicks: c.clicks || 0,
+        cost: c.spend || 0,
+        conversions: c.conversions || 0,
+        conversions_value: c.conversions_value || 0,
+        ctr: c.impressions > 0 ? (c.clicks / c.impressions) * 100 : 0,
+        avg_cpc: c.cpc || 0,
+        date: c.date || endDate,
+      }));
+
+      const chunkSize = 500;
+      for (let i = 0; i < rows.length; i += chunkSize) {
+        await db.from('google_ads_data').insert(rows.slice(i, i + chunkSize));
+      }
+    }
+
+    // Also keep analytics_data for backward compat
+    await db.from('analytics_data').delete()
       .eq('workspace_id', workspace_id)
       .eq('provider', 'google_ads');
 
     if (campaigns.length > 0) {
-      await getSupabaseAdmin().from('analytics_data').insert({
+      await db.from('analytics_data').insert({
         workspace_id,
         provider: 'google_ads',
         metric_type: 'campaigns',
         data: campaigns,
-        date_range_start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        date_range_end: new Date().toISOString().split('T')[0],
+        date_range_start: startDate,
+        date_range_end: endDate,
       });
     }
 
-    await getSupabaseAdmin().from('integrations').update({
+    await db.from('integrations').update({
       status: 'connected',
       last_sync_at: new Date().toISOString(),
       oauth_meta: { customer_id: customerId },

@@ -156,6 +156,54 @@ export function useGA4Data(workspaceId: string | undefined, type = "overview", d
   return { data, loading };
 }
 
+// Fetch Google Ads data
+export function useGoogleAdsData(workspaceId: string | undefined, days = 30) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!workspaceId) { setLoading(false); return; }
+    setLoading(true);
+    fetch(`/api/data/google-ads?workspace_id=${workspaceId}&days=${days}`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [workspaceId, days]);
+
+  return { data, loading, refetch: () => {
+    if (!workspaceId) return;
+    setLoading(true);
+    fetch(`/api/data/google-ads?workspace_id=${workspaceId}&days=${days}`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }};
+}
+
+// Fetch Meta Ads data
+export function useMetaAdsData(workspaceId: string | undefined, days = 30) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!workspaceId) { setLoading(false); return; }
+    setLoading(true);
+    fetch(`/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [workspaceId, days]);
+
+  return { data, loading, refetch: () => {
+    if (!workspaceId) return;
+    setLoading(true);
+    fetch(`/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }};
+}
+
 // Fetch competitors list for a workspace
 export function useCompetitors(workspaceId: string | undefined) {
   const [competitors, setCompetitors] = useState<any[]>([]);
