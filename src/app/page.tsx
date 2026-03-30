@@ -1,59 +1,64 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { BarChart3, Target, Brain, Zap, ArrowRight, Search, FileText, Bell, Shield, TrendingUp, Eye, Check, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowRight, Check, Zap, Brain, Target, FileText, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 const FEATURES = [
-  { icon: Search, color: '#7c3aed', title: 'SEO Intelligence', desc: 'Track keyword rankings, CTR, impressions, and find quick wins. Powered by Google Search Console.' },
-  { icon: BarChart3, color: '#3b82f6', title: 'Web Analytics', desc: 'Sessions, users, traffic sources, and top pages — all in one clean dashboard. GA4 connected.' },
-  { icon: Brain, color: '#22c55e', title: 'AI Assistant', desc: 'Ask anything about your data. "What are my top keywords?" Get instant answers, not raw numbers.' },
-  { icon: Eye, color: '#ec4899', title: 'Competitor Spy', desc: 'See exactly what ads your competitors are running on Facebook and Instagram. Updated daily.' },
-  { icon: FileText, color: '#f59e0b', title: 'Client Reports', desc: 'Generate branded PDF reports in one click. SEO, traffic, and full marketing reports — client-ready.' },
-  { icon: Bell, color: '#06b6d4', title: 'Smart Alerts', desc: 'Get notified when rankings drop, traffic spikes, or opportunities emerge. Never miss a signal.' },
-];
-
-const TESTIMONIALS = [
-  { name: 'Sarah Chen', role: 'Head of Growth, Finova', avatar: 'SC', text: "We used to spend 3 hours every Monday pulling reports from 6 different tools. Lumnix cut that to 5 minutes. The AI insights are genuinely useful — not just data dumps.", rating: 5 },
-  { name: 'Marcus Webb', role: 'Founder, TalentStack', avatar: 'MW', text: "The competitor spy feature alone is worth it. I can see exactly what ads are working for my competitors and iterate faster. Game changer for paid campaigns.", rating: 5 },
-  { name: 'Priya Sharma', role: 'Marketing Director, Crewflow', avatar: 'PS', text: "Finally a tool that connects SEO and paid in one place. The reports are so clean I send them directly to clients without touching them. Saves me hours every week.", rating: 5 },
+  {
+    icon: Zap,
+    title: 'AI Anomaly Detection',
+    desc: 'Know before your client does. Daily scans surface traffic drops, ranking changes, and CTR anomalies automatically.',
+  },
+  {
+    icon: Target,
+    title: 'Competitor Intelligence',
+    desc: "See exactly which keywords your competitors rank for that you don't. Close the gap.",
+  },
+  {
+    icon: FileText,
+    title: 'Unified Reporting',
+    desc: 'One PDF. All your data. Branded and sent automatically. No more Monday morning spreadsheets.',
+  },
 ];
 
 const PRICING = [
   {
-    name: 'Free',
-    price: '$0',
-    period: 'forever',
-    desc: 'For solo founders getting started',
-    color: '#52525b',
-    features: ['1 integration', '30-day data history', 'SEO & Analytics dashboard', 'Basic reports (watermarked)', '5 AI queries/month'],
-    cta: 'Get Started Free',
+    name: 'Starter',
+    price: '$29',
+    period: '/mo',
+    desc: 'For solo marketers and small teams',
+    features: ['GSC + GA4 integration', '3 competitor tracking', 'Email alerts', 'PDF reports', '30-day data history'],
     highlight: false,
   },
   {
-    name: 'Pro',
-    price: '$49',
-    period: 'per month',
+    name: 'Growth',
+    price: '$79',
+    period: '/mo',
     desc: 'For growing teams that run on data',
-    color: '#7c3aed',
-    features: ['Unlimited integrations', '12-month data history', 'All dashboard pages', 'Unlimited PDF reports', 'Unlimited AI queries', 'Competitor Spy', 'Smart Alerts', 'Auto-sync daily'],
-    cta: 'Start Free Trial',
+    badge: 'Most Popular',
+    features: ['Everything in Starter', 'Google Ads + Meta Ads', 'Slack alerts', 'AI anomaly detection', '10 competitor tracking', '12-month data history', 'Priority support'],
     highlight: true,
   },
   {
     name: 'Agency',
-    price: '$149',
-    period: 'per month',
+    price: '$199',
+    period: '/mo',
     desc: 'For agencies managing multiple clients',
-    color: '#22c55e',
-    features: ['Everything in Pro', 'Up to 10 workspaces', 'White-label reports', 'Client sharing links', 'Priority support', 'Custom branding', 'API access'],
-    cta: 'Contact Sales',
+    features: ['Everything in Growth', 'White-label reports', 'Team invites & roles', 'Unlimited competitors', 'Custom branding', 'API access', 'Dedicated support'],
     highlight: false,
   },
 ];
 
+const METRICS = [
+  { value: '10,000+', label: 'keywords tracked' },
+  { value: '500+', label: 'reports generated' },
+  { value: 'Trusted by', label: 'marketing teams' },
+];
+
 export default function LandingPage() {
   const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -61,163 +66,325 @@ export default function LandingPage() {
     });
   }, [router]);
 
-  return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0F172A', color: '#F8FAFC', fontFamily: 'var(--font-body)', overflowX: 'hidden' }}>
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
 
-      {/* Nav */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'sticky', top: 0, backgroundColor: 'rgba(15,23,42,0.9)', backdropFilter: 'blur(12px)', zIndex: 100 }}>
-        <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-1px' }}>
-          <span style={{ color: '#7C3AED' }}>L</span><span style={{ color: '#F8FAFC' }}>umnix</span>
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', color: '#FAFAFA', fontFamily: 'var(--font-body)', overflowX: 'hidden' }}>
+
+      {/* ──── Navbar ──── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '0 40px', height: 64,
+        backgroundColor: scrolled ? 'rgba(10,10,10,0.8)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(16px) saturate(180%)' : 'none',
+        borderBottom: scrolled ? '1px solid #222222' : '1px solid transparent',
+        transition: 'all 0.3s ease',
+      }}>
+        <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', color: '#FAFAFA' }}>
+          <span style={{ color: '#6366F1' }}>L</span>umnix
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <a href="#features" style={{ padding: '8px 16px', color: '#94A3B8', fontSize: '14px', textDecoration: 'none', fontWeight: 500 }}>Features</a>
-          <a href="#pricing" style={{ padding: '8px 16px', color: '#94A3B8', fontSize: '14px', textDecoration: 'none', fontWeight: 500 }}>Pricing</a>
-          <button onClick={() => router.push('/auth/signin')} style={{ padding: '9px 18px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: 'transparent', color: '#94A3B8', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
-            Sign In
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <a href="#features" style={{ padding: '8px 16px', color: '#888888', fontSize: 14, textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }}>Features</a>
+          <a href="#pricing" style={{ padding: '8px 16px', color: '#888888', fontSize: 14, textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }}>Pricing</a>
+          <button
+            onClick={() => router.push('/auth/signin')}
+            style={{ padding: '8px 16px', borderRadius: 8, border: 'none', backgroundColor: 'transparent', color: '#FAFAFA', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
+          >
+            Sign in
           </button>
-          <button onClick={() => router.push('/auth/signup')} style={{ padding: '9px 18px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #7C3AED, #4C1D95)', color: 'white', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 20px rgba(124,58,237,0.35)' }}>
-            Get Started Free
+          <button
+            onClick={() => router.push('/auth/signup')}
+            style={{ padding: '9px 20px', borderRadius: 8, border: 'none', backgroundColor: '#6366F1', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#4F46E5')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#6366F1')}
+          >
+            Start free trial
           </button>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section style={{ textAlign: 'center', padding: '100px 40px 80px', maxWidth: 800, margin: '0 auto' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 20, backgroundColor: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', marginBottom: 28 }}>
-          <Zap size={12} color="#a78bfa" />
-          <span style={{ fontSize: 13, color: '#a78bfa', fontWeight: 600 }}>Now with AI-powered insights</span>
+      {/* ──── Hero ──── */}
+      <section style={{ textAlign: 'center', padding: '100px 40px 80px', maxWidth: 800, margin: '0 auto', position: 'relative' }}>
+        {/* Pill badge */}
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8,
+          padding: '6px 16px', borderRadius: 100,
+          border: '1px solid rgba(99,102,241,0.3)',
+          backgroundColor: 'rgba(99,102,241,0.08)',
+          marginBottom: 32,
+        }}>
+          <Zap size={12} color="#6366F1" />
+          <span style={{ fontSize: 13, color: '#6366F1', fontWeight: 600 }}>Marketing Intelligence Platform</span>
         </div>
-        <h1 style={{ fontSize: 58, fontWeight: 900, lineHeight: 1.1, letterSpacing: '-2px', marginBottom: 22, fontFamily: 'var(--font-display)' }}>
-          One dashboard for all<br />
-          <span style={{ background: 'linear-gradient(135deg, #7C3AED, #3b82f6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>your marketing data</span>
+
+        <h1 style={{
+          fontSize: 64, fontWeight: 700, lineHeight: 1.05,
+          letterSpacing: '-2.5px', marginBottom: 24,
+          fontFamily: 'var(--font-display)',
+          background: 'linear-gradient(180deg, #FAFAFA 0%, #888888 100%)',
+          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        }}>
+          Stop switching tabs.<br />Start making decisions.
         </h1>
-        <p style={{ fontSize: 18, color: '#94A3B8', lineHeight: 1.7, marginBottom: 38, maxWidth: 560, margin: '0 auto 38px' }}>
-          Connect GSC, GA4, Google Ads, and Meta Ads. Get AI-powered insights, competitor intelligence, and client-ready PDF reports — all in one place.
+
+        <p style={{ fontSize: 18, color: '#888888', lineHeight: 1.7, marginBottom: 40, maxWidth: 560, margin: '0 auto 40px' }}>
+          Lumnix unifies GA4, GSC, Google Ads and Meta Ads into one AI-powered dashboard. Anomaly detection, competitor intelligence, automated reports.
         </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <button onClick={() => router.push('/auth/signup')} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #7C3AED, #4C1D95)', color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: '0 6px 30px rgba(124,58,237,0.4)' }}>
-            Get Started Free <ArrowRight size={16} />
+
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => router.push('/auth/signup')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '14px 28px', borderRadius: 10, border: 'none',
+              backgroundColor: '#6366F1', color: 'white',
+              fontSize: 15, fontWeight: 600, cursor: 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#4F46E5')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#6366F1')}
+          >
+            Start free trial <ArrowRight size={16} />
           </button>
-          <button onClick={() => router.push('/auth/signin')} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 12, border: '1px solid #334155', backgroundColor: 'transparent', color: '#94A3B8', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
-            View Demo
+          <button
+            onClick={() => { document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '14px 28px', borderRadius: 10,
+              border: '1px solid #333333', backgroundColor: 'transparent',
+              color: '#FAFAFA', fontSize: 15, fontWeight: 500, cursor: 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1A1A1A')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+          >
+            See how it works
           </button>
         </div>
-        <p style={{ fontSize: 13, color: '#475569', marginTop: 18 }}>No credit card required · Free plan forever · Setup in 5 minutes</p>
+
+        {/* Hero visual — fake dashboard mockup */}
+        <div style={{
+          marginTop: 72, position: 'relative',
+          borderRadius: 16, border: '1px solid #222222',
+          backgroundColor: '#111111', padding: 24,
+          overflow: 'hidden',
+        }}>
+          {/* Glow effect */}
+          <div style={{
+            position: 'absolute', top: -100, left: '50%', transform: 'translateX(-50%)',
+            width: 600, height: 200,
+            background: 'radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* Fake top bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#333333' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#333333' }} />
+            <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#333333' }} />
+            <div style={{ flex: 1 }} />
+            <div style={{ width: 60, height: 6, borderRadius: 3, backgroundColor: '#1A1A1A' }} />
+          </div>
+
+          {/* Fake stat cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+            {['12.4K', '8.2K', '#4.2', '89%'].map((val, i) => (
+              <div key={i} style={{ backgroundColor: '#1A1A1A', borderRadius: 10, padding: '16px 14px', border: '1px solid #222222' }}>
+                <div style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#333333', marginBottom: 12 }} />
+                <div style={{ fontSize: 22, fontWeight: 500, fontFamily: 'var(--font-mono)', color: '#FAFAFA', letterSpacing: '-0.5px' }}>{val}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Fake chart area */}
+          <div style={{ backgroundColor: '#1A1A1A', borderRadius: 10, padding: 20, border: '1px solid #222222', height: 160, position: 'relative', overflow: 'hidden' }}>
+            <svg width="100%" height="100%" viewBox="0 0 600 120" preserveAspectRatio="none" style={{ position: 'absolute', bottom: 0, left: 0 }}>
+              <defs>
+                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6366F1" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#6366F1" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <path d="M0,80 C50,70 100,40 150,55 C200,70 250,20 300,35 C350,50 400,15 450,25 C500,35 550,10 600,20 L600,120 L0,120 Z" fill="url(#chartGrad)" />
+              <path d="M0,80 C50,70 100,40 150,55 C200,70 250,20 300,35 C350,50 400,15 450,25 C500,35 550,10 600,20" fill="none" stroke="#6366F1" strokeWidth="2" />
+            </svg>
+          </div>
+        </div>
       </section>
 
-      {/* Social Proof Bar */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 48, padding: '28px 40px', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
-        {[['500+', 'Marketers using Lumnix'], ['4 sources', 'GSC · GA4 · Google Ads · Meta'], ['1-click', 'PDF client reports'], ['< 5min', 'Average setup time']].map(([val, label]) => (
-          <div key={val} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#f4f4f5', letterSpacing: '-0.5px' }}>{val}</div>
-            <div style={{ fontSize: 12, color: '#52525b', marginTop: 3 }}>{label}</div>
+      {/* ──── Metrics bar ──── */}
+      <div style={{
+        display: 'flex', justifyContent: 'center', gap: 48, padding: '32px 40px',
+        borderTop: '1px solid #222222', borderBottom: '1px solid #222222',
+        flexWrap: 'wrap',
+      }}>
+        {METRICS.map((m, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color: '#FAFAFA', fontFamily: 'var(--font-mono)' }}>{m.value}</span>
+            <span style={{ fontSize: 14, color: '#555555' }}>{m.label}</span>
+            {i < METRICS.length - 1 && (
+              <div style={{ width: 1, height: 24, backgroundColor: '#222222', marginLeft: 36 }} />
+            )}
           </div>
         ))}
       </div>
 
-      {/* Features */}
-      <section id="features" style={{ padding: '90px 40px', maxWidth: 1100, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 60 }}>
-          <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-1px', marginBottom: 14 }}>Everything you need.<br />Nothing you don't.</h2>
-          <p style={{ fontSize: 16, color: '#64748B', maxWidth: 480, margin: '0 auto' }}>Built for founders and marketing teams who are tired of jumping between tools.</p>
+      {/* ──── Features ──── */}
+      <section id="features" style={{ padding: '100px 40px', maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-1.5px', marginBottom: 16, color: '#FAFAFA' }}>
+            Intelligence, not just data
+          </h2>
+          <p style={{ fontSize: 16, color: '#555555', maxWidth: 480, margin: '0 auto' }}>
+            Built for marketing teams who need answers, not dashboards full of numbers.
+          </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
           {FEATURES.map(f => (
-            <div key={f.title} style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: 16, padding: 28, transition: 'border-color 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = `${f.color}50`)}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = '#27272a')}
+            <div
+              key={f.title}
+              style={{
+                backgroundColor: '#111111', border: '1px solid #222222',
+                borderRadius: 12, padding: 28,
+                transition: 'border-color 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = '#333333')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = '#222222')}
             >
-              <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: `${f.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                <f.icon size={20} color={f.color} />
+              <div style={{
+                width: 44, height: 44, borderRadius: 10,
+                backgroundColor: 'rgba(99,102,241,0.08)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 20,
+              }}>
+                <f.icon size={20} color="#6366F1" />
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#f4f4f5', marginBottom: 8 }}>{f.title}</h3>
-              <p style={{ fontSize: 14, color: '#71717a', lineHeight: 1.6 }}>{f.desc}</p>
+              <h3 style={{ fontSize: 17, fontWeight: 600, color: '#FAFAFA', marginBottom: 10 }}>{f.title}</h3>
+              <p style={{ fontSize: 14, color: '#888888', lineHeight: 1.65 }}>{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section style={{ padding: '80px 40px', backgroundColor: '#0d1424', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 52 }}>
-            <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-1px', marginBottom: 10 }}>Trusted by 500+ marketers</h2>
-            <p style={{ fontSize: 15, color: '#64748B' }}>Real teams. Real results.</p>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-            {TESTIMONIALS.map(t => (
-              <div key={t.name} style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: 16, padding: 28 }}>
-                <div style={{ display: 'flex', gap: 2, marginBottom: 16 }}>
-                  {[...Array(t.rating)].map((_, i) => <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />)}
-                </div>
-                <p style={{ fontSize: 14, color: '#a1a1aa', lineHeight: 1.7, marginBottom: 20 }}>"{t.text}"</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white' }}>{t.avatar}</div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#f4f4f5' }}>{t.name}</div>
-                    <div style={{ fontSize: 12, color: '#52525b' }}>{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* ──── Pricing ──── */}
+      <section id="pricing" style={{ padding: '100px 40px', maxWidth: 1000, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-1.5px', marginBottom: 16, color: '#FAFAFA' }}>
+            Simple, transparent pricing
+          </h2>
+          <p style={{ fontSize: 16, color: '#555555' }}>Start free. Upgrade when you're ready.</p>
         </div>
-      </section>
-
-      {/* Pricing */}
-      <section id="pricing" style={{ padding: '90px 40px', maxWidth: 1000, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-1px', marginBottom: 12 }}>Simple, transparent pricing</h2>
-          <p style={{ fontSize: 16, color: '#64748B' }}>Start free. Upgrade when you're ready.</p>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'start' }}>
           {PRICING.map(p => (
-            <div key={p.name} style={{ backgroundColor: '#18181b', border: `1px solid ${p.highlight ? p.color + '60' : '#27272a'}`, borderRadius: 18, padding: 30, position: 'relative', boxShadow: p.highlight ? `0 0 40px ${p.color}20` : 'none' }}>
-              {p.highlight && <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', backgroundColor: p.color, color: 'white', fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 20 }}>MOST POPULAR</div>}
-              <div style={{ marginBottom: 22 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: p.color, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 6 }}>{p.name}</div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: 38, fontWeight: 900, color: '#f4f4f5', letterSpacing: '-1px' }}>{p.price}</span>
-                  <span style={{ fontSize: 14, color: '#52525b', marginBottom: 6 }}>/{p.period}</span>
+            <div
+              key={p.name}
+              style={{
+                backgroundColor: '#111111',
+                border: `1px solid ${p.highlight ? '#6366F1' : '#222222'}`,
+                borderRadius: 12, padding: 32, position: 'relative',
+                ...(p.highlight ? { boxShadow: '0 0 60px rgba(99,102,241,0.1)' } : {}),
+              }}
+            >
+              {p.badge && (
+                <div style={{
+                  position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
+                  backgroundColor: '#6366F1', color: 'white',
+                  fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100,
+                  letterSpacing: '0.02em',
+                }}>
+                  {p.badge}
                 </div>
-                <p style={{ fontSize: 13, color: '#71717a' }}>{p.desc}</p>
+              )}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#888888', marginBottom: 8 }}>{p.name}</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontSize: 42, fontWeight: 700, color: '#FAFAFA', letterSpacing: '-1px', fontFamily: 'var(--font-mono)' }}>{p.price}</span>
+                  <span style={{ fontSize: 14, color: '#555555' }}>{p.period}</span>
+                </div>
+                <p style={{ fontSize: 13, color: '#555555', marginTop: 8 }}>{p.desc}</p>
               </div>
-              <div style={{ marginBottom: 26 }}>
+              <div style={{ marginBottom: 28 }}>
                 {p.features.map(f => (
-                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                    <Check size={14} color={p.color} strokeWidth={2.5} />
-                    <span style={{ fontSize: 13, color: '#a1a1aa' }}>{f}</span>
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <Check size={14} color={p.highlight ? '#6366F1' : '#555555'} strokeWidth={2.5} />
+                    <span style={{ fontSize: 13, color: '#888888' }}>{f}</span>
                   </div>
                 ))}
               </div>
-              <button onClick={() => router.push('/auth/signup')} style={{ width: '100%', padding: '12px', borderRadius: 10, border: p.highlight ? 'none' : `1px solid ${p.color}40`, background: p.highlight ? `linear-gradient(135deg, ${p.color}, #4C1D95)` : 'transparent', color: p.highlight ? 'white' : p.color, fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: p.highlight ? `0 4px 20px ${p.color}40` : 'none' }}>
-                {p.cta}
+              <button
+                onClick={() => router.push('/auth/signup')}
+                style={{
+                  width: '100%', padding: 12, borderRadius: 8, cursor: 'pointer',
+                  fontSize: 14, fontWeight: 600,
+                  border: p.highlight ? 'none' : '1px solid #333333',
+                  backgroundColor: p.highlight ? '#6366F1' : 'transparent',
+                  color: p.highlight ? 'white' : '#FAFAFA',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = p.highlight ? '#4F46E5' : '#1A1A1A';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = p.highlight ? '#6366F1' : 'transparent';
+                }}
+              >
+                {p.highlight ? 'Start free trial' : p.name === 'Agency' ? 'Contact sales' : 'Get started'}
               </button>
             </div>
           ))}
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section style={{ padding: '80px 40px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.08))', borderTop: '1px solid rgba(124,58,237,0.2)' }}>
-        <h2 style={{ fontSize: 38, fontWeight: 800, letterSpacing: '-1px', marginBottom: 14 }}>Ready to stop juggling tabs?</h2>
-        <p style={{ fontSize: 16, color: '#94A3B8', marginBottom: 32, maxWidth: 480, margin: '0 auto 32px' }}>Join 500+ marketers who replaced 6 tools with one dashboard. Free to start.</p>
-        <button onClick={() => router.push('/auth/signup')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '15px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #7C3AED, #4C1D95)', color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 30px rgba(124,58,237,0.4)' }}>
-          Get Started Free <ArrowRight size={18} />
+      {/* ──── CTA ──── */}
+      <section style={{ padding: '100px 40px', textAlign: 'center' }}>
+        <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-1.5px', marginBottom: 16, color: '#FAFAFA' }}>
+          Ready to stop guessing?
+        </h2>
+        <p style={{ fontSize: 16, color: '#555555', marginBottom: 40, maxWidth: 480, margin: '0 auto 40px' }}>
+          Join marketing teams who replaced 6 tools with one intelligent dashboard.
+        </p>
+        <button
+          onClick={() => router.push('/auth/signup')}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '16px 36px', borderRadius: 10, border: 'none',
+            backgroundColor: '#6366F1', color: 'white',
+            fontSize: 16, fontWeight: 600, cursor: 'pointer',
+            transition: 'background-color 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#4F46E5')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#6366F1')}
+        >
+          Start free trial <ArrowRight size={18} />
         </button>
       </section>
 
-      {/* Footer */}
-      <footer style={{ padding: '36px 40px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-        <span style={{ fontSize: '18px', fontWeight: 800, letterSpacing: '-0.5px' }}>
-          <span style={{ color: '#7C3AED' }}>L</span><span style={{ color: '#64748B' }}>umnix</span>
-        </span>
+      {/* ──── Footer ──── */}
+      <footer style={{
+        padding: '32px 40px', borderTop: '1px solid #222222',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        flexWrap: 'wrap', gap: 16,
+      }}>
+        <div>
+          <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.5px', color: '#FAFAFA' }}>
+            <span style={{ color: '#6366F1' }}>L</span>umnix
+          </span>
+          <span style={{ fontSize: 13, color: '#555555', marginLeft: 12 }}>AI-powered marketing intelligence</span>
+        </div>
         <div style={{ display: 'flex', gap: 24 }}>
           {['Privacy', 'Terms', 'Support', 'Status'].map(l => (
-            <a key={l} href="#" style={{ fontSize: 13, color: '#475569', textDecoration: 'none' }}>{l}</a>
+            <a key={l} href="#" style={{ fontSize: 13, color: '#555555', textDecoration: 'none', transition: 'color 0.2s' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#888888')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#555555')}
+            >{l}</a>
           ))}
         </div>
-        <span style={{ fontSize: 12, color: '#334155' }}>© 2026 Lumnix. All rights reserved.</span>
+        <span style={{ fontSize: 12, color: '#333333' }}>&copy; 2026 Oltaflock AI. All rights reserved.</span>
       </footer>
     </div>
   );

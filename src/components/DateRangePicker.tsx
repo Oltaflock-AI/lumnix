@@ -34,24 +34,24 @@ export function DateRangePicker({
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '8px 14px', borderRadius: '10px',
-          border: '1px solid #3f3f46', backgroundColor: '#27272a',
-          color: '#d4d4d8', fontSize: '13px', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '8px 14px', borderRadius: 8,
+          border: '1px solid #222222', backgroundColor: '#111111',
+          color: '#FAFAFA', fontSize: 13, cursor: 'pointer',
           fontWeight: 500,
         }}
       >
-        <Calendar size={14} color="#a78bfa" />
+        <Calendar size={14} color="#6366F1" />
         {selected.label}
-        <ChevronDown size={14} style={{ opacity: 0.5, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+        <ChevronDown size={14} style={{ color: '#555555', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
       </button>
 
       {open && (
         <div style={{
           position: 'absolute', right: 0, top: 'calc(100% + 6px)', zIndex: 50,
-          backgroundColor: '#18181b', border: '1px solid #27272a',
-          borderRadius: '10px', overflow: 'hidden', minWidth: '160px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          backgroundColor: '#1A1A1A', border: '1px solid #222222',
+          borderRadius: 10, overflow: 'hidden', minWidth: 160,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
         }}>
           {options.map(opt => (
             <button
@@ -59,9 +59,9 @@ export function DateRangePicker({
               onClick={() => { onChange?.(opt.value); setOpen(false); }}
               style={{
                 display: 'block', width: '100%', padding: '10px 14px',
-                textAlign: 'left', fontSize: '13px', cursor: 'pointer', border: 'none',
-                backgroundColor: opt.value === value ? 'rgba(124,58,237,0.12)' : 'transparent',
-                color: opt.value === value ? '#a78bfa' : '#d4d4d8',
+                textAlign: 'left', fontSize: 13, cursor: 'pointer', border: 'none',
+                backgroundColor: opt.value === value ? 'rgba(99,102,241,0.08)' : 'transparent',
+                color: opt.value === value ? '#6366F1' : '#FAFAFA',
                 fontWeight: opt.value === value ? 600 : 400,
               }}
             >

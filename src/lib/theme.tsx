@@ -22,49 +22,44 @@ interface ThemeCtx {
   };
 }
 
-const LIGHT = {
-  bgPage: '#F5F4F2',
-  bgSidebar: '#FAFAF9',
-  bgCard: '#FFFFFF',
-  bgCardHover: '#F9F9F8',
-  bgInput: '#F3F4F6',
-  bgTag: 'rgba(0,0,0,0.05)',
-  border: 'rgba(0,0,0,0.10)',
-  borderSubtle: 'rgba(0,0,0,0.06)',
-  text: '#0F172A',           // near-black, strong contrast
-  textSecondary: '#374151',  // dark gray — readable on white (7.4:1)
-  textMuted: '#6B7280',      // medium gray — still passes AA (4.6:1)
-  shadow: '0 1px 3px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.05)',
+const DARK = {
+  bgPage: '#0A0A0A',
+  bgSidebar: '#0A0A0A',
+  bgCard: '#111111',
+  bgCardHover: '#1A1A1A',
+  bgInput: '#111111',
+  bgTag: '#1A1A1A',
+  border: '#222222',
+  borderSubtle: '#1A1A1A',
+  text: '#FAFAFA',
+  textSecondary: '#888888',
+  textMuted: '#555555',
+  shadow: 'none',
 };
 
-const DARK = {
-  bgPage: '#0D0F14',
-  bgSidebar: '#13151B',
-  bgCard: '#1A1D25',
-  bgCardHover: '#21242E',
-  bgInput: '#1A1D25',
-  bgTag: 'rgba(255,255,255,0.07)',
-  border: 'rgba(255,255,255,0.09)',
-  borderSubtle: 'rgba(255,255,255,0.05)',
-  text: '#F1F5F9',
-  textSecondary: '#A1AFBD',
-  textMuted: '#64748B',
-  shadow: '0 1px 6px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+const LIGHT = {
+  bgPage: '#0A0A0A',
+  bgSidebar: '#0A0A0A',
+  bgCard: '#111111',
+  bgCardHover: '#1A1A1A',
+  bgInput: '#111111',
+  bgTag: '#1A1A1A',
+  border: '#222222',
+  borderSubtle: '#1A1A1A',
+  text: '#FAFAFA',
+  textSecondary: '#888888',
+  textMuted: '#555555',
+  shadow: 'none',
 };
 
 const Ctx = createContext<ThemeCtx>({
-  theme: 'light',
+  theme: 'dark',
   toggle: () => {},
-  c: LIGHT,
+  c: DARK,
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('lumnix-theme') as Theme;
-    if (saved === 'dark') setTheme('dark');
-  }, []);
+  const [theme, setTheme] = useState<Theme>('dark');
 
   function toggle() {
     setTheme(t => {
@@ -77,7 +72,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const c = theme === 'dark' ? DARK : LIGHT;
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-theme', 'dark');
     document.body.style.backgroundColor = c.bgPage;
     document.body.style.color = c.text;
   }, [theme, c]);
