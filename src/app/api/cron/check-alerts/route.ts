@@ -185,6 +185,32 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 16px; }
           }
         }
 
+        // Send Slack notification if workspace has webhook
+        const { data: wsData } = await db
+          .from('workspaces')
+          .select('slack_webhook_url')
+          .eq('id', rule.workspace_id)
+          .single();
+
+        if (wsData?.slack_webhook_url) {
+          try {
+            await fetch(wsData.slack_webhook_url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                blocks: [
+                  { type: 'header', text: { type: 'plain_text', text: `🚨 Lumnix Alert — ${workspace?.name || 'Your workspace'}`, emoji: true } },
+                  { type: 'section', text: { type: 'mrkdwn', text: `*${metricLabel}*\n${message}` } },
+                  { type: 'context', elements: [{ type: 'mrkdwn', text: `<https://lumnix-ai.vercel.app/dashboard/alerts|View Alerts in Lumnix>` }] },
+                  { type: 'divider' },
+                ],
+              }),
+            });
+          } catch (slackErr) {
+            console.error('Slack alert notification failed:', slackErr);
+          }
+        }
+
         triggered.push({ rule_id: rule.id, metric: rule.metric, value: metricValue, threshold: rule.threshold });
       } catch (e: any) {
         errors.push({ rule_id: rule.id, error: e.message });

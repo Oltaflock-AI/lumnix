@@ -674,6 +674,137 @@ function BillingTab() {
   );
 }
 
+function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
+  const { c } = useTheme();
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [connected, setConnected] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    fetch(`/api/settings/slack?workspace_id=${workspaceId}`)
+      .then(r => r.json())
+      .then(d => {
+        setWebhookUrl(d.slack_webhook_url || '');
+        setConnected(d.connected || false);
+      })
+      .catch(() => {});
+  }, [workspaceId]);
+
+  async function handleSave() {
+    if (!workspaceId) return;
+    setSaving(true);
+    setError('');
+    setTestResult(null);
+    try {
+      const res = await fetch('/api/settings/slack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspace_id: workspaceId, slack_webhook_url: webhookUrl.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSaved(true);
+        setConnected(!!webhookUrl.trim());
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        setError(data.error || 'Failed to save');
+      }
+    } catch {
+      setError('Failed to save webhook URL');
+    }
+    setSaving(false);
+  }
+
+  async function handleTest() {
+    if (!workspaceId) return;
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await fetch('/api/settings/slack/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspace_id: workspaceId }),
+      });
+      const data = await res.json();
+      setTestResult(data.success ? { ok: true, text: 'Test message sent!' } : { ok: false, text: data.error || 'Test failed' });
+    } catch {
+      setTestResult({ ok: false, text: 'Failed to send test message' });
+    }
+    setTesting(false);
+  }
+
+  return (
+    <div style={{ marginTop: 32 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(74,21,75,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src="https://cdn.simpleicons.org/slack/4A154B" width={26} height={26} alt="Slack" />
+        </div>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: c.text }}>Slack Notifications</div>
+          <div style={{ fontSize: 12, color: connected ? '#10b981' : c.textMuted, display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: connected ? '#10b981' : c.textMuted }} />
+            {connected ? 'Connected' : 'Not connected'}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 16, padding: 24 }}>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: c.textSecondary, marginBottom: 8 }}>Slack Webhook URL</label>
+          <input
+            type="url"
+            value={webhookUrl}
+            onChange={e => setWebhookUrl(e.target.value)}
+            placeholder="https://hooks.slack.com/services/..."
+            style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+          />
+          <p style={{ fontSize: 12, color: c.textMuted, marginTop: 6, lineHeight: 1.5 }}>
+            Get this from your Slack app settings → Incoming Webhooks. Alerts and anomaly notifications will be sent to this channel.
+          </p>
+        </div>
+
+        {error && (
+          <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+
+        {testResult && (
+          <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, backgroundColor: testResult.ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${testResult.ok ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, color: testResult.ok ? '#4ade80' : '#f87171', fontSize: 13 }}>
+            {testResult.text}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: saved ? '#22c55e' : 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: saving ? 0.7 : 1 }}
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
+            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
+          </button>
+          {connected && (
+            <button
+              onClick={handleTest}
+              disabled={testing}
+              style={{ padding: '10px 20px', borderRadius: 10, border: `1px solid ${c.border}`, background: 'transparent', color: c.textSecondary, fontSize: 14, fontWeight: 600, cursor: testing ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: testing ? 0.7 : 1 }}
+            >
+              {testing ? <Loader2 size={14} className="animate-spin" /> : null}
+              {testing ? 'Sending...' : 'Send Test'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { c } = useTheme();
   const [activeTab, setActiveTab] = useState("integrations");
@@ -888,6 +1019,9 @@ export default function SettingsPage() {
               );
             })}
           </div>
+
+          {/* Slack Integration */}
+          <SlackSection workspaceId={workspace?.id} />
         </div>
       )}
 
