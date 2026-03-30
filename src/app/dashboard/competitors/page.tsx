@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Eye, Plus, RefreshCw, Trash2, X, Bell, Lightbulb, BarChart3, Zap, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
+import { Eye, Plus, RefreshCw, Trash2, X, Bell, Lightbulb, BarChart3, Zap, ChevronDown, ChevronUp, CheckCircle, Search, Loader2 } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useTheme } from '@/lib/theme';
 import { useWorkspace } from '@/lib/hooks';
@@ -31,7 +31,7 @@ function formatDate(s: string | null | undefined): string {
   return isNaN(d.getTime()) ? s : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-const TABS = ['Ads', 'AI Analysis', 'Ideas', 'Alerts'] as const;
+const TABS = ['Ads', 'AI Analysis', 'Ideas', 'Alerts', 'Keyword Gap'] as const;
 type Tab = typeof TABS[number];
 
 const STATUS_COLS = ['idea', 'review', 'approved', 'production'] as const;
@@ -80,6 +80,12 @@ export default function CompetitorsPage() {
   const [loadingAlerts, setLoadingAlerts] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Keyword Gap tab
+  const [keywordGaps, setKeywordGaps] = useState<any[]>([]);
+  const [loadingGaps, setLoadingGaps] = useState(false);
+  const [analyzingGaps, setAnalyzingGaps] = useState(false);
+  const [gapError, setGapError] = useState('');
+
   const selectedCompetitor = competitors.find(c => c.id === selectedId);
 
   // Fetch ads when competitor changes
@@ -111,6 +117,16 @@ export default function CompetitorsPage() {
       .then(d => { setAnalysis(d.analysis); setIdeas(d.ideas ?? []); });
   }, [selectedId, activeTab]);
 
+  // Fetch keyword gaps
+  useEffect(() => {
+    if (!selectedId || !workspaceId || activeTab !== 'Keyword Gap') return;
+    setLoadingGaps(true);
+    fetch(`/api/competitors/keyword-gap?workspace_id=${workspaceId}&competitor_id=${selectedId}`)
+      .then(r => r.json())
+      .then(d => { setKeywordGaps(d.gaps || []); setLoadingGaps(false); })
+      .catch(() => setLoadingGaps(false));
+  }, [selectedId, workspaceId, activeTab]);
+
   // Fetch alerts
   useEffect(() => {
     if (!selectedId || activeTab !== 'Alerts') return;
@@ -134,6 +150,8 @@ export default function CompetitorsPage() {
     setIdeas([]);
     setAlerts([]);
     setUnreadCount(0);
+    setKeywordGaps([]);
+    setGapError('');
   }
 
   async function handleAddCompetitor() {
@@ -612,6 +630,102 @@ export default function CompetitorsPage() {
                           {!alert.seen_at && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#7c3aed', flexShrink: 0, marginTop: '6px' }} />}
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* KEYWORD GAP TAB */}
+              {activeTab === 'Keyword Gap' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <div>
+                      <p style={{ margin: 0, fontSize: '13px', color: c.textSecondary }}>
+                        Keywords your competitor likely targets that you don't rank for.
+                      </p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!workspaceId || !selectedId) return;
+                        setAnalyzingGaps(true);
+                        setGapError('');
+                        try {
+                          const res = await fetch('/api/competitors/keyword-gap', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ workspace_id: workspaceId, competitor_id: selectedId }),
+                          });
+                          const data = await res.json();
+                          if (data.error) {
+                            setGapError(data.error);
+                          } else {
+                            setKeywordGaps(data.gaps || []);
+                          }
+                        } catch {
+                          setGapError('Analysis failed');
+                        }
+                        setAnalyzingGaps(false);
+                      }}
+                      disabled={analyzingGaps}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 8, border: 'none',
+                        background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: 13, fontWeight: 600,
+                        cursor: analyzingGaps ? 'not-allowed' : 'pointer', opacity: analyzingGaps ? 0.7 : 1,
+                      }}
+                    >
+                      {analyzingGaps ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Search size={14} />}
+                      {analyzingGaps ? 'Analyzing...' : 'Analyze'}
+                    </button>
+                  </div>
+
+                  {gapError && (
+                    <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', fontSize: 13 }}>
+                      {gapError}
+                    </div>
+                  )}
+
+                  {loadingGaps ? (
+                    <div style={{ textAlign: 'center', padding: '60px', color: c.textMuted }}>Loading keyword gaps...</div>
+                  ) : keywordGaps.length === 0 ? (
+                    <div style={{ ...card, textAlign: 'center', padding: '60px' }}>
+                      <Search size={40} color="#27272a" style={{ margin: '0 auto 16px' }} />
+                      <p style={{ margin: '0 0 8px', color: c.textSecondary, fontSize: '15px' }}>No keyword gaps found</p>
+                      <p style={{ margin: 0, color: c.textMuted, fontSize: '13px' }}>
+                        {selectedCompetitor?.domain
+                          ? 'Click "Analyze" to scrape competitor pages and find keyword opportunities'
+                          : 'Add a domain to this competitor first, then click Analyze'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                      {/* Table header */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 100px 2fr', gap: '12px', padding: '12px 16px', borderBottom: `1px solid ${c.border}`, backgroundColor: c.bgTag }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Keyword</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Competitor Page</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Difficulty</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recommended Action</span>
+                      </div>
+                      {/* Table rows */}
+                      {keywordGaps.map((gap: any, i: number) => {
+                        const diffColor = gap.difficulty === 'low' ? '#22c55e' : gap.difficulty === 'medium' ? '#f59e0b' : '#ef4444';
+                        const diffBg = gap.difficulty === 'low' ? 'rgba(34,197,94,0.12)' : gap.difficulty === 'medium' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
+                        return (
+                          <div key={gap.id || i} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 100px 2fr', gap: '12px', padding: '12px 16px', borderBottom: i < keywordGaps.length - 1 ? `1px solid ${c.borderSubtle}` : 'none', alignItems: 'center' }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{gap.keyword}</span>
+                            <span style={{ fontSize: 12, color: c.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {gap.competitor_url ? (
+                                <a href={gap.competitor_url} target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', textDecoration: 'none' }}>
+                                  {gap.competitor_url.replace(/^https?:\/\//, '').slice(0, 40)}
+                                </a>
+                              ) : '—'}
+                            </span>
+                            <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 6, backgroundColor: diffBg, color: diffColor, textAlign: 'center', width: 'fit-content' }}>
+                              {gap.difficulty}
+                            </span>
+                            <span style={{ fontSize: 12, color: c.textSecondary, lineHeight: 1.5 }}>{gap.recommended_action || '—'}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
