@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/check-alerts",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/detect-anomalies",
+      "schedule": "0 8 * * *"
     }
   ]
 }

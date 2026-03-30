@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight } from 'lucide-react';
+import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, Bell, CheckCircle } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { useWorkspace, useGA4Data, useGSCData, useIntegrations } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
@@ -203,8 +203,119 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Anomalies widget */}
+      <AnomaliesWidget workspaceId={workspace?.id} />
+
       {/* AI Insights widget */}
       <AIInsightsWidget workspaceId={workspace?.id} />
+    </div>
+  );
+}
+
+/* ─── Anomalies Dashboard Widget ─── */
+
+const SEVERITY_COLORS: Record<string, string> = {
+  high: '#ef4444',
+  medium: '#f59e0b',
+  low: '#eab308',
+};
+
+const SEVERITY_BG: Record<string, string> = {
+  high: 'rgba(239,68,68,0.12)',
+  medium: 'rgba(245,158,11,0.12)',
+  low: 'rgba(234,179,8,0.12)',
+};
+
+function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
+  const { c } = useTheme();
+  const [anomalies, setAnomalies] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    setLoading(true);
+    fetch(`/api/anomalies?workspace_id=${workspaceId}`)
+      .then(r => r.json())
+      .then(data => setAnomalies(data.anomalies || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [workspaceId]);
+
+  async function markAsRead(id: string) {
+    await fetch(`/api/anomalies/${id}/read`, { method: 'POST' });
+    setAnomalies(prev => prev.map(a => a.id === id ? { ...a, is_read: true } : a));
+  }
+
+  if (loading) return null;
+
+  const unread = anomalies.filter(a => !a.is_read);
+
+  return (
+    <div style={{ backgroundColor: c.bgCard, borderRadius: 14, padding: 24, boxShadow: c.shadow, marginTop: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Bell size={16} color="#ef4444" />
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Anomalies</h3>
+          {unread.length > 0 && (
+            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.15)', color: '#ef4444', fontWeight: 700 }}>
+              {unread.length} new
+            </span>
+          )}
+        </div>
+      </div>
+
+      {anomalies.length === 0 ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 0' }}>
+          <CheckCircle size={16} color="#22c55e" />
+          <p style={{ fontSize: 13, color: c.textSecondary }}>No anomalies detected — everything looks healthy</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {anomalies.slice(0, 5).map((anomaly: any) => {
+            const severityColor = SEVERITY_COLORS[anomaly.severity] || '#eab308';
+            const severityBg = SEVERITY_BG[anomaly.severity] || 'rgba(234,179,8,0.12)';
+            return (
+              <div
+                key={anomaly.id}
+                onClick={() => !anomaly.is_read && markAsRead(anomaly.id)}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 8,
+                  backgroundColor: anomaly.is_read ? c.bgTag : severityBg,
+                  border: `1px solid ${anomaly.is_read ? c.borderSubtle : severityColor}30`,
+                  cursor: anomaly.is_read ? 'default' : 'pointer',
+                  opacity: anomaly.is_read ? 0.7 : 1,
+                }}
+              >
+                <span style={{
+                  fontSize: 10, fontWeight: 700, textTransform: 'uppercase', padding: '3px 8px', borderRadius: 6,
+                  backgroundColor: severityBg, color: severityColor, flexShrink: 0, marginTop: 2,
+                }}>
+                  {anomaly.severity}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: c.text, marginBottom: 3 }}>{anomaly.title}</p>
+                  <p style={{ fontSize: 12, color: c.textSecondary, lineHeight: 1.5 }}>{anomaly.description}</p>
+                  {anomaly.affected_pages && anomaly.affected_pages.length > 0 && (
+                    <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {anomaly.affected_pages.slice(0, 3).map((page: string, i: number) => (
+                        <span key={i} style={{ fontSize: 11, padding: '2px 6px', borderRadius: 4, backgroundColor: c.bgTag, color: c.textMuted, border: `1px solid ${c.borderSubtle}` }}>
+                          {page.length > 40 ? page.slice(0, 40) + '...' : page}
+                        </span>
+                      ))}
+                      {anomaly.affected_pages.length > 3 && (
+                        <span style={{ fontSize: 11, color: c.textMuted }}>+{anomaly.affected_pages.length - 3} more</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {!anomaly.is_read && (
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: severityColor, flexShrink: 0, marginTop: 5 }} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
