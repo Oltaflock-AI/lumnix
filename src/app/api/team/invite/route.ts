@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     } else {
     try {
       const { error: emailError } = await getResend(resendKey).emails.send({
-        from: 'Lumnix <onboarding@resend.dev>',
+        from: 'Lumnix <noreply@oltaflock.ai>',
         to: email,
         subject: `${inviterName} invited you to join ${workspace.name} on Lumnix`,
         html: `<!DOCTYPE html>

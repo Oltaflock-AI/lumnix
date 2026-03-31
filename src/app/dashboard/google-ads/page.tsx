@@ -6,16 +6,18 @@ import { PageShell, EmptyState } from '@/components/PageShell';
 import { useIntegrations, useGoogleAdsData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/lib/theme';
 
 function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: string; label: string; value: string; sub?: string }) {
+  const { c } = useTheme();
   return (
-    <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 18 }}>
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
         <Icon size={14} color={color} />
-        <span style={{ fontSize: 12, color: '#888888' }}>{label}</span>
+        <span style={{ fontSize: 12, color: c.textSecondary }}>{label}</span>
       </div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: '#FAFAFA', fontFamily: 'var(--font-mono)', marginBottom: 3 }}>{value}</div>
-      {sub && <div style={{ fontSize: 11, color: '#555555' }}>{sub}</div>}
+      <div style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: 'var(--font-mono)', marginBottom: 3 }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: c.textMuted }}>{sub}</div>}
     </div>
   );
 }
@@ -26,7 +28,8 @@ function StatusBadge({ status }: { status: string }) {
     PAUSED: { color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', label: 'Paused' },
     REMOVED: { color: '#EF4444', bg: 'rgba(239,68,68,0.08)', label: 'Removed' },
   };
-  const s = map[status] || { color: '#555555', bg: 'rgba(85,85,85,0.1)', label: status };
+  const { c } = useTheme();
+  const s = map[status] || { color: c.textMuted, bg: 'rgba(85,85,85,0.1)', label: status };
   return (
     <span style={{ fontSize: 11, fontWeight: 600, color: s.color, backgroundColor: s.bg, padding: '2px 8px', borderRadius: 4 }}>
       {s.label}
@@ -35,6 +38,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function GoogleAdsPage() {
+  const { c } = useTheme();
   const router = useRouter();
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
@@ -87,7 +91,7 @@ export default function GoogleAdsPage() {
       {loading || dataLoading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, height: 90, animation: 'pulse 1.5s ease-in-out infinite' }} />
+            <div key={i} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, height: 90, animation: 'pulse 1.5s ease-in-out infinite' }} />
           ))}
         </div>
       ) : !integration ? (
@@ -102,7 +106,7 @@ export default function GoogleAdsPage() {
         <>
           {/* Header row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: 13, color: '#555555' }}>
+            <div style={{ fontSize: 13, color: c.textMuted }}>
               {integration.last_sync_at ? `Last synced ${new Date(integration.last_sync_at).toLocaleString()}` : 'Never synced'}
             </div>
             <button
@@ -110,11 +114,11 @@ export default function GoogleAdsPage() {
               disabled={syncing}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                borderRadius: 8, border: '1px solid #333333', backgroundColor: '#111111',
-                color: '#888888', fontSize: 13, cursor: syncing ? 'not-allowed' : 'pointer'
+                borderRadius: 8, border: `1px solid ${c.borderStrong}`, backgroundColor: c.bgCard,
+                color: c.textSecondary, fontSize: 13, cursor: syncing ? 'not-allowed' : 'pointer'
               }}
-              onMouseEnter={e => { if (!syncing) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1A1A1A'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#111111'; }}
+              onMouseEnter={e => { if (!syncing) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard; }}
             >
               <RefreshCw size={14} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />
               {syncing ? 'Syncing...' : 'Sync Now'}
@@ -123,13 +127,13 @@ export default function GoogleAdsPage() {
 
           {/* Error */}
           {error && (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', marginBottom: 20 }}>
-              <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0, marginTop: 1 }} />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 16px', borderRadius: 10, backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, marginBottom: 20 }}>
+              <AlertCircle size={16} color={c.danger} style={{ flexShrink: 0, marginTop: 1 }} />
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#EF4444', marginBottom: 2 }}>Sync Failed</div>
-                <div style={{ fontSize: 12, color: '#888888' }}>{error}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: c.danger, marginBottom: 2 }}>Sync Failed</div>
+                <div style={{ fontSize: 12, color: c.textSecondary }}>{error}</div>
                 {error.toLowerCase().includes('developer') && (
-                  <div style={{ fontSize: 12, color: '#555555', marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: c.textMuted, marginTop: 4 }}>
                     Add GOOGLE_ADS_DEVELOPER_TOKEN to your environment variables to enable the Google Ads API.
                   </div>
                 )}
@@ -139,10 +143,10 @@ export default function GoogleAdsPage() {
 
           {/* No data yet */}
           {!hasData && !error && (
-            <div style={{ backgroundColor: '#111111', border: '1px dashed #222222', borderRadius: 14, padding: '48px 24px', textAlign: 'center', marginBottom: 20 }}>
-              <BarChart3 size={32} color="#333333" style={{ margin: '0 auto 12px' }} />
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#888888', marginBottom: 6 }}>No campaign data yet</div>
-              <div style={{ fontSize: 13, color: '#555555', marginBottom: 20 }}>Click "Sync Now" to pull your Google Ads campaigns.</div>
+            <div style={{ backgroundColor: c.bgCard, border: `1px dashed ${c.border}`, borderRadius: 14, padding: '48px 24px', textAlign: 'center', marginBottom: 20 }}>
+              <BarChart3 size={32} color={c.borderStrong} style={{ margin: '0 auto 12px' }} />
+              <div style={{ fontSize: 15, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>No campaign data yet</div>
+              <div style={{ fontSize: 13, color: c.textMuted, marginBottom: 20 }}>Click "Sync Now" to pull your Google Ads campaigns.</div>
             </div>
           )}
 
@@ -151,22 +155,22 @@ export default function GoogleAdsPage() {
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
                 <StatCard icon={DollarSign} color="#F59E0B" label="Total Spend" value={`$${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub="Last 30 days" />
-                <StatCard icon={MousePointerClick} color="#6366F1" label="Total Clicks" value={totalClicks.toLocaleString()} sub={`${totalImpressions.toLocaleString()} impressions`} />
+                <StatCard icon={MousePointerClick} color={c.accent} label="Total Clicks" value={totalClicks.toLocaleString()} sub={`${totalImpressions.toLocaleString()} impressions`} />
                 <StatCard icon={Target} color="#10B981" label="Conversions" value={totalConversions.toLocaleString()} sub={`$${totalConvValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} value`} />
-                <StatCard icon={TrendingUp} color="#6366F1" label="ROAS" value={`${roas.toFixed(2)}x`} sub={roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'} />
+                <StatCard icon={TrendingUp} color={c.accent} label="ROAS" value={`${roas.toFixed(2)}x`} sub={roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'} />
                 <StatCard icon={Zap} color="#EF4444" label="Avg CPC" value={`$${avgCPC.toFixed(2)}`} sub="Per click average" />
-                <StatCard icon={BarChart3} color="#888888" label="Campaigns" value={campaigns.length.toString()} sub={`${campaigns.filter((c: any) => c.status === 'ENABLED').length} active`} />
+                <StatCard icon={BarChart3} color={c.textSecondary} label="Campaigns" value={campaigns.length.toString()} sub={`${campaigns.filter((c: any) => c.status === 'ENABLED').length} active`} />
               </div>
 
               {/* Campaign table */}
-              <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 14, padding: 24 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 600, color: '#FAFAFA', marginBottom: 16 }}>Campaigns</h2>
+              <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 14, padding: 24 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 16 }}>Campaigns</h2>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
                     <thead>
                       <tr>
                         {['Campaign', 'Status', 'Spend', 'Clicks', 'Impressions', 'Conversions', 'CPC', 'ROAS'].map(h => (
-                          <th key={h} style={{ textAlign: 'left', fontSize: 11, fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.05em', paddingBottom: 10, borderBottom: '1px solid #222222', paddingRight: 12, whiteSpace: 'nowrap' }}>{h}</th>
+                          <th key={h} style={{ textAlign: 'left', fontSize: 11, fontWeight: 600, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.05em', paddingBottom: 10, borderBottom: `1px solid ${c.border}`, paddingRight: 12, whiteSpace: 'nowrap' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -177,17 +181,17 @@ export default function GoogleAdsPage() {
                         return (
                           <tr
                             key={camp.campaign_id || i}
-                            style={{ borderBottom: '1px solid #222222' }}
-                            onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#1A1A1A'}
+                            style={{ borderBottom: `1px solid ${c.border}` }}
+                            onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = c.bgCardHover}
                             onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = 'transparent'}
                           >
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: '#FAFAFA', fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</td>
                             <td style={{ padding: '12px 12px 12px 0' }}><StatusBadge status={camp.status} /></td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: '#FAFAFA', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>${(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: '#888888', fontFamily: 'var(--font-mono)' }}>{(camp.clicks || 0).toLocaleString()}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: '#888888', fontFamily: 'var(--font-mono)' }}>{(camp.impressions || 0).toLocaleString()}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: '#888888', fontFamily: 'var(--font-mono)' }}>{(camp.conversions || 0).toFixed(1)}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: '#888888', fontFamily: 'var(--font-mono)' }}>{cCpc !== '—' ? `$${cCpc}` : '—'}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>${(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.clicks || 0).toLocaleString()}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.impressions || 0).toLocaleString()}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.conversions || 0).toFixed(1)}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{cCpc !== '—' ? `$${cCpc}` : '—'}</td>
                             <td style={{ padding: '12px 0', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)', color: parseFloat(cRoas as string) >= 3 ? '#10B981' : parseFloat(cRoas as string) >= 1 ? '#F59E0B' : '#EF4444' }}>
                               {cRoas !== '—' ? `${cRoas}x` : '—'}
                             </td>

@@ -14,30 +14,31 @@ const PlatformLogo = ({ name, size = 18 }: { name: string; size?: number }) => (
 function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo, change }: {
   label: string; value: string; sub?: string; color: string; icon: any; loading?: boolean; platformLogo?: string; change?: string;
 }) {
+  const { c } = useTheme();
   return (
-    <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 20 }}>
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: '#888888', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
         {platformLogo && <PlatformLogo name={platformLogo} size={14} />}
       </div>
       {loading ? (
-        <div style={{ height: 32, backgroundColor: '#1A1A1A', borderRadius: 6, marginBottom: 8, width: '55%' }} className="animate-pulse" />
+        <div style={{ height: 32, backgroundColor: c.bgCardHover, borderRadius: 6, marginBottom: 8, width: '55%' }} className="animate-pulse" />
       ) : (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <div style={{ fontSize: 28, fontWeight: 500, color: '#FAFAFA', letterSpacing: '-0.03em', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
+          <div style={{ fontSize: 28, fontWeight: 500, color: c.text, letterSpacing: '-0.03em', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
             {value}
           </div>
           {change && (
             <span style={{
               fontSize: 12, fontWeight: 600,
-              color: change.startsWith('+') ? '#10B981' : change.startsWith('-') ? '#EF4444' : '#888888',
+              color: change.startsWith('+') ? c.success : change.startsWith('-') ? c.danger : c.textSecondary,
             }}>
               {change}
             </span>
           )}
         </div>
       )}
-      {sub && <div style={{ fontSize: 12, color: '#555555', marginTop: 6 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: c.textMuted, marginTop: 6 }}>{sub}</div>}
     </div>
   );
 }
@@ -81,10 +82,10 @@ export default function DashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, color: '#FAFAFA', letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 600, color: c.text, letterSpacing: '-0.02em', lineHeight: 1.3 }}>
             Dashboard
           </h1>
-          <p style={{ color: '#555555', fontSize: 13, marginTop: 4 }}>
+          <p style={{ color: c.textMuted, fontSize: 13, marginTop: 4 }}>
             {connectedProviders.length > 0
               ? `${connectedProviders.length} source${connectedProviders.length > 1 ? 's' : ''} connected · Last 30 days`
               : 'Connect your first integration to see live data'}
@@ -94,10 +95,10 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
-        <StatCard label="Sessions" value={hasGA4 ? totalSessions.toLocaleString() : '—'} sub={hasGA4 ? `${totalUsers.toLocaleString()} users` : 'Connect GA4'} color="#6366F1" icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
-        <StatCard label="Organic Clicks" value={hasGSC ? totalClicks.toLocaleString() : '—'} sub={hasGSC ? `${totalImpressions.toLocaleString()} impressions` : 'Connect GSC'} color="#6366F1" icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
-        <StatCard label="Avg Position" value={hasGSC ? `#${avgPosition}` : '—'} sub={hasGSC ? `${gscKeywords.length} keywords tracked` : 'Connect GSC'} color="#F59E0B" icon={Target} loading={loading} />
-        <StatCard label="Impressions" value={hasGSC ? totalImpressions.toLocaleString() : '—'} sub={hasGSC ? 'Search impressions' : 'Connect GSC'} color="#10B981" icon={BarChart3} loading={loading} />
+        <StatCard label="Sessions" value={hasGA4 ? totalSessions.toLocaleString() : '—'} sub={hasGA4 ? `${totalUsers.toLocaleString()} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
+        <StatCard label="Organic Clicks" value={hasGSC ? totalClicks.toLocaleString() : '—'} sub={hasGSC ? `${totalImpressions.toLocaleString()} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
+        <StatCard label="Avg Position" value={hasGSC ? `#${avgPosition}` : '—'} sub={hasGSC ? `${gscKeywords.length} keywords tracked` : 'Connect GSC'} color={c.warning} icon={Target} loading={loading} />
+        <StatCard label="Impressions" value={hasGSC ? totalImpressions.toLocaleString() : '—'} sub={hasGSC ? 'Search impressions' : 'Connect GSC'} color={c.success} icon={BarChart3} loading={loading} />
       </div>
 
       {/* Anomalies — full width */}
@@ -106,11 +107,11 @@ export default function DashboardPage() {
       {/* Traffic chart + Top pages */}
       <div className="two-col" style={{ marginBottom: 20, marginTop: 20 }}>
         {/* Traffic chart */}
-        <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 24 }}>
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#FAFAFA' }}>Traffic over time</h3>
-              <p style={{ fontSize: 12, color: '#555555', marginTop: 2 }}>Daily clicks — last 14 days</p>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Traffic over time</h3>
+              <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>Daily clicks — last 14 days</p>
             </div>
             {hasGSC && <PlatformLogo name="googlesearchconsole" size={14} />}
           </div>
@@ -119,24 +120,24 @@ export default function DashboardPage() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="gDash" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366F1" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#6366F1" stopOpacity={0} />
+                    <stop offset="0%" stopColor={c.accent} stopOpacity={0.15} />
+                    <stop offset="100%" stopColor={c.accent} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="day" stroke="transparent" tick={{ fill: '#555555', fontSize: 10 }} axisLine={false} tickLine={false} interval={2} />
-                <YAxis stroke="transparent" tick={{ fill: '#555555', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="day" stroke="transparent" tick={{ fill: c.textMuted, fontSize: 10 }} axisLine={false} tickLine={false} interval={2} />
+                <YAxis stroke="transparent" tick={{ fill: c.textMuted, fontSize: 10 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid #222222', borderRadius: 8, color: '#FAFAFA', fontSize: 12 }}
-                  itemStyle={{ color: '#FAFAFA' }}
-                  labelStyle={{ color: '#888888' }}
+                  contentStyle={{ backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, borderRadius: 8, color: c.text, fontSize: 12 }}
+                  itemStyle={{ color: c.text }}
+                  labelStyle={{ color: c.textSecondary }}
                 />
-                <Area type="monotone" dataKey="clicks" stroke="#6366F1" fill="url(#gDash)" strokeWidth={2} dot={false} />
+                <Area type="monotone" dataKey="clicks" stroke={c.accent} fill="url(#gDash)" strokeWidth={2} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div style={{ height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <p style={{ fontSize: 14, color: '#555555' }}>No traffic data yet</p>
-              <button onClick={() => router.push('/dashboard/settings')} style={{ fontSize: 13, color: '#6366F1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
+              <p style={{ fontSize: 14, color: c.textMuted }}>No traffic data yet</p>
+              <button onClick={() => router.push('/dashboard/settings')} style={{ fontSize: 13, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
                 Connect Google Search Console →
               </button>
             </div>
@@ -144,11 +145,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Top pages / keywords table */}
-        <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 24 }}>
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: '#FAFAFA' }}>Top keywords</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Top keywords</h3>
             {hasGSC && (
-              <button onClick={() => router.push('/dashboard/seo')} style={{ fontSize: 12, color: '#6366F1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
+              <button onClick={() => router.push('/dashboard/seo')} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
                 View all →
               </button>
             )}
@@ -156,23 +157,23 @@ export default function DashboardPage() {
           {topKeywords.length > 0 ? (
             <div>
               {topKeywords.map((kw: any, i: number) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < topKeywords.length - 1 ? '1px solid #1A1A1A' : 'none' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < topKeywords.length - 1 ? `1px solid ${c.bgCardHover}` : 'none' }}>
                   <span style={{
                     fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-mono)',
-                    color: kw.position <= 3 ? '#10B981' : kw.position <= 10 ? '#F59E0B' : '#555555',
+                    color: kw.position <= 3 ? c.success : kw.position <= 10 ? c.warning : c.textMuted,
                     width: 32, flexShrink: 0,
                   }}>
                     #{Math.round(kw.position)}
                   </span>
-                  <span style={{ flex: 1, fontSize: 13, color: '#888888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kw.query}</span>
-                  <span style={{ fontSize: 12, color: '#6366F1', fontWeight: 600, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>{kw.clicks}</span>
+                  <span style={{ flex: 1, fontSize: 13, color: c.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kw.query}</span>
+                  <span style={{ fontSize: 12, color: c.accent, fontWeight: 600, fontFamily: 'var(--font-mono)', flexShrink: 0 }}>{kw.clicks}</span>
                 </div>
               ))}
             </div>
           ) : (
             <div style={{ height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <p style={{ fontSize: 14, color: '#555555' }}>No keyword data yet</p>
-              <button onClick={() => router.push('/dashboard/settings')} style={{ fontSize: 13, color: '#6366F1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
+              <p style={{ fontSize: 14, color: c.textMuted }}>No keyword data yet</p>
+              <button onClick={() => router.push('/dashboard/settings')} style={{ fontSize: 13, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
                 Sync Search Console →
               </button>
             </div>
@@ -184,33 +185,33 @@ export default function DashboardPage() {
       <div className="two-col" style={{ marginBottom: 20 }}>
         {/* Quick wins / keyword table */}
         {quickWins.length > 0 ? (
-          <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 24 }}>
+          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <Brain size={16} color="#6366F1" />
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#FAFAFA' }}>Quick wins</h3>
-              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 100, backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Action needed</span>
+              <Brain size={16} color={c.accent} />
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Quick wins</h3>
+              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 100, backgroundColor: c.warningSubtle, color: c.warning, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Action needed</span>
             </div>
-            <p style={{ fontSize: 13, color: '#555555', marginBottom: 14, lineHeight: 1.6 }}>Keywords ranking 4-10 with low CTR — optimize title tags to push to page 1.</p>
+            <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 14, lineHeight: 1.6 }}>Keywords ranking 4-10 with low CTR — optimize title tags to push to page 1.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {quickWins.map((kw: any, i: number) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, backgroundColor: '#1A1A1A', border: '1px solid #222222' }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#F59E0B', fontFamily: 'var(--font-mono)', width: 32 }}>#{Math.round(kw.position)}</span>
-                  <span style={{ flex: 1, fontSize: 13, color: '#888888' }}>{kw.query}</span>
-                  <span style={{ fontSize: 12, color: '#555555' }}>{kw.impressions?.toLocaleString()} impr.</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: '#EF4444', fontFamily: 'var(--font-mono)' }}>{kw.ctr?.toFixed(1)}%</span>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: c.warning, fontFamily: 'var(--font-mono)', width: 32 }}>#{Math.round(kw.position)}</span>
+                  <span style={{ flex: 1, fontSize: 13, color: c.textSecondary }}>{kw.query}</span>
+                  <span style={{ fontSize: 12, color: c.textMuted }}>{kw.impressions?.toLocaleString()} impr.</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: c.danger, fontFamily: 'var(--font-mono)' }}>{kw.ctr?.toFixed(1)}%</span>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ fontSize: 13, color: '#555555' }}>Quick win opportunities will appear here when data is available.</p>
+          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p style={{ fontSize: 13, color: c.textMuted }}>Quick win opportunities will appear here when data is available.</p>
           </div>
         )}
 
         {/* Quick actions */}
-        <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 24 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: '#FAFAFA', marginBottom: 16 }}>Quick actions</h3>
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 16 }}>Quick actions</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[
               { label: 'Run keyword gap analysis', icon: Search, href: '/dashboard/competitors' },
@@ -223,17 +224,17 @@ export default function DashboardPage() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '12px 14px', borderRadius: 8,
-                  border: '1px solid #222222', backgroundColor: 'transparent',
-                  color: '#FAFAFA', fontSize: 13, fontWeight: 500,
+                  border: `1px solid ${c.border}`, backgroundColor: 'transparent',
+                  color: c.text, fontSize: 13, fontWeight: 500,
                   cursor: 'pointer', textAlign: 'left', width: '100%',
                   transition: 'background-color 0.15s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#1A1A1A')}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = c.bgCardHover)}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
               >
-                <action.icon size={15} color="#6366F1" />
+                <action.icon size={15} color={c.accent} />
                 <span style={{ flex: 1 }}>{action.label}</span>
-                <ArrowRight size={14} color="#555555" />
+                <ArrowRight size={14} color={c.textMuted} />
               </button>
             ))}
           </div>
@@ -242,16 +243,16 @@ export default function DashboardPage() {
 
       {/* Connect CTA */}
       {connectedProviders.length === 0 && !loading && (
-        <div style={{ padding: 24, borderRadius: 12, border: '1px solid #222222', backgroundColor: '#111111', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+        <div style={{ padding: 24, borderRadius: 12, border: `1px solid ${c.border}`, backgroundColor: c.bgCard, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
           <div>
-            <h3 style={{ fontSize: 15, fontWeight: 600, color: '#FAFAFA', marginBottom: 4 }}>Connect your first data source</h3>
-            <p style={{ fontSize: 13, color: '#555555' }}>Link GSC, GA4, Google Ads, or Meta Ads to populate your dashboard with real data.</p>
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 4 }}>Connect your first data source</h3>
+            <p style={{ fontSize: 13, color: c.textMuted }}>Link GSC, GA4, Google Ads, or Meta Ads to populate your dashboard with real data.</p>
           </div>
           <button
             onClick={() => router.push('/dashboard/settings')}
-            style={{ padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: '#6366F1', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background-color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#4F46E5')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#6366F1')}
+            style={{ padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: c.accent, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background-color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = c.accentHover)}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = c.accent)}
           >
             Connect now →
           </button>
@@ -266,16 +267,17 @@ export default function DashboardPage() {
 
 /* ─── Anomalies Dashboard Widget ─── */
 
-const SEVERITY_COLORS: Record<string, string> = {
-  high: '#EF4444',
-  medium: '#F59E0B',
-  low: '#888888',
-};
-
 function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
+  const { c } = useTheme();
   const [anomalies, setAnomalies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const SEVERITY_COLORS: Record<string, string> = {
+    high: c.danger,
+    medium: c.warning,
+    low: c.textSecondary,
+  };
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -298,20 +300,20 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const display = anomalies.slice(0, 3);
 
   return (
-    <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 24 }}>
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Bell size={16} color="#EF4444" />
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: '#FAFAFA' }}>AI Anomalies</h3>
+          <Bell size={16} color={c.danger} />
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>AI Anomalies</h3>
           {unread.length > 0 && (
-            <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 100, backgroundColor: 'rgba(239,68,68,0.1)', color: '#EF4444', fontWeight: 600 }}>
+            <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 100, backgroundColor: c.dangerSubtle, color: c.danger, fontWeight: 600 }}>
               {unread.length} new
             </span>
           )}
         </div>
         <button
           onClick={() => router.push('/dashboard/alerts')}
-          style={{ fontSize: 12, color: '#6366F1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
+          style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
         >
           View all →
         </button>
@@ -319,13 +321,13 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
 
       {display.length === 0 ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0' }}>
-          <CheckCircle size={16} color="#10B981" />
-          <p style={{ fontSize: 13, color: '#888888' }}>No anomalies detected — everything looks healthy</p>
+          <CheckCircle size={16} color={c.success} />
+          <p style={{ fontSize: 13, color: c.textSecondary }}>No anomalies detected — everything looks healthy</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {display.map((anomaly: any) => {
-            const color = SEVERITY_COLORS[anomaly.severity] || '#888888';
+            const color = SEVERITY_COLORS[anomaly.severity] || c.textSecondary;
             return (
               <div
                 key={anomaly.id}
@@ -333,7 +335,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '12px 14px', borderRadius: 8,
-                  backgroundColor: '#1A1A1A', border: '1px solid #222222',
+                  backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`,
                   cursor: anomaly.is_read ? 'default' : 'pointer',
                   opacity: anomaly.is_read ? 0.6 : 1,
                   transition: 'opacity 0.2s',
@@ -341,9 +343,9 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
               >
                 <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: color, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: '#FAFAFA' }}>{anomaly.title}</p>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: c.text }}>{anomaly.title}</p>
                 </div>
-                <span style={{ fontSize: 11, color: '#555555', flexShrink: 0 }}>
+                <span style={{ fontSize: 11, color: c.textMuted, flexShrink: 0 }}>
                   {anomaly.created_at ? new Date(anomaly.created_at).toLocaleDateString() : ''}
                 </span>
               </div>
@@ -357,25 +359,26 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
 
 /* ─── AI Insights Dashboard Widget ─── */
 
-const INSIGHT_DOT_COLORS: Record<string, string> = {
-  win: '#10B981',
-  warning: '#EF4444',
-  opportunity: '#F59E0B',
-  tip: '#6366F1',
-};
-
-const INSIGHT_ICONS: Record<string, any> = {
-  win: TrendingUp,
-  warning: AlertTriangle,
-  opportunity: Lightbulb,
-  tip: Zap,
-};
-
 function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) {
+  const { c } = useTheme();
   const router = useRouter();
   const [insights, setInsights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+
+  const INSIGHT_DOT_COLORS: Record<string, string> = {
+    win: c.success,
+    warning: c.danger,
+    opportunity: c.warning,
+    tip: c.accent,
+  };
+
+  const INSIGHT_ICONS: Record<string, any> = {
+    win: TrendingUp,
+    warning: AlertTriangle,
+    opportunity: Lightbulb,
+    tip: Zap,
+  };
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -409,15 +412,15 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
   if (loading) return null;
 
   return (
-    <div style={{ backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 24 }}>
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Sparkles size={16} color="#6366F1" />
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: '#FAFAFA' }}>AI Insights</h3>
+          <Sparkles size={16} color={c.accent} />
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>AI Insights</h3>
         </div>
         <button
           onClick={() => router.push('/dashboard/ai')}
-          style={{ fontSize: 12, color: '#6366F1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}
+          style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}
         >
           View all <ArrowRight size={12} />
         </button>
@@ -425,13 +428,13 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
 
       {top3.length === 0 ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
-          <p style={{ fontSize: 13, color: '#555555' }}>No insights generated yet. Let AI analyze your data.</p>
+          <p style={{ fontSize: 13, color: c.textMuted }}>No insights generated yet. Let AI analyze your data.</p>
           <button
             onClick={generate}
             disabled={generating}
             style={{
               padding: '8px 16px', borderRadius: 8, border: 'none',
-              backgroundColor: '#6366F1', color: 'white',
+              backgroundColor: c.accent, color: 'white',
               fontSize: 13, fontWeight: 600,
               cursor: generating ? 'not-allowed' : 'pointer',
               opacity: generating ? 0.7 : 1, whiteSpace: 'nowrap',
@@ -445,13 +448,13 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {top3.map((insight: any) => {
             const Icon = INSIGHT_ICONS[insight.type] || Zap;
-            const dotColor = INSIGHT_DOT_COLORS[insight.type] || '#6366F1';
+            const dotColor = INSIGHT_DOT_COLORS[insight.type] || c.accent;
             return (
-              <div key={insight.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 8, backgroundColor: '#1A1A1A', border: '1px solid #222222' }}>
+              <div key={insight.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: '#FAFAFA', marginBottom: 2 }}>{insight.title}</p>
-                  <p style={{ fontSize: 12, color: '#555555', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{insight.description}</p>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: c.text, marginBottom: 2 }}>{insight.title}</p>
+                  <p style={{ fontSize: 12, color: c.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{insight.description}</p>
                 </div>
                 <Icon size={14} color={dotColor} style={{ flexShrink: 0 }} />
               </div>

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, ArrowRight, Zap, BarChart3, Brain } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { ThemeProvider, useTheme } from '@/lib/theme';
 
 const features = [
   { icon: BarChart3, text: 'Unified GA4 + GSC + Ads analytics' },
@@ -10,7 +11,8 @@ const features = [
   { icon: Zap, text: 'Competitor ad spy & intelligence' },
 ];
 
-export default function SignUpPage() {
+function SignUpInner() {
+  const { c } = useTheme();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -38,13 +40,13 @@ export default function SignUpPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'var(--font-body)', backgroundColor: '#0A0A0A' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'var(--font-body)', backgroundColor: c.bgPage }}>
 
       {/* Left panel — brand */}
       <div style={{
         flex: '0 0 45%', display: 'none', flexDirection: 'column', justifyContent: 'space-between',
-        padding: '48px', backgroundColor: '#0A0A0A',
-        borderRight: '1px solid #222222', position: 'relative', overflow: 'hidden',
+        padding: '48px', backgroundColor: c.bgPage,
+        borderRight: `1px solid ${c.border}`, position: 'relative', overflow: 'hidden',
       }} className="auth-left-panel">
         {/* Glow */}
         <div style={{ position: 'absolute', top: '-100px', left: '-100px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -53,21 +55,21 @@ export default function SignUpPage() {
         {/* Logo */}
         <div>
           <span style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)' }}>
-            <span style={{ color: '#6366F1' }}>L</span><span style={{ color: '#FAFAFA' }}>umnix</span>
+            <span style={{ color: c.accent }}>L</span><span style={{ color: c.text }}>umnix</span>
           </span>
         </div>
 
         {/* Headline */}
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '20px', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: '20px' }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366F1', display: 'inline-block' }} />
-            <span style={{ fontSize: '12px', color: '#6366F1', fontWeight: 600, letterSpacing: '0.5px' }}>MARKETING INTELLIGENCE</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '20px', background: c.accentSubtle, border: '1px solid rgba(99,102,241,0.2)', marginBottom: '20px' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: c.accent, display: 'inline-block' }} />
+            <span style={{ fontSize: '12px', color: c.accent, fontWeight: 600, letterSpacing: '0.5px' }}>MARKETING INTELLIGENCE</span>
           </div>
-          <h2 style={{ fontSize: '36px', fontWeight: 800, color: '#FAFAFA', lineHeight: 1.2, letterSpacing: '-1px', fontFamily: 'var(--font-display)', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '36px', fontWeight: 800, color: c.text, lineHeight: 1.2, letterSpacing: '-1px', fontFamily: 'var(--font-display)', marginBottom: '16px' }}>
             Your marketing data,<br />
-            <span style={{ color: '#6366F1' }}>finally unified.</span>
+            <span style={{ color: c.accent }}>finally unified.</span>
           </h2>
-          <p style={{ fontSize: '15px', color: '#888888', lineHeight: 1.6, marginBottom: '32px' }}>
+          <p style={{ fontSize: '15px', color: c.textSecondary, lineHeight: 1.6, marginBottom: '32px' }}>
             Connect GA4, Search Console, Google Ads, and Meta Ads into one AI-powered intelligence platform.
           </p>
 
@@ -75,16 +77,16 @@ export default function SignUpPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {features.map((f, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(99,102,241,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <f.icon size={15} color="#6366F1" />
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <f.icon size={15} color={c.accent} />
                 </div>
-                <span style={{ fontSize: '14px', color: '#888888' }}>{f.text}</span>
+                <span style={{ fontSize: '14px', color: c.textSecondary }}>{f.text}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <p style={{ fontSize: '12px', color: '#555555' }}>© 2026 Oltaflock AI · All rights reserved</p>
+        <p style={{ fontSize: '12px', color: c.textMuted }}>&copy; 2026 Oltaflock AI &middot; All rights reserved</p>
       </div>
 
       {/* Right panel — form */}
@@ -94,15 +96,15 @@ export default function SignUpPage() {
           {/* Mobile logo */}
           <div style={{ marginBottom: '32px' }} className="auth-mobile-logo">
             <span style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)' }}>
-              <span style={{ color: '#6366F1' }}>L</span><span style={{ color: '#FAFAFA' }}>umnix</span>
+              <span style={{ color: c.accent }}>L</span><span style={{ color: c.text }}>umnix</span>
             </span>
           </div>
 
-          <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#FAFAFA', fontFamily: 'var(--font-display)', letterSpacing: '-0.5px', marginBottom: '6px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, color: c.text, fontFamily: 'var(--font-display)', letterSpacing: '-0.5px', marginBottom: '6px' }}>
             Create your account
           </h1>
-          <p style={{ fontSize: '14px', color: '#888888', marginBottom: '28px' }}>
-            Free to start · No credit card needed
+          <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '28px' }}>
+            Free to start &middot; No credit card needed
           </p>
 
           {/* Google button */}
@@ -111,13 +113,13 @@ export default function SignUpPage() {
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: '10px', padding: '11px 16px', borderRadius: '8px',
-              border: '1px solid #222222', backgroundColor: '#111111',
-              color: '#FAFAFA', fontSize: '14px', fontWeight: 500,
+              border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
+              color: c.text, fontSize: '14px', fontWeight: 500,
               cursor: 'pointer', marginBottom: '20px',
               transition: 'all 0.15s ease',
             }}
-            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1A1A1A'}
-            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#111111'}
+            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover}
+            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard}
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -129,9 +131,9 @@ export default function SignUpPage() {
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#222222' }} />
-            <span style={{ fontSize: '12px', color: '#555555' }}>or continue with email</span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#222222' }} />
+            <div style={{ flex: 1, height: '1px', backgroundColor: c.border }} />
+            <span style={{ fontSize: '12px', color: c.textMuted }}>or continue with email</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: c.border }} />
           </div>
 
           {/* Form */}
@@ -142,7 +144,7 @@ export default function SignUpPage() {
               { icon: Lock, type: 'password', placeholder: 'Password (min 6 chars)', value: password, onChange: setPassword, min: 6 },
             ].map((field, i) => (
               <div key={i} style={{ position: 'relative' }}>
-                <field.icon size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#555555', pointerEvents: 'none' }} />
+                <field.icon size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
                 <input
                   type={field.type}
                   placeholder={field.placeholder}
@@ -152,19 +154,19 @@ export default function SignUpPage() {
                   minLength={field.min}
                   style={{
                     width: '100%', padding: '11px 14px 11px 40px',
-                    borderRadius: '8px', border: '1px solid #222222',
-                    backgroundColor: '#111111', color: '#FAFAFA',
+                    borderRadius: '8px', border: `1px solid ${c.border}`,
+                    backgroundColor: c.bgCard, color: c.text,
                     fontSize: '14px', outline: 'none', boxSizing: 'border-box',
                     fontFamily: 'var(--font-body)', transition: 'border-color 0.15s',
                   } as React.CSSProperties}
-                  onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366F1'}
-                  onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#222222'}
+                  onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+                  onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
                 />
               </div>
             ))}
 
             {error && (
-              <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#EF4444', fontSize: '13px' }}>
+              <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: '13px' }}>
                 {error}
               </div>
             )}
@@ -174,24 +176,24 @@ export default function SignUpPage() {
               disabled={loading}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none',
-                backgroundColor: '#6366F1', color: 'white', fontSize: '14px', fontWeight: 600,
+                backgroundColor: c.accent, color: 'white', fontSize: '14px', fontWeight: 600,
                 cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 transition: 'background-color 0.15s', marginTop: '4px',
               }}
-              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4F46E5'; }}
-              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#6366F1'; }}
+              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accentHover; }}
+              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accent; }}
             >
               {loading ? 'Creating account...' : (<>Create account <ArrowRight size={15} /></>)}
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#555555' }}>
+          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: c.textMuted }}>
             Already have an account?{' '}
-            <a href="/auth/signin" style={{ color: '#6366F1', fontWeight: 500, textDecoration: 'none' }}>Sign in</a>
+            <a href="/auth/signin" style={{ color: c.accent, fontWeight: 500, textDecoration: 'none' }}>Sign in</a>
           </p>
 
-          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', color: '#555555', lineHeight: 1.6 }}>
+          <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '11px', color: c.textMuted, lineHeight: 1.6 }}>
             By creating an account you agree to our Terms of Service and Privacy Policy.
           </p>
         </div>
@@ -201,5 +203,13 @@ export default function SignUpPage() {
         @media (min-width: 900px) { .auth-left-panel { display: flex !important; } .auth-mobile-logo { display: none !important; } }
       `}</style>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <ThemeProvider>
+      <SignUpInner />
+    </ThemeProvider>
   );
 }

@@ -3,26 +3,42 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 type Theme = 'light' | 'dark';
 
+interface ColorTokens {
+  bgPage: string;
+  bgSidebar: string;
+  bgCard: string;
+  bgCardHover: string;
+  bgInput: string;
+  bgTag: string;
+  border: string;
+  borderSubtle: string;
+  borderStrong: string;
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  shadow: string;
+  surfaceElevated: string;
+  accent: string;
+  accentHover: string;
+  accentSubtle: string;
+  success: string;
+  successSubtle: string;
+  successBorder: string;
+  warning: string;
+  warningSubtle: string;
+  warningBorder: string;
+  danger: string;
+  dangerSubtle: string;
+  dangerBorder: string;
+}
+
 interface ThemeCtx {
   theme: Theme;
   toggle: () => void;
-  c: {
-    bgPage: string;
-    bgSidebar: string;
-    bgCard: string;
-    bgCardHover: string;
-    bgInput: string;
-    bgTag: string;
-    border: string;
-    borderSubtle: string;
-    text: string;
-    textSecondary: string;
-    textMuted: string;
-    shadow: string;
-  };
+  c: ColorTokens;
 }
 
-const DARK = {
+const DARK: ColorTokens = {
   bgPage: '#0A0A0A',
   bgSidebar: '#0A0A0A',
   bgCard: '#111111',
@@ -31,25 +47,53 @@ const DARK = {
   bgTag: '#1A1A1A',
   border: '#222222',
   borderSubtle: '#1A1A1A',
+  borderStrong: '#333333',
   text: '#FAFAFA',
   textSecondary: '#888888',
   textMuted: '#555555',
   shadow: 'none',
+  surfaceElevated: '#1A1A1A',
+  accent: '#6366F1',
+  accentHover: '#4F46E5',
+  accentSubtle: 'rgba(99,102,241,0.08)',
+  success: '#10B981',
+  successSubtle: 'rgba(16,185,129,0.08)',
+  successBorder: 'rgba(16,185,129,0.2)',
+  warning: '#F59E0B',
+  warningSubtle: 'rgba(245,158,11,0.08)',
+  warningBorder: 'rgba(245,158,11,0.2)',
+  danger: '#EF4444',
+  dangerSubtle: 'rgba(239,68,68,0.08)',
+  dangerBorder: 'rgba(239,68,68,0.2)',
 };
 
-const LIGHT = {
-  bgPage: '#0A0A0A',
-  bgSidebar: '#0A0A0A',
-  bgCard: '#111111',
-  bgCardHover: '#1A1A1A',
-  bgInput: '#111111',
-  bgTag: '#1A1A1A',
-  border: '#222222',
-  borderSubtle: '#1A1A1A',
-  text: '#FAFAFA',
-  textSecondary: '#888888',
-  textMuted: '#555555',
-  shadow: 'none',
+const LIGHT: ColorTokens = {
+  bgPage: '#FAFAFA',
+  bgSidebar: '#FFFFFF',
+  bgCard: '#FFFFFF',
+  bgCardHover: '#F5F5F5',
+  bgInput: '#FFFFFF',
+  bgTag: '#F0F0F0',
+  border: '#E5E5E5',
+  borderSubtle: '#F0F0F0',
+  borderStrong: '#D4D4D4',
+  text: '#0A0A0A',
+  textSecondary: '#555555',
+  textMuted: '#888888',
+  shadow: '0 1px 3px rgba(0,0,0,0.08)',
+  surfaceElevated: '#F5F5F5',
+  accent: '#6366F1',
+  accentHover: '#4F46E5',
+  accentSubtle: 'rgba(99,102,241,0.06)',
+  success: '#059669',
+  successSubtle: 'rgba(5,150,105,0.08)',
+  successBorder: 'rgba(5,150,105,0.2)',
+  warning: '#D97706',
+  warningSubtle: 'rgba(217,119,6,0.08)',
+  warningBorder: 'rgba(217,119,6,0.2)',
+  danger: '#DC2626',
+  dangerSubtle: 'rgba(220,38,38,0.08)',
+  dangerBorder: 'rgba(220,38,38,0.2)',
 };
 
 const Ctx = createContext<ThemeCtx>({
@@ -60,6 +104,15 @@ const Ctx = createContext<ThemeCtx>({
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('lumnix-theme') as Theme | null;
+    if (saved === 'light' || saved === 'dark') {
+      setTheme(saved);
+    }
+    setMounted(true);
+  }, []);
 
   function toggle() {
     setTheme(t => {
@@ -72,10 +125,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const c = theme === 'dark' ? DARK : LIGHT;
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
     document.body.style.backgroundColor = c.bgPage;
     document.body.style.color = c.text;
   }, [theme, c]);
+
+  // Prevent flash of wrong theme
+  if (!mounted) {
+    return <div style={{ visibility: 'hidden' }}>{children}</div>;
+  }
 
   return <Ctx.Provider value={{ theme, toggle, c }}>{children}</Ctx.Provider>;
 }

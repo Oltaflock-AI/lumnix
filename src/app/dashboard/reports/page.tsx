@@ -790,18 +790,20 @@ const pdfSections = [
 
 /* ── Skeleton Preview Block ── */
 function SkeletonLine({ width, height = 10, mb = 8 }: { width: string | number; height?: number; mb?: number }) {
+  const { c } = useTheme();
   return (
     <div style={{
       width: typeof width === 'number' ? `${width}%` : width,
       height,
       borderRadius: 4,
-      backgroundColor: '#222222',
+      backgroundColor: c.border,
       marginBottom: mb,
     }} />
   );
 }
 
 function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport: string | null; selectedSections: Set<string> }) {
+  const { c } = useTheme();
   const rt = reportTypes.find(r => r.id === selectedReport);
   const sectionNames = selectedReport
     ? (rt?.sections || []).filter((_, i) => {
@@ -813,8 +815,8 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
 
   return (
     <div style={{
-      backgroundColor: '#111111',
-      border: '1px solid #222222',
+      backgroundColor: c.bgCard,
+      border: `1px solid ${c.border}`,
       borderRadius: 12,
       overflow: 'hidden',
       height: '100%',
@@ -823,44 +825,44 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
       {/* Preview header bar */}
       <div style={{
         padding: '12px 16px',
-        borderBottom: '1px solid #222222',
+        borderBottom: `1px solid ${c.border}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Eye size={14} color="#555555" />
-          <span style={{ fontSize: 12, fontWeight: 600, color: '#555555', letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>Live Preview</span>
+          <Eye size={14} color={c.textMuted} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: c.textMuted, letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>Live Preview</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: selectedReport ? '#10B981' : '#555555' }} />
-          <span style={{ fontSize: 11, color: '#555555' }}>{selectedReport ? 'Ready' : 'Select a report'}</span>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: selectedReport ? c.success : c.textMuted }} />
+          <span style={{ fontSize: 11, color: c.textMuted }}>{selectedReport ? 'Ready' : 'Select a report'}</span>
         </div>
       </div>
 
       {/* Mockup PDF page */}
       <div style={{ padding: 20 }}>
         <div style={{
-          backgroundColor: '#0A0A0A',
-          border: '1px solid #222222',
+          backgroundColor: c.bgPage,
+          border: `1px solid ${c.border}`,
           borderRadius: 8,
           padding: 24,
           minHeight: 420,
         }}>
           {!selectedReport ? (
             <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', height: 380, gap: 12 }}>
-              <Layout size={32} color="#333333" />
-              <span style={{ fontSize: 13, color: '#555555' }}>Select a report type to preview</span>
+              <Layout size={32} color={c.borderStrong} />
+              <span style={{ fontSize: 13, color: c.textMuted }}>Select a report type to preview</span>
             </div>
           ) : (
             <>
               {/* Fake cover block */}
               <div style={{
-                background: 'linear-gradient(135deg, #1A1A1A, rgba(99,102,241,0.1))',
+                background: `linear-gradient(135deg, ${c.surfaceElevated}, rgba(99,102,241,0.1))`,
                 borderRadius: 8,
                 padding: 20,
                 marginBottom: 20,
-                border: '1px solid #222222',
+                border: `1px solid ${c.border}`,
               }}>
                 <SkeletonLine width="40%" height={8} mb={12} />
                 <SkeletonLine width="70%" height={14} mb={6} />
@@ -878,7 +880,7 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
                   <SkeletonLine width="30%" height={6} mb={10} />
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                     {[1,2,3,4].map(i => (
-                      <div key={i} style={{ backgroundColor: '#1A1A1A', borderRadius: 6, padding: 12, border: '1px solid #222222' }}>
+                      <div key={i} style={{ backgroundColor: c.surfaceElevated, borderRadius: 6, padding: 12, border: `1px solid ${c.border}` }}>
                         <SkeletonLine width="60%" height={12} mb={4} />
                         <SkeletonLine width="80%" height={6} mb={0} />
                       </div>
@@ -892,7 +894,7 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
                 <div style={{ marginBottom: 18 }}>
                   <SkeletonLine width="25%" height={6} mb={10} />
                   {[1,2,3,4,5].map(i => (
-                    <div key={i} style={{ display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid #1A1A1A' }}>
+                    <div key={i} style={{ display: 'flex', gap: 12, padding: '6px 0', borderBottom: `1px solid ${c.surfaceElevated}` }}>
                       <SkeletonLine width="35%" height={6} mb={0} />
                       <SkeletonLine width="15%" height={6} mb={0} />
                       <SkeletonLine width="15%" height={6} mb={0} />
@@ -908,7 +910,7 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
                   <SkeletonLine width="20%" height={6} mb={10} />
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 50 }}>
                     {[30,50,40,65,55,80,70,45,60,75,50,40].map((h, i) => (
-                      <div key={i} style={{ flex: 1, height: `${h}%`, backgroundColor: '#1A1A1A', borderRadius: 2 }} />
+                      <div key={i} style={{ flex: 1, height: `${h}%`, backgroundColor: c.surfaceElevated, borderRadius: 2 }} />
                     ))}
                   </div>
                 </div>
@@ -919,8 +921,8 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
                 <div>
                   <SkeletonLine width="28%" height={6} mb={10} />
                   {[1,2].map(i => (
-                    <div key={i} style={{ display: 'flex', gap: 10, padding: 10, borderRadius: 6, border: '1px solid #1A1A1A', marginBottom: 8, backgroundColor: '#111111' }}>
-                      <div style={{ width: 20, height: 20, borderRadius: 5, backgroundColor: '#1A1A1A', flexShrink: 0 }} />
+                    <div key={i} style={{ display: 'flex', gap: 10, padding: 10, borderRadius: 6, border: `1px solid ${c.surfaceElevated}`, marginBottom: 8, backgroundColor: c.bgCard }}>
+                      <div style={{ width: 20, height: 20, borderRadius: 5, backgroundColor: c.surfaceElevated, flexShrink: 0 }} />
                       <div style={{ flex: 1 }}>
                         <SkeletonLine width="50%" height={7} mb={6} />
                         <SkeletonLine width="90%" height={5} mb={3} />
@@ -933,7 +935,7 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
 
               {selectedSections.size === 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', height: 200, gap: 8 }}>
-                  <span style={{ fontSize: 12, color: '#555555' }}>Select sections to include</span>
+                  <span style={{ fontSize: 12, color: c.textMuted }}>Select sections to include</span>
                 </div>
               )}
             </>
@@ -945,6 +947,7 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
 }
 
 function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace: any; days: number; periodLabel: string; hasData: boolean }) {
+  const { c } = useTheme();
   const [selected, setSelected] = useState<Set<string>>(new Set(['overview', 'ga4', 'gsc', 'insights']));
   const [generating, setGenerating] = useState(false);
 
@@ -997,14 +1000,14 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
   }, [selected, workspace, days, periodLabel]);
 
   return (
-    <div style={{ marginTop: 28, backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 28 }}>
+    <div style={{ marginTop: 28, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 28 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(99,102,241,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <FileOutput size={22} color="#6366F1" />
+        <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <FileOutput size={22} color={c.accent} />
         </div>
         <div>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#FAFAFA', marginBottom: 2 }}>Custom PDF Report</h3>
-          <p style={{ fontSize: 12, color: '#555555', margin: 0 }}>Select sections and generate a branded PDF report</p>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 2 }}>Custom PDF Report</h3>
+          <p style={{ fontSize: 12, color: c.textMuted, margin: 0 }}>Select sections and generate a branded PDF report</p>
         </div>
       </div>
 
@@ -1020,24 +1023,24 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '14px 16px', borderRadius: 8,
-                  border: `1px solid ${selected.has(s.id) ? '#6366F1' : '#222222'}`,
-                  backgroundColor: selected.has(s.id) ? 'rgba(99,102,241,0.08)' : 'transparent',
+                  border: `1px solid ${selected.has(s.id) ? c.accent : c.border}`,
+                  backgroundColor: selected.has(s.id) ? c.accentSubtle : 'transparent',
                   cursor: 'pointer', textAlign: 'left' as const,
                   transition: 'all 0.15s ease',
                 }}
               >
                 <div style={{
                   width: 18, height: 18, borderRadius: 5,
-                  border: `2px solid ${selected.has(s.id) ? '#6366F1' : '#333333'}`,
-                  backgroundColor: selected.has(s.id) ? '#6366F1' : 'transparent',
+                  border: `2px solid ${selected.has(s.id) ? c.accent : c.borderStrong}`,
+                  backgroundColor: selected.has(s.id) ? c.accent : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                   transition: 'all 0.15s ease',
                 }}>
                   {selected.has(s.id) && <CheckCircle2 size={12} color="white" />}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#FAFAFA' }}>{s.label}</div>
-                  <div style={{ fontSize: 11, color: '#555555' }}>{s.desc}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{s.label}</div>
+                  <div style={{ fontSize: 11, color: c.textMuted }}>{s.desc}</div>
                 </div>
               </button>
             ))}
@@ -1049,14 +1052,14 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               width: '100%', padding: '12px 16px', borderRadius: 8, border: 'none',
-              backgroundColor: (selected.size === 0 || !hasData) ? '#333333' : '#6366F1',
+              backgroundColor: (selected.size === 0 || !hasData) ? c.borderStrong : c.accent,
               color: 'white', fontSize: 14, fontWeight: 700,
               cursor: (generating || selected.size === 0 || !hasData) ? 'not-allowed' : 'pointer',
               opacity: (selected.size === 0 || !hasData) ? 0.4 : 1,
               transition: 'background-color 0.15s ease',
             }}
-            onMouseEnter={e => { if (selected.size > 0 && hasData && !generating) (e.target as HTMLButtonElement).style.backgroundColor = '#4F46E5'; }}
-            onMouseLeave={e => { if (selected.size > 0 && hasData && !generating) (e.target as HTMLButtonElement).style.backgroundColor = '#6366F1'; }}
+            onMouseEnter={e => { if (selected.size > 0 && hasData && !generating) (e.target as HTMLButtonElement).style.backgroundColor = c.accentHover; }}
+            onMouseLeave={e => { if (selected.size > 0 && hasData && !generating) (e.target as HTMLButtonElement).style.backgroundColor = c.accent; }}
           >
             {generating ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={15} />}
             {generating ? 'Generating PDF...' : `Generate & Download (${selected.size} section${selected.size !== 1 ? 's' : ''})`}
@@ -1152,8 +1155,8 @@ export default function ReportsPage() {
     <PageShell title="Reports" description="Client-ready marketing reports with real data and AI insights" icon={FileText} badge="Client-Ready">
       {/* ── Date Range Picker ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#888888', fontSize: 13, fontWeight: 600 }}>
-          <Calendar size={15} color="#888888" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: c.textSecondary, fontSize: 13, fontWeight: 600 }}>
+          <Calendar size={15} color={c.textSecondary} />
           <span>Reporting Period</span>
         </div>
 
@@ -1170,9 +1173,9 @@ export default function ReportsPage() {
               style={{
                 padding: '6px 12px',
                 borderRadius: 8,
-                border: `1px solid ${DATE_PRESETS[selectedPreset].days === p.days ? '#6366F1' : '#333333'}`,
-                backgroundColor: DATE_PRESETS[selectedPreset].days === p.days ? 'rgba(99,102,241,0.08)' : 'transparent',
-                color: DATE_PRESETS[selectedPreset].days === p.days ? '#6366F1' : '#888888',
+                border: `1px solid ${DATE_PRESETS[selectedPreset].days === p.days ? c.accent : c.borderStrong}`,
+                backgroundColor: DATE_PRESETS[selectedPreset].days === p.days ? c.accentSubtle : 'transparent',
+                color: DATE_PRESETS[selectedPreset].days === p.days ? c.accent : c.textSecondary,
                 fontSize: 12,
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -1180,7 +1183,7 @@ export default function ReportsPage() {
               }}
               onMouseEnter={e => {
                 if (DATE_PRESETS[selectedPreset].days !== p.days) {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#1A1A1A';
+                  (e.target as HTMLButtonElement).style.backgroundColor = c.surfaceElevated;
                 }
               }}
               onMouseLeave={e => {
@@ -1200,16 +1203,16 @@ export default function ReportsPage() {
             style={{
               padding: '6px 12px',
               borderRadius: 8,
-              border: `1px solid ${showCustom ? '#6366F1' : '#333333'}`,
-              backgroundColor: showCustom ? 'rgba(99,102,241,0.08)' : 'transparent',
-              color: showCustom ? '#6366F1' : '#888888',
+              border: `1px solid ${showCustom ? c.accent : c.borderStrong}`,
+              backgroundColor: showCustom ? c.accentSubtle : 'transparent',
+              color: showCustom ? c.accent : c.textSecondary,
               fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
               transition: 'all 0.15s ease',
             }}
             onMouseEnter={e => {
-              if (!showCustom) (e.target as HTMLButtonElement).style.backgroundColor = '#1A1A1A';
+              if (!showCustom) (e.target as HTMLButtonElement).style.backgroundColor = c.surfaceElevated;
             }}
             onMouseLeave={e => {
               if (!showCustom) (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
@@ -1227,47 +1230,47 @@ export default function ReportsPage() {
               onChange={e => setCustomStart(e.target.value)}
               style={{
                 padding: '7px 10px', borderRadius: 8,
-                border: '1px solid #222222',
-                backgroundColor: '#111111', color: '#FAFAFA', fontSize: 13,
+                border: `1px solid ${c.border}`,
+                backgroundColor: c.bgCard, color: c.text, fontSize: 13,
                 outline: 'none',
               }}
-              onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366F1'}
-              onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#222222'}
+              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
             />
-            <span style={{ color: '#555555', fontSize: 13 }}>to</span>
+            <span style={{ color: c.textMuted, fontSize: 13 }}>to</span>
             <input
               type="date"
               value={customEnd}
               onChange={e => setCustomEnd(e.target.value)}
               style={{
                 padding: '7px 10px', borderRadius: 8,
-                border: '1px solid #222222',
-                backgroundColor: '#111111', color: '#FAFAFA', fontSize: 13,
+                border: `1px solid ${c.border}`,
+                backgroundColor: c.bgCard, color: c.text, fontSize: 13,
                 outline: 'none',
               }}
-              onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366F1'}
-              onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#222222'}
+              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
             />
           </div>
         )}
 
-        {loading && <Loader2 size={14} color="#6366F1" style={{ animation: 'spin 1s linear infinite' }} />}
+        {loading && <Loader2 size={14} color={c.accent} style={{ animation: 'spin 1s linear infinite' }} />}
         {!loading && hasData && (
-          <span style={{ fontSize: 12, color: '#555555', fontFamily: 'var(--font-mono)' }}>
+          <span style={{ fontSize: 12, color: c.textMuted, fontFamily: 'var(--font-mono)' }}>
             {periodLabel}
           </span>
         )}
       </div>
 
       {!hasData && !loading && (
-        <div style={{ padding: 40, borderRadius: 12, backgroundColor: '#111111', border: '1px solid #222222', textAlign: 'center', marginBottom: 24 }}>
-          <FileText size={36} color="#333333" style={{ marginBottom: 14 }} />
-          <p style={{ fontSize: 15, fontWeight: 600, color: '#FAFAFA', marginBottom: 6 }}>No data connected yet</p>
-          <p style={{ fontSize: 13, color: '#888888', marginBottom: 16 }}>Connect and sync GSC or GA4 to generate branded reports with real data</p>
+        <div style={{ padding: 40, borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, textAlign: 'center', marginBottom: 24 }}>
+          <FileText size={36} color={c.borderStrong} style={{ marginBottom: 14 }} />
+          <p style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 6 }}>No data connected yet</p>
+          <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>Connect and sync GSC or GA4 to generate branded reports with real data</p>
           <a href="/dashboard/settings" style={{
-            fontSize: 13, color: '#6366F1', textDecoration: 'none', fontWeight: 600,
-            padding: '8px 16px', borderRadius: 8, border: '1px solid #6366F1',
-            backgroundColor: 'rgba(99,102,241,0.08)',
+            fontSize: 13, color: c.accent, textDecoration: 'none', fontWeight: 600,
+            padding: '8px 16px', borderRadius: 8, border: `1px solid ${c.accent}`,
+            backgroundColor: c.accentSubtle,
           }}>Connect integrations</a>
         </div>
       )}
@@ -1275,9 +1278,9 @@ export default function ReportsPage() {
       {hasData && (
         <div style={{
           padding: '12px 16px', borderRadius: 8,
-          backgroundColor: 'rgba(16,185,129,0.06)',
-          border: '1px solid rgba(16,185,129,0.15)',
-          fontSize: 13, color: '#10B981',
+          backgroundColor: c.successSubtle,
+          border: `1px solid ${c.successBorder}`,
+          fontSize: 13, color: c.success,
           display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24,
         }}>
           <Sparkles size={14} />
@@ -1289,7 +1292,7 @@ export default function ReportsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
         {/* Left panel: Report type cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#555555', textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: 4 }}>
             Choose Report Type
           </div>
           {reportTypes.map(rt => {
@@ -1302,50 +1305,50 @@ export default function ReportsPage() {
                 style={{
                   display: 'flex', alignItems: 'flex-start', gap: 14,
                   padding: 18, borderRadius: 12, textAlign: 'left' as const,
-                  backgroundColor: isSelected ? 'rgba(99,102,241,0.08)' : '#111111',
-                  border: `1px solid ${isSelected ? '#6366F1' : '#222222'}`,
+                  backgroundColor: isSelected ? c.accentSubtle : c.bgCard,
+                  border: `1px solid ${isSelected ? c.accent : c.border}`,
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                 }}
                 onMouseEnter={e => {
                   if (!isSelected) {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1A1A1A';
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = '#333333';
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.surfaceElevated;
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = c.borderStrong;
                   }
                 }}
                 onMouseLeave={e => {
                   if (!isSelected) {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#111111';
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = '#222222';
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard;
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = c.border;
                   }
                 }}
               >
                 <div style={{
                   width: 42, height: 42, borderRadius: 10,
-                  backgroundColor: isSelected ? 'rgba(99,102,241,0.12)' : '#1A1A1A',
-                  border: `1px solid ${isSelected ? 'rgba(99,102,241,0.2)' : '#222222'}`,
+                  backgroundColor: isSelected ? 'rgba(99,102,241,0.12)' : c.surfaceElevated,
+                  border: `1px solid ${isSelected ? 'rgba(99,102,241,0.2)' : c.border}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  <Icon size={20} color={isSelected ? '#6366F1' : '#888888'} />
+                  <Icon size={20} color={isSelected ? c.accent : c.textSecondary} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#FAFAFA', marginBottom: 4 }}>{rt.label}</div>
-                  <div style={{ fontSize: 12, color: '#888888', lineHeight: 1.5, marginBottom: 10 }}>{rt.desc}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: c.text, marginBottom: 4 }}>{rt.label}</div>
+                  <div style={{ fontSize: 12, color: c.textSecondary, lineHeight: 1.5, marginBottom: 10 }}>{rt.desc}</div>
 
                   {/* Section list with custom checkboxes */}
                   <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
                     {rt.sections.map(s => (
                       <div key={s} style={{
                         display: 'flex', alignItems: 'center', gap: 5,
-                        fontSize: 11, color: '#888888',
+                        fontSize: 11, color: c.textSecondary,
                         padding: '3px 8px',
                         borderRadius: 4,
-                        backgroundColor: isSelected ? 'rgba(99,102,241,0.06)' : '#0A0A0A',
-                        border: `1px solid ${isSelected ? 'rgba(99,102,241,0.15)' : '#1A1A1A'}`,
+                        backgroundColor: isSelected ? 'rgba(99,102,241,0.06)' : c.bgPage,
+                        border: `1px solid ${isSelected ? 'rgba(99,102,241,0.15)' : c.surfaceElevated}`,
                       }}>
                         <div style={{
                           width: 10, height: 10, borderRadius: 3,
-                          backgroundColor: isSelected ? '#6366F1' : '#333333',
+                          backgroundColor: isSelected ? c.accent : c.borderStrong,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
                           {isSelected && (
@@ -1368,14 +1371,14 @@ export default function ReportsPage() {
                         style={{
                           flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                           padding: '10px 16px', borderRadius: 8, border: 'none',
-                          backgroundColor: (!hasData || loading) ? '#333333' : '#6366F1',
+                          backgroundColor: (!hasData || loading) ? c.borderStrong : c.accent,
                           color: 'white', fontSize: 13, fontWeight: 700,
                           cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
                           opacity: (!hasData || loading) ? 0.4 : 1,
                           transition: 'background-color 0.15s ease',
                         }}
-                        onMouseEnter={e => { if (!generating && hasData && !loading) (e.target as HTMLButtonElement).style.backgroundColor = '#4F46E5'; }}
-                        onMouseLeave={e => { if (!generating && hasData && !loading) (e.target as HTMLButtonElement).style.backgroundColor = '#6366F1'; }}
+                        onMouseEnter={e => { if (!generating && hasData && !loading) (e.target as HTMLButtonElement).style.backgroundColor = c.accentHover; }}
+                        onMouseLeave={e => { if (!generating && hasData && !loading) (e.target as HTMLButtonElement).style.backgroundColor = c.accent; }}
                       >
                         {generating === `${rt.id}-download` ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={14} />}
                         {generating === `${rt.id}-download` ? 'Generating...' : 'Generate & Download'}

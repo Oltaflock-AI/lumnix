@@ -3,8 +3,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { ThemeProvider, useTheme } from '@/lib/theme';
 
-export default function SignInPage() {
+function SignInInner() {
+  const { c } = useTheme();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,37 +45,37 @@ export default function SignInPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'var(--font-body)', backgroundColor: '#0A0A0A' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'var(--font-body)', backgroundColor: c.bgPage }}>
 
       {/* Left panel */}
       <div style={{
         flex: '0 0 45%', display: 'none', flexDirection: 'column', justifyContent: 'space-between',
-        padding: '48px', backgroundColor: '#0A0A0A',
-        borderRight: '1px solid #222222', position: 'relative', overflow: 'hidden',
+        padding: '48px', backgroundColor: c.bgPage,
+        borderRight: `1px solid ${c.border}`, position: 'relative', overflow: 'hidden',
       }} className="auth-left-panel">
         <div style={{ position: 'absolute', top: '-100px', left: '-100px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', bottom: '-50px', right: '-50px', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         <div>
           <span style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)' }}>
-            <span style={{ color: '#6366F1' }}>L</span><span style={{ color: '#FAFAFA' }}>umnix</span>
+            <span style={{ color: c.accent }}>L</span><span style={{ color: c.text }}>umnix</span>
           </span>
         </div>
 
         <div>
-          <blockquote style={{ fontSize: '22px', fontWeight: 700, color: '#FAFAFA', lineHeight: 1.4, letterSpacing: '-0.5px', fontFamily: 'var(--font-display)', marginBottom: '16px', fontStyle: 'normal' }}>
-            "Lumnix changed how we look at our marketing. Everything in one place — finally."
+          <blockquote style={{ fontSize: '22px', fontWeight: 700, color: c.text, lineHeight: 1.4, letterSpacing: '-0.5px', fontFamily: 'var(--font-display)', marginBottom: '16px', fontStyle: 'normal' }}>
+            &ldquo;Lumnix changed how we look at our marketing. Everything in one place &mdash; finally.&rdquo;
           </blockquote>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(99,102,241,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: '#6366F1' }}>S</div>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: c.accent }}>S</div>
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#888888' }}>Sarah K.</div>
-              <div style={{ fontSize: '12px', color: '#555555' }}>Head of Growth, D2C Brand</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: c.textSecondary }}>Sarah K.</div>
+              <div style={{ fontSize: '12px', color: c.textMuted }}>Head of Growth, D2C Brand</div>
             </div>
           </div>
         </div>
 
-        <p style={{ fontSize: '12px', color: '#555555' }}>© 2026 Oltaflock AI · All rights reserved</p>
+        <p style={{ fontSize: '12px', color: c.textMuted }}>&copy; 2026 Oltaflock AI &middot; All rights reserved</p>
       </div>
 
       {/* Right panel */}
@@ -82,14 +84,14 @@ export default function SignInPage() {
 
           <div style={{ marginBottom: '32px' }} className="auth-mobile-logo">
             <span style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)' }}>
-              <span style={{ color: '#6366F1' }}>L</span><span style={{ color: '#FAFAFA' }}>umnix</span>
+              <span style={{ color: c.accent }}>L</span><span style={{ color: c.text }}>umnix</span>
             </span>
           </div>
 
-          <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#FAFAFA', fontFamily: 'var(--font-display)', letterSpacing: '-0.5px', marginBottom: '6px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, color: c.text, fontFamily: 'var(--font-display)', letterSpacing: '-0.5px', marginBottom: '6px' }}>
             Welcome back
           </h1>
-          <p style={{ fontSize: '14px', color: '#888888', marginBottom: '28px' }}>
+          <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '28px' }}>
             Sign in to your Lumnix workspace
           </p>
 
@@ -98,12 +100,12 @@ export default function SignInPage() {
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
               gap: '10px', padding: '11px 16px', borderRadius: '8px',
-              border: '1px solid #222222', backgroundColor: '#111111',
-              color: '#FAFAFA', fontSize: '14px', fontWeight: 500,
+              border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
+              color: c.text, fontSize: '14px', fontWeight: 500,
               cursor: 'pointer', marginBottom: '20px', transition: 'all 0.15s ease',
             }}
-            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1A1A1A'}
-            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#111111'}
+            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover}
+            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard}
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -115,57 +117,57 @@ export default function SignInPage() {
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#222222' }} />
-            <span style={{ fontSize: '12px', color: '#555555' }}>or continue with email</span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: '#222222' }} />
+            <div style={{ flex: 1, height: '1px', backgroundColor: c.border }} />
+            <span style={{ fontSize: '12px', color: c.textMuted }}>or continue with email</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: c.border }} />
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ position: 'relative' }}>
-              <Mail size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#555555', pointerEvents: 'none' }} />
+              <Mail size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
               <input
                 type="email" placeholder="Work email" value={email}
                 onChange={e => setEmail(e.target.value)} required
-                style={{ width: '100%', padding: '11px 14px 11px 40px', borderRadius: '8px', border: '1px solid #222222', backgroundColor: '#111111', color: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
-                onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366F1'}
-                onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#222222'}
+                style={{ width: '100%', padding: '11px 14px 11px 40px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
+                onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+                onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
             </div>
 
             <div style={{ position: 'relative' }}>
-              <Lock size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#555555', pointerEvents: 'none' }} />
+              <Lock size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
               <input
                 type={showPassword ? 'text' : 'password'} placeholder="Password" value={password}
                 onChange={e => setPassword(e.target.value)} required
-                style={{ width: '100%', padding: '11px 40px 11px 40px', borderRadius: '8px', border: '1px solid #222222', backgroundColor: '#111111', color: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
-                onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366F1'}
-                onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#222222'}
+                style={{ width: '100%', padding: '11px 40px 11px 40px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
+                onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+                onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
-                style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#555555', padding: '2px', display: 'flex' }}>
+                style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: '2px', display: 'flex' }}>
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
 
             {error && (
-              <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#EF4444', fontSize: '13px' }}>
+              <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: '13px' }}>
                 {error}
               </div>
             )}
 
             <button
               type="submit" disabled={loading}
-              style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#6366F1', color: 'white', fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'background-color 0.15s', marginTop: '4px' }}
-              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4F46E5'; }}
-              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#6366F1'; }}
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', backgroundColor: c.accent, color: 'white', fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'background-color 0.15s', marginTop: '4px' }}
+              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accentHover; }}
+              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accent; }}
             >
               {loading ? 'Signing in...' : (<>Sign in <ArrowRight size={15} /></>)}
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#555555' }}>
+          <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: c.textMuted }}>
             No account?{' '}
-            <a href="/auth/signup" style={{ color: '#6366F1', fontWeight: 500, textDecoration: 'none' }}>Sign up free</a>
+            <a href="/auth/signup" style={{ color: c.accent, fontWeight: 500, textDecoration: 'none' }}>Sign up free</a>
           </p>
         </div>
       </div>
@@ -174,5 +176,13 @@ export default function SignInPage() {
         @media (min-width: 900px) { .auth-left-panel { display: flex !important; } .auth-mobile-logo { display: none !important; } }
       `}</style>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <ThemeProvider>
+      <SignInInner />
+    </ThemeProvider>
   );
 }

@@ -6,84 +6,60 @@ import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
 
-/* ─── Design Tokens ─── */
-const T = {
-  bg: '#0A0A0A',
-  surface: '#111111',
-  surfaceElevated: '#1A1A1A',
-  border: '#222222',
-  borderStrong: '#333333',
-  text: '#FAFAFA',
-  textSecondary: '#888888',
-  textMuted: '#555555',
-  accent: '#6366F1',
-  accentHover: '#4F46E5',
-  accentSubtle: 'rgba(99,102,241,0.08)',
-  success: '#10B981',
-  warning: '#F59E0B',
-  danger: '#EF4444',
-  dangerSubtle: 'rgba(239,68,68,0.08)',
-  dangerBorder: 'rgba(239,68,68,0.2)',
-  successSubtle: 'rgba(16,185,129,0.08)',
-  successBorder: 'rgba(16,185,129,0.2)',
-  warningSubtle: 'rgba(245,158,11,0.08)',
-  warningBorder: 'rgba(245,158,11,0.2)',
-  mono: 'var(--font-mono)',
-};
-
-const inputBaseStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '10px 12px',
-  borderRadius: 8,
-  border: `1px solid ${T.border}`,
-  backgroundColor: T.surface,
-  color: T.text,
-  fontSize: 13,
-  outline: 'none',
-  boxSizing: 'border-box',
-};
-
-const primaryBtnStyle: React.CSSProperties = {
-  display: 'flex', alignItems: 'center', gap: 8,
-  padding: '10px 24px', borderRadius: 8, border: 'none',
-  backgroundColor: T.accent, color: '#fff',
-  fontSize: 14, fontWeight: 600, cursor: 'pointer',
-};
-
-const ghostBtnStyle: React.CSSProperties = {
-  display: 'flex', alignItems: 'center', gap: 8,
-  padding: '10px 20px', borderRadius: 8,
-  border: `1px solid ${T.borderStrong}`,
-  backgroundColor: 'transparent', color: T.textSecondary,
-  fontSize: 13, fontWeight: 500, cursor: 'pointer',
-};
-
-const destructiveBtnStyle: React.CSSProperties = {
-  background: T.dangerSubtle, color: T.danger,
-  border: `1px solid ${T.dangerBorder}`,
-  borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
-  fontSize: 13, fontWeight: 500,
-};
-
-const cardStyle: React.CSSProperties = {
-  backgroundColor: T.surface,
-  border: `1px solid ${T.border}`,
-  borderRadius: 12,
-};
-
-const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 12, fontWeight: 600,
-  color: T.textSecondary, marginBottom: 6,
-};
+/* ─── Shared Styles Hook ─── */
+function useStyles() {
+  const { c } = useTheme();
+  const inputBase: React.CSSProperties = {
+    width: '100%',
+    padding: '10px 12px',
+    borderRadius: 8,
+    border: `1px solid ${c.border}`,
+    backgroundColor: c.bgCard,
+    color: c.text,
+    fontSize: 13,
+    outline: 'none',
+    boxSizing: 'border-box',
+  };
+  const primaryBtn: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 8,
+    padding: '10px 24px', borderRadius: 8, border: 'none',
+    backgroundColor: c.accent, color: '#fff',
+    fontSize: 14, fontWeight: 600, cursor: 'pointer',
+  };
+  const ghostBtn: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 8,
+    padding: '10px 20px', borderRadius: 8,
+    border: `1px solid ${c.borderStrong}`,
+    backgroundColor: 'transparent', color: c.textSecondary,
+    fontSize: 13, fontWeight: 500, cursor: 'pointer',
+  };
+  const destructiveBtn: React.CSSProperties = {
+    background: c.dangerSubtle, color: c.danger,
+    border: `1px solid ${c.dangerBorder}`,
+    borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
+    fontSize: 13, fontWeight: 500,
+  };
+  const card: React.CSSProperties = {
+    backgroundColor: c.bgCard,
+    border: `1px solid ${c.border}`,
+    borderRadius: 12,
+  };
+  const label: React.CSSProperties = {
+    display: 'block', fontSize: 12, fontWeight: 600,
+    color: c.textSecondary, marginBottom: 6,
+  };
+  return { c, inputBase, primaryBtn, ghostBtn, destructiveBtn, card, label };
+}
 
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  const { c } = useTheme();
   return (
     <div
       onClick={onToggle}
       style={{
         width: 42, height: 24, borderRadius: 12, cursor: 'pointer',
         position: 'relative',
-        backgroundColor: on ? T.accent : T.borderStrong,
+        backgroundColor: on ? c.accent : c.borderStrong,
         transition: 'background-color 0.2s', flexShrink: 0,
       }}
     >
@@ -97,16 +73,17 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 }
 
 function StatusPill({ connected, label }: { connected: boolean; label?: string }) {
+  const { c } = useTheme();
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       fontSize: 11, fontWeight: 600,
       padding: '4px 10px', borderRadius: 20,
-      backgroundColor: connected ? T.successSubtle : 'rgba(113,113,122,0.08)',
-      color: connected ? T.success : T.textMuted,
-      border: `1px solid ${connected ? T.successBorder : T.border}`,
+      backgroundColor: connected ? c.successSubtle : 'rgba(113,113,122,0.08)',
+      color: connected ? c.success : c.textMuted,
+      border: `1px solid ${connected ? c.successBorder : c.border}`,
     }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: connected ? T.success : T.textMuted }} />
+      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: connected ? c.success : c.textMuted }} />
       {label || (connected ? 'Connected' : 'Disconnected')}
     </span>
   );
@@ -122,6 +99,7 @@ const BRAND_COLORS = [
 ];
 
 function NotificationsTab() {
+  const { c, card, primaryBtn } = useStyles();
   const notifItems = [
     { id: "traffic", label: "Traffic Alerts", desc: "Get notified when traffic spikes or drops significantly" },
     { id: "ads", label: "Ad Alerts", desc: "Budget exhaustion, CPC spikes, ROAS drops" },
@@ -146,24 +124,24 @@ function NotificationsTab() {
 
   return (
     <div style={{ maxWidth: 560 }}>
-      <div style={{ ...cardStyle, overflow: 'hidden', marginBottom: 20 }}>
+      <div style={{ ...card, overflow: 'hidden', marginBottom: 20 }}>
         {notifItems.map((item, i) => (
           <div key={item.id} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '16px 20px',
-            borderBottom: i < notifItems.length - 1 ? `1px solid ${T.border}` : 'none',
+            borderBottom: i < notifItems.length - 1 ? `1px solid ${c.border}` : 'none',
           }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: T.text }}>{item.label}</div>
-              <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 2 }}>{item.desc}</div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: c.text }}>{item.label}</div>
+              <div style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>{item.desc}</div>
             </div>
             <Toggle on={!!toggles[item.id]} onToggle={() => setToggles(t => ({ ...t, [item.id]: !t[item.id] }))} />
           </div>
         ))}
       </div>
       <button onClick={save} style={{
-        ...primaryBtnStyle,
-        backgroundColor: saved ? T.success : T.accent,
+        ...primaryBtn,
+        backgroundColor: saved ? c.success : c.accent,
       }}>
         {saved ? <><Check size={16} /> Saved!</> : "Save Preferences"}
       </button>
@@ -172,6 +150,7 @@ function NotificationsTab() {
 }
 
 function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: () => void; onUpdate?: (w: any) => void }) {
+  const { c, card, label, inputBase, ghostBtn, primaryBtn } = useStyles();
   const [brandName, setBrandName] = useState(workspace?.name || '');
   const [brandColor, setBrandColor] = useState(workspace?.brand_color || '#7c3aed');
   const [logoUrl, setLogoUrl] = useState(workspace?.logo_url || '');
@@ -251,32 +230,32 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
 
   return (
     <div style={{ maxWidth: 560 }}>
-      <div style={{ ...cardStyle, padding: 24, marginBottom: 20 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 20 }}>Brand Identity</h3>
+      <div style={{ ...card, padding: 24, marginBottom: 20 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 20 }}>Brand Identity</h3>
 
         {/* Brand Name */}
         <div style={{ marginBottom: 20 }}>
-          <label style={labelStyle}>Brand Name</label>
+          <label style={label}>Brand Name</label>
           <input
             type="text"
             value={brandName}
             onChange={e => setBrandName(e.target.value)}
             placeholder="e.g. Acme Corp"
-            style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14 }}
-            onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
-            onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+            style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
+            onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+            onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
           />
         </div>
 
         {/* Logo */}
         <div style={{ marginBottom: 20 }}>
-          <label style={labelStyle}>Logo</label>
+          <label style={label}>Logo</label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{
               width: 60, height: 60, borderRadius: 12,
-              backgroundColor: T.surface, display: 'flex', alignItems: 'center',
+              backgroundColor: c.bgCard, display: 'flex', alignItems: 'center',
               justifyContent: 'center', overflow: 'hidden', flexShrink: 0,
-              border: `1px solid ${T.border}`,
+              border: `1px solid ${c.border}`,
             }}>
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -288,12 +267,12 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                style={{ ...ghostBtnStyle, padding: '8px 16px', fontSize: 13 }}
+                style={{ ...ghostBtn, padding: '8px 16px', fontSize: 13 }}
               >
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 {uploading ? 'Uploading...' : 'Upload Logo'}
               </button>
-              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>PNG, JPG up to 2MB</div>
+              <div style={{ fontSize: 11, color: c.textMuted, marginTop: 4 }}>PNG, JPG up to 2MB</div>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
             </div>
           </div>
@@ -301,7 +280,7 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
 
         {/* Brand Color Presets */}
         <div>
-          <label style={{ ...labelStyle, marginBottom: 10 }}>Brand Color</label>
+          <label style={{ ...label, marginBottom: 10 }}>Brand Color</label>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {BRAND_COLORS.map(bc => (
               <button
@@ -311,7 +290,7 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
                 style={{
                   width: 36, height: 36, borderRadius: '50%',
                   backgroundColor: bc.value, border: 'none', cursor: 'pointer',
-                  outline: brandColor === bc.value ? `2px solid ${T.accent}` : '2px solid transparent',
+                  outline: brandColor === bc.value ? `2px solid ${c.accent}` : '2px solid transparent',
                   outlineOffset: 3, position: 'relative',
                   transition: 'outline-color 0.15s',
                 }}
@@ -324,13 +303,13 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
           </div>
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: brandColor }} />
-            <span style={{ fontSize: 13, color: T.textSecondary, fontFamily: T.mono }}>{brandColor}</span>
+            <span style={{ fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{brandColor}</span>
           </div>
         </div>
       </div>
 
       {error && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, backgroundColor: T.dangerSubtle, border: `1px solid ${T.dangerBorder}`, color: '#f87171', fontSize: 13 }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: 13 }}>
           {error}
         </div>
       )}
@@ -339,8 +318,8 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
         onClick={handleSave}
         disabled={saving}
         style={{
-          ...primaryBtnStyle,
-          backgroundColor: saved ? T.success : T.accent,
+          ...primaryBtn,
+          backgroundColor: saved ? c.success : c.accent,
           opacity: saving ? 0.7 : 1,
           cursor: saving ? 'wait' : 'pointer',
         }}
@@ -380,6 +359,7 @@ const ALERT_METRICS = [
 ];
 
 function AlertsTab({ workspaceId }: { workspaceId: string }) {
+  const { c, card, label, inputBase, primaryBtn, ghostBtn, destructiveBtn } = useStyles();
   const [rules, setRules] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -454,12 +434,12 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
       {/* Header + Add button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 4 }}>Alert Rules</h3>
-          <p style={{ fontSize: 13, color: T.textSecondary, margin: 0 }}>Get notified when metrics cross your thresholds. Checked every hour.</p>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 4 }}>Alert Rules</h3>
+          <p style={{ fontSize: 13, color: c.textSecondary, margin: 0 }}>Get notified when metrics cross your thresholds. Checked every hour.</p>
         </div>
         <button
           onClick={() => setShowForm(f => !f)}
-          style={{ ...primaryBtnStyle, padding: '8px 14px', fontSize: 13 }}
+          style={{ ...primaryBtn, padding: '8px 14px', fontSize: 13 }}
         >
           <Plus size={14} /> Add Alert
         </button>
@@ -467,17 +447,17 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
 
       {/* Add alert form */}
       {showForm && (
-        <form onSubmit={handleCreate} style={{ ...cardStyle, padding: 20, marginBottom: 20 }}>
+        <form onSubmit={handleCreate} style={{ ...card, padding: 20, marginBottom: 20 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
             <div>
-              <label style={labelStyle}>Metric</label>
-              <select value={metric} onChange={e => setMetric(e.target.value)} style={inputBaseStyle}>
+              <label style={label}>Metric</label>
+              <select value={metric} onChange={e => setMetric(e.target.value)} style={inputBase}>
                 {ALERT_METRICS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Condition</label>
-              <select value={comparison} onChange={e => setComparison(e.target.value)} style={inputBaseStyle}>
+              <label style={label}>Condition</label>
+              <select value={comparison} onChange={e => setComparison(e.target.value)} style={inputBase}>
                 <option value="above">Goes above</option>
                 <option value="below">Drops below</option>
                 <option value="equals">Equals</option>
@@ -486,26 +466,26 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             <div>
-              <label style={labelStyle}>Threshold</label>
-              <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} placeholder="e.g. 1000" required style={inputBaseStyle}
-                onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
-                onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+              <label style={label}>Threshold</label>
+              <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} placeholder="e.g. 1000" required style={inputBase}
+                onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+                onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
             </div>
             <div>
-              <label style={labelStyle}>Notify Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required style={inputBaseStyle}
-                onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
-                onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+              <label style={label}>Notify Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required style={inputBase}
+                onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+                onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
             </div>
           </div>
-          {error && <p style={{ fontSize: 12, color: T.danger, marginBottom: 12 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: c.danger, marginBottom: 12 }}>{error}</p>}
           <div style={{ display: 'flex', gap: 10 }}>
-            <button type="submit" disabled={saving} style={{ ...primaryBtnStyle, padding: '10px 20px', fontSize: 13, opacity: saving ? 0.7 : 1 }}>
+            <button type="submit" disabled={saving} style={{ ...primaryBtn, padding: '10px 20px', fontSize: 13, opacity: saving ? 0.7 : 1 }}>
               {saving ? 'Creating...' : 'Create Alert'}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} style={ghostBtnStyle}>
+            <button type="button" onClick={() => setShowForm(false)} style={ghostBtn}>
               Cancel
             </button>
           </div>
@@ -515,13 +495,13 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
       {/* Rules list */}
       {loading ? (
         <div style={{ padding: 40, textAlign: 'center' }}>
-          <Loader2 size={20} color={T.accent} style={{ animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={20} color={c.accent} style={{ animation: 'spin 1s linear infinite' }} />
         </div>
       ) : rules.length === 0 ? (
-        <div style={{ ...cardStyle, padding: 40, textAlign: 'center' }}>
-          <AlertTriangle size={28} color={T.textMuted} style={{ marginBottom: 10 }} />
-          <p style={{ fontSize: 14, color: T.textSecondary, marginBottom: 4 }}>No alert rules yet</p>
-          <p style={{ fontSize: 12, color: T.textMuted }}>Click &quot;Add Alert&quot; to create your first rule</p>
+        <div style={{ ...card, padding: 40, textAlign: 'center' }}>
+          <AlertTriangle size={28} color={c.textMuted} style={{ marginBottom: 10 }} />
+          <p style={{ fontSize: 14, color: c.textSecondary, marginBottom: 4 }}>No alert rules yet</p>
+          <p style={{ fontSize: 12, color: c.textMuted }}>Click &quot;Add Alert&quot; to create your first rule</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
@@ -531,19 +511,19 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
               <div key={rule.id} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '14px 18px', borderRadius: 12,
-                backgroundColor: T.surface,
-                border: `1px solid ${rule.is_active ? 'rgba(99,102,241,0.2)' : T.border}`,
+                backgroundColor: c.bgCard,
+                border: `1px solid ${rule.is_active ? 'rgba(99,102,241,0.2)' : c.border}`,
                 opacity: rule.is_active ? 1 : 0.6,
               }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 4 }}>{metricLabel}</div>
-                  <div style={{ fontSize: 12, color: T.textSecondary }}>
-                    {rule.comparison === 'above' ? 'Goes above' : rule.comparison === 'below' ? 'Drops below' : 'Equals'} <strong style={{ fontFamily: T.mono }}>{Number(rule.threshold).toLocaleString()}</strong> &rarr; {rule.recipient_email}
+                  <div style={{ fontSize: 13, fontWeight: 600, color: c.text, marginBottom: 4 }}>{metricLabel}</div>
+                  <div style={{ fontSize: 12, color: c.textSecondary }}>
+                    {rule.comparison === 'above' ? 'Goes above' : rule.comparison === 'below' ? 'Drops below' : 'Equals'} <strong style={{ fontFamily: 'var(--font-mono)' }}>{Number(rule.threshold).toLocaleString()}</strong> &rarr; {rule.recipient_email}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <Toggle on={rule.is_active} onToggle={() => handleToggle(rule.id, rule.is_active)} />
-                  <button onClick={() => handleDelete(rule.id)} style={{ ...destructiveBtnStyle, padding: 6, display: 'flex' }} title="Delete rule">
+                  <button onClick={() => handleDelete(rule.id)} style={{ ...destructiveBtn, padding: 6, display: 'flex' }} title="Delete rule">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -556,18 +536,18 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
       {/* Alert history */}
       {history.length > 0 && (
         <div>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 12 }}>Alert History</h3>
-          <div style={{ ...cardStyle, overflow: 'hidden' }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, marginBottom: 12 }}>Alert History</h3>
+          <div style={{ ...card, overflow: 'hidden' }}>
             {history.slice(0, 15).map((h: any, i: number) => (
               <div key={h.id} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '10px 16px',
-                borderBottom: i < Math.min(history.length, 15) - 1 ? `1px solid ${T.border}` : 'none',
+                borderBottom: i < Math.min(history.length, 15) - 1 ? `1px solid ${c.border}` : 'none',
               }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: T.text }}>{h.message}</div>
+                  <div style={{ fontSize: 12, color: c.text }}>{h.message}</div>
                 </div>
-                <div style={{ fontSize: 11, color: T.textMuted, whiteSpace: 'nowrap', marginLeft: 12, fontFamily: T.mono }}>
+                <div style={{ fontSize: 11, color: c.textMuted, whiteSpace: 'nowrap', marginLeft: 12, fontFamily: 'var(--font-mono)' }}>
                   {new Date(h.triggered_at).toLocaleString()}
                 </div>
               </div>
@@ -580,6 +560,7 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
 }
 
 function ProfileTab() {
+  const { c, card, label, inputBase, primaryBtn } = useStyles();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
@@ -628,34 +609,34 @@ function ProfileTab() {
   }
 
   return (
-    <div style={{ ...cardStyle, padding: 24, maxWidth: 500 }}>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 20 }}>Profile Settings</h3>
+    <div style={{ ...card, padding: 24, maxWidth: 500 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 20 }}>Profile Settings</h3>
       <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Full Name</label>
-        <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14 }}
-          onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
-          onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+        <label style={label}>Full Name</label>
+        <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
+          onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+          onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
         />
       </div>
       <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Email</label>
-        <input value={email} readOnly placeholder="your@email.com" style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14, opacity: 0.6, cursor: 'not-allowed' }} />
-        <p style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>Email cannot be changed here</p>
+        <label style={label}>Email</label>
+        <input value={email} readOnly placeholder="your@email.com" style={{ ...inputBase, padding: '12px 14px', fontSize: 14, opacity: 0.6, cursor: 'not-allowed' }} />
+        <p style={{ fontSize: 11, color: c.textMuted, marginTop: 4 }}>Email cannot be changed here</p>
       </div>
       <div style={{ marginBottom: 20 }}>
-        <label style={labelStyle}>Company</label>
-        <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14 }}
-          onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
-          onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+        <label style={label}>Company</label>
+        <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
+          onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+          onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
         />
       </div>
-      {error && <p style={{ fontSize: 13, color: T.danger, marginBottom: 12 }}>{error}</p>}
+      {error && <p style={{ fontSize: 13, color: c.danger, marginBottom: 12 }}>{error}</p>}
       <button
         onClick={handleSave}
         disabled={saving}
         style={{
-          ...primaryBtnStyle,
-          backgroundColor: saved ? T.success : T.accent,
+          ...primaryBtn,
+          backgroundColor: saved ? c.success : c.accent,
           opacity: saving ? 0.7 : 1,
           cursor: saving ? 'wait' : 'pointer',
         }}

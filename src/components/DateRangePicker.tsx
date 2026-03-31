@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { Calendar, ChevronDown } from 'lucide-react';
+import { useTheme } from '@/lib/theme';
 
 const options = [
   { label: 'Last 7 days', value: 7 },
@@ -18,6 +19,7 @@ export function DateRangePicker({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { c } = useTheme();
 
   const selected = options.find(o => o.value === value) || options[2];
 
@@ -36,20 +38,20 @@ export function DateRangePicker({
         style={{
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '8px 14px', borderRadius: 8,
-          border: '1px solid #222222', backgroundColor: '#111111',
-          color: '#FAFAFA', fontSize: 13, cursor: 'pointer',
+          border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
+          color: c.text, fontSize: 13, cursor: 'pointer',
           fontWeight: 500,
         }}
       >
-        <Calendar size={14} color="#6366F1" />
+        <Calendar size={14} color={c.accent} />
         {selected.label}
-        <ChevronDown size={14} style={{ color: '#555555', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
+        <ChevronDown size={14} style={{ color: c.textMuted, transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }} />
       </button>
 
       {open && (
         <div style={{
           position: 'absolute', right: 0, top: 'calc(100% + 6px)', zIndex: 50,
-          backgroundColor: '#1A1A1A', border: '1px solid #222222',
+          backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`,
           borderRadius: 10, overflow: 'hidden', minWidth: 160,
           boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
         }}>
@@ -60,8 +62,8 @@ export function DateRangePicker({
               style={{
                 display: 'block', width: '100%', padding: '10px 14px',
                 textAlign: 'left', fontSize: 13, cursor: 'pointer', border: 'none',
-                backgroundColor: opt.value === value ? 'rgba(99,102,241,0.08)' : 'transparent',
-                color: opt.value === value ? '#6366F1' : '#FAFAFA',
+                backgroundColor: opt.value === value ? c.accentSubtle : 'transparent',
+                color: opt.value === value ? c.accent : c.text,
                 fontWeight: opt.value === value ? 600 : 400,
               }}
             >
