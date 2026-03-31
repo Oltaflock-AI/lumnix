@@ -47,7 +47,15 @@ const navGroups = [
 function WorkspaceSwitcher({ workspace, accent }: { workspace: any; accent: string }) {
   const [open, setOpen] = useState(false);
   const { c } = useTheme();
+  const { workspaces, switchWorkspace } = useWorkspaceCtx();
   const initials = workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : 'LX';
+
+  function handleSwitch(id: string) {
+    setOpen(false);
+    if (id !== workspace?.id) {
+      switchWorkspace(id);
+    }
+  }
 
   return (
     <div style={{ position: 'relative', marginBottom: 4 }}>
@@ -70,18 +78,36 @@ function WorkspaceSwitcher({ workspace, accent }: { workspace: any; accent: stri
             {workspace?.name || 'My Workspace'}
           </div>
         </div>
-        <ChevronDown size={12} color={c.textMuted} style={{ flexShrink: 0 }} />
+        <ChevronDown size={12} color={c.textMuted} style={{ flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
       </button>
       {open && (
         <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`, borderRadius: 10, overflow: 'hidden', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-          <div style={{ padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
-            {workspace?.logo_url ? (
-              <img src={workspace.logo_url} alt="Logo" style={{ width: 22, height: 22, borderRadius: 5, objectFit: 'cover' }} />
-            ) : (
-              <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: 'white' }}>{initials}</div>
-            )}
-            <span style={{ fontSize: 12, color: c.text, flex: 1 }}>{workspace?.name || 'My Workspace'}</span>
-            <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+          <div style={{ padding: '4px 6px', maxHeight: 200, overflowY: 'auto' }}>
+            {workspaces.map(ws => {
+              const isCurrent = ws.id === workspace?.id;
+              const wsInitials = ws.name ? ws.name.substring(0, 2).toUpperCase() : '??';
+              return (
+                <button
+                  key={ws.id}
+                  onClick={() => handleSwitch(ws.id)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 8px', borderRadius: 6, border: 'none',
+                    backgroundColor: isCurrent ? c.accentSubtle : 'transparent',
+                    cursor: 'pointer', textAlign: 'left',
+                    transition: 'background-color 0.15s',
+                  }}
+                  onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = c.bgCardHover; }}
+                  onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                >
+                  <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : c.borderStrong, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: 'white', flexShrink: 0 }}>{wsInitials}</div>
+                  <span style={{ fontSize: 12, color: isCurrent ? c.text : c.textSecondary, flex: 1, fontWeight: isCurrent ? 600 : 400 }}>{ws.name}</span>
+                  {isCurrent && (
+                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  )}
+                </button>
+              );
+            })}
           </div>
           <div style={{ borderTop: `1px solid ${c.border}`, padding: '4px 6px' }}>
             <button onClick={() => setOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 4px', borderRadius: 6, border: 'none', backgroundColor: 'transparent', color: c.textMuted, fontSize: 12, cursor: 'pointer' }}>

@@ -10,7 +10,7 @@ function getUserClient(authHeader: string) {
   );
 }
 
-// GET /api/workspace — get current user's workspace
+// GET /api/workspace — get current user's workspace (supports ?workspace_id= for switching)
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization');
@@ -25,54 +25,65 @@ export async function GET(req: NextRequest) {
     }
 
     const admin = getSupabaseAdmin();
+    const requestedId = req.nextUrl.searchParams.get('workspace_id');
 
-    // First try workspace_members
-    const { data: membership } = await admin
+    // Get ALL workspaces for this user
+    const { data: memberships } = await admin
       .from('workspace_members')
       .select('workspace_id, role, workspaces(id, name, plan, logo_url, brand_color, slug, owner_id)')
-      .eq('user_id', user.id)
-      .limit(1)
-      .single();
+      .eq('user_id', user.id);
 
-    if (membership?.workspaces) {
-      return NextResponse.json({ workspace: membership.workspaces, role: membership.role });
-    }
-
-    // Fallback: check workspaces by owner_id directly
-    const { data: ownedWorkspace } = await admin
+    // Also check owned workspaces not in workspace_members
+    const { data: ownedWorkspaces } = await admin
       .from('workspaces')
       .select('id, name, plan, logo_url, brand_color, slug, owner_id')
-      .eq('owner_id', user.id)
-      .limit(1)
-      .single();
+      .eq('owner_id', user.id);
 
-    if (ownedWorkspace) {
-      // Create workspace_members record for future lookups
-      await admin.from('workspace_members').upsert({
-        workspace_id: ownedWorkspace.id,
-        user_id: user.id,
-        role: 'owner',
-      }, { onConflict: 'workspace_id,user_id' });
-      return NextResponse.json({ workspace: ownedWorkspace, role: 'owner' });
+    // Build complete list of workspaces
+    const wsMap = new Map<string, { workspace: any; role: string }>();
+    for (const m of memberships || []) {
+      if (m.workspaces) {
+        wsMap.set((m.workspaces as any).id, { workspace: m.workspaces, role: m.role });
+      }
+    }
+    for (const ow of ownedWorkspaces || []) {
+      if (!wsMap.has(ow.id)) {
+        wsMap.set(ow.id, { workspace: ow, role: 'owner' });
+        // Ensure workspace_members record exists
+        await admin.from('workspace_members').upsert({
+          workspace_id: ow.id, user_id: user.id, role: 'owner',
+        }, { onConflict: 'workspace_id,user_id' });
+      }
     }
 
-    // No workspace — create one
-    const { data: newWorkspace } = await admin
-      .from('workspaces')
-      .insert({ name: `${user.user_metadata?.full_name || 'My'}'s Workspace`, owner_id: user.id, created_by: user.id })
-      .select()
-      .single();
+    const allWorkspaces = Array.from(wsMap.values());
 
-    if (newWorkspace) {
-      await admin.from('workspace_members').insert({
-        workspace_id: newWorkspace.id,
-        user_id: user.id,
-        role: 'owner',
-      });
-      return NextResponse.json({ workspace: newWorkspace, role: 'owner' });
+    if (allWorkspaces.length === 0) {
+      // No workspace — create one
+      const { data: newWorkspace } = await admin
+        .from('workspaces')
+        .insert({ name: `${user.user_metadata?.full_name || 'My'}'s Workspace`, owner_id: user.id, created_by: user.id })
+        .select()
+        .single();
+      if (newWorkspace) {
+        await admin.from('workspace_members').insert({ workspace_id: newWorkspace.id, user_id: user.id, role: 'owner' });
+        return NextResponse.json({ workspace: newWorkspace, role: 'owner', workspaces: [{ id: newWorkspace.id, name: newWorkspace.name }] });
+      }
+      return NextResponse.json({ error: 'Could not find or create workspace' }, { status: 404 });
     }
 
-    return NextResponse.json({ error: 'Could not find or create workspace' }, { status: 404 });
+    // If a specific workspace was requested, use it (if user has access)
+    let selected = allWorkspaces[0];
+    if (requestedId) {
+      const found = allWorkspaces.find(w => w.workspace.id === requestedId);
+      if (found) selected = found;
+    }
+
+    return NextResponse.json({
+      workspace: selected.workspace,
+      role: selected.role,
+      workspaces: allWorkspaces.map(w => ({ id: w.workspace.id, name: w.workspace.name })),
+    });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
