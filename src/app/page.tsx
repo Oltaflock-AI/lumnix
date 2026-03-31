@@ -184,6 +184,17 @@ function LandingInner() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
 
+  // Waitlist modal state
+  const [showWaitlist, setShowWaitlist] = useState(false);
+  const [wlName, setWlName] = useState('');
+  const [wlEmail, setWlEmail] = useState('');
+  const [wlCompany, setWlCompany] = useState('');
+  const [wlRole, setWlRole] = useState('');
+  const [wlTeamSize, setWlTeamSize] = useState('');
+  const [wlSubmitting, setWlSubmitting] = useState(false);
+  const [wlSuccess, setWlSuccess] = useState(false);
+  const [wlError, setWlError] = useState('');
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) router.push('/dashboard');
@@ -195,6 +206,29 @@ function LandingInner() {
     window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
   }, []);
+
+  const openWaitlist = () => {
+    setWlSuccess(false);
+    setWlError('');
+    setShowWaitlist(true);
+  };
+
+  const submitWaitlist = async () => {
+    if (!wlName.trim() || !wlEmail.trim()) { setWlError('Name and email are required'); return; }
+    setWlSubmitting(true);
+    setWlError('');
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: wlName.trim(), email: wlEmail.trim(), company: wlCompany.trim(), role: wlRole.trim(), team_size: wlTeamSize }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setWlError(data.error || 'Something went wrong'); }
+      else { setWlSuccess(true); }
+    } catch { setWlError('Network error — please try again'); }
+    setWlSubmitting(false);
+  };
 
   // smooth scroll helper
   const scrollTo = (id: string) => {
@@ -245,7 +279,7 @@ function LandingInner() {
             style={{ padding: '8px 16px', borderRadius: 8, border: 'none', backgroundColor: 'transparent', color: c.text, fontSize: 14, fontWeight: 500, cursor: 'pointer' }}
           >Sign in</button>
           <button
-            onClick={() => router.push('/auth/signup')}
+            onClick={() => openWaitlist()}
             style={{
               padding: '9px 22px', borderRadius: 8, border: 'none',
               backgroundColor: c.accent, color: '#fff', fontSize: 14, fontWeight: 600,
@@ -297,7 +331,7 @@ function LandingInner() {
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 16 }}>
           <button
-            onClick={() => router.push('/auth/signup')}
+            onClick={() => openWaitlist()}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 10,
               padding: '16px 32px', borderRadius: 12, border: 'none',
@@ -893,7 +927,7 @@ function LandingInner() {
                   </div>
 
                   <button
-                    onClick={() => router.push('/auth/signup')}
+                    onClick={() => openWaitlist()}
                     style={{
                       width: '100%', padding: 14, borderRadius: 10, cursor: 'pointer',
                       fontSize: 15, fontWeight: 700, marginBottom: 28,
@@ -1006,7 +1040,7 @@ function LandingInner() {
             marketing intelligence. Early access spots are limited.
           </p>
           <button
-            onClick={() => router.push('/auth/signup')}
+            onClick={() => openWaitlist()}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 10,
               padding: '18px 40px', borderRadius: 12, border: 'none',
@@ -1086,6 +1120,162 @@ function LandingInner() {
           </div>
         </div>
       </footer>
+
+      {/* ──────────────────────── WAITLIST MODAL ──────────────────────── */}
+      {showWaitlist && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+        }} onClick={() => setShowWaitlist(false)}>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 460, margin: '0 16px',
+              backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
+              borderRadius: 20, padding: 36, position: 'relative',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+            }}
+          >
+            {/* Close button */}
+            <button onClick={() => setShowWaitlist(false)} style={{
+              position: 'absolute', top: 16, right: 16, background: 'none', border: 'none',
+              color: c.textMuted, cursor: 'pointer', fontSize: 20, lineHeight: 1,
+            }}>&times;</button>
+
+            {wlSuccess ? (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{
+                  width: 64, height: 64, borderRadius: '50%', backgroundColor: c.successSubtle,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 20px', border: `2px solid ${c.success}`,
+                }}>
+                  <Check size={28} color={c.success} />
+                </div>
+                <h3 style={{ fontSize: 24, fontWeight: 700, color: c.text, marginBottom: 10 }}>You&apos;re on the list! 🎉</h3>
+                <p style={{ fontSize: 15, color: c.textSecondary, lineHeight: 1.7, marginBottom: 8 }}>
+                  We&apos;ll notify you when your early access is ready. You&apos;re going to love what we&apos;re building.
+                </p>
+                <p style={{ fontSize: 13, color: c.textMuted }}>Check your inbox for a confirmation.</p>
+              </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: 28 }}>
+                  <h3 style={{ fontSize: 24, fontWeight: 700, color: c.text, marginBottom: 8 }}>Join the waitlist</h3>
+                  <p style={{ fontSize: 14, color: c.textSecondary, margin: 0 }}>Get early access to Lumnix — free for 30 days, no card required.</p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Name *</label>
+                    <input
+                      value={wlName} onChange={e => setWlName(e.target.value)}
+                      placeholder="Your full name"
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: 8,
+                        border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
+                        color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                        transition: 'border-color 0.2s',
+                      }}
+                      onFocus={e => e.target.style.borderColor = c.accent}
+                      onBlur={e => e.target.style.borderColor = c.border}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Email *</label>
+                    <input
+                      value={wlEmail} onChange={e => setWlEmail(e.target.value)}
+                      placeholder="you@company.com" type="email"
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: 8,
+                        border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
+                        color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                        transition: 'border-color 0.2s',
+                      }}
+                      onFocus={e => e.target.style.borderColor = c.accent}
+                      onBlur={e => e.target.style.borderColor = c.border}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Company</label>
+                    <input
+                      value={wlCompany} onChange={e => setWlCompany(e.target.value)}
+                      placeholder="Your company name"
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: 8,
+                        border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
+                        color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                        transition: 'border-color 0.2s',
+                      }}
+                      onFocus={e => e.target.style.borderColor = c.accent}
+                      onBlur={e => e.target.style.borderColor = c.border}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Role</label>
+                      <input
+                        value={wlRole} onChange={e => setWlRole(e.target.value)}
+                        placeholder="e.g. Marketing Director"
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: 8,
+                          border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
+                          color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                          transition: 'border-color 0.2s',
+                        }}
+                        onFocus={e => e.target.style.borderColor = c.accent}
+                        onBlur={e => e.target.style.borderColor = c.border}
+                      />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Team size</label>
+                      <select
+                        value={wlTeamSize} onChange={e => setWlTeamSize(e.target.value)}
+                        style={{
+                          width: '100%', padding: '10px 14px', borderRadius: 8,
+                          border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
+                          color: wlTeamSize ? c.text : c.textMuted, fontSize: 14, outline: 'none',
+                          boxSizing: 'border-box' as const, cursor: 'pointer',
+                        }}
+                      >
+                        <option value="">Select</option>
+                        <option value="just_me">Just me</option>
+                        <option value="2-5">2–5</option>
+                        <option value="6-20">6–20</option>
+                        <option value="21-50">21–50</option>
+                        <option value="50+">50+</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {wlError && (
+                    <p style={{ fontSize: 13, color: c.danger, margin: 0 }}>{wlError}</p>
+                  )}
+
+                  <button
+                    onClick={submitWaitlist}
+                    disabled={wlSubmitting}
+                    style={{
+                      width: '100%', padding: 14, borderRadius: 10, border: 'none',
+                      background: `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`,
+                      color: '#fff', fontSize: 15, fontWeight: 700, cursor: wlSubmitting ? 'not-allowed' : 'pointer',
+                      opacity: wlSubmitting ? 0.7 : 1, transition: 'all 0.2s',
+                      boxShadow: '0 4px 16px rgba(99,102,241,0.3)',
+                      marginTop: 4,
+                    }}
+                  >
+                    {wlSubmitting ? 'Submitting...' : 'Join the waitlist'}
+                  </button>
+
+                  <p style={{ fontSize: 12, color: c.textMuted, textAlign: 'center', margin: 0 }}>
+                    We&apos;ll never spam you. Unsubscribe anytime.
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ─── Global responsive style injection ─── */}
       <style>{`
