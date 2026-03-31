@@ -116,7 +116,22 @@ export async function GET(req: NextRequest) {
     };
     totals.roas = totals.spend > 0 ? totals.revenue / totals.spend : 0;
 
-    return NextResponse.json({ campaigns, totals });
+    // Build daily breakdown for charts
+    const dailyMap = new Map<string, { date: string; spend: number; clicks: number; impressions: number; reach: number; conversions: number }>();
+    for (const row of rows) {
+      const date = row.date?.split('T')[0] || '';
+      if (!date) continue;
+      const existing = dailyMap.get(date) || { date, spend: 0, clicks: 0, impressions: 0, reach: 0, conversions: 0 };
+      existing.spend += Number(row.spend) || 0;
+      existing.clicks += Number(row.clicks) || 0;
+      existing.impressions += Number(row.impressions) || 0;
+      existing.reach += Number(row.reach) || 0;
+      existing.conversions += Number(row.conversions) || 0;
+      dailyMap.set(date, existing);
+    }
+    const daily = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+    return NextResponse.json({ campaigns, totals, daily });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
