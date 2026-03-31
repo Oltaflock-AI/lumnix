@@ -211,6 +211,41 @@ export default function MetaAdsPage() {
     }
   }
 
+  /* Ad account selection */
+  const [adAccounts, setAdAccounts] = useState<any[]>([]);
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const currentAccountId = integration?.oauth_meta?.ad_account_id || '';
+  const currentAccountName = integration?.oauth_meta?.account_name || '';
+
+  async function loadAdAccounts() {
+    if (!integration) return;
+    setLoadingAccounts(true);
+    try {
+      const res = await fetch(`/api/meta/accounts?integration_id=${integration.id}`);
+      const data = await res.json();
+      setAdAccounts(data.accounts || []);
+      setShowAccountPicker(true);
+    } catch {}
+    setLoadingAccounts(false);
+  }
+
+  async function switchAdAccount(accountId: string) {
+    if (!integration || !workspace) return;
+    setShowAccountPicker(false);
+    setSyncing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetch('/api/sync/meta-ads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ integration_id: integration.id, workspace_id: workspace.id, ad_account_id: accountId }),
+      });
+      refetch();
+    } catch {}
+    setSyncing(false);
+  }
+
   /* Sync */
   async function handleSync() {
     if (!integration || !workspace) return;
@@ -233,6 +268,52 @@ export default function MetaAdsPage() {
   const topPerformerName = topPerformers[0]?.campaign_name;
 
   const syncButton = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
+      {currentAccountName && (
+        <button
+          onClick={loadAdAccounts}
+          disabled={loadingAccounts}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: 'transparent', color: c.textMuted, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}
+        >
+          {currentAccountName} <ChevronDown size={11} />
+        </button>
+      )}
+      {showAccountPicker && adAccounts.length > 0 && (
+        <div style={{
+          position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 100,
+          backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`, borderRadius: 10,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: 240, overflow: 'hidden',
+        }}>
+          <div style={{ padding: '8px 12px', borderBottom: `1px solid ${c.border}`, fontSize: 11, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Switch Ad Account
+          </div>
+          {adAccounts.map((acc: any) => (
+            <button
+              key={acc.id}
+              onClick={() => switchAdAccount(acc.id)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 12px', border: 'none', cursor: 'pointer', textAlign: 'left',
+                backgroundColor: acc.id === currentAccountId ? c.accentSubtle : 'transparent',
+                transition: 'background-color 0.15s',
+              }}
+              onMouseEnter={e => { if (acc.id !== currentAccountId) e.currentTarget.style.backgroundColor = c.bgCardHover; }}
+              onMouseLeave={e => { if (acc.id !== currentAccountId) e.currentTarget.style.backgroundColor = 'transparent'; }}
+            >
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: c.text }}>{acc.name}</div>
+                <div style={{ fontSize: 11, color: c.textMuted }}>{acc.id} · {acc.currency}</div>
+              </div>
+              {acc.id === currentAccountId && (
+                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              )}
+            </button>
+          ))}
+          <div style={{ borderTop: `1px solid ${c.border}`, padding: '6px 12px' }}>
+            <button onClick={() => setShowAccountPicker(false)} style={{ fontSize: 12, color: c.textMuted, border: 'none', background: 'none', cursor: 'pointer', padding: '4px 0' }}>Cancel</button>
+          </div>
+        </div>
+      )}
     <button
       onClick={handleSync}
       disabled={syncing}
@@ -243,6 +324,7 @@ export default function MetaAdsPage() {
       <RefreshCw size={13} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />
       {syncing ? 'Syncing...' : 'Sync Now'}
     </button>
+    </div>
   );
 
   /* Loading state */

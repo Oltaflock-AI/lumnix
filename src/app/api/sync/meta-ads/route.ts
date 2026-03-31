@@ -32,9 +32,11 @@ function formatSpend(spend: number, currency: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { integration_id, workspace_id } = await req.json();
+    const { integration_id, workspace_id, ad_account_id } = await req.json();
 
-    const { data: tokenRow } = await getSupabaseAdmin()
+    const db = getSupabaseAdmin();
+
+    const { data: tokenRow } = await db
       .from('oauth_tokens')
       .select('*')
       .eq('integration_id', integration_id)
@@ -44,18 +46,25 @@ export async function POST(req: NextRequest) {
 
     const accessToken = tokenRow.access_token;
 
+    // Get the integration to check saved ad_account_id
+    const { data: integration } = await db
+      .from('integrations')
+      .select('oauth_meta')
+      .eq('id', integration_id)
+      .single();
+
     const accounts = await fetchMetaAdAccounts(accessToken);
     if (!accounts.length) {
       return NextResponse.json({ error: 'No Meta Ad accounts found.' }, { status: 404 });
     }
 
-    const account = accounts[0];
+    // Priority: explicit ad_account_id param > saved in oauth_meta > first account
+    const targetAccountId = ad_account_id || integration?.oauth_meta?.ad_account_id || accounts[0].id;
+    const account = accounts.find((a: any) => a.id === targetAccountId) || accounts[0];
     const adAccountId = account.id;
     const currency = account.currency || 'USD';
 
     const insights = await fetchMetaInsights(accessToken, adAccountId);
-
-    const db = getSupabaseAdmin();
 
     // Store in dedicated meta_ads_data table
     const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
