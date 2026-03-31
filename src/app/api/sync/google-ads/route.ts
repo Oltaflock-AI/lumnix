@@ -16,14 +16,23 @@ export async function POST(req: NextRequest) {
     if (!tokenRow) return NextResponse.json({ error: 'No tokens found' }, { status: 404 });
 
     let accessToken = tokenRow.access_token;
-    if (tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date()) {
-      const refreshed = await refreshAccessToken(tokenRow.refresh_token);
-      if (refreshed.error) return NextResponse.json({ error: 'Token refresh failed' }, { status: 401 });
-      accessToken = refreshed.access_token;
-      await getSupabaseAdmin().from('oauth_tokens').update({
-        access_token: refreshed.access_token,
-        expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
-      }).eq('id', tokenRow.id);
+    // Always try to refresh if we have a refresh token (token might be expired even if expires_at is wrong)
+    if (tokenRow.refresh_token) {
+      try {
+        const refreshed = await refreshAccessToken(tokenRow.refresh_token);
+        if (refreshed.access_token) {
+          accessToken = refreshed.access_token;
+          await getSupabaseAdmin().from('oauth_tokens').update({
+            access_token: refreshed.access_token,
+            expires_at: new Date(Date.now() + (refreshed.expires_in || 3600) * 1000).toISOString(),
+          }).eq('id', tokenRow.id);
+        }
+      } catch {
+        // If refresh fails, try with existing token — it might still work
+      }
+    }
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Google Ads token expired. Please reconnect in Settings → Integrations.' }, { status: 401 });
     }
 
     // Get customer accounts
