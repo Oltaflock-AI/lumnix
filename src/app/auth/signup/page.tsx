@@ -41,7 +41,7 @@ function SignUpInner() {
     if (couponFromUrl) localStorage.setItem('lumnix-coupon', couponFromUrl);
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/api/auth/callback` }
+      options: { redirectTo: `${window.location.origin}/auth/callback` }
     });
   }
 
