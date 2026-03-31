@@ -1260,13 +1260,22 @@ export default function ReportsPage() {
       {!hasData && !loading && (
         <div style={{ padding: 40, borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, textAlign: 'center', marginBottom: 24 }}>
           <FileText size={36} color={c.borderStrong} style={{ marginBottom: 14 }} />
-          <p style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 6 }}>No data connected yet</p>
-          <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>Connect and sync GSC or GA4 to generate branded reports with real data</p>
-          <a href="/dashboard/settings" style={{
-            fontSize: 13, color: c.accent, textDecoration: 'none', fontWeight: 600,
-            padding: '8px 16px', borderRadius: 8, border: `1px solid ${c.accent}`,
-            backgroundColor: c.accentSubtle,
-          }}>Connect integrations</a>
+          <p style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 6 }}>No data for this date range</p>
+          <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>
+            No GSC or GA4 data found for the selected period. Try a longer date range (30, 60, or 90 days) or sync your data first.
+          </p>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => { setSelectedPreset(2); setShowCustom(false); }} style={{
+              fontSize: 13, color: c.accent, fontWeight: 600,
+              padding: '8px 16px', borderRadius: 8, border: `1px solid ${c.accent}`,
+              backgroundColor: c.accentSubtle, cursor: 'pointer',
+            }}>Try Last 30 days</button>
+            <a href="/dashboard/settings" style={{
+              fontSize: 13, color: c.textSecondary, textDecoration: 'none', fontWeight: 600,
+              padding: '8px 16px', borderRadius: 8, border: `1px solid ${c.borderStrong}`,
+              backgroundColor: 'transparent',
+            }}>Connect integrations</a>
+          </div>
         </div>
       )}
 
