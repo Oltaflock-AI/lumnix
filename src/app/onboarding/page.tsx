@@ -1,7 +1,7 @@
 'use client';
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Upload, Check, Search, BarChart3, Target, Share2, ChevronRight, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Upload, Check, Search, BarChart3, Target, Share2, ChevronRight, Loader2, Gift } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 
@@ -24,6 +24,7 @@ const INTEGRATIONS = [
 function OnboardingInner() {
   const { c } = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [brandName, setBrandName] = useState('');
   const [brandColor, setBrandColor] = useState('#6366F1');
@@ -33,7 +34,31 @@ function OnboardingInner() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [couponResult, setCouponResult] = useState<{ ok: boolean; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Get coupon from URL or localStorage (OAuth flow)
+  const couponCode = searchParams.get('coupon') || (typeof window !== 'undefined' ? localStorage.getItem('lumnix-coupon') : null) || '';
+
+  async function redeemCoupon(workspaceId: string, token: string) {
+    if (!couponCode) return;
+    try {
+      const res = await fetch('/api/billing/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code: couponCode, workspace_id: workspaceId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCouponResult({ ok: true, text: data.message });
+        localStorage.removeItem('lumnix-coupon');
+      } else {
+        setCouponResult({ ok: false, text: data.error || 'Coupon redemption failed' });
+      }
+    } catch {
+      setCouponResult({ ok: false, text: 'Failed to redeem coupon' });
+    }
+  }
 
   async function handleLogoUpload(file: File) {
     setUploading(true);
@@ -62,7 +87,7 @@ function OnboardingInner() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push('/auth/signin'); return; }
       const slug = brandName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      await fetch('/api/workspace', {
+      const patchRes = await fetch('/api/workspace', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -70,6 +95,16 @@ function OnboardingInner() {
         },
         body: JSON.stringify({ name: brandName, brand_color: brandColor, logo_url: logoUrl, slug }),
       });
+
+      // Auto-redeem coupon if present
+      if (couponCode) {
+        const wsRes = await fetch('/api/workspace', { headers: { Authorization: `Bearer ${session.access_token}` } });
+        const { workspace } = await wsRes.json();
+        if (workspace?.id) {
+          await redeemCoupon(workspace.id, session.access_token);
+        }
+      }
+
       setStep(2);
     } catch {
       setError('Failed to save. Please try again.');
@@ -227,6 +262,17 @@ function OnboardingInner() {
         {/* Step 2: Connect Integrations */}
         {step === 2 && (
           <div>
+            {couponResult && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '12px 16px', borderRadius: '10px', marginBottom: '20px',
+                backgroundColor: couponResult.ok ? c.successSubtle : c.dangerSubtle,
+                border: `1px solid ${couponResult.ok ? c.successBorder : c.dangerBorder}`,
+              }}>
+                {couponResult.ok ? <Gift size={16} color={c.success} /> : null}
+                <span style={{ fontSize: '13px', fontWeight: 600, color: couponResult.ok ? c.success : c.danger }}>{couponResult.text}</span>
+              </div>
+            )}
             <h1 style={{ fontSize: '22px', fontWeight: 800, color: c.text, marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Connect your data</h1>
             <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '28px' }}>Connect your marketing accounts to start seeing real data. You can always do this later in Settings.</p>
 
@@ -302,7 +348,9 @@ function OnboardingInner() {
 export default function OnboardingPage() {
   return (
     <ThemeProvider>
-      <OnboardingInner />
+      <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+        <OnboardingInner />
+      </Suspense>
     </ThemeProvider>
   );
 }

@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, ArrowRight, Zap, BarChart3, Brain } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, Lock, User, ArrowRight, Zap, BarChart3, Brain, Gift } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ThemeProvider, useTheme } from '@/lib/theme';
+import { Suspense } from 'react';
 
 const features = [
   { icon: BarChart3, text: 'Unified GA4 + GSC + Ads analytics' },
@@ -14,11 +15,13 @@ const features = [
 function SignUpInner() {
   const { c } = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const couponFromUrl = searchParams.get('coupon') || '';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,10 +32,13 @@ function SignUpInner() {
     if (data.session) {
       try { await fetch('/api/workspace', { headers: { Authorization: `Bearer ${data.session.access_token}` } }); } catch {}
     }
-    router.push('/onboarding');
+    const onboardingUrl = couponFromUrl ? `/onboarding?coupon=${encodeURIComponent(couponFromUrl)}` : '/onboarding';
+    router.push(onboardingUrl);
   }
 
   async function handleGoogleSignUp() {
+    // Store coupon in localStorage so we can retrieve it after OAuth redirect
+    if (couponFromUrl) localStorage.setItem('lumnix-coupon', couponFromUrl);
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/api/auth/callback` }
@@ -103,9 +109,23 @@ function SignUpInner() {
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: c.text, fontFamily: 'var(--font-display)', letterSpacing: '-0.5px', marginBottom: '6px' }}>
             Create your account
           </h1>
-          <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '28px' }}>
+          <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: couponFromUrl ? '16px' : '28px' }}>
             Free to start &middot; No credit card needed
           </p>
+
+          {couponFromUrl && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '12px 16px', borderRadius: '10px', marginBottom: '24px',
+              backgroundColor: c.successSubtle, border: `1px solid ${c.successBorder}`,
+            }}>
+              <Gift size={16} color={c.success} />
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: c.success }}>Coupon applied: {couponFromUrl}</div>
+                <div style={{ fontSize: '12px', color: c.textSecondary, marginTop: '2px' }}>Your plan will be upgraded after signup</div>
+              </div>
+            </div>
+          )}
 
           {/* Google button */}
           <button
@@ -209,7 +229,9 @@ function SignUpInner() {
 export default function SignUpPage() {
   return (
     <ThemeProvider>
-      <SignUpInner />
+      <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+        <SignUpInner />
+      </Suspense>
     </ThemeProvider>
   );
 }
