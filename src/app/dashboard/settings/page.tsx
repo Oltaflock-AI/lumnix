@@ -664,10 +664,13 @@ function ProfileTab() {
 }
 
 function BillingTab() {
-  const { c, card } = useStyles();
-  const { workspace } = useWorkspaceCtx();
+  const { c, card, inputBase, primaryBtn } = useStyles();
+  const { workspace, refetch: refetchWorkspace } = useWorkspaceCtx();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [couponCode, setCouponCode] = useState('');
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemResult, setRedeemResult] = useState<{ ok: boolean; text: string } | null>(null);
 
   const currentPlan = workspace?.plan || 'free';
 
@@ -707,6 +710,32 @@ function BillingTab() {
       current: currentPlan === 'agency',
     },
   ];
+
+  async function handleRedeem() {
+    if (!couponCode.trim() || !workspace?.id) return;
+    setRedeeming(true);
+    setRedeemResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setRedeemResult({ ok: false, text: 'Not signed in' }); setRedeeming(false); return; }
+      const res = await fetch('/api/billing/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ code: couponCode.trim(), workspace_id: workspace.id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRedeemResult({ ok: true, text: data.message });
+        setCouponCode('');
+        refetchWorkspace();
+      } else {
+        setRedeemResult({ ok: false, text: data.error || 'Redemption failed' });
+      }
+    } catch (e: any) {
+      setRedeemResult({ ok: false, text: e.message || 'Something went wrong' });
+    }
+    setRedeeming(false);
+  }
 
   async function handleUpgrade(planId: string) {
     if (planId === 'free' || planId === currentPlan) return;
@@ -804,6 +833,48 @@ function BillingTab() {
             </button>
           </div>
         ))}
+      </div>
+
+      {/* Coupon Redemption */}
+      <div style={{ ...card, padding: 24, marginTop: 24 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 4 }}>Have a coupon code?</h3>
+        <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>Enter your early access or promo code to unlock a plan.</p>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+          <input
+            type="text"
+            value={couponCode}
+            onChange={e => setCouponCode(e.target.value.toUpperCase())}
+            placeholder="e.g. EARLYACCESS"
+            style={{ ...inputBase, flex: 1, padding: '12px 14px', fontSize: 14, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}
+            onKeyDown={e => { if (e.key === 'Enter') handleRedeem(); }}
+          />
+          <button
+            onClick={handleRedeem}
+            disabled={redeeming || !couponCode.trim()}
+            style={{
+              ...primaryBtn,
+              padding: '12px 24px',
+              opacity: (redeeming || !couponCode.trim()) ? 0.6 : 1,
+              cursor: (redeeming || !couponCode.trim()) ? 'not-allowed' : 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {redeeming ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : null}
+            {redeeming ? 'Redeeming...' : 'Redeem'}
+          </button>
+        </div>
+        {redeemResult && (
+          <div style={{
+            marginTop: 12, padding: '10px 14px', borderRadius: 8,
+            backgroundColor: redeemResult.ok ? c.successSubtle : c.dangerSubtle,
+            border: `1px solid ${redeemResult.ok ? c.successBorder : c.dangerBorder}`,
+            color: redeemResult.ok ? c.success : c.danger,
+            fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            {redeemResult.ok ? <Check size={13} /> : <X size={13} />}
+            {redeemResult.text}
+          </div>
+        )}
       </div>
     </div>
   );
