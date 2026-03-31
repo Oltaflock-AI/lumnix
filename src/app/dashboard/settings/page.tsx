@@ -1196,10 +1196,6 @@ export default function SettingsPage() {
         <div>
           {/* Profile section */}
           <ProfileTab />
-
-          <div style={{ marginTop: 32 }}>
-            <NotificationsTab />
-          </div>
         </div>
       )}
 
@@ -1561,7 +1557,14 @@ export default function SettingsPage() {
       )}
 
       {/* ─── Alerts Tab ─── */}
-      {activeTab === "alerts" && workspace?.id && <AlertsTab workspaceId={workspace.id} />}
+      {activeTab === "alerts" && (
+        <div>
+          <NotificationsTab />
+          <div style={{ marginTop: 32 }}>
+            {workspace?.id && <AlertsTab workspaceId={workspace.id} />}
+          </div>
+        </div>
+      )}
 
       {/* ─── Billing Tab ─── */}
       {activeTab === "billing" && <BillingTab />}
