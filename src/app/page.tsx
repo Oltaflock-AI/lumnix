@@ -1084,7 +1084,7 @@ function LandingInner() {
               <div key={category} style={{ flex: '0 0 140px' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: c.text, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{category}</div>
                 {links.map(link => (
-                  <a key={link} href={link === 'Privacy' ? '/privacy' : '#'} style={{
+                  <a key={link} href={link === 'Privacy' ? '/privacy' : link === 'Terms' ? '/terms' : '#'} style={{
                     display: 'block', fontSize: 14, color: c.textMuted, textDecoration: 'none',
                     padding: '5px 0', transition: 'color 0.2s',
                   }}
