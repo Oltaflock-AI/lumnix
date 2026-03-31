@@ -1020,6 +1020,106 @@ function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
   );
 }
 
+function DeleteAccountSection() {
+  const { c, card, destructiveBtn } = useStyles();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleDeleteAccount() {
+    if (confirmText !== 'DELETE MY ACCOUNT') {
+      setError('Please type DELETE MY ACCOUNT exactly to confirm');
+      return;
+    }
+    setDeleting(true);
+    setError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ confirmation: confirmText }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Deletion failed'); setDeleting(false); return; }
+      // Sign out and redirect
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    } catch {
+      setError('Something went wrong');
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div style={{ ...card, marginTop: 32, borderColor: c.danger, borderWidth: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <AlertTriangle size={18} color={c.danger} />
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: c.danger }}>Danger Zone</h3>
+      </div>
+      <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 16 }}>
+        Permanently delete your account and all associated data. This action cannot be undone.
+      </p>
+
+      {!showConfirm ? (
+        <button
+          onClick={() => setShowConfirm(true)}
+          style={{ ...destructiveBtn, display: 'flex', alignItems: 'center', gap: 8 }}
+        >
+          <Trash2 size={14} /> Delete Account
+        </button>
+      ) : (
+        <div style={{ padding: 20, borderRadius: 10, backgroundColor: c.dangerSubtle, border: `1px solid ${c.danger}` }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: c.danger, marginBottom: 12 }}>
+            Are you absolutely sure?
+          </p>
+          <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 16 }}>
+            This will permanently delete your account, all workspaces, integrations, analytics data, reports, competitors, team members, and everything else. There is no way to recover this data.
+          </p>
+          <p style={{ fontSize: 13, color: c.text, marginBottom: 8 }}>
+            Type <strong style={{ color: c.danger }}>DELETE MY ACCOUNT</strong> to confirm:
+          </p>
+          <input
+            value={confirmText}
+            onChange={e => setConfirmText(e.target.value)}
+            placeholder="DELETE MY ACCOUNT"
+            style={{
+              width: '100%', padding: '10px 12px', borderRadius: 8,
+              border: `1px solid ${c.danger}`, backgroundColor: c.bgPage,
+              color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+              marginBottom: 12,
+              fontFamily: 'var(--font-mono)',
+            }}
+          />
+          {error && <p style={{ fontSize: 13, color: c.danger, marginBottom: 12 }}>{error}</p>}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleting || confirmText !== 'DELETE MY ACCOUNT'}
+              style={{
+                ...destructiveBtn,
+                display: 'flex', alignItems: 'center', gap: 8,
+                opacity: deleting || confirmText !== 'DELETE MY ACCOUNT' ? 0.5 : 1,
+                cursor: deleting || confirmText !== 'DELETE MY ACCOUNT' ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <Trash2 size={14} />
+              {deleting ? 'Deleting everything...' : 'Permanently Delete Account'}
+            </button>
+            <button
+              onClick={() => { setShowConfirm(false); setConfirmText(''); setError(''); }}
+              style={{ padding: '10px 20px', borderRadius: 8, border: `1px solid ${c.border}`, background: 'transparent', color: c.textSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { c, card, inputBase, primaryBtn, ghostBtn, destructiveBtn } = useStyles();
   const { toggle } = useTheme();
@@ -1196,6 +1296,9 @@ export default function SettingsPage() {
         <div>
           {/* Profile section */}
           <ProfileTab />
+
+          {/* Danger Zone — Delete Account */}
+          <DeleteAccountSection />
         </div>
       )}
 
