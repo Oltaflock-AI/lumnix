@@ -6,7 +6,12 @@ import { Resend } from 'resend';
 function getResend(key: string) {
   return new Resend(key);
 }
-const MAX_FREE_MEMBERS = 2;
+const PLAN_MEMBER_LIMITS: Record<string, number> = {
+  free: 2,
+  starter: 5,
+  growth: 15,
+  agency: 999, // effectively unlimited
+};
 
 function getUserClient(authHeader: string) {
   return createClient(
@@ -33,16 +38,17 @@ export async function POST(req: NextRequest) {
     const db = getSupabaseAdmin();
 
     // Verify requester owns this workspace
-    const { data: workspace } = await db.from('workspaces').select('id, name, owner_id').eq('id', workspace_id).single();
+    const { data: workspace } = await db.from('workspaces').select('id, name, owner_id, plan').eq('id', workspace_id).single();
     if (!workspace || workspace.owner_id !== user.id) {
       return NextResponse.json({ error: 'Not authorized for this workspace' }, { status: 403 });
     }
 
-    // Check member count (max 2 free members)
+    // Check member count against plan limit
+    const maxMembers = PLAN_MEMBER_LIMITS[workspace.plan || 'free'] || PLAN_MEMBER_LIMITS.free;
     const { data: members } = await db.from('workspace_members').select('id').eq('workspace_id', workspace_id);
     const currentCount = (members?.length || 1) - 1; // subtract owner
-    if (currentCount >= MAX_FREE_MEMBERS) {
-      return NextResponse.json({ error: `Free plan allows ${MAX_FREE_MEMBERS} team members. Upgrade to add more.` }, { status: 403 });
+    if (currentCount >= maxMembers) {
+      return NextResponse.json({ error: `${(workspace.plan || 'free')} plan allows ${maxMembers} team members. Upgrade to add more.` }, { status: 403 });
     }
 
     // Check if already invited/member
@@ -178,6 +184,10 @@ export async function GET(req: NextRequest) {
       db.from('team_invites').select('id, email, role, token, status, expires_at, created_at').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
     ]);
 
+    // Get workspace plan for member limits
+    const { data: ws } = await db.from('workspaces').select('plan').eq('id', workspaceId).single();
+    const maxSlots = PLAN_MEMBER_LIMITS[ws?.plan || 'free'] || PLAN_MEMBER_LIMITS.free;
+
     const pendingInvites = (invitesRes.data || []).filter((i: any) => i.status === 'pending');
     // slotsUsed = non-owner members already joined + pending invites
     const joinedNonOwner = Math.max(0, (membersRes.data?.length || 1) - 1);
@@ -186,9 +196,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       members: membersRes.data || [],
       invites: invitesRes.data || [],
-      canInviteMore: slotsUsed < MAX_FREE_MEMBERS,
+      canInviteMore: slotsUsed < maxSlots,
       slotsUsed,
-      maxSlots: MAX_FREE_MEMBERS,
+      maxSlots,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

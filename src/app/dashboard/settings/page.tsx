@@ -1084,10 +1084,10 @@ export default function SettingsPage() {
       {/* Horizontal Tabs: General | Integrations | Team | Alerts | Billing */}
       <div style={{ display: 'flex', gap: 0, marginBottom: 28, borderBottom: `1px solid ${c.border}`, overflowX: 'auto' }}>
         {[
-          { id: 'integrations', label: 'General' },
-          { id: 'team', label: 'Integrations' },
-          { id: 'alerts', label: 'Team' },
-          { id: 'brand', label: 'Alerts' },
+          { id: 'general', label: 'General' },
+          { id: 'integrations', label: 'Integrations' },
+          { id: 'team', label: 'Team' },
+          { id: 'alerts', label: 'Alerts' },
           { id: 'billing', label: 'Billing' },
         ].map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
@@ -1229,8 +1229,8 @@ export default function SettingsPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Crown size={16} color={c.warning} />
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Free Plan</div>
-                <div style={{ fontSize: 12, color: c.textSecondary }}>Up to {teamData?.maxSlots || 2} additional team members</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: c.text, textTransform: 'capitalize' }}>{workspace?.plan || 'free'} Plan</div>
+                <div style={{ fontSize: 12, color: c.textSecondary }}>{workspace?.plan === 'agency' ? 'Unlimited' : `Up to ${teamData?.maxSlots || 2}`} team members</div>
               </div>
             </div>
             <div style={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'var(--font-mono)' }}>
