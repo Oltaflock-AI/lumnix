@@ -31,6 +31,8 @@ function SignUpInner() {
     if (error) { setError(error.message); setLoading(false); return; }
     if (data.session) {
       try { await fetch('/api/workspace', { headers: { Authorization: `Bearer ${data.session.access_token}` } }); } catch {}
+      // Send welcome email (fire and forget)
+      try { fetch('/api/onboarding/welcome', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name }) }); } catch {}
     }
     const onboardingUrl = couponFromUrl ? `/onboarding?coupon=${encodeURIComponent(couponFromUrl)}` : '/onboarding';
     router.push(onboardingUrl);
