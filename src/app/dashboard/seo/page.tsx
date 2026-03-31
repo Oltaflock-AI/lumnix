@@ -30,6 +30,7 @@ function InsightPill({ color, label }: { color: string; label: string }) {
 
 export default function SEOPage() {
   const [days, setDays] = useState(30);
+  const [syncing, setSyncing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'quick-wins' | 'top3' | 'low-ctr'>('all');
   const [search, setSearch] = useState('');
   const router = useRouter();
@@ -118,11 +119,21 @@ export default function SEOPage() {
           icon={Search}
           title={days <= 14 ? "No data for this date range" : "No GSC data yet"}
           description={days <= 14
-            ? "No GSC data found for the selected period. Your data may not cover this range — try a longer period."
+            ? "No GSC data found for the selected period. Your data may not cover this range — try syncing fresh data."
             : "Connect and sync Google Search Console in Settings to see keyword intelligence here."
           }
-          actionLabel={days <= 14 ? "Try Last 30 days" : "Go to Settings"}
-          onAction={() => days <= 14 ? setDays(30) : router.push('/dashboard/settings')}
+          actionLabel={days <= 14 ? (syncing ? "Syncing..." : "Sync Now") : "Go to Settings"}
+          onAction={() => {
+            if (days <= 14) {
+              setSyncing(true);
+              fetch('/api/sync/gsc', { method: 'POST' })
+                .then(() => window.location.reload())
+                .catch(err => console.error('Sync failed:', err))
+                .finally(() => setSyncing(false));
+            } else {
+              router.push('/dashboard/settings');
+            }
+          }}
         />
       )}
 

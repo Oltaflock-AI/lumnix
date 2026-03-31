@@ -49,6 +49,7 @@ function exportPagesCSV(pages: any[]) {
 
 export default function AnalyticsPage() {
   const [days, setDays] = useState(30);
+  const [syncing, setSyncing] = useState(false);
   const router = useRouter();
   const { c } = useTheme();
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
@@ -115,11 +116,21 @@ export default function AnalyticsPage() {
           icon={BarChart3}
           title={days <= 14 ? "No data for this date range" : "No GA4 data yet"}
           description={days <= 14
-            ? "No GA4 data found for the selected period. Your data may not cover this range — try a longer period."
+            ? "No GA4 data found for the selected period. Your data may not cover this range — try syncing fresh data."
             : "Connect and sync Google Analytics 4 in Settings to see traffic analytics here."
           }
-          actionLabel={days <= 14 ? "Try Last 30 days" : "Go to Settings"}
-          onAction={() => days <= 14 ? setDays(30) : router.push('/dashboard/settings')}
+          actionLabel={days <= 14 ? (syncing ? "Syncing..." : "Sync Now") : "Go to Settings"}
+          onAction={() => {
+            if (days <= 14) {
+              setSyncing(true);
+              fetch('/api/sync/ga4', { method: 'POST' })
+                .then(() => window.location.reload())
+                .catch(err => console.error('Sync failed:', err))
+                .finally(() => setSyncing(false));
+            } else {
+              router.push('/dashboard/settings');
+            }
+          }}
         />
       )}
 
