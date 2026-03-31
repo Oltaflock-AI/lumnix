@@ -36,6 +36,7 @@ interface ThemeCtx {
   theme: Theme;
   toggle: () => void;
   c: ColorTokens;
+  setAccentColor: (hex: string) => void;
 }
 
 const DARK: ColorTokens = {
@@ -100,16 +101,51 @@ const Ctx = createContext<ThemeCtx>({
   theme: 'dark',
   toggle: () => {},
   c: DARK,
+  setAccentColor: () => {},
 });
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const m = hex.replace('#', '').match(/^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+  return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) } : null;
+}
+
+function darkenHex(hex: string, amount: number): string {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  const r = Math.max(0, rgb.r - amount).toString(16).padStart(2, '0');
+  const g = Math.max(0, rgb.g - amount).toString(16).padStart(2, '0');
+  const b = Math.max(0, rgb.b - amount).toString(16).padStart(2, '0');
+  return `#${r}${g}${b}`;
+}
+
+function applyAccent(base: ColorTokens, hex: string, isDark: boolean): ColorTokens {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return base;
+  return {
+    ...base,
+    accent: hex,
+    accentHover: darkenHex(hex, 20),
+    accentSubtle: isDark
+      ? `rgba(${rgb.r},${rgb.g},${rgb.b},0.08)`
+      : `rgba(${rgb.r},${rgb.g},${rgb.b},0.06)`,
+  };
+}
+
+const DEFAULT_ACCENT = '#6366F1';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
+  const [accentColor, setAccentColorState] = useState<string>(DEFAULT_ACCENT);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('lumnix-theme') as Theme | null;
     if (saved === 'light' || saved === 'dark') {
       setTheme(saved);
+    }
+    const savedAccent = localStorage.getItem('lumnix-accent');
+    if (savedAccent && /^#[0-9a-fA-F]{6}$/.test(savedAccent)) {
+      setAccentColorState(savedAccent);
     }
     setMounted(true);
   }, []);
@@ -122,7 +158,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  const c = theme === 'dark' ? DARK : LIGHT;
+  function setAccentColor(hex: string) {
+    if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+      setAccentColorState(hex);
+      localStorage.setItem('lumnix-accent', hex);
+    }
+  }
+
+  const base = theme === 'dark' ? DARK : LIGHT;
+  const c = accentColor !== DEFAULT_ACCENT ? applyAccent(base, accentColor, theme === 'dark') : base;
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -135,7 +179,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return <div style={{ visibility: 'hidden' }}>{children}</div>;
   }
 
-  return <Ctx.Provider value={{ theme, toggle, c }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ theme, toggle, c, setAccentColor }}>{children}</Ctx.Provider>;
 }
 
 export function useTheme() {

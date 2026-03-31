@@ -1403,8 +1403,6 @@ export default function ReportsPage() {
             );
           })}
         </div>
-
-        </div>
       </div>
 
       {/* Custom PDF Builder */}

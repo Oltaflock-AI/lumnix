@@ -5,6 +5,7 @@ import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hook
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
+import type { CSSProperties } from "react";
 
 /* ─── Shared Styles Hook ─── */
 function useStyles() {
@@ -151,6 +152,7 @@ function NotificationsTab() {
 
 function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: () => void; onUpdate?: (w: any) => void }) {
   const { c, card, label, inputBase, ghostBtn, primaryBtn } = useStyles();
+  const { setAccentColor } = useTheme();
   const [brandName, setBrandName] = useState(workspace?.name || '');
   const [brandColor, setBrandColor] = useState(workspace?.brand_color || '#7c3aed');
   const [logoUrl, setLogoUrl] = useState(workspace?.logo_url || '');
@@ -218,7 +220,7 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
         setTimeout(() => setSaved(false), 2000);
         onUpdate?.({ ...workspace, name: brandName, brand_color: brandColor, logo_url: logoUrl });
         onSaved?.();
-        document.documentElement.style.setProperty('--accent', brandColor);
+        setAccentColor(brandColor);
       } else {
         setError('Failed to save brand settings');
       }
@@ -301,9 +303,22 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
               </button>
             ))}
           </div>
-          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: brandColor }} />
-            <span style={{ fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{brandColor}</span>
+          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input
+              type="color"
+              value={brandColor}
+              onChange={e => setBrandColor(e.target.value)}
+              style={{ width: 36, height: 36, border: 'none', cursor: 'pointer', borderRadius: 8, padding: 0, background: 'none' }}
+              title="Pick custom color"
+            />
+            <input
+              type="text"
+              value={brandColor}
+              onChange={e => { const v = e.target.value; if (/^#[0-9a-fA-F]{0,6}$/.test(v)) setBrandColor(v); }}
+              style={{ ...inputBase, width: 110, fontFamily: 'var(--font-mono)', fontSize: 13, padding: '8px 10px' }}
+              maxLength={7}
+            />
+            <span style={{ fontSize: 12, color: c.textMuted }}>or pick from presets above</span>
           </div>
         </div>
       </div>
@@ -1085,6 +1100,7 @@ export default function SettingsPage() {
       <div style={{ display: 'flex', gap: 0, marginBottom: 28, borderBottom: `1px solid ${c.border}`, overflowX: 'auto' }}>
         {[
           { id: 'general', label: 'General' },
+          { id: 'brand', label: 'Brand' },
           { id: 'integrations', label: 'Integrations' },
           { id: 'team', label: 'Team' },
           { id: 'alerts', label: 'Alerts' },
@@ -1111,13 +1127,14 @@ export default function SettingsPage() {
           <ProfileTab />
 
           <div style={{ marginTop: 32 }}>
-            <BrandTab workspace={workspace} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
-          </div>
-
-          <div style={{ marginTop: 32 }}>
             <NotificationsTab />
           </div>
         </div>
+      )}
+
+      {/* ─── Brand Tab ─── */}
+      {activeTab === "brand" && (
+        <BrandTab workspace={workspace} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
       )}
 
       {/* ─── Integrations Tab ─── */}

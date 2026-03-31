@@ -1,6 +1,7 @@
 'use client';
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { supabase } from './supabase';
+import { useTheme } from './theme';
 
 interface WorkspaceCtx {
   workspace: any;
@@ -17,9 +18,15 @@ const Ctx = createContext<WorkspaceCtx>({
 });
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const [workspace, setWorkspace] = useState<any>(null);
+  const [workspace, setWorkspaceState] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
+  const { setAccentColor } = useTheme();
+
+  function setWorkspace(w: any) {
+    setWorkspaceState(w);
+    if (w?.brand_color) setAccentColor(w.brand_color);
+  }
 
   useEffect(() => {
     async function load() {
