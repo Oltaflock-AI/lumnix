@@ -967,17 +967,20 @@ export default function SettingsPage() {
   const [teamData, setTeamData] = useState<{ members: any[]; invites: any[]; canInviteMore: boolean; slotsUsed: number; maxSlots: number } | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
+  async function refreshTeamData() {
+    if (!workspace?.id) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const d = await fetch(`/api/team/invite?workspace_id=${workspace.id}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` }
+    }).then(r => r.json()).catch(() => null);
+    if (d && !d.error) setTeamData(d);
+    else setTeamData({ members: [], invites: [], canInviteMore: true, slotsUsed: 0, maxSlots: 2 });
+  }
+
   useEffect(() => {
     if (workspace?.id && activeTab === "team") {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session) return;
-        fetch(`/api/team/invite?workspace_id=${workspace.id}`, {
-          headers: { Authorization: `Bearer ${session.access_token}` }
-        }).then(r => r.json()).then(d => {
-          if (d.error) setTeamData({ members: [], invites: [], canInviteMore: true, slotsUsed: 0, maxSlots: 2 });
-          else setTeamData(d);
-        }).catch(() => setTeamData({ members: [], invites: [], canInviteMore: true, slotsUsed: 0, maxSlots: 2 }));
-      });
+      refreshTeamData();
     }
   }, [workspace?.id, activeTab]);
 
@@ -998,7 +1001,7 @@ export default function SettingsPage() {
       const savedEmail = inviteEmail;
       setInviteEmail("");
       setCopied(false);
-      setTeamData(prev => prev ? { ...prev, slotsUsed: prev.slotsUsed + 1, canInviteMore: prev.slotsUsed + 1 < prev.maxSlots, invites: [...prev.invites, { email: savedEmail, role: inviteRole, status: 'pending', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), token: data.inviteUrl?.split('invite=')[1] }] } : prev);
+      await refreshTeamData();
       if (data.emailSent) {
         setInviteMsg({ text: `Invite sent to ${savedEmail}`, ok: true });
       } else {
@@ -1021,12 +1024,7 @@ export default function SettingsPage() {
     });
     const data = await res.json();
     if (data.success) {
-      setTeamData(prev => prev ? {
-        ...prev,
-        slotsUsed: Math.max(0, prev.slotsUsed - 1),
-        canInviteMore: Math.max(0, prev.slotsUsed - 1) < prev.maxSlots,
-        invites: prev.invites.filter((inv: any) => inv.id !== inviteId),
-      } : prev);
+      await refreshTeamData();
     }
     setRevokingId(null);
   }

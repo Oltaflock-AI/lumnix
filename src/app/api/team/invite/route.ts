@@ -178,11 +178,16 @@ export async function GET(req: NextRequest) {
       db.from('team_invites').select('id, email, role, token, status, expires_at, created_at').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
     ]);
 
+    const pendingInvites = (invitesRes.data || []).filter((i: any) => i.status === 'pending');
+    // slotsUsed = non-owner members already joined + pending invites
+    const joinedNonOwner = Math.max(0, (membersRes.data?.length || 1) - 1);
+    const slotsUsed = joinedNonOwner + pendingInvites.length;
+
     return NextResponse.json({
       members: membersRes.data || [],
       invites: invitesRes.data || [],
-      canInviteMore: ((membersRes.data?.length || 1) - 1) < MAX_FREE_MEMBERS,
-      slotsUsed: Math.max(0, (membersRes.data?.length || 1) - 1),
+      canInviteMore: slotsUsed < MAX_FREE_MEMBERS,
+      slotsUsed,
       maxSlots: MAX_FREE_MEMBERS,
     });
   } catch (error: any) {
