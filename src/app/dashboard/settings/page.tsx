@@ -1435,8 +1435,6 @@ export default function SettingsPage() {
             })}
           </div>
 
-          {/* Slack Integration */}
-          <SlackSection workspaceId={workspace?.id} />
         </div>
       )}
 
@@ -1702,6 +1700,8 @@ export default function SettingsPage() {
           <div style={{ marginTop: 32 }}>
             {workspace?.id && <AlertsTab workspaceId={workspace.id} />}
           </div>
+          {/* Slack Integration */}
+          <SlackSection workspaceId={workspace?.id} />
         </div>
       )}
 
