@@ -1,4 +1,4 @@
-// Google Ads connector — uses Google Ads API v18
+// Google Ads connector — uses Google Ads API v23
 // Requires: Google Ads API enabled + developer token
 
 async function safeParse(res: Response): Promise<any> {
@@ -38,7 +38,7 @@ export async function fetchGoogleAdsCampaigns(
 
   // Use search (not searchStream) for simpler JSON response
   const res = await fetch(
-    `https://googleads.googleapis.com/v18/customers/${customerId}/googleAds:search`,
+    `https://googleads.googleapis.com/v23/customers/${customerId}/googleAds:search`,
     {
       method: 'POST',
       headers: {
@@ -82,7 +82,7 @@ export async function fetchGoogleAdsAccounts(accessToken: string): Promise<strin
   if (!devToken) throw new Error('Google Ads developer token not configured');
 
   const res = await fetch(
-    'https://googleads.googleapis.com/v18/customers:listAccessibleCustomers',
+    'https://googleads.googleapis.com/v23/customers:listAccessibleCustomers',
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
