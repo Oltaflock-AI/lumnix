@@ -1068,6 +1068,150 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
   );
 }
 
+function ScheduledReports({ workspaceId }: { workspaceId: string }) {
+  const { c } = useTheme();
+  const [schedules, setSchedules] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [formName, setFormName] = useState('Weekly Marketing Report');
+  const [formFreq, setFormFreq] = useState('weekly');
+  const [formEmail, setFormEmail] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const loadSchedules = useCallback(async () => {
+    try {
+      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setSchedules(d.schedules || []);
+      }
+    } catch {} finally { setLoading(false); }
+  }, [workspaceId]);
+
+  useState(() => { loadSchedules(); });
+
+  const handleCreate = async () => {
+    if (!formEmail.trim()) return;
+    setSaving(true);
+    try {
+      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ name: formName, frequency: formFreq, recipients: formEmail.split(',').map(e => e.trim()).filter(Boolean) }),
+      });
+      if (res.ok) {
+        setShowForm(false);
+        setFormEmail('');
+        loadSchedules();
+      }
+    } catch {} finally { setSaving(false); }
+  };
+
+  const handleToggle = async (id: string, enabled: boolean) => {
+    try {
+      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      if (!session) return;
+      await fetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ id, enabled }),
+      });
+      loadSchedules();
+    } catch {}
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      if (!session) return;
+      await fetch(`/api/reports/schedule?workspace_id=${workspaceId}&id=${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      loadSchedules();
+    } catch {}
+  };
+
+  return (
+    <div style={{ marginTop: 32 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div>
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 4 }}>Scheduled Reports</h2>
+          <p style={{ fontSize: 12, color: c.textMuted }}>Automatically send reports via email on a schedule</p>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: c.accent, color: 'white', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+        >
+          {showForm ? 'Cancel' : '+ Schedule'}
+        </button>
+      </div>
+
+      {showForm && (
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: c.textSecondary, display: 'block', marginBottom: 4 }}>Report Name</label>
+              <input value={formName} onChange={e => setFormName(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: `1px solid ${c.border}`, background: c.bgPage, color: c.text, fontSize: 13 }} />
+            </div>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: c.textSecondary, display: 'block', marginBottom: 4 }}>Frequency</label>
+              <select value={formFreq} onChange={e => setFormFreq(e.target.value)} style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: `1px solid ${c.border}`, background: c.bgPage, color: c.text, fontSize: 13 }}>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: c.textSecondary, display: 'block', marginBottom: 4 }}>Recipients (comma-separated emails)</label>
+            <input value={formEmail} onChange={e => setFormEmail(e.target.value)} placeholder="name@company.com" style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: `1px solid ${c.border}`, background: c.bgPage, color: c.text, fontSize: 13 }} />
+          </div>
+          <button onClick={handleCreate} disabled={saving || !formEmail.trim()} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: saving ? c.textMuted : c.accent, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            {saving ? 'Creating...' : 'Create Schedule'}
+          </button>
+        </div>
+      )}
+
+      {loading ? (
+        <div style={{ height: 60, backgroundColor: c.bgCard, borderRadius: 12, border: `1px solid ${c.border}` }} className="animate-pulse" />
+      ) : schedules.length === 0 ? (
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '30px 20px', textAlign: 'center' }}>
+          <Calendar size={20} color={c.textMuted} style={{ marginBottom: 8 }} />
+          <p style={{ fontSize: 13, color: c.textMuted }}>No scheduled reports yet. Click &quot;+ Schedule&quot; to set one up.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {schedules.map((s: any) => (
+            <div key={s.id} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 10, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{s.name}</div>
+                <div style={{ fontSize: 11, color: c.textMuted, marginTop: 2 }}>
+                  {s.frequency} &middot; {s.recipients?.join(', ')} &middot; {s.last_sent_at ? `Last: ${new Date(s.last_sent_at).toLocaleDateString()}` : 'Not sent yet'}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => handleToggle(s.id, !s.enabled)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: s.enabled ? c.success : c.textMuted, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                  {s.enabled ? 'Active' : 'Paused'}
+                </button>
+                <button onClick={() => handleDelete(s.id)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${c.border}`, background: 'transparent', color: c.danger, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ReportsPage() {
   const { workspace } = useWorkspaceCtx();
   const { c } = useTheme();
@@ -1424,6 +1568,8 @@ export default function ReportsPage() {
       }}>
         <strong style={{ color: c.text }}>How to send to a client:</strong> Click &quot;Generate &amp; Download&quot; to get a PDF file, or use &quot;Print&quot; to open in a new tab and save as PDF via Cmd/Ctrl+P. Use the Custom PDF Builder above to generate a React PDF with selected sections.
       </div>
+
+      {workspace?.id && <ScheduledReports workspaceId={workspace.id} />}
     </PageShell>
   );
 }

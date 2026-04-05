@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
-// GET /api/data/gsc?workspace_id=...&days=28&type=keywords|pages|overview
+// GET /api/data/gsc?workspace_id=...&days=28&type=keywords|pages|overview&page=1&per_page=50
 export async function GET(req: NextRequest) {
   try {
     const workspaceId = req.nextUrl.searchParams.get('workspace_id');
@@ -9,6 +9,8 @@ export async function GET(req: NextRequest) {
     const type = req.nextUrl.searchParams.get('type') || 'keywords';
     const customStart = req.nextUrl.searchParams.get('start_date');
     const customEnd = req.nextUrl.searchParams.get('end_date');
+    const page = Math.max(1, parseInt(req.nextUrl.searchParams.get('page') || '1'));
+    const perPage = Math.min(100, Math.max(1, parseInt(req.nextUrl.searchParams.get('per_page') || '50')));
 
     if (!workspaceId) {
       return NextResponse.json({ error: 'Missing workspace_id' }, { status: 400 });
@@ -53,7 +55,7 @@ export async function GET(req: NextRequest) {
           kwMap.set(row.query, existing);
         }
 
-        const keywords = Array.from(kwMap.entries())
+        const allKeywords = Array.from(kwMap.entries())
           .map(([query, data]) => ({
             query,
             clicks: data.clicks,
@@ -61,10 +63,12 @@ export async function GET(req: NextRequest) {
             ctr: data.count > 0 ? data.ctr / data.count : 0,
             position: data.count > 0 ? Math.round(data.position / data.count * 10) / 10 : 0,
           }))
-          .sort((a, b) => b.clicks - a.clicks)
-          .slice(0, 50);
+          .sort((a, b) => b.clicks - a.clicks);
 
-        return NextResponse.json({ keywords });
+        const total = allKeywords.length;
+        const keywords = allKeywords.slice((page - 1) * perPage, page * perPage);
+
+        return NextResponse.json({ keywords, pagination: { page, per_page: perPage, total, total_pages: Math.ceil(total / perPage) } });
       }
 
       return NextResponse.json({ keywords: data });

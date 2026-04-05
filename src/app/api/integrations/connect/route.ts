@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getGoogleAuthUrl, SCOPES } from '@/lib/google-oauth';
 import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { checkPlanLimit } from '@/lib/plan-limits';
 
 // POST /api/integrations/connect
 // Body: { provider: 'gsc' | 'ga4' | 'google_ads', workspace_id: string }
@@ -20,6 +22,12 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { provider, workspace_id } = await req.json();
+
+    // Check plan limit for integrations
+    const db = getSupabaseAdmin();
+    const { data: ws } = await db.from('workspaces').select('plan').eq('id', workspace_id).single();
+    const limitError = await checkPlanLimit(workspace_id, ws?.plan || 'free', 'integrations');
+    if (limitError) return limitError;
 
     if (!provider || !workspace_id) {
       return NextResponse.json({ error: 'Missing provider or workspace_id' }, { status: 400 });

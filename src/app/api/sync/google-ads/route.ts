@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchGoogleAdsCampaigns, fetchGoogleAdsAccounts } from '@/lib/connectors/google-ads';
 import { refreshAccessToken } from '@/lib/google-oauth';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
     const { integration_id, workspace_id } = await req.json();
+
+    const rateLimited = rateLimit(`sync:gads:${workspace_id}`, 5, 60 * 1000);
+    if (rateLimited) return rateLimited;
 
     const { data: tokenRow } = await getSupabaseAdmin()
       .from('oauth_tokens')

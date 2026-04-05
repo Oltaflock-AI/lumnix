@@ -387,7 +387,11 @@ export default function MetaAdsPage() {
       title="Meta Ads"
       description="Facebook & Instagram ad performance"
       icon={Target}
-      badge={integration?.last_sync_at ? `Synced ${new Date(integration.last_sync_at).toLocaleDateString()}` : undefined}
+      badge={integration?.last_sync_at
+        ? (Date.now() - new Date(integration.last_sync_at).getTime() > 24 * 60 * 60 * 1000
+          ? `Stale — synced ${new Date(integration.last_sync_at).toLocaleDateString()}`
+          : `Synced ${new Date(integration.last_sync_at).toLocaleDateString()}`)
+        : undefined}
       action={syncButton}
     >
       {/* Date range selector */}

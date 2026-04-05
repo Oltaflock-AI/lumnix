@@ -273,6 +273,102 @@ export default function DashboardPage() {
 
       {/* AI Insights widget */}
       <AIInsightsWidget workspaceId={workspace?.id} />
+
+      {/* Recommendations + Predictions */}
+      <div className="two-col" style={{ marginTop: 20 }}>
+        <RecommendationsWidget workspaceId={workspace?.id} />
+        <PredictionsWidget workspaceId={workspace?.id} />
+      </div>
+    </div>
+  );
+}
+
+/* ─── Recommendations Widget ─── */
+
+function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefined }) {
+  const { c } = useTheme();
+  const [recs, setRecs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!workspaceId) { setLoading(false); return; }
+    fetch(`/api/recommendations/generate?workspace_id=${workspaceId}`)
+      .then(r => r.json())
+      .then(d => { setRecs(d.recommendations || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [workspaceId]);
+
+  const priorityColors: Record<string, string> = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
+
+  return (
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <Lightbulb size={16} color={c.accent} />
+        <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>AI Recommendations</h3>
+      </div>
+      {loading ? (
+        <div style={{ height: 80, backgroundColor: c.bgCardHover, borderRadius: 8 }} className="animate-pulse" />
+      ) : recs.length === 0 ? (
+        <p style={{ fontSize: 12, color: c.textMuted }}>No recommendations yet. Connect integrations and sync data to get AI-powered suggestions.</p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {recs.slice(0, 4).map((r: any, i: number) => (
+            <div key={r.id || i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: priorityColors[r.priority] || c.textMuted, marginTop: 6, flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, fontWeight: 500, color: c.text, marginBottom: 2 }}>{r.title}</p>
+                <p style={{ fontSize: 11, color: c.textMuted, lineHeight: 1.5 }}>{r.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Predictions Widget ─── */
+
+function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined }) {
+  const { c } = useTheme();
+  const [prediction, setPrediction] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!workspaceId) { setLoading(false); return; }
+    fetch(`/api/predictions?workspace_id=${workspaceId}&metric=sessions&days=14`)
+      .then(r => r.json())
+      .then(d => { setPrediction(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [workspaceId]);
+
+  const forecast = prediction?.forecast || [];
+  const narrative = prediction?.narrative || '';
+  const avgForecast = forecast.length > 0 ? Math.round(forecast.reduce((s: number, f: any) => s + f.predicted, 0) / forecast.length) : 0;
+
+  return (
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <TrendingUp size={16} color={c.success} />
+        <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Traffic Forecast</h3>
+      </div>
+      {loading ? (
+        <div style={{ height: 80, backgroundColor: c.bgCardHover, borderRadius: 8 }} className="animate-pulse" />
+      ) : forecast.length === 0 ? (
+        <p style={{ fontSize: 12, color: c.textMuted }}>{prediction?.message || 'Connect GA4 and sync data to see traffic predictions.'}</p>
+      ) : (
+        <div>
+          <div style={{ fontSize: 28, fontWeight: 500, color: c.text, fontFamily: 'var(--font-mono)', marginBottom: 4 }}>
+            ~{avgForecast.toLocaleString()}
+          </div>
+          <p style={{ fontSize: 11, color: c.textSecondary, marginBottom: 12 }}>avg daily sessions forecast (next 14 days)</p>
+          {narrative && (
+            <p style={{ fontSize: 12, color: c.textMuted, lineHeight: 1.6, padding: '10px 12px', backgroundColor: c.bgCardHover, borderRadius: 8, border: `1px solid ${c.border}` }}>
+              {narrative}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

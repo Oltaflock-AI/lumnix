@@ -11,7 +11,10 @@ import { refreshAccessToken } from '@/lib/google-oauth';
 export async function GET(req: NextRequest) {
   // Verify cron secret or allow manual trigger
   const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET || 'lumnix-cron-2026';
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
+  }
   const workspaceIdParam = req.nextUrl.searchParams.get('workspace_id');
 
   if (authHeader !== `Bearer ${cronSecret}` && !workspaceIdParam) {

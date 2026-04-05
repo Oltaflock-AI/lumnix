@@ -17,6 +17,14 @@
       "schedule": "0 8 * * *"
     },
     {
+      "path": "/api/cron/send-reports",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/generate-recommendations",
+      "schedule": "0 6 * * 1"
+    },
+    {
       "path": "/api/onboarding/sequence",
       "schedule": "0 9 * * *"
     }

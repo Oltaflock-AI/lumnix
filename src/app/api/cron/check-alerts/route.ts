@@ -3,13 +3,16 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { Resend } from 'resend';
 
 function getResend() {
-  return new Resend(process.env.RESEND_API_KEY || 're_EJm5NfQy_JxXSyrDz9xr2pdQX5XpFcXSJ');
+  return new Resend(process.env.RESEND_API_KEY);
 }
 
 // GET /api/cron/check-alerts — called by Vercel Cron every hour
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET || 'lumnix-cron-2026';
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
+  }
 
   if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

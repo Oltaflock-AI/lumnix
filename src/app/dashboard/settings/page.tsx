@@ -1253,9 +1253,7 @@ export default function SettingsPage() {
     if (!workspace?.id) return;
     setSyncing('all');
     try {
-      const res = await fetch(`/api/cron/sync?workspace_id=${workspace.id}`, {
-        headers: { Authorization: 'Bearer lumnix-cron-2026' }
-      });
+      const res = await fetch(`/api/cron/sync?workspace_id=${workspace.id}`);
       const result = await res.json();
       if (result.success) {
         const synced = result.results.filter((r: any) => r.status === 'synced');
