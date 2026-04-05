@@ -106,8 +106,15 @@ export default function GoogleAdsPage() {
         <>
           {/* Header row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div style={{ fontSize: 13, color: c.textMuted }}>
-              {integration.last_sync_at ? `Last synced ${new Date(integration.last_sync_at).toLocaleString()}` : 'Never synced'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: c.textMuted }}>
+              {integration.last_sync_at ? (
+                <>
+                  Last synced {new Date(integration.last_sync_at).toLocaleString()}
+                  {Date.now() - new Date(integration.last_sync_at).getTime() > 24 * 60 * 60 * 1000 && (
+                    <span style={{ fontSize: 11, color: c.warning, fontWeight: 600 }}>Stale</span>
+                  )}
+                </>
+              ) : 'Never synced'}
             </div>
             <button
               onClick={handleSync}

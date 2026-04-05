@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import OpenAI from 'openai';
+import { rateLimit } from '@/lib/rate-limit';
 
 function getOpenAI() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -53,6 +54,12 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { workspace_id, competitor_id } = body;
+
+  // Rate limit: 3 analysis requests per minute per workspace
+  if (workspace_id) {
+    const rateLimited = rateLimit(`kwgap:${workspace_id}`, 3, 60 * 1000);
+    if (rateLimited) return rateLimited;
+  }
 
   if (!workspace_id || !competitor_id) {
     return NextResponse.json({ error: 'workspace_id and competitor_id required' }, { status: 400 });

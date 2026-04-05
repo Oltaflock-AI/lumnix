@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchGSCData, fetchGSCSites } from '@/lib/connectors/gsc';
 import { refreshAccessToken } from '@/lib/google-oauth';
+import { rateLimit } from '@/lib/rate-limit';
 
 // POST /api/sync/gsc
 // Body: { integration_id, workspace_id, days?: number }
 export async function POST(req: NextRequest) {
   try {
     const { integration_id, workspace_id, days = 28 } = await req.json();
+
+    // Rate limit: 5 syncs per minute per workspace
+    const rateLimited = rateLimit(`sync:gsc:${workspace_id}`, 5, 60 * 1000);
+    if (rateLimited) return rateLimited;
 
     // Get tokens
     const { data: tokenRow } = await getSupabaseAdmin()

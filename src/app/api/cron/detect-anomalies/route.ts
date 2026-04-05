@@ -31,7 +31,10 @@ function buildSlackBlocks(workspaceName: string, anomaly: { title: string; descr
 // GET /api/cron/detect-anomalies — daily at 8am UTC
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET || 'lumnix-cron-2026';
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
+  }
 
   if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

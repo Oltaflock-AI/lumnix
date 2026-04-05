@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchMetaAdAccounts, fetchMetaCampaigns, fetchMetaInsights } from '@/lib/connectors/meta-ads';
+import { rateLimit } from '@/lib/rate-limit';
 
 // Meta returns budgets in the smallest currency unit (paise for INR, cents for USD)
 function formatBudget(amount: string | undefined, currency: string): string {
@@ -33,6 +34,9 @@ function formatSpend(spend: number, currency: string): string {
 export async function POST(req: NextRequest) {
   try {
     const { integration_id, workspace_id, ad_account_id } = await req.json();
+
+    const rateLimited = rateLimit(`sync:meta:${workspace_id}`, 5, 60 * 1000);
+    if (rateLimited) return rateLimited;
 
     const db = getSupabaseAdmin();
 
