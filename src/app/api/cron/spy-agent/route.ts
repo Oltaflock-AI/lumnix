@@ -260,12 +260,33 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const metaToken = process.env.META_ACCESS_TOKEN;
+  const db = getSupabaseAdmin();
+
+  // Try env var first, then fall back to any connected Meta integration token
+  let metaToken = process.env.META_ACCESS_TOKEN || '';
   if (!metaToken) {
-    return NextResponse.json({ error: 'META_ACCESS_TOKEN not configured', success: false }, { status: 500 });
+    const { data: metaIntegration } = await db
+      .from('integrations')
+      .select('id')
+      .eq('provider', 'meta_ads')
+      .eq('status', 'connected')
+      .limit(1)
+      .single();
+
+    if (metaIntegration) {
+      const { data: token } = await db
+        .from('oauth_tokens')
+        .select('access_token')
+        .eq('integration_id', metaIntegration.id)
+        .single();
+      metaToken = token?.access_token || '';
+    }
   }
 
-  const db = getSupabaseAdmin();
+  if (!metaToken) {
+    return NextResponse.json({ error: 'No Meta access token available. Connect Meta Ads or set META_ACCESS_TOKEN env var.', success: false }, { status: 500 });
+  }
+
   const results: any[] = [];
   const errors: any[] = [];
 
