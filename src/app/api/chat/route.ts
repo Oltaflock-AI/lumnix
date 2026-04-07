@@ -447,8 +447,12 @@ IMPORTANT RULES:
     });
 
     if (!firstResponse.ok) {
-      const err = await firstResponse.json();
-      return new Response(err?.error?.message || 'Anthropic API error', { status: 500 });
+      const err = await firstResponse.json().catch(() => ({}));
+      const errMsg = err?.error?.message || '';
+      if (errMsg.includes('credit') || errMsg.includes('balance') || firstResponse.status === 402) {
+        return new Response('Lumnix AI is temporarily unavailable — API credits need to be topped up. Please try again later or contact support.', { status: 503 });
+      }
+      return new Response(errMsg || 'AI service error — please try again', { status: 500 });
     }
 
     const firstData = await firstResponse.json();
@@ -499,8 +503,12 @@ IMPORTANT RULES:
     });
 
     if (!streamResponse.ok) {
-      const err = await streamResponse.json();
-      return new Response(err?.error?.message || 'Anthropic API error', { status: 500 });
+      const err = await streamResponse.json().catch(() => ({}));
+      const errMsg = err?.error?.message || '';
+      if (errMsg.includes('credit') || errMsg.includes('balance') || streamResponse.status === 402) {
+        return new Response('Lumnix AI is temporarily unavailable — API credits need to be topped up.', { status: 503 });
+      }
+      return new Response(errMsg || 'AI service error — please try again', { status: 500 });
     }
 
     // Parse Anthropic SSE stream

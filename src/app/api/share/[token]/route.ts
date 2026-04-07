@@ -43,8 +43,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     const organicClicks = gscRows.reduce((s, r) => s + (r.clicks || 0), 0);
     const sessions = ga4Rows.filter(r => r.metric_type === 'sessions' && (r.dimension_name === 'total' || r.dimension_name === 'date')).reduce((s, r) => s + (r.value || 0), 0)
       || ga4Rows.filter(r => r.metric_type === 'sessions' && r.dimension_name === 'sessionSource').reduce((s, r) => s + (r.value || 0), 0);
-    const adSpend = gAdsRows.reduce((s, r) => s + Number(r.cost || 0), 0) + metaRows.reduce((s, r) => s + Number(r.spend || 0), 0);
-    const adRevenue = gAdsRows.reduce((s, r) => s + Number(r.conversions_value || 0), 0) + metaRows.reduce((s, r) => s + Number(r.revenue || 0), 0);
+    let adSpend = gAdsRows.reduce((s, r) => s + Number(r.cost || 0), 0) + metaRows.reduce((s, r) => s + Number(r.spend || 0), 0);
+    let adRevenue = gAdsRows.reduce((s, r) => s + Number(r.conversions_value || 0), 0) + metaRows.reduce((s, r) => s + Number(r.revenue || 0), 0);
+
+    // Fallback to analytics_data JSONB if normalized tables are empty
+    if (adSpend === 0) {
+      const { data: gAdsFb } = await db.from('analytics_data').select('data').eq('workspace_id', workspaceId).eq('provider', 'google_ads').order('synced_at', { ascending: false }).limit(1).single();
+      if (gAdsFb?.data && Array.isArray(gAdsFb.data)) {
+        for (const c of gAdsFb.data) { adSpend += Number(c.spend || 0); adRevenue += Number(c.conversions_value || 0); }
+      }
+      const { data: metaFb } = await db.from('analytics_data').select('data').eq('workspace_id', workspaceId).eq('provider', 'meta_ads').order('synced_at', { ascending: false }).limit(1).single();
+      if (metaFb?.data && Array.isArray(metaFb.data)) {
+        for (const c of metaFb.data) { adSpend += Number(c.spend || 0); adRevenue += Number(c.revenue || 0); }
+      }
+    }
 
     // Build daily chart data
     const dailyMap = new Map<string, { organic_clicks: number; paid_clicks: number }>();

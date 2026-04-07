@@ -133,7 +133,7 @@ export default function AttributionPage() {
               <p style={{ fontSize: 13, color: c.accent, fontWeight: 600, marginBottom: 6 }}>Attribution is synthesized from your GA4, GSC, and Ads data.</p>
               <p style={{ fontSize: 12, color: c.textSecondary, lineHeight: 1.5, marginBottom: 8 }}>For real user-level attribution, install the Lumnix pixel on your site:</p>
               <code style={{ display: 'block', padding: '8px 12px', borderRadius: 6, backgroundColor: c.bgPage, border: `1px solid ${c.border}`, fontSize: 11, color: c.text, fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
-                {`<script src="https://lumnix-ai.vercel.app/lmnx.js" data-workspace="${workspace?.id || 'YOUR_WORKSPACE_ID'}"></script>`}
+                {`<script src="${typeof window !== 'undefined' ? window.location.origin : 'https://lumnix-ai.vercel.app'}/lmnx.js" data-workspace="${workspace?.id || 'YOUR_WORKSPACE_ID'}"></script>`}
               </code>
             </div>
           )}

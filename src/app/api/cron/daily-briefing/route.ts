@@ -64,7 +64,14 @@ export async function GET(req: NextRequest) {
       if (gscClicks > 0 && gscImpressions > 0 && (gscClicks / gscImpressions) < 0.02) recommendations.push({ action: 'Optimize title tags for better CTR', reason: 'Your average organic CTR is below 2%', priority: 'medium' });
 
       // Generate summary using Claude
-      let summary = `Weekly snapshot: ${sessions > 0 ? `${sessions.toLocaleString()} sessions` : ''}${gscClicks > 0 ? `, ${gscClicks.toLocaleString()} organic clicks` : ''}${totalSpend > 0 ? `, $${totalSpend.toFixed(0)} ad spend (${roas}x ROAS)` : ''}. ${unreadAnomalies.length > 0 ? `${unreadAnomalies.length} anomalies need attention.` : 'No anomalies detected.'}`;
+      const parts: string[] = [];
+      if (sessions > 0) parts.push(`${sessions.toLocaleString()} sessions`);
+      if (gscClicks > 0) parts.push(`${gscClicks.toLocaleString()} organic clicks`);
+      if (totalSpend > 0) parts.push(`$${totalSpend.toFixed(0)} ad spend (${roas}x ROAS)`);
+      const anomalyNote = unreadAnomalies.length > 0 ? `${unreadAnomalies.length} anomalies need attention.` : 'No anomalies detected.';
+      let summary = parts.length > 0
+        ? `Weekly snapshot: ${parts.join(', ')}. ${anomalyNote}`
+        : `No new data this week. ${anomalyNote} Connect more integrations to get richer briefings.`;
 
       const apiKey = process.env.ANTHROPIC_API_KEY;
       if (apiKey && changes.length > 0) {

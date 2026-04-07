@@ -209,6 +209,7 @@ export default function CampaignsPage() {
                   ${camp.budget_amount}/day · {camp.objective || 'No objective'}
                   {camp.launched_at && ` · Launched ${new Date(camp.launched_at).toLocaleDateString()}`}
                 </div>
+                {camp.status === 'active' && <p style={{ fontSize: 12, color: c.success, marginTop: 4 }}>Created as paused on {camp.platform === 'meta_ads' ? 'Meta' : 'Google'} Ads — activate it in your Ads Manager when ready.</p>}
                 {camp.error_message && <p style={{ fontSize: 12, color: c.danger, marginTop: 4 }}>{camp.error_message}</p>}
               </div>
               <div style={{ display: 'flex', gap: 8 }}>

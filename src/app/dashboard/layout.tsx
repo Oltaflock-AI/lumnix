@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
   Menu, X, LogOut, ChevronDown, Plus, GitBranch, RefreshCw, User,
-  Sun, Moon, MessageCircle, Palette, Rocket
+  Sun, Moon, MessageCircle, Palette, Rocket, Zap, Mail
 } from 'lucide-react';
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
@@ -32,6 +32,8 @@ const navGroups = [
     label: 'Intelligence',
     items: [
       { href: '/dashboard/ai', label: 'AI Assistant', icon: Brain },
+      { href: '/dashboard/actions', label: 'Action Queue', icon: Zap },
+      { href: '/dashboard/briefings', label: 'Briefings', icon: Mail },
       { href: '/dashboard/competitors', label: 'Competitors', icon: Eye },
       { href: '/dashboard/attribution', label: 'Attribution', icon: GitBranch },
     ],
