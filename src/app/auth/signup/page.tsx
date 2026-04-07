@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, User, ArrowRight, Zap, BarChart3, Brain, Gift } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Zap, BarChart3, Brain, Gift, Ticket } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { Suspense } from 'react';
@@ -19,20 +19,46 @@ function SignUpInner() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const couponFromUrl = searchParams.get('coupon') || '';
+  const inviteFromUrl = searchParams.get('invite') || '';
+
+  // Pre-fill invite code from URL
+  useEffect(() => { if (inviteFromUrl) setInviteCode(inviteFromUrl); }, [inviteFromUrl]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validate beta invite code if provided
+    const code = inviteCode.trim();
+    if (code) {
+      try {
+        const vRes = await fetch('/api/beta/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+        const vData = await vRes.json();
+        if (!vData.valid) { setError(vData.error || 'Invalid invite code'); setLoading(false); return; }
+      } catch {
+        setError('Could not validate invite code'); setLoading(false); return;
+      }
+    }
+
     const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
     if (error) { setError(error.message); setLoading(false); return; }
     if (data.session) {
       try { await fetch('/api/workspace', { headers: { Authorization: `Bearer ${data.session.access_token}` } }); } catch {}
       // Send welcome email (fire and forget)
       try { fetch('/api/onboarding/welcome', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name }) }); } catch {}
+      // Redeem beta invite code (fire and forget)
+      if (code) {
+        try { fetch('/api/beta/redeem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, email }) }); } catch {}
+      }
     }
     const onboardingUrl = couponFromUrl ? `/onboarding?coupon=${encodeURIComponent(couponFromUrl)}` : '/onboarding';
     router.push(onboardingUrl);
@@ -164,6 +190,7 @@ function SignUpInner() {
               { icon: User, type: 'text', placeholder: 'Full name', value: name, onChange: setName },
               { icon: Mail, type: 'email', placeholder: 'Work email', value: email, onChange: setEmail },
               { icon: Lock, type: 'password', placeholder: 'Password (min 6 chars)', value: password, onChange: setPassword, min: 6 },
+              { icon: Ticket, type: 'text', placeholder: 'Beta invite code (optional)', value: inviteCode, onChange: setInviteCode, required: false },
             ].map((field, i) => (
               <div key={i} style={{ position: 'relative' }}>
                 <field.icon size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
@@ -172,7 +199,7 @@ function SignUpInner() {
                   placeholder={field.placeholder}
                   value={field.value}
                   onChange={e => field.onChange(e.target.value)}
-                  required
+                  required={field.required !== false}
                   minLength={field.min}
                   style={{
                     width: '100%', padding: '11px 14px 11px 40px',

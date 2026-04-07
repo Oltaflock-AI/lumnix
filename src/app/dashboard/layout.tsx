@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
   Menu, X, LogOut, ChevronDown, Plus, GitBranch, RefreshCw, User,
-  Sun, Moon
+  Sun, Moon, MessageCircle
 } from 'lucide-react';
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
@@ -220,6 +220,15 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
             <LogOut size={14} />
           </button>
         </div>
+        {/* Feedback link */}
+        <a
+          href="mailto:khush@oltaflock.ai?subject=Lumnix Beta Feedback"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', fontSize: 12, color: c.textMuted, textDecoration: 'none', transition: 'color 0.15s' }}
+          onMouseEnter={e => (e.currentTarget.style.color = c.accent)}
+          onMouseLeave={e => (e.currentTarget.style.color = c.textMuted)}
+        >
+          <MessageCircle size={13} /> Give feedback
+        </a>
       </div>
     </div>
   );
