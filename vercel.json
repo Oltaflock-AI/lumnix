@@ -21,6 +21,10 @@
       "schedule": "0 8 * * *"
     },
     {
+      "path": "/api/cron/spy-agent",
+      "schedule": "0 6 * * *"
+    },
+    {
       "path": "/api/cron/generate-recommendations",
       "schedule": "0 6 * * 1"
     },

@@ -33,7 +33,7 @@ function formatDate(s: string | null | undefined): string {
   return isNaN(d.getTime()) ? s : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-const TABS = ['Ads', 'AI Analysis', 'Ideas', 'Alerts', 'Keyword Gap'] as const;
+const TABS = ['Ads', 'Trends', 'AI Analysis', 'Ideas', 'Alerts', 'Keyword Gap'] as const;
 type Tab = typeof TABS[number];
 
 const STATUS_COLS = ['idea', 'review', 'approved', 'production'] as const;
@@ -82,6 +82,10 @@ export default function CompetitorsPage() {
   const [loadingAlerts, setLoadingAlerts] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Trends tab
+  const [trends, setTrends] = useState<any[]>([]);
+  const [loadingTrends, setLoadingTrends] = useState(false);
+
   // Keyword Gap tab
   const [keywordGaps, setKeywordGaps] = useState<any[]>([]);
   const [loadingGaps, setLoadingGaps] = useState(false);
@@ -118,6 +122,16 @@ export default function CompetitorsPage() {
       .then(r => r.json())
       .then(d => { setAnalysis(d.analysis); setIdeas(d.ideas ?? []); });
   }, [selectedId, activeTab]);
+
+  // Fetch trends
+  useEffect(() => {
+    if (!selectedId || !workspaceId || activeTab !== 'Trends') return;
+    setLoadingTrends(true);
+    fetch(`/api/competitors/trends?workspace_id=${workspaceId}&competitor_id=${selectedId}&days=30`)
+      .then(r => r.json())
+      .then(d => { setTrends(d.trends || []); setLoadingTrends(false); })
+      .catch(() => setLoadingTrends(false));
+  }, [selectedId, workspaceId, activeTab]);
 
   // Fetch keyword gaps
   useEffect(() => {
@@ -529,6 +543,85 @@ export default function CompetitorsPage() {
                           )}
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── TRENDS TAB ──────────────────────────── */}
+              {activeTab === 'Trends' && (
+                <div>
+                  {loadingTrends ? (
+                    <div style={{ textAlign: 'center', padding: '60px', color: c.textMuted }}>Loading trend data...</div>
+                  ) : trends.length === 0 ? (
+                    <div style={{ ...card, textAlign: 'center', padding: '60px' }}>
+                      <TrendingUp size={40} color={c.textMuted} style={{ margin: '0 auto 16px' }} />
+                      <p style={{ margin: '0 0 8px', color: c.textSecondary, fontSize: '15px' }}>No trend data yet</p>
+                      <p style={{ margin: 0, color: c.textMuted, fontSize: '13px' }}>
+                        The spy agent collects daily snapshots automatically. Scrape ads first, then trends will appear within 24 hours.
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      {/* Trend Summary Cards */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 20 }}>
+                        {(() => {
+                          const latest = trends[trends.length - 1];
+                          const prev = trends.length > 1 ? trends[trends.length - 2] : null;
+                          const adChange = prev ? latest.active_ads - prev.active_ads : 0;
+                          return [
+                            { label: 'Active Ads', value: latest.active_ads, change: adChange },
+                            { label: 'Total Ads', value: latest.total_ads },
+                            { label: 'Est. Spend', value: `$${(latest.estimated_spend_lower || 0).toLocaleString()} - $${(latest.estimated_spend_upper || 0).toLocaleString()}` },
+                            { label: 'New Today', value: latest.new_ads_today || 0 },
+                          ].map((s, i) => (
+                            <div key={i} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 10, padding: 16 }}>
+                              <div style={{ fontSize: 11, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', marginBottom: 6 }}>{s.label}</div>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                                <span style={{ fontSize: 22, fontWeight: 600, color: c.text, fontFamily: 'var(--font-mono)' }}>{s.value}</span>
+                                {'change' in s && s.change !== 0 && (
+                                  <span style={{ fontSize: 11, fontWeight: 600, color: (s.change as number) > 0 ? '#22c55e' : '#ef4444' }}>
+                                    {(s.change as number) > 0 ? '+' : ''}{s.change}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ));
+                        })()}
+                      </div>
+
+                      {/* Trend Table */}
+                      <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '120px 80px 80px 80px 80px 1fr', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${c.border}`, backgroundColor: c.surfaceElevated }}>
+                          {['Date', 'Active', 'Total', 'New', 'Paused', 'Est. Spend'].map(h => (
+                            <span key={h} style={{ fontSize: 11, fontWeight: 700, color: c.textMuted, textTransform: 'uppercase' }}>{h}</span>
+                          ))}
+                        </div>
+                        {[...trends].reverse().slice(0, 30).map((t: any, i: number) => (
+                          <div key={t.id || i} style={{ display: 'grid', gridTemplateColumns: '120px 80px 80px 80px 80px 1fr', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${c.border}`, alignItems: 'center' }}>
+                            <span style={{ fontSize: 13, color: c.text }}>{new Date(t.snapshot_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            <span style={{ fontSize: 13, color: c.text, fontFamily: 'var(--font-mono)' }}>{t.active_ads}</span>
+                            <span style={{ fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{t.total_ads}</span>
+                            <span style={{ fontSize: 13, color: t.new_ads_today > 0 ? '#22c55e' : c.textMuted, fontFamily: 'var(--font-mono)' }}>{t.new_ads_today > 0 ? `+${t.new_ads_today}` : '0'}</span>
+                            <span style={{ fontSize: 13, color: t.paused_today > 0 ? '#ef4444' : c.textMuted, fontFamily: 'var(--font-mono)' }}>{t.paused_today || '0'}</span>
+                            <span style={{ fontSize: 12, color: c.textSecondary }}>${(t.estimated_spend_lower || 0).toLocaleString()} - ${(t.estimated_spend_upper || 0).toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Platform Breakdown */}
+                      {trends.length > 0 && trends[trends.length - 1].top_platforms?.length > 0 && (
+                        <div style={{ marginTop: 16, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 16 }}>
+                          <h4 style={{ fontSize: 13, fontWeight: 600, color: c.text, marginBottom: 12 }}>Platform Breakdown</h4>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            {trends[trends.length - 1].top_platforms.map((p: any) => (
+                              <span key={p.platform} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6, backgroundColor: c.accentSubtle, color: c.accent, fontWeight: 600 }}>
+                                {p.platform}: {p.count} ads
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
