@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import OpenAI from 'openai';
+import { callClaude } from '@/lib/anthropic';
 import { rateLimit } from '@/lib/rate-limit';
-
-function getOpenAI() {
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-}
 
 // GET /api/competitors/keyword-gap?workspace_id=xxx&competitor_id=yyy
 export async function GET(req: NextRequest) {
@@ -149,15 +145,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No content could be scraped from competitor' }, { status: 400 });
   }
 
-  // Use GPT-4o-mini to extract keywords and find gaps
-  const openai = getOpenAI();
-
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      {
-        role: 'system',
-        content: `You are an SEO keyword gap analyst. Given scraped content from a competitor website and a list of keywords the user already ranks for, identify keyword GAPS — keywords the competitor is likely targeting that the user does NOT rank for.
+  // Use Claude to extract keywords and find gaps
+  const systemPrompt = `You are an SEO keyword gap analyst. Given scraped content from a competitor website and a list of keywords the user already ranks for, identify keyword GAPS — keywords the competitor is likely targeting that the user does NOT rank for.
 
 For each gap keyword, provide:
 - keyword: the target keyword (2-5 words, search-friendly)
@@ -165,22 +154,17 @@ For each gap keyword, provide:
 - difficulty: "low", "medium", or "high" based on keyword competitiveness
 - recommended_action: brief actionable advice (e.g., "Create a blog post about X", "Add a landing page for Y")
 
-Return JSON: { "gaps": [{ "keyword": "...", "competitor_url": "...", "difficulty": "...", "recommended_action": "..." }] }
+Return a JSON object with a "gaps" key containing an array. Return 10-20 keyword gaps, prioritizing high-value opportunities. Only output JSON.`;
 
-Return 10-20 keyword gaps, prioritizing high-value opportunities.`,
-      },
-      {
-        role: 'user',
-        content: `Competitor domain: ${competitorDomain}\n\nMy current keywords (I already rank for these — do NOT include them as gaps):\n${myKeywordsList.join(', ')}\n\nCompetitor scraped content:\n${scrapedContent.slice(0, 6000)}`,
-      },
-    ],
-    temperature: 0.4,
-    response_format: { type: 'json_object' },
-  });
+  const aiText = await callClaude(
+    [{ role: 'user', content: `Competitor domain: ${competitorDomain}\n\nMy current keywords (I already rank for these — do NOT include them as gaps):\n${myKeywordsList.join(', ')}\n\nCompetitor scraped content:\n${scrapedContent.slice(0, 6000)}` }],
+    { maxTokens: 2000, system: systemPrompt },
+  );
 
   let gaps: any[] = [];
   try {
-    const parsed = JSON.parse(completion.choices[0]?.message?.content || '{}');
+    const jsonMatch = aiText.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, aiText];
+    const parsed = JSON.parse(jsonMatch[1]!.trim());
     gaps = parsed.gaps || parsed.keywords || parsed.results || [];
   } catch {
     return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });

@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import OpenAI from 'openai';
-
-function getOpenAI() {
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-}
+import { callClaude } from '@/lib/anthropic';
 
 async function sendSlackMessage(webhookUrl: string, blocks: any[]) {
   try {
@@ -250,26 +246,18 @@ export async function GET(req: NextRequest) {
 
         if (anomaliesFound.length === 0) continue;
 
-        // Use GPT-4o-mini to generate human-readable titles + descriptions
-        const openai = getOpenAI();
+        // Use Claude to generate human-readable titles + descriptions
         const prompt = anomaliesFound.map((a, i) => `Anomaly ${i + 1} (type: ${a.type}, severity: ${a.severity}):\n${a.context}${a.affected_pages ? `\nAffected pages: ${a.affected_pages.join(', ')}` : ''}`).join('\n\n');
 
-        const completion = await openai.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a marketing analytics assistant. For each anomaly described, write a concise, specific title (max 80 chars) and a 1-2 sentence description with actionable advice. Return JSON array: [{"title": "...", "description": "..."}]. Match the order of input anomalies.',
-            },
-            { role: 'user', content: prompt },
-          ],
-          temperature: 0.3,
-          response_format: { type: 'json_object' },
-        });
+        const aiText = await callClaude(
+          [{ role: 'user', content: prompt }],
+          { maxTokens: 1000, system: 'You are a marketing analytics assistant. For each anomaly described, write a concise, specific title (max 80 chars) and a 1-2 sentence description with actionable advice. Return a JSON object with an "items" key containing an array: [{"title": "...", "description": "..."}]. Match the order of input anomalies. Only output JSON.' },
+        );
 
         let generated: { title: string; description: string }[] = [];
         try {
-          const parsed = JSON.parse(completion.choices[0]?.message?.content || '{}');
+          const jsonMatch = aiText.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, aiText];
+          const parsed = JSON.parse(jsonMatch[1]!.trim());
           generated = parsed.anomalies || parsed.items || parsed.results || (Array.isArray(parsed) ? parsed : []);
         } catch {
           generated = anomaliesFound.map(a => ({

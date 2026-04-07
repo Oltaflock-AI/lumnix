@@ -8,8 +8,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'AI API key not configured' }, { status: 500 });
     }
 
     const db = getSupabaseAdmin();
@@ -190,28 +190,28 @@ Return ONLY a JSON array (no markdown, no code fences) of objects with these fie
 - priority: "high" | "medium" | "low"`;
     }
 
-    // Call GPT-4o-mini
-    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call Claude
+    const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'x-api-key': process.env.ANTHROPIC_API_KEY!,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
-        temperature: 0.7,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
 
     if (!aiResponse.ok) {
-      const err = await aiResponse.json();
-      return NextResponse.json({ error: err?.error?.message || 'OpenAI error' }, { status: 500 });
+      const err = await aiResponse.json().catch(() => ({}));
+      return NextResponse.json({ error: err?.error?.message || 'AI error' }, { status: 500 });
     }
 
     const aiData = await aiResponse.json();
-    const rawContent = aiData.choices?.[0]?.message?.content || '[]';
+    const rawContent = (aiData.content || []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('') || '[]';
 
     // Parse JSON — strip markdown fences if present
     let insights: any[];

@@ -14,7 +14,7 @@ export async function GET() {
   }
 
   // Check required env vars
-  checks.openai = process.env.OPENAI_API_KEY ? 'ok' : 'error';
+  checks.anthropic = process.env.ANTHROPIC_API_KEY ? 'ok' : 'error';
   checks.supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY ? 'ok' : 'error';
   checks.cron_secret = process.env.CRON_SECRET ? 'ok' : 'error';
 

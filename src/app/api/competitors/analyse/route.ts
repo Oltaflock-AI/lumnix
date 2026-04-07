@@ -2,17 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
 
+import { callClaude } from '@/lib/anthropic';
+
 async function callOpenAI(messages: any[], maxTokens: number) {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens: maxTokens, temperature: 0.7 }),
-  });
-  const json = await res.json();
-  return json.choices?.[0]?.message?.content ?? '';
+  return callClaude(
+    messages.filter((m: any) => m.role !== 'system').map((m: any) => ({ role: m.role, content: m.content })),
+    { maxTokens, system: messages.find((m: any) => m.role === 'system')?.content }
+  );
 }
 
 function parseJSON(text: string) {

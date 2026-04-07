@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import OpenAI from 'openai';
-
-function getOpenAI() {
-  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-}
+import { callClaude } from '@/lib/anthropic';
 
 // GET /api/recommendations/generate?workspace_id=xxx
 export async function GET(req: NextRequest) {
@@ -59,11 +55,9 @@ export async function GET(req: NextRequest) {
     .sort((a: any, b: any) => a.position - b.position)
     .slice(0, 5);
 
-  if (!process.env.OPENAI_API_KEY) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ recommendations: [], error: 'AI not configured' });
   }
-
-  const openai = getOpenAI();
 
   const dataContext = JSON.stringify({
     gsc: { totalClicks, prevClicks, topKeywords: gscRows.slice(0, 10), quickWins },
@@ -73,26 +67,22 @@ export async function GET(req: NextRequest) {
     keywordGaps: gapRows.slice(0, 10),
   });
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      {
-        role: 'system',
-        content: `You are a marketing strategist. Analyze this workspace's marketing data and generate 3-6 prioritized, actionable recommendations. Each recommendation should reference specific data.
+  const aiText = await callClaude(
+    [{ role: 'user', content: dataContext }],
+    {
+      maxTokens: 1500,
+      system: `You are a marketing strategist. Analyze this workspace's marketing data and generate 3-6 prioritized, actionable recommendations. Each recommendation should reference specific data.
 
-Return JSON array: [{ "type": "seo|traffic|ads|competitor", "priority": "high|medium|low", "title": "Short title (max 60 chars)", "description": "1-2 sentence actionable advice with specific data points", "action_url": "/dashboard/seo or /dashboard/analytics or /dashboard/competitors" }]
+Return a JSON object with a "recommendations" key containing an array: [{ "type": "seo|traffic|ads|competitor", "priority": "high|medium|low", "title": "Short title (max 60 chars)", "description": "1-2 sentence actionable advice with specific data points", "action_url": "/dashboard/seo or /dashboard/analytics or /dashboard/competitors" }]
 
-Prioritize: high-impact quick wins > anomalies to address > competitive gaps > general optimization.`,
-      },
-      { role: 'user', content: dataContext },
-    ],
-    temperature: 0.3,
-    response_format: { type: 'json_object' },
-  });
+Prioritize: high-impact quick wins > anomalies to address > competitive gaps > general optimization. Only output JSON, no other text.`,
+    },
+  );
 
   let recs: any[] = [];
   try {
-    const parsed = JSON.parse(completion.choices[0]?.message?.content || '{}');
+    const jsonMatch = aiText.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, aiText];
+    const parsed = JSON.parse(jsonMatch[1]!.trim());
     recs = parsed.recommendations || parsed.items || (Array.isArray(parsed) ? parsed : []);
   } catch {
     recs = [];

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import OpenAI from 'openai';
+import { callClaude } from '@/lib/anthropic';
 
 /**
  * Simple linear regression for forecasting
@@ -127,23 +127,16 @@ export async function GET(req: NextRequest) {
 
   // AI narrative
   let narrative = '';
-  if (process.env.OPENAI_API_KEY) {
+  if (process.env.ANTHROPIC_API_KEY) {
     try {
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       const trend = forecastWithDates.length > 0 ? forecastWithDates[forecastWithDates.length - 1].predicted - values[values.length - 1] : 0;
       const avgRecent = values.slice(-7).reduce((a, b) => a + b, 0) / 7;
       const avgForecast = forecastWithDates.reduce((a, b) => a + b.predicted, 0) / forecastWithDates.length;
 
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a marketing analyst. Write a 2-3 sentence forecast summary based on the data. Be specific with numbers. Keep it concise.' },
-          { role: 'user', content: `Metric: ${metric}. Last 7 days avg: ${Math.round(avgRecent)}. Forecast avg (next ${forecastDays} days): ${Math.round(avgForecast)}. Trend: ${trend > 0 ? 'up' : trend < 0 ? 'down' : 'flat'} by ${Math.abs(Math.round(trend))}.` },
-        ],
-        max_tokens: 150,
-        temperature: 0.3,
-      });
-      narrative = completion.choices[0]?.message?.content || '';
+      narrative = await callClaude(
+        [{ role: 'user', content: `Metric: ${metric}. Last 7 days avg: ${Math.round(avgRecent)}. Forecast avg (next ${forecastDays} days): ${Math.round(avgForecast)}. Trend: ${trend > 0 ? 'up' : trend < 0 ? 'down' : 'flat'} by ${Math.abs(Math.round(trend))}.` }],
+        { maxTokens: 150, system: 'You are a marketing analyst. Write a 2-3 sentence forecast summary based on the data. Be specific with numbers. Keep it concise.' },
+      );
     } catch {}
   }
 
