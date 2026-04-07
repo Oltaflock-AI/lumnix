@@ -30,6 +30,8 @@ interface ColorTokens {
   danger: string;
   dangerSubtle: string;
   dangerBorder: string;
+  accentGlow: string;
+  accentTeal: string;
 }
 
 interface ThemeCtx {
@@ -66,6 +68,8 @@ const DARK: ColorTokens = {
   danger: '#EF4444',
   dangerSubtle: 'rgba(239,68,68,0.08)',
   dangerBorder: 'rgba(239,68,68,0.2)',
+  accentGlow: '0 0 20px rgba(124,58,237,0.15), 0 0 60px rgba(124,58,237,0.05)',
+  accentTeal: '#0891B2',
 };
 
 const LIGHT: ColorTokens = {
@@ -95,6 +99,8 @@ const LIGHT: ColorTokens = {
   danger: '#DC2626',
   dangerSubtle: 'rgba(220,38,38,0.08)',
   dangerBorder: 'rgba(220,38,38,0.2)',
+  accentGlow: '0 0 16px rgba(124,58,237,0.1), 0 0 40px rgba(124,58,237,0.04)',
+  accentTeal: '#0891B2',
 };
 
 const Ctx = createContext<ThemeCtx>({

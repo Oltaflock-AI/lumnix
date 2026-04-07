@@ -73,7 +73,7 @@ function WorkspaceSwitcher({ workspace, accent }: { workspace: any; accent: stri
         {workspace?.logo_url ? (
           <img src={workspace.logo_url} alt="Logo" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
         ) : (
-          <div style={{ width: 24, height: 24, borderRadius: 6, backgroundColor: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: 'white', flexShrink: 0 }}>{initials}</div>
+          <div style={{ width: 24, height: 24, borderRadius: 6, backgroundColor: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: 'white', flexShrink: 0, boxShadow: `0 0 0 2px ${c.bgPage}, 0 0 0 3px rgba(124,58,237,0.3)` }}>{initials}</div>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -160,19 +160,29 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
                   key={item.href}
                   href={item.href}
                   onClick={(e) => { e.preventDefault(); router.push(item.href); onClose?.(); }}
+                  className={active ? 'nav-active-pill' : ''}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '8px 10px', borderRadius: 8,
+                    padding: '8px 10px', paddingLeft: active ? 7 : 10, borderRadius: '0 8px 8px 0',
                     color: active ? c.text : c.textSecondary,
                     fontSize: 13, fontWeight: active ? 500 : 400,
                     textDecoration: 'none', cursor: 'pointer',
-                    backgroundColor: active ? c.accentSubtle : 'transparent',
+                    background: active ? `linear-gradient(90deg, ${c.accentSubtle}, transparent)` : 'transparent',
                     transition: 'background-color 0.15s ease, color 0.15s ease',
                   }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.backgroundColor = c.bgCardHover; }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <item.icon size={16} color={active ? c.accent : c.textMuted} strokeWidth={active ? 2 : 1.75} />
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 8,
+                    backgroundColor: active ? c.accentSubtle : 'rgba(255,255,255,0.04)',
+                    border: active ? '1px solid rgba(124,58,237,0.15)' : '1px solid transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background-color 0.15s',
+                    flexShrink: 0,
+                  }}>
+                    <item.icon size={14} color={active ? c.accent : c.textMuted} strokeWidth={active ? 2 : 1.75} />
+                  </div>
                   <span>{item.label}</span>
                 </a>
               );
@@ -290,7 +300,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
       {sidebarOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex' }}>
-          <div onClick={() => setSidebarOpen(false)} style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)' }} />
+          <div onClick={() => setSidebarOpen(false)} className="backdrop-blur-overlay" style={{ position: 'absolute', inset: 0 }} />
           <div style={{ position: 'relative', zIndex: 51 }}>
             <SidebarInner onClose={() => setSidebarOpen(false)} />
           </div>

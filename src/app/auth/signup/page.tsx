@@ -83,8 +83,7 @@ function SignUpInner() {
         borderRight: `1px solid ${c.border}`, position: 'relative', overflow: 'hidden',
       }} className="auth-left-panel">
         {/* Glow */}
-        <div style={{ position: 'absolute', top: '-100px', left: '-100px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-50px', right: '-50px', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 50% at 20% 20%, rgba(124,58,237,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 80% 80%, rgba(8,145,178,0.08) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 50% 50%, rgba(124,58,237,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Logo */}
         <div>
@@ -230,13 +229,14 @@ function SignUpInner() {
               disabled={loading}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none',
-                backgroundColor: c.accent, color: 'white', fontSize: '14px', fontWeight: 600,
+                background: 'linear-gradient(135deg, #7C3AED, #6D28D9)', boxShadow: '0 2px 16px rgba(124,58,237,0.25)',
+                color: 'white', fontSize: '14px', fontWeight: 600,
                 cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                transition: 'background-color 0.15s', marginTop: '4px',
+                transition: 'box-shadow 0.15s', marginTop: '4px',
               }}
-              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accentHover; }}
-              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accent; }}
+              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 24px rgba(124,58,237,0.4)'; }}
+              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 16px rgba(124,58,237,0.25)'; }}
             >
               {loading ? 'Creating account...' : (<>Create account <ArrowRight size={15} /></>)}
             </button>

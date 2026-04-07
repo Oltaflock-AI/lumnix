@@ -7,8 +7,11 @@ export function PageShell({ title, description, icon: Icon, badge, action, child
 }) {
   const { c } = useTheme();
   return (
-    <div style={{ maxWidth: '100%', overflowX: 'hidden' }}>
+    <div className="fade-in" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+        <div className="icon-pill">
+          <Icon size={18} color={c.accent} />
+        </div>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <h1 style={{ fontSize: 24, fontWeight: 800, color: c.text, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)' }}>{title}</h1>

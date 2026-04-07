@@ -297,7 +297,11 @@ function LandingInner() {
         <div style={{
           position: 'absolute', top: -200, left: '50%', transform: 'translateX(-50%)',
           width: 900, height: 500,
-          background: `radial-gradient(ellipse 60% 50% at 50% 40%, rgba(124,58,237,0.15) 0%, transparent 70%)`,
+          background: `
+  radial-gradient(ellipse 40% 40% at 30% 30%, rgba(124,58,237,0.18) 0%, transparent 70%),
+  radial-gradient(ellipse 35% 45% at 70% 40%, rgba(8,145,178,0.12) 0%, transparent 70%),
+  radial-gradient(ellipse 50% 30% at 50% 60%, rgba(124,58,237,0.08) 0%, transparent 70%)
+`,
           pointerEvents: 'none', zIndex: -1,
         }} />
 
@@ -337,10 +341,10 @@ function LandingInner() {
               padding: '16px 32px', borderRadius: 12, border: 'none',
               background: `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`,
               color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-              transition: 'transform 0.25s, box-shadow 0.25s', boxShadow: `0 4px 24px rgba(124,58,237,0.3)`,
+              transition: 'transform 0.25s, box-shadow 0.25s', boxShadow: `0 4px 24px rgba(124,58,237,0.3), 0 0 60px rgba(124,58,237,0.15)`,
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(124,58,237,0.4)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(124,58,237,0.3)'; }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 40px rgba(124,58,237,0.45), 0 0 80px rgba(124,58,237,0.2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(124,58,237,0.3), 0 0 60px rgba(124,58,237,0.15)'; }}
           >
             Join the waitlist <ArrowRight size={18} />
           </button>
@@ -583,7 +587,7 @@ function LandingInner() {
                   borderRadius: 14, padding: 32, transition: 'border-color 0.25s, transform 0.25s', cursor: 'default',
                   position: 'relative', overflow: 'hidden',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = c.borderStrong; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)'; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2), 0 0 30px rgba(124,58,237,0.08)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
               >
                 <div style={{
@@ -595,7 +599,7 @@ function LandingInner() {
                   width: 48, height: 48, borderRadius: 12,
                   backgroundColor: c.accentSubtle, border: `1px solid rgba(124,58,237,0.15)`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: 22,
+                  marginBottom: 22, boxShadow: 'inset 0 0 12px rgba(124,58,237,0.08)',
                 }}>
                   <f.icon size={22} color={c.accent} />
                 </div>
@@ -891,7 +895,7 @@ function LandingInner() {
                     border: `1px solid ${p.highlight ? c.accent : c.border}`,
                     borderRadius: 16, padding: 36, position: 'relative',
                     transition: 'border-color 0.25s, transform 0.25s',
-                    ...(p.highlight ? { boxShadow: '0 0 80px rgba(124,58,237,0.12)', transform: 'scale(1.03)' } : {}),
+                    ...(p.highlight ? { boxShadow: '0 0 80px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.25)', transform: 'scale(1.03)' } : {}),
                   }}
                   onMouseEnter={e => { if (!p.highlight) { e.currentTarget.style.borderColor = c.borderStrong; e.currentTarget.style.transform = 'translateY(-4px)'; } }}
                   onMouseLeave={e => { if (!p.highlight) { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.transform = 'translateY(0)'; } }}

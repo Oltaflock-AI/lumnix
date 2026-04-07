@@ -214,7 +214,7 @@ function OnboardingInner() {
     backgroundColor: step > n ? c.success : step === n ? c.accent : c.bgCard,
     color: step >= n ? 'white' : c.textSecondary,
     border: step > n ? 'none' : step === n ? 'none' : `1px solid ${c.border}`,
-    boxShadow: step === n ? '0 0 20px rgba(124,58,237,0.2)' : 'none',
+    boxShadow: step === n ? '0 0 24px rgba(124,58,237,0.3), 0 0 0 4px rgba(124,58,237,0.1)' : 'none',
     transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
   });
 
@@ -234,13 +234,13 @@ function OnboardingInner() {
             <div style={stepStyle(n)}>
               {step > n ? <Check size={16} /> : n}
             </div>
-            {i < 2 && <div style={{ width: '48px', height: '2px', backgroundColor: step > n ? c.success : c.borderStrong }} />}
+            {i < 2 && <div style={{ width: '48px', height: '2px', background: step > n ? 'linear-gradient(90deg, #10B981, #0891B2)' : c.borderStrong, borderRadius: 1 }} />}
           </div>
         ))}
       </div>
 
       {/* Card */}
-      <div style={{ width: '100%', maxWidth: '520px', backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '36px' }}>
+      <div style={{ width: '100%', maxWidth: '520px', backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '36px', boxShadow: '0 0 40px rgba(124,58,237,0.06), 0 0 0 1px rgba(124,58,237,0.1)' }}>
 
         {/* Step 1: Brand Setup */}
         {step === 1 && (

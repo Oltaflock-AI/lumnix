@@ -17,7 +17,7 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
 }) {
   const { c } = useTheme();
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
+    <div className="card-accent" style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontSize: 10, fontWeight: 700, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-display)' }}>{label}</span>
         {platformLogo && <PlatformLogo name={platformLogo} size={14} />}
@@ -130,7 +130,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
-      <div className="kpi-grid" style={{ marginBottom: 20 }}>
+      <div className="kpi-grid stagger-in" style={{ marginBottom: 20 }}>
         <StatCard label="Sessions" value={hasGA4 ? totalSessions.toLocaleString() : '—'} sub={hasGA4 ? `${totalUsers.toLocaleString()} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
         <StatCard label="Organic Clicks" value={hasGSC ? totalClicks.toLocaleString() : '—'} sub={hasGSC ? `${totalImpressions.toLocaleString()} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
         <StatCard label="Ad Spend" value={hasAds ? fmtCurrency(totalAdSpend) : '—'} sub={hasAds ? `${totalConversions} conversions` : 'Connect Ads'} color={c.warning} icon={Zap} loading={loading} />
@@ -141,7 +141,7 @@ export default function DashboardPage() {
       <AnomaliesWidget workspaceId={workspace?.id} />
 
       {/* Traffic chart + Top pages */}
-      <div className="two-col" style={{ marginBottom: 20, marginTop: 20 }}>
+      <div className="two-col stagger-in" style={{ marginBottom: 20, marginTop: 20 }}>
         {/* Traffic chart */}
         <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -232,12 +232,12 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom row: Keywords table + Quick actions */}
-      <div className="two-col" style={{ marginBottom: 20 }}>
+      <div className="two-col stagger-in" style={{ marginBottom: 20 }}>
         {/* Quick wins / keyword table */}
         {quickWins.length > 0 ? (
           <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <Brain size={16} color={c.accent} />
+              <div className="icon-pill-sm"><Brain size={14} color={c.accent} /></div>
               <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Quick wins</h3>
               <span style={{ fontSize: 9, padding: '3px 8px', borderRadius: 100, backgroundColor: c.warningSubtle, color: c.warning, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-display)' }}>Action needed</span>
             </div>
@@ -311,7 +311,7 @@ export default function DashboardPage() {
 
       {/* Integration Status + Cross-Channel Insights */}
       {connectedProviders.length > 0 && (
-        <div className="two-col" style={{ marginBottom: 20 }}>
+        <div className="two-col stagger-in" style={{ marginBottom: 20 }}>
           {/* Integration Status */}
           <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
             <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 16 }}>Data Sources</h3>
@@ -336,7 +336,7 @@ export default function DashboardPage() {
           {/* Cross-Channel Insights */}
           <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <Sparkles size={16} color={c.accent} />
+              <div className="icon-pill-sm"><Sparkles size={14} color={c.accent} /></div>
               <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Cross-Channel</h3>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -374,7 +374,7 @@ export default function DashboardPage() {
       <AIInsightsWidget workspaceId={workspace?.id} />
 
       {/* Recommendations + Predictions */}
-      <div className="two-col" style={{ marginTop: 20 }}>
+      <div className="two-col stagger-in" style={{ marginTop: 20 }}>
         <RecommendationsWidget workspaceId={workspace?.id} />
         <PredictionsWidget workspaceId={workspace?.id} />
       </div>
@@ -402,7 +402,7 @@ function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefine
   return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <Lightbulb size={16} color={c.accent} />
+        <div className="icon-pill-sm"><Lightbulb size={14} color={c.accent} /></div>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Recommendations</h3>
       </div>
       {loading ? (
@@ -448,7 +448,7 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
   return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <TrendingUp size={16} color={c.success} />
+        <div className="icon-pill-sm" style={{ backgroundColor: c.successSubtle, borderColor: 'rgba(16,185,129,0.12)' }}><TrendingUp size={14} color={c.success} /></div>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Traffic Forecast</h3>
       </div>
       {loading ? (
@@ -510,7 +510,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Bell size={16} color={c.danger} />
+          <div className="icon-pill-sm" style={{ backgroundColor: c.dangerSubtle, borderColor: 'rgba(239,68,68,0.12)' }}><Bell size={14} color={c.danger} /></div>
           <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Anomalies</h3>
           {unread.length > 0 && (
             <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 100, backgroundColor: c.dangerSubtle, color: c.danger, fontWeight: 600 }}>
@@ -622,7 +622,7 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Sparkles size={16} color={c.accent} />
+          <div className="icon-pill-sm"><Sparkles size={14} color={c.accent} /></div>
           <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Insights</h3>
         </div>
         <button
