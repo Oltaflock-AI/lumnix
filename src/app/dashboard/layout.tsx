@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
   Menu, X, LogOut, ChevronDown, Plus, GitBranch, RefreshCw, User,
-  Sun, Moon, MessageCircle
+  Sun, Moon, MessageCircle, Palette
 } from 'lucide-react';
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
@@ -24,6 +24,7 @@ const navGroups = [
     items: [
       { href: '/dashboard/google-ads', label: 'Google Ads', icon: DollarSign },
       { href: '/dashboard/meta-ads', label: 'Meta Ads', icon: Target },
+      { href: '/dashboard/creative', label: 'Creative Studio', icon: Palette },
     ],
   },
   {
@@ -143,7 +144,7 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
 
       <div style={{ height: 1, backgroundColor: c.bgCardHover, margin: '12px 0' }} />
 
-      <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <nav aria-label="Main navigation" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
         {navGroups.map((group, gi) => (
           <div key={gi} style={{ marginBottom: 8 }}>
             {group.label && (
@@ -165,7 +166,7 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
                     fontSize: 13, fontWeight: active ? 500 : 400,
                     textDecoration: 'none', cursor: 'pointer',
                     backgroundColor: active ? c.accentSubtle : 'transparent',
-                    transition: 'all 0.15s ease',
+                    transition: 'background-color 0.15s ease, color 0.15s ease',
                   }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.backgroundColor = c.bgCardHover; }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.backgroundColor = 'transparent'; }}
@@ -181,6 +182,7 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
 
       {/* Theme toggle */}
       <button
+        aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         onClick={toggle}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -212,12 +214,13 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
             <div style={{ fontSize: 11, color: c.textMuted }}>Settings</div>
           </div>
           <button
+            aria-label="Sign out"
             onClick={() => router.push('/')}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: 2 }}
             onMouseEnter={e => (e.currentTarget.style.color = c.textSecondary)}
             onMouseLeave={e => (e.currentTarget.style.color = c.textMuted)}
           >
-            <LogOut size={14} />
+            <LogOut size={14} aria-hidden="true" />
           </button>
         </div>
         {/* Feedback link */}
@@ -277,8 +280,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
               Lumnix
             </span>
           </div>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: c.textSecondary, cursor: 'pointer' }}>
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          <button aria-label={sidebarOpen ? 'Close menu' : 'Open menu'} onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: c.textSecondary, cursor: 'pointer' }}>
+            {sidebarOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -293,7 +296,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <main style={{ flex: 1, overflow: 'auto', maxHeight: '100vh', backgroundColor: c.bgPage }} className="main-content">
+      <main id="main-content" style={{ flex: 1, overflow: 'auto', maxHeight: '100vh', backgroundColor: c.bgPage }} className="main-content">
         <div style={{ padding: 32 }}>
           {children}
         </div>
