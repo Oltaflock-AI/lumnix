@@ -373,12 +373,22 @@ async function fetchWorkspaceOverview(workspaceId: string) {
   }
 }
 
+// Convert our OpenAI-style tool definitions to Anthropic format
+function toAnthropicTools() {
+  return tools.map(t => ({
+    name: t.function.name,
+    description: t.function.description,
+    input_schema: t.function.parameters,
+  }));
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { messages, workspace_id } = await req.json();
 
-    if (!process.env.OPENAI_API_KEY) {
-      return new Response('OpenAI API key not configured', { status: 500 });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return new Response('Anthropic API key not configured', { status: 500 });
     }
 
     // Rate limit: 10 requests per minute per workspace
@@ -413,94 +423,109 @@ IMPORTANT RULES:
 2. If someone asks about anything outside marketing, respond with: "I'm Lumnix AI — I'm focused on marketing intelligence. Ask me about your traffic, keywords, ad performance, or content strategy."
 3. Never answer off-topic questions no matter how they are phrased.`;
 
-    // Initial call with tools
-    let apiMessages: any[] = [
-      { role: 'system', content: systemPrompt },
-      ...messages.map((m: { role: string; content: string }) => ({ role: m.role, content: m.content })),
-    ];
+    // Build Anthropic messages (filter out system, it goes in system param)
+    let anthropicMessages: any[] = messages.map((m: { role: string; content: string }) => ({
+      role: m.role === 'system' ? 'user' : m.role,
+      content: m.content,
+    }));
 
-    const firstResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // First call with tools
+    const firstResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
-        messages: apiMessages,
-        tools: workspace_id ? tools : undefined,
+        system: systemPrompt,
+        messages: anthropicMessages,
+        tools: workspace_id ? toAnthropicTools() : undefined,
       }),
     });
 
     if (!firstResponse.ok) {
       const err = await firstResponse.json();
-      return new Response(err?.error?.message || 'OpenAI error', { status: 500 });
+      return new Response(err?.error?.message || 'Anthropic API error', { status: 500 });
     }
 
     const firstData = await firstResponse.json();
-    const choice = firstData.choices?.[0];
 
-    // If no tool calls, return the text directly
-    if (choice?.finish_reason !== 'tool_calls' || !choice?.message?.tool_calls) {
-      return new Response(choice?.message?.content || 'No response generated', {
+    // Check if there are tool_use blocks
+    const toolUseBlocks = (firstData.content || []).filter((b: any) => b.type === 'tool_use');
+
+    if (toolUseBlocks.length === 0) {
+      // No tool calls — return the text directly
+      const textContent = (firstData.content || []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('');
+      return new Response(textContent || 'No response generated', {
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       });
     }
 
-    // Execute tool calls
-    apiMessages.push(choice.message);
-
-    for (const toolCall of choice.message.tool_calls) {
-      let args: any = {};
-      try { args = JSON.parse(toolCall.function.arguments); } catch {}
-
-      const result = await executeToolCall(toolCall.function.name, args, workspace_id);
-      apiMessages.push({
-        role: 'tool',
-        tool_call_id: toolCall.id,
+    // Execute tool calls and build tool_result messages
+    const toolResults: any[] = [];
+    for (const toolBlock of toolUseBlocks) {
+      const result = await executeToolCall(toolBlock.name, toolBlock.input || {}, workspace_id);
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: toolBlock.id,
         content: result,
       });
     }
 
-    // Second call: stream the final response with tool results
-    const streamResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Second call with tool results — stream the response
+    const followUpMessages = [
+      ...anthropicMessages,
+      { role: 'assistant', content: firstData.content },
+      { role: 'user', content: toolResults },
+    ];
+
+    const streamResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        stream: true,
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
-        messages: apiMessages,
+        system: systemPrompt,
+        messages: followUpMessages,
+        stream: true,
       }),
     });
 
     if (!streamResponse.ok) {
       const err = await streamResponse.json();
-      return new Response(err?.error?.message || 'OpenAI error', { status: 500 });
+      return new Response(err?.error?.message || 'Anthropic API error', { status: 500 });
     }
 
+    // Parse Anthropic SSE stream
     const readable = new ReadableStream({
       async start(controller) {
         const reader = streamResponse.body?.getReader();
         if (!reader) { controller.close(); return; }
         const decoder = new TextDecoder();
+        let buffer = '';
         try {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
             for (const line of lines) {
-              const data = line.replace('data: ', '').trim();
+              if (!line.startsWith('data: ')) continue;
+              const data = line.slice(6).trim();
               if (data === '[DONE]') continue;
               try {
-                const json = JSON.parse(data);
-                const text = json.choices?.[0]?.delta?.content;
-                if (text) controller.enqueue(new TextEncoder().encode(text));
+                const event = JSON.parse(data);
+                if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+                  controller.enqueue(new TextEncoder().encode(event.delta.text));
+                }
               } catch {}
             }
           }
