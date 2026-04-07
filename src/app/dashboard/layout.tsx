@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
   Menu, X, LogOut, ChevronDown, Plus, GitBranch, RefreshCw, User,
-  Sun, Moon, MessageCircle, Palette
+  Sun, Moon, MessageCircle, Palette, Rocket
 } from 'lucide-react';
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
@@ -25,6 +25,7 @@ const navGroups = [
       { href: '/dashboard/google-ads', label: 'Google Ads', icon: DollarSign },
       { href: '/dashboard/meta-ads', label: 'Meta Ads', icon: Target },
       { href: '/dashboard/creative', label: 'Creative Studio', icon: Palette },
+      { href: '/dashboard/campaigns', label: 'Campaigns', icon: Rocket },
     ],
   },
   {
