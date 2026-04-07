@@ -204,6 +204,23 @@ export function useMetaAdsData(workspaceId: string | undefined, days = 30) {
   }};
 }
 
+// Fetch unified data across all 4 sources
+export function useUnifiedData(workspaceId: string | undefined, days = 30) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!workspaceId) { setLoading(false); return; }
+    setLoading(true);
+    fetch(`/api/data/unified?workspace_id=${workspaceId}&days=${days}`)
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [workspaceId, days]);
+
+  return { data, loading };
+}
+
 // Fetch competitors list for a workspace
 export function useCompetitors(workspaceId: string | undefined) {
   const [competitors, setCompetitors] = useState<any[]>([]);

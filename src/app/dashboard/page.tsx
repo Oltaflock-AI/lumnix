@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, Bell, CheckCircle, FileText, Users, Search } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { useWorkspace, useGA4Data, useGSCData, useIntegrations } from '@/lib/hooks';
+import { useWorkspace, useGA4Data, useGSCData, useIntegrations, useUnifiedData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme';
@@ -51,6 +51,7 @@ export default function DashboardPage() {
   const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
   const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
   const { data: gscOverviewResp } = useGSCData(workspace?.id, 'overview', 30);
+  const { data: unifiedResp, loading: unifiedLoading } = useUnifiedData(workspace?.id, 30);
 
   // Get user's first name for greeting
   const [userName, setUserName] = useState('');
@@ -64,7 +65,7 @@ export default function DashboardPage() {
     });
   }, []);
 
-  const loading = wsLoading || ga4Loading || gscLoading;
+  const loading = wsLoading || ga4Loading || gscLoading || unifiedLoading;
 
   const ga4Data: any[] = ga4Resp?.data || [];
   const gscKeywords: any[] = gscResp?.keywords || [];
@@ -77,16 +78,36 @@ export default function DashboardPage() {
   const avgPosition = gscKeywords.length > 0
     ? (gscKeywords.reduce((s, k) => s + (k.position || 0), 0) / gscKeywords.length).toFixed(1) : '—';
 
-  const chartData = gscOverview.slice(-14).map(r => ({
-    day: r.date?.slice(5) ?? '',
-    clicks: r.clicks || 0,
-  }));
+  // Unified ad metrics
+  const uTotals = unifiedResp?.totals || {};
+  const totalAdSpend = uTotals.ad_spend || 0;
+  const totalAdRevenue = uTotals.ad_revenue || 0;
+  const totalROAS = uTotals.roas || 0;
+  const totalConversions = uTotals.conversions || 0;
+
+  // Combined chart: organic clicks vs paid clicks
+  const unifiedDaily: any[] = unifiedResp?.daily || [];
+  const chartData = (unifiedDaily.length > 0
+    ? unifiedDaily.slice(-14).map(r => ({
+        day: r.date?.slice(5) ?? '',
+        clicks: r.organic_clicks || 0,
+        paid: r.paid_clicks || 0,
+      }))
+    : gscOverview.slice(-14).map(r => ({
+        day: r.date?.slice(5) ?? '',
+        clicks: r.clicks || 0,
+        paid: 0,
+      }))
+  );
 
   const connectedProviders = integrations.filter(i => i.status === 'connected').map(i => i.provider);
   const hasGA4 = connectedProviders.includes('ga4');
   const hasGSC = connectedProviders.includes('gsc');
+  const hasAds = connectedProviders.includes('google_ads') || connectedProviders.includes('meta_ads');
   const quickWins = gscKeywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < 3).slice(0, 3);
   const topKeywords = gscKeywords.slice(0, 5);
+
+  const fmtCurrency = (v: number) => v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
 
   return (
     <div style={{ fontFamily: 'var(--font-body)' }}>
@@ -109,8 +130,8 @@ export default function DashboardPage() {
       <div className="kpi-grid" style={{ marginBottom: 20 }}>
         <StatCard label="Sessions" value={hasGA4 ? totalSessions.toLocaleString() : '—'} sub={hasGA4 ? `${totalUsers.toLocaleString()} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
         <StatCard label="Organic Clicks" value={hasGSC ? totalClicks.toLocaleString() : '—'} sub={hasGSC ? `${totalImpressions.toLocaleString()} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
-        <StatCard label="Avg Position" value={hasGSC ? `#${avgPosition}` : '—'} sub={hasGSC ? `${gscKeywords.length} keywords tracked` : 'Connect GSC'} color={c.warning} icon={Target} loading={loading} />
-        <StatCard label="Impressions" value={hasGSC ? totalImpressions.toLocaleString() : '—'} sub={hasGSC ? 'Search impressions' : 'Connect GSC'} color={c.success} icon={BarChart3} loading={loading} />
+        <StatCard label="Ad Spend" value={hasAds ? fmtCurrency(totalAdSpend) : '—'} sub={hasAds ? `${totalConversions} conversions` : 'Connect Ads'} color={c.warning} icon={Zap} loading={loading} />
+        <StatCard label="ROAS" value={hasAds ? `${totalROAS}x` : '—'} sub={hasAds ? `${fmtCurrency(totalAdRevenue)} revenue` : 'Connect Ads'} color={totalROAS >= 2 ? c.success : c.warning} icon={Target} loading={loading} />
       </div>
 
       {/* Anomalies — full width */}
@@ -122,10 +143,19 @@ export default function DashboardPage() {
         <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Traffic over time</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Organic vs Paid traffic</h3>
               <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>Daily clicks — last 14 days</p>
             </div>
-            {hasGSC && <PlatformLogo name="googlesearchconsole" size={14} />}
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: c.textMuted }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: c.accent, display: 'inline-block' }} /> Organic
+              </span>
+              {hasAds && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: c.textMuted }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: c.warning, display: 'inline-block' }} /> Paid
+                </span>
+              )}
+            </div>
           </div>
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
@@ -135,6 +165,10 @@ export default function DashboardPage() {
                     <stop offset="0%" stopColor={c.accent} stopOpacity={0.15} />
                     <stop offset="100%" stopColor={c.accent} stopOpacity={0} />
                   </linearGradient>
+                  <linearGradient id="gPaid" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={c.warning} stopOpacity={0.15} />
+                    <stop offset="100%" stopColor={c.warning} stopOpacity={0} />
+                  </linearGradient>
                 </defs>
                 <XAxis dataKey="day" stroke="transparent" tick={{ fill: c.textMuted, fontSize: 10 }} axisLine={false} tickLine={false} interval={2} />
                 <YAxis stroke="transparent" tick={{ fill: c.textMuted, fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -143,7 +177,8 @@ export default function DashboardPage() {
                   itemStyle={{ color: c.text }}
                   labelStyle={{ color: c.textSecondary }}
                 />
-                <Area type="monotone" dataKey="clicks" stroke={c.accent} fill="url(#gDash)" strokeWidth={2} dot={false} />
+                <Area type="monotone" dataKey="clicks" name="Organic" stroke={c.accent} fill="url(#gDash)" strokeWidth={2} dot={false} />
+                {hasAds && <Area type="monotone" dataKey="paid" name="Paid" stroke={c.warning} fill="url(#gPaid)" strokeWidth={2} dot={false} />}
               </AreaChart>
             </ResponsiveContainer>
           ) : (

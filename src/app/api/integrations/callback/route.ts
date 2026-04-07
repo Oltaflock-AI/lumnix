@@ -138,9 +138,19 @@ export async function GET(req: NextRequest) {
       scopes: tokens.scope ? tokens.scope.split(' ') : [],
     });
 
-    return NextResponse.redirect(new URL(`/dashboard/settings?connected=${provider}`, req.url));
+    // Redirect back to onboarding if that's where the user came from, otherwise settings
+    const returnTo = state.return_to || '/dashboard/settings';
+    return NextResponse.redirect(new URL(`${returnTo}?connected=${provider}`, req.url));
   } catch (error) {
     console.error('OAuth callback error:', error);
-    return NextResponse.redirect(new URL('/dashboard/settings?error=unknown', req.url));
+    const stateStr = req.nextUrl.searchParams.get('state');
+    let returnTo = '/dashboard/settings';
+    try {
+      if (stateStr) {
+        const s = JSON.parse(Buffer.from(stateStr, 'base64').toString());
+        if (s.return_to) returnTo = s.return_to;
+      }
+    } catch {}
+    return NextResponse.redirect(new URL(`${returnTo}?error=unknown`, req.url));
   }
 }

@@ -34,11 +34,83 @@ function OnboardingInner() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [connectedProviders, setConnectedProviders] = useState<string[]>([]);
+  const [syncingProviders, setSyncingProviders] = useState<Set<string>>(new Set());
+  const [syncResults, setSyncResults] = useState<Record<string, { ok: boolean; msg: string }>>({});
   const [couponResult, setCouponResult] = useState<{ ok: boolean; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Get coupon from URL or localStorage (OAuth flow)
   const couponCode = searchParams.get('coupon') || (typeof window !== 'undefined' ? localStorage.getItem('lumnix-coupon') : null) || '';
+
+  // Detect if returning from OAuth — auto-advance to step 2 and trigger sync
+  const justConnected = searchParams.get('connected');
+  useEffect(() => {
+    if (!justConnected) return;
+    setStep(2);
+    // Fetch integrations to show connected status
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const wRes = await fetch('/api/workspace', { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const { workspace } = await wRes.json();
+      if (!workspace?.id) return;
+
+      const iRes = await fetch(`/api/integrations/list?workspace_id=${workspace.id}`);
+      const { integrations } = await iRes.json();
+      const connected = (integrations || []).filter((i: any) => i.status === 'connected');
+      setConnectedProviders(connected.map((i: any) => i.provider));
+
+      // Auto-sync the just-connected provider
+      const justInt = connected.find((i: any) => i.provider === justConnected);
+      if (justInt) {
+        triggerSync(justInt.id, workspace.id, justConnected);
+      }
+    })();
+  }, [justConnected]);
+
+  // Also load connected integrations on step 2 mount
+  useEffect(() => {
+    if (step !== 2) return;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const wRes = await fetch('/api/workspace', { headers: { Authorization: `Bearer ${session.access_token}` } });
+      const { workspace } = await wRes.json();
+      if (!workspace?.id) return;
+      const iRes = await fetch(`/api/integrations/list?workspace_id=${workspace.id}`);
+      const { integrations } = await iRes.json();
+      const connected = (integrations || []).filter((i: any) => i.status === 'connected');
+      setConnectedProviders(connected.map((i: any) => i.provider));
+    })();
+  }, [step]);
+
+  async function triggerSync(integrationId: string, workspaceId: string, provider: string) {
+    const endpointMap: Record<string, string> = {
+      gsc: '/api/sync/gsc', ga4: '/api/sync/ga4',
+      google_ads: '/api/sync/google-ads', meta_ads: '/api/sync/meta-ads',
+    };
+    const endpoint = endpointMap[provider];
+    if (!endpoint) return;
+
+    setSyncingProviders(prev => new Set(prev).add(provider));
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ integration_id: integrationId, workspace_id: workspaceId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSyncResults(prev => ({ ...prev, [provider]: { ok: true, msg: 'Data synced successfully' } }));
+      } else {
+        setSyncResults(prev => ({ ...prev, [provider]: { ok: false, msg: data.error || 'Sync failed' } }));
+      }
+    } catch {
+      setSyncResults(prev => ({ ...prev, [provider]: { ok: false, msg: 'Sync failed' } }));
+    }
+    setSyncingProviders(prev => { const n = new Set(prev); n.delete(provider); return n; });
+  }
 
   async function redeemCoupon(workspaceId: string, token: string) {
     if (!couponCode) return;
@@ -123,7 +195,7 @@ function OnboardingInner() {
       const res = await fetch('/api/integrations/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: providerId, workspace_id: workspace.id }),
+        body: JSON.stringify({ provider: providerId, workspace_id: workspace.id, return_to: '/onboarding' }),
       });
       if (res.ok) {
         const { url } = await res.json();
@@ -279,25 +351,37 @@ function OnboardingInner() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
               {INTEGRATIONS.map(int => {
                 const Icon = int.icon;
+                const isConnected = connectedProviders.includes(int.id);
+                const isSyncing = syncingProviders.has(int.id);
+                const syncResult = syncResults[int.id];
                 return (
-                  <div key={int.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: 12, border: `1px solid ${c.border}`, backgroundColor: c.bgPage }}>
+                  <div key={int.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: 12, border: `1px solid ${isConnected ? c.successBorder : c.border}`, backgroundColor: isConnected ? c.successSubtle : c.bgPage }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: `${int.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Icon size={20} color={int.color} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '14px', fontWeight: 600, color: c.text }}>{int.name}</div>
-                      <div style={{ fontSize: '12px', color: c.textSecondary, marginTop: '2px' }}>{int.desc}</div>
+                      <div style={{ fontSize: '12px', color: c.textSecondary, marginTop: '2px' }}>
+                        {isSyncing ? 'Syncing your data...' : syncResult ? syncResult.msg : isConnected ? 'Connected' : int.desc}
+                      </div>
                     </div>
-                    <button
-                      onClick={() => handleConnect(int.id)}
-                      disabled={connecting === int.id}
-                      style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: c.accent, color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, fontFamily: 'var(--font-body)', transition: 'background-color 0.15s' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accentHover}
-                      onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accent}
-                    >
-                      {connecting === int.id ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : null}
-                      Connect
-                    </button>
+                    {isConnected ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', backgroundColor: c.success, color: 'white', fontSize: '13px', fontWeight: 600 }}>
+                        {isSyncing ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={14} />}
+                        {isSyncing ? 'Syncing' : 'Connected'}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleConnect(int.id)}
+                        disabled={connecting === int.id}
+                        style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: c.accent, color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, fontFamily: 'var(--font-body)', transition: 'background-color 0.15s' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accentHover}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.accent}
+                      >
+                        {connecting === int.id ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : null}
+                        Connect
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -321,9 +405,20 @@ function OnboardingInner() {
               <Check size={36} color={c.success} />
             </div>
             <h1 style={{ fontSize: '22px', fontWeight: 800, color: c.text, marginBottom: '8px', fontFamily: 'var(--font-display)' }}>You&apos;re all set!</h1>
-            <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '32px', lineHeight: 1.6 }}>
-              Your workspace is ready. Head to your dashboard to explore your marketing data and AI insights.
+            <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '20px', lineHeight: 1.6 }}>
+              {connectedProviders.length > 0
+                ? `${connectedProviders.length} data source${connectedProviders.length > 1 ? 's' : ''} connected and syncing. Your dashboard is ready.`
+                : 'Your workspace is ready. Connect data sources anytime in Settings.'}
             </p>
+            {connectedProviders.length > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                {connectedProviders.map(p => (
+                  <span key={p} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 12px', borderRadius: '100px', backgroundColor: c.successSubtle, border: `1px solid ${c.successBorder}`, fontSize: '12px', fontWeight: 600, color: c.success }}>
+                    <Check size={12} /> {INTEGRATIONS.find(i => i.id === p)?.name || p}
+                  </span>
+                ))}
+              </div>
+            )}
             <button
               onClick={() => router.push('/dashboard')}
               style={{ width: '100%', padding: '13px', borderRadius: '8px', border: 'none', backgroundColor: c.accent, color: 'white', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-body)', transition: 'background-color 0.15s' }}

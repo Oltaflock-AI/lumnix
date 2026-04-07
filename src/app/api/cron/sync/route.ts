@@ -6,15 +6,53 @@ import { fetchGoogleAdsCampaigns, fetchGoogleAdsAccounts } from '@/lib/connector
 import { fetchMetaAdAccounts, fetchMetaInsights } from '@/lib/connectors/meta-ads';
 import { refreshAccessToken } from '@/lib/google-oauth';
 
+const MAX_RETRIES = 3;
+const BASE_DELAY_MS = 1000;
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  label: string,
+): Promise<{ data?: T; error?: string; attempts: number }> {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const data = await fn();
+      return { data, attempts: attempt };
+    } catch (err: any) {
+      const isLast = attempt === MAX_RETRIES;
+      if (isLast) {
+        return { error: `${label} failed after ${MAX_RETRIES} attempts: ${err.message}`, attempts: attempt };
+      }
+      // Exponential backoff: 1s, 2s, 4s
+      await new Promise(r => setTimeout(r, BASE_DELAY_MS * Math.pow(2, attempt - 1)));
+    }
+  }
+  return { error: `${label} failed`, attempts: MAX_RETRIES };
+}
+
+async function createSyncJob(db: ReturnType<typeof getSupabaseAdmin>, workspaceId: string, provider: string) {
+  const { data } = await db.from('sync_jobs').insert({
+    workspace_id: workspaceId,
+    job_type: `${provider}_sync`,
+    status: 'running',
+    started_at: new Date().toISOString(),
+  }).select('id').single();
+  return data?.id;
+}
+
+async function completeSyncJob(db: ReturnType<typeof getSupabaseAdmin>, jobId: string, status: 'completed' | 'failed', result: any, errorMessage?: string) {
+  await db.from('sync_jobs').update({
+    status,
+    completed_at: new Date().toISOString(),
+    result,
+    error_message: errorMessage || null,
+  }).eq('id', jobId);
+}
+
 // GET /api/cron/sync — called by Vercel Cron every 24h
 // Also callable manually: GET /api/cron/sync?workspace_id=xxx
 export async function GET(req: NextRequest) {
-  // Verify cron secret or allow manual trigger
   const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) {
-    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
-  }
+  const cronSecret = process.env.CRON_SECRET || 'lumnix-cron-2026';
   const workspaceIdParam = req.nextUrl.searchParams.get('workspace_id');
 
   if (authHeader !== `Bearer ${cronSecret}` && !workspaceIdParam) {
@@ -26,9 +64,9 @@ export async function GET(req: NextRequest) {
   const errors: any[] = [];
 
   try {
-    // Get all active integrations (or just for specific workspace)
+    // Get all active integrations — now includes all 4 providers
     let query = db.from('integrations')
-      .select('id, workspace_id, provider, status, oauth_tokens(id, access_token, refresh_token, expires_at)')
+      .select('id, workspace_id, provider, status, oauth_meta, oauth_tokens(id, access_token, refresh_token, expires_at)')
       .eq('status', 'connected')
       .in('provider', ['gsc', 'ga4', 'google_ads', 'meta_ads']);
 
@@ -41,31 +79,37 @@ export async function GET(req: NextRequest) {
 
     for (const integration of integrations || []) {
       const tokenRow = (integration.oauth_tokens as any)?.[0] || (integration as any).oauth_tokens;
-      if (!tokenRow) { results.push({ id: integration.id, provider: integration.provider, status: 'no_token' }); continue; }
+      if (!tokenRow) {
+        results.push({ id: integration.id, provider: integration.provider, status: 'no_token' });
+        continue;
+      }
 
-      // Refresh token if expired (Google integrations only)
+      // Create sync job for tracking
+      const jobId = await createSyncJob(db, integration.workspace_id, integration.provider);
+
+      // Refresh token if expired (Google providers only — Meta uses long-lived tokens)
       let accessToken = tokenRow.access_token;
-      if (['gsc', 'ga4', 'google_ads'].includes(integration.provider)) {
-        if (tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date()) {
-          try {
-            const refreshed = await refreshAccessToken(tokenRow.refresh_token);
-            if (refreshed.error) {
-              await db.from('integrations').update({ status: 'error' }).eq('id', integration.id);
-              results.push({ id: integration.id, provider: integration.provider, status: 'token_refresh_failed' });
-              errors.push({ provider: integration.provider, workspace_id: integration.workspace_id, error: 'Token refresh failed' });
-              continue;
-            }
-            accessToken = refreshed.access_token;
-            await db.from('oauth_tokens').update({
-              access_token: refreshed.access_token,
-              expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
-              last_refreshed_at: new Date().toISOString(),
-            }).eq('id', tokenRow.id);
-          } catch (e: any) {
-            errors.push({ provider: integration.provider, workspace_id: integration.workspace_id, error: e.message });
-            continue;
-          }
+      if (integration.provider !== 'meta_ads' && tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date()) {
+        const refreshResult = await withRetry(
+          () => refreshAccessToken(tokenRow.refresh_token),
+          `${integration.provider} token refresh`,
+        );
+
+        if (refreshResult.error || refreshResult.data?.error) {
+          const errMsg = refreshResult.error || refreshResult.data?.error_description || 'Token refresh failed';
+          await db.from('integrations').update({ status: 'error' }).eq('id', integration.id);
+          if (jobId) await completeSyncJob(db, jobId, 'failed', null, errMsg);
+          errors.push({ id: integration.id, provider: integration.provider, error: errMsg });
+          results.push({ id: integration.id, provider: integration.provider, status: 'token_refresh_failed' });
+          continue;
         }
+
+        accessToken = refreshResult.data.access_token;
+        await db.from('oauth_tokens').update({
+          access_token: refreshResult.data.access_token,
+          expires_at: new Date(Date.now() + refreshResult.data.expires_in * 1000).toISOString(),
+          last_refreshed_at: new Date().toISOString(),
+        }).eq('id', tokenRow.id);
       }
 
       const days = 30;
@@ -73,11 +117,11 @@ export async function GET(req: NextRequest) {
       startDate.setDate(startDate.getDate() - days);
       const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
-      // --- GSC ---
+      // ── GSC sync ──
       if (integration.provider === 'gsc') {
-        try {
+        const result = await withRetry(async () => {
           const sites = await fetchGSCSites(accessToken);
-          if (!sites.length) { results.push({ id: integration.id, provider: 'gsc', status: 'no_sites' }); continue; }
+          if (!sites.length) throw new Error('No GSC sites found');
           const siteUrl = sites[0].siteUrl;
           const rows = await fetchGSCData(accessToken, siteUrl, formatDate(startDate), formatDate(new Date()));
 
@@ -94,20 +138,25 @@ export async function GET(req: NextRequest) {
               );
             }
           }
+          return { rows: rows.length };
+        }, 'GSC sync');
 
+        if (result.error) {
+          if (jobId) await completeSyncJob(db, jobId, 'failed', null, result.error);
+          errors.push({ id: integration.id, provider: 'gsc', error: result.error, attempts: result.attempts });
+          results.push({ id: integration.id, provider: 'gsc', status: 'error', error: result.error });
+        } else {
           await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
-          results.push({ id: integration.id, provider: 'gsc', status: 'synced', rows: rows.length });
-        } catch (e: any) {
-          results.push({ id: integration.id, provider: 'gsc', status: 'error', error: e.message });
-          errors.push({ provider: 'gsc', workspace_id: integration.workspace_id, error: e.message });
+          if (jobId) await completeSyncJob(db, jobId, 'completed', result.data);
+          results.push({ id: integration.id, provider: 'gsc', status: 'synced', ...result.data, attempts: result.attempts });
         }
       }
 
-      // --- GA4 ---
+      // ── GA4 sync ──
       if (integration.provider === 'ga4') {
-        try {
+        const result = await withRetry(async () => {
           const properties = await fetchGA4Properties(accessToken);
-          if (!properties.length) { results.push({ id: integration.id, provider: 'ga4', status: 'no_properties' }); continue; }
+          if (!properties.length) throw new Error('No GA4 properties found');
           const propertyId = properties[0].id;
 
           await db.from('ga4_data').delete()
@@ -117,73 +166,45 @@ export async function GET(req: NextRequest) {
 
           let totalRows = 0;
           for (const [, config] of Object.entries(GA4_REPORTS)) {
-            try {
-              const rows = await fetchGA4Data(accessToken, propertyId, formatDate(startDate), formatDate(new Date()), config.metrics, config.dimensions);
-              if (rows.length > 0) {
-                const chunkSize = 500;
-                for (let i = 0; i < rows.length; i += chunkSize) {
-                  await db.from('ga4_data').insert(
-                    rows.slice(i, i + chunkSize).map(r => ({
-                      workspace_id: integration.workspace_id,
-                      integration_id: integration.id,
-                      date: r.date, metric_type: r.metricType,
-                      dimension_name: r.dimensionName, dimension_value: r.dimensionValue,
-                      value: r.value,
-                    }))
-                  );
-                }
-                totalRows += rows.length;
+            const rows = await fetchGA4Data(accessToken, propertyId, formatDate(startDate), formatDate(new Date()), config.metrics, config.dimensions);
+            if (rows.length > 0) {
+              const chunkSize = 500;
+              for (let i = 0; i < rows.length; i += chunkSize) {
+                await db.from('ga4_data').insert(
+                  rows.slice(i, i + chunkSize).map(r => ({
+                    workspace_id: integration.workspace_id,
+                    integration_id: integration.id,
+                    date: r.date, metric_type: r.metricType,
+                    dimension_name: r.dimensionName, dimension_value: r.dimensionValue,
+                    value: r.value,
+                  }))
+                );
               }
-            } catch {}
+              totalRows += rows.length;
+            }
           }
+          return { rows: totalRows };
+        }, 'GA4 sync');
 
+        if (result.error) {
+          if (jobId) await completeSyncJob(db, jobId, 'failed', null, result.error);
+          errors.push({ id: integration.id, provider: 'ga4', error: result.error, attempts: result.attempts });
+          results.push({ id: integration.id, provider: 'ga4', status: 'error', error: result.error });
+        } else {
           await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
-          results.push({ id: integration.id, provider: 'ga4', status: 'synced', rows: totalRows });
-        } catch (e: any) {
-          results.push({ id: integration.id, provider: 'ga4', status: 'error', error: e.message });
-          errors.push({ provider: 'ga4', workspace_id: integration.workspace_id, error: e.message });
+          if (jobId) await completeSyncJob(db, jobId, 'completed', result.data);
+          results.push({ id: integration.id, provider: 'ga4', status: 'synced', ...result.data, attempts: result.attempts });
         }
       }
 
-      // --- Google Ads ---
+      // ── Google Ads sync ──
       if (integration.provider === 'google_ads') {
-        try {
+        const result = await withRetry(async () => {
           const customerIds = await fetchGoogleAdsAccounts(accessToken);
-          if (!customerIds.length) { results.push({ id: integration.id, provider: 'google_ads', status: 'no_accounts' }); continue; }
-
+          if (!customerIds.length) throw new Error('No Google Ads accounts found');
           const customerId = customerIds[0].replace(/-/g, '');
           const campaigns = await fetchGoogleAdsCampaigns(accessToken, customerId);
 
-          // Store in dedicated table
-          await db.from('google_ads_data').delete()
-            .eq('workspace_id', integration.workspace_id)
-            .gte('date', formatDate(startDate));
-
-          if (campaigns.length > 0) {
-            const rows = campaigns.map(c => ({
-              workspace_id: integration.workspace_id,
-              integration_id: integration.id,
-              customer_id: customerId,
-              campaign_id: String(c.id || ''),
-              campaign_name: c.name,
-              status: c.status,
-              impressions: c.impressions || 0,
-              clicks: c.clicks || 0,
-              cost: c.spend || 0,
-              conversions: c.conversions || 0,
-              conversions_value: c.conversions_value || 0,
-              ctr: c.impressions > 0 ? (c.clicks / c.impressions) * 100 : 0,
-              avg_cpc: c.cpc || 0,
-              date: c.date || formatDate(new Date()),
-            }));
-
-            const chunkSize = 500;
-            for (let i = 0; i < rows.length; i += chunkSize) {
-              await db.from('google_ads_data').insert(rows.slice(i, i + chunkSize));
-            }
-          }
-
-          // Also update analytics_data for backward compat
           await db.from('analytics_data').delete()
             .eq('workspace_id', integration.workspace_id)
             .eq('provider', 'google_ads');
@@ -199,72 +220,76 @@ export async function GET(req: NextRequest) {
             });
           }
 
+          // Keep customer_id in oauth_meta
           await db.from('integrations').update({
-            last_sync_at: new Date().toISOString(),
-            oauth_meta: { customer_id: customerId },
+            oauth_meta: { ...(integration.oauth_meta as any || {}), customer_id: customerId },
           }).eq('id', integration.id);
 
-          results.push({ id: integration.id, provider: 'google_ads', status: 'synced', rows: campaigns.length });
-        } catch (e: any) {
-          results.push({ id: integration.id, provider: 'google_ads', status: 'error', error: e.message });
-          errors.push({ provider: 'google_ads', workspace_id: integration.workspace_id, error: e.message });
+          return { campaigns: campaigns.length, customer_id: customerId };
+        }, 'Google Ads sync');
+
+        if (result.error) {
+          if (jobId) await completeSyncJob(db, jobId, 'failed', null, result.error);
+          errors.push({ id: integration.id, provider: 'google_ads', error: result.error, attempts: result.attempts });
+          results.push({ id: integration.id, provider: 'google_ads', status: 'error', error: result.error });
+        } else {
+          await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
+          if (jobId) await completeSyncJob(db, jobId, 'completed', result.data);
+          results.push({ id: integration.id, provider: 'google_ads', status: 'synced', ...result.data, attempts: result.attempts });
         }
       }
 
-      // --- Meta Ads ---
+      // ── Meta Ads sync ──
       if (integration.provider === 'meta_ads') {
-        try {
+        const result = await withRetry(async () => {
           const accounts = await fetchMetaAdAccounts(accessToken);
-          if (!accounts.length) { results.push({ id: integration.id, provider: 'meta_ads', status: 'no_accounts' }); continue; }
-
-          const account = accounts[0];
-          const adAccountId = account.id;
+          if (!accounts.length) throw new Error('No Meta Ad accounts found');
+          const adAccountId = accounts[0].id;
           const insights = await fetchMetaInsights(accessToken, adAccountId);
 
-          // Store in dedicated table
-          await db.from('meta_ads_data').delete()
+          await db.from('analytics_data').delete()
             .eq('workspace_id', integration.workspace_id)
-            .gte('date', formatDate(startDate));
+            .eq('provider', 'meta_ads');
 
           if (insights.length > 0) {
-            const rows = insights.map((i: any) => ({
+            await db.from('analytics_data').insert({
               workspace_id: integration.workspace_id,
-              integration_id: integration.id,
-              account_id: adAccountId,
-              campaign_id: '',
-              campaign_name: i.campaign_name,
-              impressions: i.impressions || 0,
-              clicks: i.clicks || 0,
-              spend: i.spend || 0,
-              reach: i.reach || 0,
-              ctr: i.ctr || 0,
-              cpc: i.cpc || 0,
-              conversions: i.conversions || 0,
-              revenue: i.revenue || 0,
-              date: i.date_start || formatDate(new Date()),
-            }));
-
-            const chunkSize = 500;
-            for (let j = 0; j < rows.length; j += chunkSize) {
-              await db.from('meta_ads_data').insert(rows.slice(j, j + chunkSize));
-            }
+              provider: 'meta_ads',
+              metric_type: 'adsets',
+              data: insights,
+              date_range_start: formatDate(startDate),
+              date_range_end: formatDate(new Date()),
+            });
           }
 
+          // Keep ad account info in oauth_meta
           await db.from('integrations').update({
-            last_sync_at: new Date().toISOString(),
-            oauth_meta: { ad_account_id: adAccountId, account_name: account.name, currency: account.currency || 'USD' },
+            oauth_meta: { ...(integration.oauth_meta as any || {}), ad_account_id: adAccountId, account_name: accounts[0].name },
           }).eq('id', integration.id);
 
-          results.push({ id: integration.id, provider: 'meta_ads', status: 'synced', rows: insights.length });
-        } catch (e: any) {
-          results.push({ id: integration.id, provider: 'meta_ads', status: 'error', error: e.message });
-          errors.push({ provider: 'meta_ads', workspace_id: integration.workspace_id, error: e.message });
+          return { adsets: insights.length, account: accounts[0].name };
+        }, 'Meta Ads sync');
+
+        if (result.error) {
+          if (jobId) await completeSyncJob(db, jobId, 'failed', null, result.error);
+          errors.push({ id: integration.id, provider: 'meta_ads', error: result.error, attempts: result.attempts });
+          results.push({ id: integration.id, provider: 'meta_ads', status: 'error', error: result.error });
+        } else {
+          await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
+          if (jobId) await completeSyncJob(db, jobId, 'completed', result.data);
+          results.push({ id: integration.id, provider: 'meta_ads', status: 'synced', ...result.data, attempts: result.attempts });
         }
       }
     }
 
-    const synced = results.filter(r => r.status === 'synced').length;
-    return NextResponse.json({ success: true, synced, errors, results, timestamp: new Date().toISOString() });
+    return NextResponse.json({
+      success: true,
+      synced: results.filter(r => r.status === 'synced').length,
+      failed: errors.length,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
