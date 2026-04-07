@@ -2,32 +2,36 @@
 
 /* ── Lumnix Design Tokens ── */
 :root {
-  --bg-page:        #0A0A0A;
-  --bg-surface:     #111111;
-  --bg-elevated:    #1A1A1A;
-  --border:         #222222;
-  --border-strong:  #333333;
+  --bg-page:        #09090B;
+  --bg-surface:     #111113;
+  --bg-elevated:    #1A1A1E;
+  --border:         #222228;
+  --border-strong:  #333340;
 
   --text-primary:   #FAFAFA;
-  --text-secondary: #888888;
-  --text-muted:     #555555;
+  --text-secondary: #8B8B9E;
+  --text-muted:     #52525E;
 
-  --accent:         #6366F1;
-  --accent-hover:   #4F46E5;
-  --accent-subtle:  rgba(99,102,241,0.08);
+  --accent:         #7C3AED;
+  --accent-hover:   #6D28D9;
+  --accent-subtle:  rgba(124,58,237,0.08);
+  --accent-secondary: #0891B2;
 
   --success:        #10B981;
   --warning:        #F59E0B;
   --danger:         #EF4444;
 
   --font-body:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Sora', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:    'DM Mono', 'JetBrains Mono', monospace;
 
   --r-sm:   6px;
   --r-md:   10px;
   --r-lg:   12px;
   --r-xl:   16px;
+
+  --glow-accent: 0 0 20px rgba(124,58,237,0.15), 0 0 60px rgba(124,58,237,0.05);
+  --glow-teal:   0 0 20px rgba(8,145,178,0.15), 0 0 60px rgba(8,145,178,0.05);
 }
 
 *, *::before, *::after {
@@ -40,7 +44,7 @@
 }
 
 body {
-  background-color: #0A0A0A;
+  background-color: #09090B;
   color: #FAFAFA;
   font-size: 14px;
   line-height: 1.65;
@@ -48,12 +52,28 @@ body {
   letter-spacing: -0.005em;
 }
 
+/* Subtle grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
 h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.03em;
-  line-height: 1.25;
+  font-family: var(--font-display);
+  letter-spacing: -0.04em;
+  line-height: 1.15;
   font-weight: 700;
   color: #FAFAFA;
 }
+
+h1 { font-weight: 800; }
 
 p { line-height: 1.65; }
 
@@ -139,25 +159,34 @@ code, pre, kbd, samp {
 
 /* ── Card ── */
 .card-hover {
-  transition: border-color 0.18s ease, transform 0.18s ease;
+  transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 .card-hover:hover {
-  border-color: #333333;
+  border-color: #333340;
   transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
 }
 
 /* ── Gradient accent text ── */
 .gradient-text {
-  background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+  background: linear-gradient(135deg, #7C3AED 0%, #0891B2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
+/* ── Glow accent effect ── */
+.glow-accent {
+  box-shadow: var(--glow-accent);
+}
+.glow-accent:hover {
+  box-shadow: 0 0 30px rgba(124,58,237,0.25), 0 0 80px rgba(124,58,237,0.08);
+}
+
 /* ── Number display (big KPI values) ── */
 .kpi-value {
   font-family: 'DM Mono', monospace;
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -183,21 +212,22 @@ table {
 }
 table th {
   text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: #888888;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8B8B9E;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   padding: 10px 14px;
-  border-bottom: 1px solid #222222;
+  border-bottom: 1px solid #222228;
   background: transparent;
+  font-family: var(--font-display);
 }
 table td {
   padding: 10px 14px;
   font-size: 13px;
   color: #FAFAFA;
-  border-bottom: 1px solid #1A1A1A;
+  border-bottom: 1px solid #1A1A1E;
 }
 table tr:hover td {
-  background-color: #1A1A1A;
+  background-color: #1A1A1E;
 }

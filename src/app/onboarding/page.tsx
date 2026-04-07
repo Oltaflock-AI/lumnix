@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 
 const BRAND_COLORS = [
-  { label: 'Indigo', value: '#6366F1' },
+  { label: 'Violet', value: '#7C3AED' },
   { label: 'Blue', value: '#3b82f6' },
   { label: 'Green', value: '#22c55e' },
   { label: 'Orange', value: '#f59e0b' },
@@ -27,7 +27,7 @@ function OnboardingInner() {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [brandName, setBrandName] = useState('');
-  const [brandColor, setBrandColor] = useState('#6366F1');
+  const [brandColor, setBrandColor] = useState('#7C3AED');
   const [logoUrl, setLogoUrl] = useState('');
   const [logoPreview, setLogoPreview] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -206,21 +206,24 @@ function OnboardingInner() {
   }
 
   const stepStyle = (n: number) => ({
-    width: '32px', height: '32px', borderRadius: '50%',
+    width: '34px', height: '34px', borderRadius: '50%',
     display: 'flex', alignItems: 'center' as const, justifyContent: 'center',
-    fontSize: '14px', fontWeight: 700,
+    fontSize: '13px', fontWeight: 700,
     fontFamily: 'var(--font-display)',
+    letterSpacing: '-0.02em',
     backgroundColor: step > n ? c.success : step === n ? c.accent : c.bgCard,
     color: step >= n ? 'white' : c.textSecondary,
     border: step > n ? 'none' : step === n ? 'none' : `1px solid ${c.border}`,
+    boxShadow: step === n ? '0 0 20px rgba(124,58,237,0.2)' : 'none',
+    transition: 'all 0.2s ease',
   });
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: c.bgPage, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'var(--font-body)' }}>
       {/* Header */}
       <div style={{ marginBottom: '40px' }}>
-        <span style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)' }}>
-          <span style={{ color: c.accent }}>L</span><span style={{ color: c.text }}>umnix</span>
+        <span style={{ fontSize: '32px', fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', color: c.text }}>
+          Lumnix
         </span>
       </div>
 
@@ -242,7 +245,7 @@ function OnboardingInner() {
         {/* Step 1: Brand Setup */}
         {step === 1 && (
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, color: c.text, marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Set up your brand</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 800, color: c.text, letterSpacing: '-0.04em', marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Set up your brand</h1>
             <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '28px' }}>This personalizes your Lumnix dashboard</p>
 
             {/* Brand Name */}
@@ -345,7 +348,7 @@ function OnboardingInner() {
                 <span style={{ fontSize: '13px', fontWeight: 600, color: couponResult.ok ? c.success : c.danger }}>{couponResult.text}</span>
               </div>
             )}
-            <h1 style={{ fontSize: '22px', fontWeight: 800, color: c.text, marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Connect your data</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 800, color: c.text, letterSpacing: '-0.04em', marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Connect your data</h1>
             <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '28px' }}>Connect your marketing accounts to start seeing real data. You can always do this later in Settings.</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
@@ -404,7 +407,7 @@ function OnboardingInner() {
             <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: c.successSubtle, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               <Check size={36} color={c.success} />
             </div>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, color: c.text, marginBottom: '8px', fontFamily: 'var(--font-display)' }}>You&apos;re all set!</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 800, color: c.text, letterSpacing: '-0.04em', marginBottom: '8px', fontFamily: 'var(--font-display)' }}>You&apos;re all set!</h1>
             <p style={{ fontSize: '14px', color: c.textSecondary, marginBottom: '20px', lineHeight: 1.6 }}>
               {connectedProviders.length > 0
                 ? `${connectedProviders.length} data source${connectedProviders.length > 1 ? 's' : ''} connected and syncing. Your dashboard is ready.`

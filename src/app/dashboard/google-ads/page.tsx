@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DollarSign, TrendingUp, Target, MousePointerClick, RefreshCw, AlertCircle, BarChart3, Zap } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
+import { DateRangePicker } from '@/components/DateRangePicker';
 import { useIntegrations, useGoogleAdsData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { supabase } from '@/lib/supabase';
@@ -42,7 +43,8 @@ export default function GoogleAdsPage() {
   const router = useRouter();
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
-  const { data: adsData, loading: dataLoading, refetch } = useGoogleAdsData(workspace?.id);
+  const [days, setDays] = useState(30);
+  const { data: adsData, loading: dataLoading, refetch } = useGoogleAdsData(workspace?.id, days);
 
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +108,9 @@ export default function GoogleAdsPage() {
         <>
           {/* Header row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: c.textMuted }}>
+              <DateRangePicker value={days} onChange={setDays} />
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: c.textMuted }}>
               {integration.last_sync_at ? (
                 <>
@@ -161,7 +166,7 @@ export default function GoogleAdsPage() {
           {hasData && (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
-                <StatCard icon={DollarSign} color="#F59E0B" label="Total Spend" value={`$${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub="Last 30 days" />
+                <StatCard icon={DollarSign} color="#F59E0B" label="Total Spend" value={`$${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub={`Last ${days} days`} />
                 <StatCard icon={MousePointerClick} color={c.accent} label="Total Clicks" value={totalClicks.toLocaleString()} sub={`${totalImpressions.toLocaleString()} impressions`} />
                 <StatCard icon={Target} color="#10B981" label="Conversions" value={totalConversions.toLocaleString()} sub={`$${totalConvValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} value`} />
                 <StatCard icon={TrendingUp} color={c.accent} label="ROAS" value={`${roas.toFixed(2)}x`} sub={roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'} />

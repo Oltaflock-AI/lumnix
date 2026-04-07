@@ -25,18 +25,18 @@ const INSIGHT_CONFIG: Record<InsightType, { color: string; bg: string; icon: any
   win:         { color: '#10B981', bg: 'rgba(16,185,129,0.08)',  icon: TrendingUp,    label: 'Win' },
   warning:     { color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  icon: AlertTriangle,  label: 'Warning' },
   opportunity: { color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', icon: Lightbulb,      label: 'Opportunity' },
-  tip:         { color: '#6366F1', bg: 'rgba(99,102,241,0.08)', icon: Zap,            label: 'Tip' },
+  tip:         { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', icon: Zap,            label: 'Tip' },
 };
 
 /* ─── Chat suggestions ─── */
 
 const SUGGESTIONS = [
-  { icon: TrendingUp, text: 'How is my traffic trending this month?', category: 'Analytics' },
+  { icon: Sparkles, text: 'Give me a full marketing overview across all channels', category: 'Cross-Channel' },
+  { icon: TrendingUp, text: 'Compare my organic vs paid performance this month', category: 'Cross-Channel' },
   { icon: Search, text: 'What are my top 10 keywords by clicks?', category: 'SEO' },
-  { icon: BarChart3, text: 'Which pages have the highest bounce rate?', category: 'Analytics' },
-  { icon: Target, text: 'What\'s my best traffic source?', category: 'Analytics' },
+  { icon: Target, text: 'How are my Google Ads and Meta Ads campaigns performing?', category: 'Paid' },
   { icon: Zap, text: 'Give me 3 quick wins to improve my SEO', category: 'Strategy' },
-  { icon: Brain, text: 'Summarise my marketing performance this month', category: 'Overview' },
+  { icon: Brain, text: 'What should I focus on this week?', category: 'Strategy' },
 ];
 
 type Message = { role: 'user' | 'assistant'; content: string; timestamp?: Date };
@@ -253,7 +253,7 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 600, color: config.color, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{config.label}</span>
                   </div>
-                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, backgroundColor: insight.priority === 'high' ? 'rgba(239,68,68,0.08)' : insight.priority === 'medium' ? 'rgba(245,158,11,0.08)' : 'rgba(99,102,241,0.08)', color: insight.priority === 'high' ? '#EF4444' : insight.priority === 'medium' ? '#F59E0B' : c.textMuted, fontWeight: 600, textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, backgroundColor: insight.priority === 'high' ? 'rgba(239,68,68,0.08)' : insight.priority === 'medium' ? 'rgba(245,158,11,0.08)' : 'rgba(124,58,237,0.08)', color: insight.priority === 'high' ? '#EF4444' : insight.priority === 'medium' ? '#F59E0B' : c.textMuted, fontWeight: 600, textTransform: 'uppercase' }}>
                     {insight.priority}
                   </span>
                 </div>

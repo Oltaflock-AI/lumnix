@@ -78,6 +78,19 @@ const tools = [
       },
     },
   },
+  {
+    type: 'function' as const,
+    function: {
+      name: 'query_cross_channel',
+      description: 'Get a unified cross-channel overview combining organic (GSC + GA4) and paid (Google Ads + Meta Ads) metrics. Best for comparing organic vs paid performance, total marketing overview, or answering "how is my marketing doing?"',
+      parameters: {
+        type: 'object',
+        properties: {
+          days: { type: 'number', description: 'Number of days to look back (default: 30)' },
+        },
+      },
+    },
+  },
 ];
 
 // Tool execution functions
@@ -190,27 +203,57 @@ async function executeToolCall(
 
       case 'query_ads_data': {
         const days = args.days || 30;
-        const providers = args.provider === 'both' ? ['google_ads', 'meta_ads'] : [args.provider];
-        const { data } = await db.from('analytics_data')
-          .select('provider, data, date_range_start')
-          .eq('workspace_id', workspaceId)
-          .in('provider', providers)
-          .gte('date_range_start', dateFrom(days));
+        const result: Record<string, any> = {};
 
-        if (!data || data.length === 0) return JSON.stringify({ message: 'No ads data available. The user may need to connect Google Ads or Meta Ads.' });
+        if (args.provider === 'google_ads' || args.provider === 'both') {
+          const { data: gAds } = await db.from('google_ads_data')
+            .select('campaign_name, status, clicks, impressions, cost, conversions, conversions_value')
+            .eq('workspace_id', workspaceId)
+            .gte('date', dateFrom(days));
 
-        const byProvider: Record<string, { spend: number; clicks: number; impressions: number; conversions: number; campaigns: number }> = {};
-        for (const row of data) {
-          const p = row.provider;
-          if (!byProvider[p]) byProvider[p] = { spend: 0, clicks: 0, impressions: 0, conversions: 0, campaigns: 0 };
-          const d = row.data as any;
-          byProvider[p].spend += d?.spend || d?.cost || 0;
-          byProvider[p].clicks += d?.clicks || 0;
-          byProvider[p].impressions += d?.impressions || 0;
-          byProvider[p].conversions += d?.conversions || 0;
-          byProvider[p].campaigns++;
+          if (gAds && gAds.length > 0) {
+            const spend = gAds.reduce((s, r) => s + Number(r.cost || 0), 0);
+            const clicks = gAds.reduce((s, r) => s + Number(r.clicks || 0), 0);
+            const conversions = gAds.reduce((s, r) => s + Number(r.conversions || 0), 0);
+            const revenue = gAds.reduce((s, r) => s + Number(r.conversions_value || 0), 0);
+            result.google_ads = { spend, clicks, conversions, revenue, roas: spend > 0 ? +(revenue / spend).toFixed(2) : 0, rows: gAds.length };
+          }
+          // Fallback to analytics_data JSONB
+          if (!result.google_ads) {
+            const { data: fb } = await db.from('analytics_data').select('data').eq('workspace_id', workspaceId).eq('provider', 'google_ads').order('synced_at', { ascending: false }).limit(1).single();
+            if (fb?.data && Array.isArray(fb.data)) {
+              const spend = fb.data.reduce((s: number, c: any) => s + (c.spend || 0), 0);
+              const clicks = fb.data.reduce((s: number, c: any) => s + (c.clicks || 0), 0);
+              result.google_ads = { spend, clicks, campaigns: fb.data.length };
+            }
+          }
         }
-        return JSON.stringify({ adPerformance: byProvider, period: `last ${days} days` });
+
+        if (args.provider === 'meta_ads' || args.provider === 'both') {
+          const { data: meta } = await db.from('meta_ads_data')
+            .select('campaign_name, clicks, impressions, spend, conversions, revenue')
+            .eq('workspace_id', workspaceId)
+            .gte('date', dateFrom(days));
+
+          if (meta && meta.length > 0) {
+            const spend = meta.reduce((s, r) => s + Number(r.spend || 0), 0);
+            const clicks = meta.reduce((s, r) => s + Number(r.clicks || 0), 0);
+            const conversions = meta.reduce((s, r) => s + Number(r.conversions || 0), 0);
+            const revenue = meta.reduce((s, r) => s + Number(r.revenue || 0), 0);
+            result.meta_ads = { spend, clicks, conversions, revenue, roas: spend > 0 ? +(revenue / spend).toFixed(2) : 0, rows: meta.length };
+          }
+          if (!result.meta_ads) {
+            const { data: fb } = await db.from('analytics_data').select('data').eq('workspace_id', workspaceId).eq('provider', 'meta_ads').order('synced_at', { ascending: false }).limit(1).single();
+            if (fb?.data && Array.isArray(fb.data)) {
+              const spend = fb.data.reduce((s: number, c: any) => s + (c.spend || 0), 0);
+              const clicks = fb.data.reduce((s: number, c: any) => s + (c.clicks || 0), 0);
+              result.meta_ads = { spend, clicks, adsets: fb.data.length };
+            }
+          }
+        }
+
+        if (Object.keys(result).length === 0) return JSON.stringify({ message: 'No ads data available. The user may need to connect Google Ads or Meta Ads.' });
+        return JSON.stringify({ adPerformance: result, period: `last ${days} days` });
       }
 
       case 'query_competitors': {
@@ -244,6 +287,63 @@ async function executeToolCall(
 
         if (!anomalies || anomalies.length === 0) return JSON.stringify({ message: 'No anomalies detected recently.' });
         return JSON.stringify({ anomalies, period: `last ${days} days` });
+      }
+
+      case 'query_cross_channel': {
+        const days = args.days || 30;
+        const [gscRes, ga4Res, gAdsRes, metaRes] = await Promise.all([
+          db.from('gsc_data').select('clicks, impressions').eq('workspace_id', workspaceId).gte('date', dateFrom(days)),
+          db.from('ga4_data').select('metric_type, dimension_name, value').eq('workspace_id', workspaceId).gte('date', dateFrom(days)),
+          db.from('google_ads_data').select('clicks, cost, conversions, conversions_value').eq('workspace_id', workspaceId).gte('date', dateFrom(days)),
+          db.from('meta_ads_data').select('clicks, spend, conversions, revenue').eq('workspace_id', workspaceId).gte('date', dateFrom(days)),
+        ]);
+
+        const organic = {
+          clicks: (gscRes.data || []).reduce((s, r) => s + (r.clicks || 0), 0),
+          impressions: (gscRes.data || []).reduce((s, r) => s + (r.impressions || 0), 0),
+        };
+
+        const ga4Rows = ga4Res.data || [];
+        const sessions = ga4Rows.filter(r => r.metric_type === 'sessions' && (r.dimension_name === 'total' || r.dimension_name === 'date')).reduce((s, r) => s + (r.value || 0), 0)
+          || ga4Rows.filter(r => r.metric_type === 'sessions' && r.dimension_name === 'sessionSource').reduce((s, r) => s + (r.value || 0), 0);
+
+        const gAds = gAdsRes.data || [];
+        const googleAds = {
+          spend: gAds.reduce((s, r) => s + Number(r.cost || 0), 0),
+          clicks: gAds.reduce((s, r) => s + Number(r.clicks || 0), 0),
+          conversions: gAds.reduce((s, r) => s + Number(r.conversions || 0), 0),
+          revenue: gAds.reduce((s, r) => s + Number(r.conversions_value || 0), 0),
+        };
+
+        const meta = metaRes.data || [];
+        const metaAds = {
+          spend: meta.reduce((s, r) => s + Number(r.spend || 0), 0),
+          clicks: meta.reduce((s, r) => s + Number(r.clicks || 0), 0),
+          conversions: meta.reduce((s, r) => s + Number(r.conversions || 0), 0),
+          revenue: meta.reduce((s, r) => s + Number(r.revenue || 0), 0),
+        };
+
+        const totalAdSpend = googleAds.spend + metaAds.spend;
+        const totalRevenue = googleAds.revenue + metaAds.revenue;
+        const totalPaidClicks = googleAds.clicks + metaAds.clicks;
+
+        return JSON.stringify({
+          overview: {
+            sessions,
+            organicClicks: organic.clicks,
+            organicImpressions: organic.impressions,
+            paidClicks: totalPaidClicks,
+            totalAdSpend: +totalAdSpend.toFixed(2),
+            totalRevenue: +totalRevenue.toFixed(2),
+            roas: totalAdSpend > 0 ? +(totalRevenue / totalAdSpend).toFixed(2) : 0,
+            totalConversions: googleAds.conversions + metaAds.conversions,
+          },
+          byPlatform: {
+            google_ads: googleAds.spend > 0 ? googleAds : undefined,
+            meta_ads: metaAds.spend > 0 ? metaAds : undefined,
+          },
+          period: `last ${days} days`,
+        });
       }
 
       default:
@@ -305,7 +405,8 @@ INSTRUCTIONS:
 2. Be concise, data-driven, and always reference specific numbers.
 3. If a tool returns no data, tell the user to connect that integration.
 4. Proactively suggest insights when you see patterns in the data.
-5. You can call multiple tools to answer complex questions (e.g., compare SEO vs paid traffic).
+5. For cross-channel questions ("how is my marketing doing?", "compare organic vs paid", "give me an overview"), use the query_cross_channel tool to get unified data.
+6. You can call multiple tools to answer complex questions.
 
 IMPORTANT RULES:
 1. You ONLY answer questions about marketing, analytics, SEO, advertising, content strategy, and the user's marketing data.

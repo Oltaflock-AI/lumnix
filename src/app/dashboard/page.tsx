@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, Bell, CheckCircle, FileText, Users, Search } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { DateRangePicker } from '@/components/DateRangePicker';
 import { useWorkspace, useGA4Data, useGSCData, useIntegrations, useUnifiedData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useRouter } from 'next/navigation';
@@ -18,14 +19,14 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
   return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-display)' }}>{label}</span>
         {platformLogo && <PlatformLogo name={platformLogo} size={14} />}
       </div>
       {loading ? (
         <div style={{ height: 32, backgroundColor: c.bgCardHover, borderRadius: 6, marginBottom: 8, width: '55%' }} className="animate-pulse" />
       ) : (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <div style={{ fontSize: 28, fontWeight: 500, color: c.text, letterSpacing: '-0.03em', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
+          <div style={{ fontSize: 30, fontWeight: 500, color: c.text, letterSpacing: '-0.04em', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
             {value}
           </div>
           {change && (
@@ -47,11 +48,12 @@ export default function DashboardPage() {
   const router = useRouter();
   const { c } = useTheme();
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
+  const [days, setDays] = useState(30);
   const { integrations } = useIntegrations(workspace?.id);
-  const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
-  const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
-  const { data: gscOverviewResp } = useGSCData(workspace?.id, 'overview', 30);
-  const { data: unifiedResp, loading: unifiedLoading } = useUnifiedData(workspace?.id, 30);
+  const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', days);
+  const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', days);
+  const { data: gscOverviewResp } = useGSCData(workspace?.id, 'overview', days);
+  const { data: unifiedResp, loading: unifiedLoading } = useUnifiedData(workspace?.id, days);
 
   // Get user's first name for greeting
   const [userName, setUserName] = useState('');
@@ -115,15 +117,16 @@ export default function DashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 600, color: c.text, letterSpacing: '-0.02em', lineHeight: 1.3 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: c.text, letterSpacing: '-0.04em', lineHeight: 1.15, fontFamily: 'var(--font-display)' }}>
             {userName ? `Welcome back, ${userName}` : 'Dashboard'}
           </h1>
           <p style={{ color: c.textMuted, fontSize: 13, marginTop: 4 }}>
             {connectedProviders.length > 0
-              ? `${connectedProviders.length} source${connectedProviders.length > 1 ? 's' : ''} connected · Last 30 days`
+              ? `${connectedProviders.length} source${connectedProviders.length > 1 ? 's' : ''} connected · Last ${days} days`
               : 'Connect your first integration to see live data'}
           </p>
         </div>
+        <DateRangePicker value={days} onChange={setDays} />
       </div>
 
       {/* KPI Cards */}
@@ -143,7 +146,7 @@ export default function DashboardPage() {
         <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Organic vs Paid traffic</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Organic vs Paid traffic</h3>
               <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>Daily clicks — last 14 days</p>
             </div>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -194,7 +197,7 @@ export default function DashboardPage() {
         {/* Top pages / keywords table */}
         <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Top keywords</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Top keywords</h3>
             {hasGSC && (
               <button onClick={() => router.push('/dashboard/seo')} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
                 View all →
@@ -235,8 +238,8 @@ export default function DashboardPage() {
           <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <Brain size={16} color={c.accent} />
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Quick wins</h3>
-              <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 100, backgroundColor: c.warningSubtle, color: c.warning, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Action needed</span>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Quick wins</h3>
+              <span style={{ fontSize: 9, padding: '3px 8px', borderRadius: 100, backgroundColor: c.warningSubtle, color: c.warning, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-display)' }}>Action needed</span>
             </div>
             <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 14, lineHeight: 1.6 }}>Keywords ranking 4-10 with low CTR — optimize title tags to push to page 1.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -306,6 +309,67 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Integration Status + Cross-Channel Insights */}
+      {connectedProviders.length > 0 && (
+        <div className="two-col" style={{ marginBottom: 20 }}>
+          {/* Integration Status */}
+          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 16 }}>Data Sources</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {(unifiedResp?.integrations || []).map((int: any) => {
+                const providerNames: Record<string, string> = { gsc: 'Google Search Console', ga4: 'Google Analytics', google_ads: 'Google Ads', meta_ads: 'Meta Ads' };
+                const lastSync = int.last_sync_at ? new Date(int.last_sync_at) : null;
+                const isStale = lastSync ? (Date.now() - lastSync.getTime() > 25 * 60 * 60 * 1000) : true;
+                return (
+                  <div key={int.provider} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: isStale ? c.warning : c.success, flexShrink: 0 }} />
+                    <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: c.text }}>{providerNames[int.provider] || int.provider}</span>
+                    <span style={{ fontSize: 11, color: c.textMuted }}>
+                      {lastSync ? `${Math.round((Date.now() - lastSync.getTime()) / 3600000)}h ago` : 'Never'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Cross-Channel Insights */}
+          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <Sparkles size={16} color={c.accent} />
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Cross-Channel</h3>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {hasGSC && hasAds && totalAdSpend > 0 && (
+                <div style={{ padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontSize: 13, color: c.textSecondary, lineHeight: 1.6 }}>
+                  <span style={{ fontWeight: 600, color: c.text }}>Organic vs Paid: </span>
+                  {totalClicks > (uTotals.paid_clicks || 0)
+                    ? `Organic drives ${Math.round(totalClicks / ((uTotals.paid_clicks || 1)) * 100) / 100}x more clicks than paid.`
+                    : `Paid drives ${Math.round((uTotals.paid_clicks || 0) / (totalClicks || 1) * 100) / 100}x more clicks than organic.`}
+                </div>
+              )}
+              {hasAds && totalROAS > 0 && (
+                <div style={{ padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontSize: 13, color: c.textSecondary, lineHeight: 1.6 }}>
+                  <span style={{ fontWeight: 600, color: totalROAS >= 2 ? c.success : c.warning }}>ROAS {totalROAS}x: </span>
+                  {totalROAS >= 3 ? 'Strong returns — consider scaling spend.' : totalROAS >= 1.5 ? 'Healthy returns. Monitor for fatigue.' : 'Below target. Review underperforming campaigns.'}
+                </div>
+              )}
+              {hasGA4 && totalSessions > 0 && (
+                <div style={{ padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontSize: 13, color: c.textSecondary, lineHeight: 1.6 }}>
+                  <span style={{ fontWeight: 600, color: c.text }}>Traffic: </span>
+                  {`${totalSessions.toLocaleString()} sessions from ${totalUsers.toLocaleString()} users in the last ${days} days.`}
+                </div>
+              )}
+              {connectedProviders.length < 4 && (
+                <div style={{ padding: '10px 12px', borderRadius: 8, border: `1px dashed ${c.border}`, fontSize: 12, color: c.textMuted, textAlign: 'center' }}>
+                  Connect {4 - connectedProviders.length} more source{4 - connectedProviders.length > 1 ? 's' : ''} for deeper cross-channel insights
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI Insights widget */}
       <AIInsightsWidget workspaceId={workspace?.id} />
 
@@ -339,7 +403,7 @@ function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefine
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <Lightbulb size={16} color={c.accent} />
-        <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>AI Recommendations</h3>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Recommendations</h3>
       </div>
       {loading ? (
         <div style={{ height: 80, backgroundColor: c.bgCardHover, borderRadius: 8 }} className="animate-pulse" />
@@ -385,7 +449,7 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <TrendingUp size={16} color={c.success} />
-        <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Traffic Forecast</h3>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Traffic Forecast</h3>
       </div>
       {loading ? (
         <div style={{ height: 80, backgroundColor: c.bgCardHover, borderRadius: 8 }} className="animate-pulse" />
@@ -393,7 +457,7 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
         <p style={{ fontSize: 12, color: c.textMuted }}>{prediction?.message || 'Connect GA4 and sync data to see traffic predictions.'}</p>
       ) : (
         <div>
-          <div style={{ fontSize: 28, fontWeight: 500, color: c.text, fontFamily: 'var(--font-mono)', marginBottom: 4 }}>
+          <div style={{ fontSize: 32, fontWeight: 500, color: c.text, fontFamily: 'var(--font-mono)', letterSpacing: '-0.04em', marginBottom: 4 }}>
             ~{avgForecast.toLocaleString()}
           </div>
           <p style={{ fontSize: 11, color: c.textSecondary, marginBottom: 12 }}>avg daily sessions forecast (next 14 days)</p>
@@ -447,7 +511,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Bell size={16} color={c.danger} />
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>AI Anomalies</h3>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Anomalies</h3>
           {unread.length > 0 && (
             <span style={{ fontSize: 11, padding: '2px 10px', borderRadius: 100, backgroundColor: c.dangerSubtle, color: c.danger, fontWeight: 600 }}>
               {unread.length} new
@@ -559,7 +623,7 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <Sparkles size={16} color={c.accent} />
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>AI Insights</h3>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Insights</h3>
         </div>
         <button
           onClick={() => router.push('/dashboard/ai')}
