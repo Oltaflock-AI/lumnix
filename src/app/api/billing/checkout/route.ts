@@ -9,9 +9,9 @@ const PRICE_IDS: Record<string, string> = {
 };
 
 const PLAN_PRICES: Record<string, number> = {
-  starter: 29,
-  growth: 79,
-  agency: 199,
+  starter: 99,
+  growth: 179,
+  agency: 299,
 };
 
 export async function POST(req: NextRequest) {
