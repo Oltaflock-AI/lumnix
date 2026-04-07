@@ -18,7 +18,6 @@ function useStyles() {
     backgroundColor: c.bgCard,
     color: c.text,
     fontSize: 13,
-    outline: 'none',
     boxSizing: 'border-box',
   };
   const primaryBtn: React.CSSProperties = {
@@ -1097,7 +1096,7 @@ function DeleteAccountSection() {
             style={{
               width: '100%', padding: '10px 12px', borderRadius: 8,
               border: `1px solid ${c.danger}`, backgroundColor: c.bgPage,
-              color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+              color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
               marginBottom: 12,
               fontFamily: 'var(--font-mono)',
             }}
@@ -1414,7 +1413,7 @@ export default function SettingsPage() {
                             cursor: 'pointer', backgroundColor: 'transparent',
                             color: c.danger, border: `1px solid ${c.danger}60`,
                             display: 'flex', alignItems: 'center', gap: 6,
-                            transition: 'all 0.15s',
+                            transition: 'background-color 0.15s, border-color 0.15s',
                           }}
                           onMouseEnter={e => { e.currentTarget.style.backgroundColor = c.dangerSubtle; }}
                           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
@@ -1618,7 +1617,7 @@ export default function SettingsPage() {
                               style={{
                                 fontSize: 12, fontWeight: 600, padding: '5px 8px', borderRadius: 6,
                                 backgroundColor: rc.bg, color: rc.color, border: `1px solid ${rc.color}30`,
-                                cursor: 'pointer', outline: 'none', appearance: 'auto',
+                                cursor: 'pointer', appearance: 'auto',
                               }}
                             >
                               <option value="admin">Admin</option>

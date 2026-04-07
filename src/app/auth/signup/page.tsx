@@ -164,7 +164,7 @@ function SignUpInner() {
               border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
               color: c.text, fontSize: '14px', fontWeight: 500,
               cursor: 'pointer', marginBottom: '20px',
-              transition: 'all 0.15s ease',
+              transition: 'background-color 0.15s ease',
             }}
             onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover}
             onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard}
@@ -187,14 +187,19 @@ function SignUpInner() {
           {/* Form */}
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {[
-              { icon: User, type: 'text', placeholder: 'Full name', value: name, onChange: setName },
-              { icon: Mail, type: 'email', placeholder: 'Work email', value: email, onChange: setEmail },
-              { icon: Lock, type: 'password', placeholder: 'Password (min 6 chars)', value: password, onChange: setPassword, min: 6 },
-              { icon: Ticket, type: 'text', placeholder: 'Beta invite code (optional)', value: inviteCode, onChange: setInviteCode, required: false },
+              { icon: User, type: 'text', placeholder: 'Full name…', value: name, onChange: setName, name: 'name', autoComplete: 'name', id: 'signup-name' },
+              { icon: Mail, type: 'email', placeholder: 'Work email…', value: email, onChange: setEmail, name: 'email', autoComplete: 'email', spellCheck: false, id: 'signup-email' },
+              { icon: Lock, type: 'password', placeholder: 'Password (min 6 chars)…', value: password, onChange: setPassword, min: 6, name: 'new-password', autoComplete: 'new-password', id: 'signup-password' },
+              { icon: Ticket, type: 'text', placeholder: 'Beta invite code (optional)…', value: inviteCode, onChange: setInviteCode, required: false, name: 'invite-code', autoComplete: 'off', spellCheck: false, id: 'signup-invite' },
             ].map((field, i) => (
               <div key={i} style={{ position: 'relative' }}>
-                <field.icon size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
+                <label htmlFor={field.id} style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>{field.placeholder.replace('…', '')}</label>
+                <field.icon size={15} aria-hidden="true" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
                 <input
+                  id={field.id}
+                  name={field.name}
+                  autoComplete={field.autoComplete}
+                  spellCheck={field.spellCheck}
                   type={field.type}
                   placeholder={field.placeholder}
                   value={field.value}
@@ -205,7 +210,7 @@ function SignUpInner() {
                     width: '100%', padding: '11px 14px 11px 40px',
                     borderRadius: '8px', border: `1px solid ${c.border}`,
                     backgroundColor: c.bgCard, color: c.text,
-                    fontSize: '14px', outline: 'none', boxSizing: 'border-box',
+                    fontSize: '14px', boxSizing: 'border-box',
                     fontFamily: 'var(--font-body)', transition: 'border-color 0.15s',
                   } as React.CSSProperties}
                   onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
@@ -215,7 +220,7 @@ function SignUpInner() {
             ))}
 
             {error && (
-              <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: '13px' }}>
+              <div role="alert" style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: '13px' }}>
                 {error}
               </div>
             )}

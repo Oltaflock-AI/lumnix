@@ -408,7 +408,7 @@ export default function MetaAdsPage() {
                   border: 'none',
                   background: isActive ? c.accent : 'transparent',
                   color: isActive ? '#fff' : c.textSecondary,
-                  transition: 'all 0.15s',
+                  transition: 'background-color 0.15s, border-color 0.15s',
                 }}
               >
                 {r.label}
@@ -547,7 +547,7 @@ export default function MetaAdsPage() {
                   border: isActive ? `1px solid ${c.accent}` : `1px solid ${c.border}`,
                   background: isActive ? c.accentSubtle : 'transparent',
                   color: isActive ? c.accent : c.textSecondary,
-                  transition: 'all 0.15s',
+                  transition: 'background-color 0.15s, border-color 0.15s',
                 }}>
                   {f.charAt(0).toUpperCase() + f.slice(1)} ({count})
                 </button>

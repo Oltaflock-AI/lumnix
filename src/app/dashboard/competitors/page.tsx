@@ -283,7 +283,7 @@ export default function CompetitorsPage() {
 
   // ── Shared Styles ──────────────────────────────────────────
   const card: React.CSSProperties = { backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: '12px', padding: '16px' };
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', borderRadius: '6px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '13px', outline: 'none', boxSizing: 'border-box' as const };
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', borderRadius: '6px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '13px', boxSizing: 'border-box' as const };
   const primaryBtn: React.CSSProperties = { padding: '8px 16px', borderRadius: '8px', border: 'none', background: c.accent, color: '#FFFFFF', fontSize: '13px', fontWeight: 600, cursor: 'pointer' };
   const ghostBtn: React.CSSProperties = { padding: '6px 14px', borderRadius: '8px', border: `1px solid ${c.borderStrong}`, background: 'transparent', color: c.textSecondary, fontSize: '12px', fontWeight: 600, cursor: 'pointer' };
 

@@ -111,7 +111,7 @@ function DataDeletionInner() {
                   style={{
                     width: '100%', padding: '10px 14px', borderRadius: 8,
                     border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
-                    color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                    color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
                   }}
                   onFocus={e => e.target.style.borderColor = c.accent}
                   onBlur={e => e.target.style.borderColor = c.border}

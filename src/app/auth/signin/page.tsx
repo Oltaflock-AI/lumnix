@@ -102,7 +102,7 @@ function SignInInner() {
               gap: '10px', padding: '11px 16px', borderRadius: '8px',
               border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
               color: c.text, fontSize: '14px', fontWeight: 500,
-              cursor: 'pointer', marginBottom: '20px', transition: 'all 0.15s ease',
+              cursor: 'pointer', marginBottom: '20px', transition: 'background-color 0.15s ease',
             }}
             onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover}
             onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard}
@@ -124,33 +124,37 @@ function SignInInner() {
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ position: 'relative' }}>
-              <Mail size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
+              <label htmlFor="signin-email" className="sr-only" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>Email</label>
+              <Mail size={15} aria-hidden="true" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
               <input
-                type="email" placeholder="Work email" value={email}
+                id="signin-email" name="email" autoComplete="email" spellCheck={false}
+                type="email" placeholder="Work email…" value={email}
                 onChange={e => setEmail(e.target.value)} required
-                style={{ width: '100%', padding: '11px 14px 11px 40px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
+                style={{ width: '100%', padding: '11px 14px 11px 40px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
                 onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
                 onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
             </div>
 
             <div style={{ position: 'relative' }}>
-              <Lock size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
+              <label htmlFor="signin-password" className="sr-only" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>Password</label>
+              <Lock size={15} aria-hidden="true" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
               <input
-                type={showPassword ? 'text' : 'password'} placeholder="Password" value={password}
+                id="signin-password" name="password" autoComplete="current-password"
+                type={showPassword ? 'text' : 'password'} placeholder="Password…" value={password}
                 onChange={e => setPassword(e.target.value)} required
-                style={{ width: '100%', padding: '11px 40px 11px 40px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
+                style={{ width: '100%', padding: '11px 40px 11px 40px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
                 onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
                 onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
-              <button type="button" onClick={() => setShowPassword(!showPassword)}
+              <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(!showPassword)}
                 style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: '2px', display: 'flex' }}>
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                {showPassword ? <EyeOff size={15} aria-hidden="true" /> : <Eye size={15} aria-hidden="true" />}
               </button>
             </div>
 
             {error && (
-              <div style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: '13px' }}>
+              <div role="alert" style={{ padding: '10px 14px', borderRadius: '8px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: '13px' }}>
                 {error}
               </div>
             )}

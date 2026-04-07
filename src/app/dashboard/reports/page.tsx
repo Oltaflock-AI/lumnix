@@ -1024,7 +1024,7 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
                   border: `1px solid ${selected.has(s.id) ? c.accent : c.border}`,
                   backgroundColor: selected.has(s.id) ? c.accentSubtle : 'transparent',
                   cursor: 'pointer', textAlign: 'left' as const,
-                  transition: 'all 0.15s ease',
+                  transition: 'background-color 0.15s ease, border-color 0.15s ease',
                 }}
               >
                 <div style={{
@@ -1032,7 +1032,7 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
                   border: `2px solid ${selected.has(s.id) ? c.accent : c.borderStrong}`,
                   backgroundColor: selected.has(s.id) ? c.accent : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  transition: 'all 0.15s ease',
+                  transition: 'background-color 0.15s ease, border-color 0.15s ease',
                 }}>
                   {selected.has(s.id) && <CheckCircle2 size={12} color="white" />}
                 </div>
@@ -1318,7 +1318,7 @@ export default function ReportsPage() {
                 fontSize: 12,
                 fontWeight: 600,
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
+                transition: 'background-color 0.15s ease, border-color 0.15s ease',
               }}
               onMouseEnter={e => {
                 if (DATE_PRESETS[selectedPreset].days !== p.days) {
@@ -1348,7 +1348,7 @@ export default function ReportsPage() {
               fontSize: 12,
               fontWeight: 600,
               cursor: 'pointer',
-              transition: 'all 0.15s ease',
+              transition: 'background-color 0.15s ease, border-color 0.15s ease',
             }}
             onMouseEnter={e => {
               if (!showCustom) (e.target as HTMLButtonElement).style.backgroundColor = c.surfaceElevated;
@@ -1371,7 +1371,6 @@ export default function ReportsPage() {
                 padding: '7px 10px', borderRadius: 8,
                 border: `1px solid ${c.border}`,
                 backgroundColor: c.bgCard, color: c.text, fontSize: 13,
-                outline: 'none',
               }}
               onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
               onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
@@ -1385,7 +1384,6 @@ export default function ReportsPage() {
                 padding: '7px 10px', borderRadius: 8,
                 border: `1px solid ${c.border}`,
                 backgroundColor: c.bgCard, color: c.text, fontSize: 13,
-                outline: 'none',
               }}
               onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
               onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
@@ -1455,7 +1453,7 @@ export default function ReportsPage() {
                   backgroundColor: isSelected ? c.accentSubtle : c.bgCard,
                   border: `1px solid ${isSelected ? c.accent : c.border}`,
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
+                  transition: 'background-color 0.15s ease, border-color 0.15s ease',
                 }}
                 onMouseEnter={e => {
                   if (!isSelected) {
@@ -1541,7 +1539,7 @@ export default function ReportsPage() {
                           color: c.textSecondary, fontSize: 13, fontWeight: 600,
                           cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
                           opacity: (!hasData || loading) ? 0.4 : 1,
-                          transition: 'all 0.15s ease',
+                          transition: 'background-color 0.15s ease, border-color 0.15s ease',
                         }}
                         onMouseEnter={e => { if (!generating && hasData && !loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.surfaceElevated; }}
                         onMouseLeave={e => { if (!generating && hasData && !loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}

@@ -256,7 +256,7 @@ function LandingInner() {
         backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         borderBottom: scrolled ? `1px solid ${c.border}` : '1px solid transparent',
-        transition: 'all 0.35s ease',
+        transition: 'background-color 0.35s ease, border-color 0.35s ease, backdrop-filter 0.35s ease',
       }}>
         <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.05em', color: c.text, position: 'relative', zIndex: 201, fontFamily: 'var(--font-display)' }}>
           Lumnix
@@ -283,7 +283,7 @@ function LandingInner() {
             style={{
               padding: '9px 22px', borderRadius: 8, border: 'none',
               backgroundColor: c.accent, color: '#fff', fontSize: 14, fontWeight: 600,
-              cursor: 'pointer', transition: 'all 0.2s',
+              cursor: 'pointer', transition: 'background-color 0.2s, color 0.2s',
             }}
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = c.accentHover; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = c.accent; e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -337,7 +337,7 @@ function LandingInner() {
               padding: '16px 32px', borderRadius: 12, border: 'none',
               background: `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`,
               color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.25s', boxShadow: `0 4px 24px rgba(124,58,237,0.3)`,
+              transition: 'transform 0.25s, box-shadow 0.25s', boxShadow: `0 4px 24px rgba(124,58,237,0.3)`,
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(124,58,237,0.4)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(124,58,237,0.3)'; }}
@@ -580,7 +580,7 @@ function LandingInner() {
                 key={f.title}
                 style={{
                   backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
-                  borderRadius: 14, padding: 32, transition: 'all 0.25s', cursor: 'default',
+                  borderRadius: 14, padding: 32, transition: 'border-color 0.25s, transform 0.25s', cursor: 'default',
                   position: 'relative', overflow: 'hidden',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = c.borderStrong; e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'; }}
@@ -784,7 +784,7 @@ function LandingInner() {
                 key={i}
                 style={{
                   backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
-                  borderRadius: 14, padding: 28, transition: 'all 0.25s',
+                  borderRadius: 14, padding: 28, transition: 'border-color 0.25s, transform 0.25s',
                   display: 'flex', flexDirection: 'column',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = c.borderStrong; e.currentTarget.style.transform = 'translateY(-2px)'; }}
@@ -890,7 +890,7 @@ function LandingInner() {
                     backgroundColor: c.bgCard,
                     border: `1px solid ${p.highlight ? c.accent : c.border}`,
                     borderRadius: 16, padding: 36, position: 'relative',
-                    transition: 'all 0.25s',
+                    transition: 'border-color 0.25s, transform 0.25s',
                     ...(p.highlight ? { boxShadow: '0 0 80px rgba(124,58,237,0.12)', transform: 'scale(1.03)' } : {}),
                   }}
                   onMouseEnter={e => { if (!p.highlight) { e.currentTarget.style.borderColor = c.borderStrong; e.currentTarget.style.transform = 'translateY(-4px)'; } }}
@@ -921,7 +921,7 @@ function LandingInner() {
                       border: p.highlight ? 'none' : `1px solid ${c.borderStrong}`,
                       backgroundColor: p.highlight ? c.accent : 'transparent',
                       color: p.highlight ? '#fff' : c.text,
-                      transition: 'all 0.2s',
+                      transition: 'background-color 0.2s, transform 0.2s',
                     }}
                     onMouseEnter={e => { e.currentTarget.style.backgroundColor = p.highlight ? c.accentHover : c.bgCardHover; }}
                     onMouseLeave={e => { e.currentTarget.style.backgroundColor = p.highlight ? c.accent : 'transparent'; }}
@@ -1033,7 +1033,7 @@ function LandingInner() {
               padding: '18px 40px', borderRadius: 12, border: 'none',
               background: `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`,
               color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.25s', position: 'relative',
+              transition: 'transform 0.25s, box-shadow 0.25s', position: 'relative',
               boxShadow: '0 4px 24px rgba(124,58,237,0.3)',
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 40px rgba(124,58,237,0.45)'; }}
@@ -1161,7 +1161,7 @@ function LandingInner() {
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: 8,
                         border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
-                        color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                        color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
                         transition: 'border-color 0.2s',
                       }}
                       onFocus={e => e.target.style.borderColor = c.accent}
@@ -1176,7 +1176,7 @@ function LandingInner() {
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: 8,
                         border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
-                        color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                        color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
                         transition: 'border-color 0.2s',
                       }}
                       onFocus={e => e.target.style.borderColor = c.accent}
@@ -1191,7 +1191,7 @@ function LandingInner() {
                       style={{
                         width: '100%', padding: '10px 14px', borderRadius: 8,
                         border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
-                        color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                        color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
                         transition: 'border-color 0.2s',
                       }}
                       onFocus={e => e.target.style.borderColor = c.accent}
@@ -1207,7 +1207,7 @@ function LandingInner() {
                         style={{
                           width: '100%', padding: '10px 14px', borderRadius: 8,
                           border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
-                          color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' as const,
+                          color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
                           transition: 'border-color 0.2s',
                         }}
                         onFocus={e => e.target.style.borderColor = c.accent}
@@ -1221,7 +1221,7 @@ function LandingInner() {
                         style={{
                           width: '100%', padding: '10px 14px', borderRadius: 8,
                           border: `1px solid ${c.border}`, backgroundColor: c.bgPage,
-                          color: wlTeamSize ? c.text : c.textMuted, fontSize: 14, outline: 'none',
+                          color: wlTeamSize ? c.text : c.textMuted, fontSize: 14,
                           boxSizing: 'border-box' as const, cursor: 'pointer',
                         }}
                       >
@@ -1246,7 +1246,7 @@ function LandingInner() {
                       width: '100%', padding: 14, borderRadius: 10, border: 'none',
                       background: `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`,
                       color: '#fff', fontSize: 15, fontWeight: 700, cursor: wlSubmitting ? 'not-allowed' : 'pointer',
-                      opacity: wlSubmitting ? 0.7 : 1, transition: 'all 0.2s',
+                      opacity: wlSubmitting ? 0.7 : 1, transition: 'background-color 0.2s, opacity 0.2s',
                       boxShadow: '0 4px 16px rgba(124,58,237,0.3)',
                       marginTop: 4,
                     }}

@@ -215,7 +215,7 @@ function OnboardingInner() {
     color: step >= n ? 'white' : c.textSecondary,
     border: step > n ? 'none' : step === n ? 'none' : `1px solid ${c.border}`,
     boxShadow: step === n ? '0 0 20px rgba(124,58,237,0.2)' : 'none',
-    transition: 'all 0.2s ease',
+    transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
   });
 
   return (
@@ -250,13 +250,14 @@ function OnboardingInner() {
 
             {/* Brand Name */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: c.textSecondary, marginBottom: '8px' }}>Brand Name</label>
+              <label htmlFor="brand-name" style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: c.textSecondary, marginBottom: '8px' }}>Brand Name</label>
               <input
+                id="brand-name" name="organization" autoComplete="organization"
                 type="text"
-                placeholder="e.g. Acme Corp"
+                placeholder="e.g. Acme Corp…"
                 value={brandName}
                 onChange={e => setBrandName(e.target.value)}
-                style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' }}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' }}
                 onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
                 onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
@@ -315,7 +316,7 @@ function OnboardingInner() {
             </div>
 
             {error && (
-              <div style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '8px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: '13px' }}>
+              <div role="alert" style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '8px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: '13px' }}>
                 {error}
               </div>
             )}

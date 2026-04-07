@@ -253,7 +253,7 @@ export default function SEOPage() {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Search keywords..."
-                  style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${c.borderStrong}`, backgroundColor: c.bgCardHover, color: c.text, fontSize: 13, outline: 'none', width: 180 }}
+                  style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${c.borderStrong}`, backgroundColor: c.bgCardHover, color: c.text, fontSize: 13, width: 180 }}
                 />
                 {[
                   { key: 'all', label: 'All' },

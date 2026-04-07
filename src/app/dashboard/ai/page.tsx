@@ -537,7 +537,7 @@ export default function AIPage() {
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
                   placeholder="Ask anything about your marketing data..."
                   disabled={!isIdle}
-                  style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: 14, outline: 'none', opacity: !isIdle ? 0.7 : 1, fontFamily: 'var(--font-body)' }}
+                  style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: 14, opacity: !isIdle ? 0.7 : 1, fontFamily: 'var(--font-body)' }}
                   onFocus={e => (e.currentTarget as HTMLInputElement).style.borderColor = c.accent}
                   onBlur={e => (e.currentTarget as HTMLInputElement).style.borderColor = c.border}
                 />

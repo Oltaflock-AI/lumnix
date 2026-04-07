@@ -2,6 +2,7 @@
 
 /* ── Lumnix Design Tokens ── */
 :root {
+  color-scheme: dark;
   --bg-page:        #09090B;
   --bg-surface:     #111113;
   --bg-elevated:    #1A1A1E;
@@ -41,6 +42,7 @@
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -71,6 +73,7 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.15;
   font-weight: 700;
   color: #FAFAFA;
+  text-wrap: balance;
 }
 
 h1 { font-weight: 800; }
@@ -203,6 +206,7 @@ code, pre, kbd, samp {
   display: inline-flex;
   align-items: center;
   gap: 3px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Table styling ── */
@@ -227,7 +231,42 @@ table td {
   font-size: 13px;
   color: #FAFAFA;
   border-bottom: 1px solid #1A1A1E;
+  font-variant-numeric: tabular-nums;
 }
 table tr:hover td {
   background-color: #1A1A1E;
+}
+
+/* ── Focus ring ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ── Skip link ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 10000;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus {
+  top: 16px;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
