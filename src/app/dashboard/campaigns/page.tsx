@@ -5,6 +5,8 @@ import { PageShell } from '@/components/PageShell';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useIntegrations } from '@/lib/hooks';
 import { useTheme } from '@/lib/theme';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 type Campaign = {
   id: string; platform: string; name: string; objective: string;
@@ -23,17 +25,15 @@ const OBJECTIVES = [
 ];
 
 function StatusBadge({ status }: { status: string }) {
-  const { c } = useTheme();
-  const colors: Record<string, { color: string; bg: string }> = {
-    draft: { color: c.textMuted, bg: c.bgCardHover },
-    pending: { color: c.warning, bg: 'rgba(245,158,11,0.08)' },
-    active: { color: c.success, bg: 'rgba(16,185,129,0.08)' },
-    paused: { color: c.warning, bg: 'rgba(245,158,11,0.08)' },
-    error: { color: c.danger, bg: 'rgba(239,68,68,0.08)' },
-    completed: { color: c.textSecondary, bg: c.bgCardHover },
+  const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+    active: 'default',
+    completed: 'secondary',
+    error: 'destructive',
+    draft: 'outline',
+    pending: 'outline',
+    paused: 'outline',
   };
-  const s = colors[status] || colors.draft;
-  return <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 6, color: s.color, backgroundColor: s.bg }}>{status}</span>;
+  return <Badge variant={variantMap[status] || 'outline'} className="text-[11px] capitalize">{status}</Badge>;
 }
 
 export default function CampaignsPage() {

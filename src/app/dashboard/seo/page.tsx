@@ -8,6 +8,9 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import { useWorkspace, useGSCData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 function exportCSV(keywords: any[]) {
   const headers = ['Keyword', 'Position', 'Impressions', 'Clicks', 'CTR', 'Signal'];

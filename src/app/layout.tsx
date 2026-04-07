@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export const metadata: Metadata = {
   title: 'Lumnix — AI-Powered Marketing Intelligence',
@@ -19,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="dark" style={{ colorScheme: 'dark' }} suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+    <html lang="en" data-theme="dark" style={{ colorScheme: 'dark' }} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -30,7 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ margin: 0, backgroundColor: '#09090B', color: '#FAFAFA' }}>
         <a href="#main-content" className="skip-link">Skip to main content</a>
-        {children}
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
+        <Toaster position="bottom-right" richColors />
       </body>
     </html>
   );

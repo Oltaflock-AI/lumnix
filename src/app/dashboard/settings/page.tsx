@@ -1,10 +1,13 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Search, BarChart3, Target, Share2, Check, X, Plug, User, Bell, Shield, CreditCard, RefreshCw, Loader2, Palette, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link } from "lucide-react";
+import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link } from "lucide-react";
 import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { CSSProperties } from "react";
 
 /* ─── Shared Styles Hook ─── */
@@ -350,14 +353,6 @@ const providers = [
   { id: "ga4", name: "Google Analytics 4", icon: BarChart3, logoSlug: "googleanalytics", desc: "Website traffic, sessions, and conversion data", color: "#E37400" },
   { id: "google_ads", name: "Google Ads", icon: Target, logoSlug: "googleads", desc: "Campaign performance, spend, and ROAS tracking", color: "#34A853" },
   { id: "meta_ads", name: "Meta Ads", icon: Share2, logoSlug: "meta", desc: "Facebook & Instagram ad analytics", color: "#1877F2" },
-];
-
-const tabs = [
-  { id: "general", label: "General", icon: User },
-  { id: "integrations", label: "Integrations", icon: Plug },
-  { id: "team", label: "Team", icon: Users },
-  { id: "alerts", label: "Alerts", icon: Bell },
-  { id: "billing", label: "Billing", icon: CreditCard },
 ];
 
 const ALERT_METRICS = [
@@ -1130,7 +1125,7 @@ function DeleteAccountSection() {
 }
 
 export default function SettingsPage() {
-  const { c, card, inputBase, primaryBtn, ghostBtn, destructiveBtn } = useStyles();
+  const { c, card, inputBase } = useStyles();
   const { toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("general");
   const { workspace, loading: wsLoading, refetch: refetchWorkspace, setWorkspace } = useWorkspaceCtx();
@@ -1274,502 +1269,446 @@ export default function SettingsPage() {
         <p style={{ fontSize: 14, color: c.textSecondary, marginTop: 4 }}>Manage integrations, brand, and preferences</p>
       </div>
 
-      {/* Horizontal Tabs: General | Integrations | Team | Alerts | Billing */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 28, borderBottom: `1px solid ${c.border}`, overflowX: 'auto' }}>
-        {[
-          { id: 'general', label: 'General' },
-          { id: 'brand', label: 'Brand' },
-          { id: 'integrations', label: 'Integrations' },
-          { id: 'team', label: 'Team' },
-          { id: 'alerts', label: 'Alerts' },
-          { id: 'billing', label: 'Billing' },
-        ].map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-            padding: '12px 20px', fontSize: 14,
-            fontWeight: activeTab === t.id ? 600 : 400,
-            color: activeTab === t.id ? c.text : c.textMuted,
-            backgroundColor: 'transparent', border: 'none',
-            borderBottom: `2px solid ${activeTab === t.id ? c.accent : 'transparent'}`,
-            cursor: 'pointer', marginBottom: -1, whiteSpace: 'nowrap',
-            transition: 'color 0.15s, border-color 0.15s',
-          }}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-7">
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="brand">Brand</TabsTrigger>
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="alerts">Alerts</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
+        </TabsList>
 
-      {/* ─── General Tab ─── */}
-      {activeTab === "general" && (
-        <div>
-          {/* Profile section */}
-          <ProfileTab />
+        {/* ─── General Tab ─── */}
+        <TabsContent value="general">
+          <div>
+            {/* Profile section */}
+            <ProfileTab />
 
-          {/* Danger Zone — Delete Account */}
-          <DeleteAccountSection />
-        </div>
-      )}
-
-      {/* ─── Brand Tab ─── */}
-      {activeTab === "brand" && (
-        <BrandTab workspace={workspace} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
-      )}
-
-      {/* ─── Integrations Tab ─── */}
-      {activeTab === "integrations" && (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-            <p style={{ fontSize: 14, color: c.textSecondary, margin: 0 }}>
-              Connect your marketing accounts to start syncing real data.
-              {wsLoading && " Loading..."}
-              {workspace && <span style={{ color: c.success }}> &middot; {workspace.name}</span>}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontSize: 11, color: c.textMuted }}>Auto-syncs daily at 2AM UTC</span>
-              <button
-                onClick={handleSyncAll}
-                disabled={syncing === 'all'}
-                style={{
-                  ...primaryBtn,
-                  padding: '8px 14px', fontSize: 13,
-                  opacity: syncing === 'all' ? 0.7 : 1,
-                  cursor: syncing === 'all' ? 'wait' : 'pointer',
-                }}
-              >
-                <RefreshCw size={13} style={{ animation: syncing === 'all' ? 'spin 1s linear infinite' : 'none' }} />
-                {syncing === 'all' ? 'Syncing...' : 'Sync All Now'}
-              </button>
-            </div>
+            {/* Danger Zone — Delete Account */}
+            <DeleteAccountSection />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
-            {providers.map(p => {
-              const Icon = p.icon;
-              const connected = isConnected(p.id);
-              const int = getIntegration(p.id);
-              const isSyncing = syncing === p.id;
-              return (
-                <div key={p.id} style={{
-                  ...card,
-                  border: `1px solid ${connected && isSynced(p.id) ? 'rgba(16,185,129,0.3)' : connected ? 'rgba(245,158,11,0.4)' : c.border}`,
-                  padding: 24,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: `${p.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <img src={`https://cdn.simpleicons.org/${p.logoSlug}/${p.color.replace('#', '')}`} width={26} height={26} alt={p.name} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: c.text }}>{p.name}</div>
-                        <div style={{ marginTop: 4 }}>
-                          <StatusPill
-                            connected={connected}
-                            label={connected ? (int?.display_name ? `Connected \u00b7 ${int.display_name}` : 'Connected') : 'Disconnected'}
-                          />
+        </TabsContent>
+
+        {/* ─── Brand Tab ─── */}
+        <TabsContent value="brand">
+          <BrandTab workspace={workspace} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
+        </TabsContent>
+
+        {/* ─── Integrations Tab ─── */}
+        <TabsContent value="integrations">
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+              <p style={{ fontSize: 14, color: c.textSecondary, margin: 0 }}>
+                Connect your marketing accounts to start syncing real data.
+                {wsLoading && " Loading..."}
+                {workspace && <span style={{ color: c.success }}> &middot; {workspace.name}</span>}
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 11, color: c.textMuted }}>Auto-syncs daily at 2AM UTC</span>
+                <Button
+                  variant="gradient"
+                  size="sm"
+                  onClick={handleSyncAll}
+                  disabled={syncing === 'all'}
+                >
+                  <RefreshCw size={13} style={{ animation: syncing === 'all' ? 'spin 1s linear infinite' : 'none' }} />
+                  {syncing === 'all' ? 'Syncing...' : 'Sync All Now'}
+                </Button>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+              {providers.map(p => {
+                const Icon = p.icon;
+                const connected = isConnected(p.id);
+                const int = getIntegration(p.id);
+                const isSyncing = syncing === p.id;
+                return (
+                  <div key={p.id} style={{
+                    ...card,
+                    border: `1px solid ${connected && isSynced(p.id) ? 'rgba(16,185,129,0.3)' : connected ? 'rgba(245,158,11,0.4)' : c.border}`,
+                    padding: 24,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: `${p.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <img src={`https://cdn.simpleicons.org/${p.logoSlug}/${p.color.replace('#', '')}`} width={26} height={26} alt={p.name} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: c.text }}>{p.name}</div>
+                          <div style={{ marginTop: 4 }}>
+                            <StatusPill
+                              connected={connected}
+                              label={connected ? (int?.display_name ? `Connected \u00b7 ${int.display_name}` : 'Connected') : 'Disconnected'}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16, lineHeight: 1.4 }}>{p.desc}</p>
-                  {int?.last_sync_at && (
-                    <p style={{ fontSize: 11, color: c.textMuted, marginBottom: 12, fontFamily: 'var(--font-mono)' }}>
-                      Last synced: {new Date(int.last_sync_at).toLocaleString()}
-                    </p>
-                  )}
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {!connected ? (
-                      <button onClick={() => handleConnect(p.id)} style={{
-                        flex: 1, padding: 10, borderRadius: 8, fontSize: 14, fontWeight: 600,
-                        cursor: 'pointer', backgroundColor: c.accent, color: 'white', border: 'none',
-                      }}>
-                        Connect
-                      </button>
-                    ) : (
-                      <>
-                        <button onClick={() => handleSync(p.id)} disabled={isSyncing} style={{
-                          flex: 1, padding: 10, borderRadius: 8, fontSize: 13, fontWeight: 600,
-                          cursor: isSyncing ? 'wait' : 'pointer',
-                          backgroundColor: isSynced(p.id) ? 'transparent' : c.warning,
-                          color: isSynced(p.id) ? c.textSecondary : 'white',
-                          border: isSynced(p.id) ? `1px solid ${c.borderStrong}` : 'none',
-                          opacity: isSyncing ? 0.6 : 1,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                        }}>
-                          <RefreshCw size={13} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
-                          {isSyncing ? 'Syncing...' : 'Sync Now'}
-                        </button>
-                        <button
-                          onClick={async () => {
-                            if (!int || !confirm(`Disconnect ${p.name}? You can reconnect anytime.`)) return;
-                            try {
-                              await fetch('/api/integrations/disconnect', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ integration_id: int.id }),
-                              });
-                              refetch();
-                            } catch {}
-                          }}
-                          style={{
-                            padding: '10px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
-                            cursor: 'pointer', backgroundColor: 'transparent',
-                            color: c.danger, border: `1px solid ${c.danger}60`,
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            transition: 'background-color 0.15s, border-color 0.15s',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.backgroundColor = c.dangerSubtle; }}
-                          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                        >
-                          <X size={13} />
-                          Disconnect
-                        </button>
-                      </>
+                    <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16, lineHeight: 1.4 }}>{p.desc}</p>
+                    {int?.last_sync_at && (
+                      <p style={{ fontSize: 11, color: c.textMuted, marginBottom: 12, fontFamily: 'var(--font-mono)' }}>
+                        Last synced: {new Date(int.last_sync_at).toLocaleString()}
+                      </p>
                     )}
-                  </div>
-                  {p.id === 'meta_ads' && (
-                    <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', fontSize: 12, color: '#60a5fa', lineHeight: 1.5 }}>
-                      After connecting, you also need to accept the <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline' }}>Meta Ad Library Terms of Service</a> to use the Competitor Ad Spy feature.
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-        </div>
-      )}
-
-      {/* ─── Team Tab ─── */}
-      {activeTab === "team" && (
-        <div style={{ maxWidth: 560 }}>
-          {/* Slots indicator */}
-          <div style={{
-            ...card,
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '16px 20px', marginBottom: 20,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Crown size={16} color={c.warning} />
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: c.text, textTransform: 'capitalize' }}>{workspace?.plan || 'free'} Plan</div>
-                <div style={{ fontSize: 12, color: c.textSecondary }}>{workspace?.plan === 'agency' ? 'Unlimited' : `Up to ${teamData?.maxSlots || 2}`} team members</div>
-              </div>
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'var(--font-mono)' }}>
-              {teamData?.slotsUsed || 0} / {teamData?.maxSlots || 2}
-              <span style={{ fontSize: 12, color: c.textSecondary, fontWeight: 400, marginLeft: 4 }}>used</span>
-            </div>
-          </div>
-
-          {/* Invite form */}
-          <div style={{ ...card, padding: '20px 24px', marginBottom: 20 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 4 }}>Invite a team member</h3>
-            <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>They&#39;ll receive an email with a link to sign up and join your workspace.</p>
-            <form onSubmit={handleInvite} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
-                <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: c.textMuted }} />
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={e => setInviteEmail(e.target.value)}
-                  placeholder="colleague@company.com"
-                  required
-                  disabled={teamData?.canInviteMore === false}
-                  style={{
-                    ...inputBase,
-                    padding: '10px 14px 10px 36px',
-                    opacity: teamData?.canInviteMore === false ? 0.5 : 1,
-                  }}
-                  onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-                  onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
-                />
-              </div>
-              <select
-                value={inviteRole}
-                onChange={e => setInviteRole(e.target.value)}
-                style={{ ...inputBase, width: 'auto', padding: '10px 12px', fontWeight: 500, cursor: 'pointer' }}
-              >
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
-                <option value="viewer">Viewer</option>
-              </select>
-              <button
-                type="submit"
-                disabled={inviting || !inviteEmail || teamData?.canInviteMore === false}
-                style={{
-                  ...primaryBtn,
-                  padding: '10px 18px', fontSize: 14,
-                  opacity: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 0.6 : 1,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {inviting ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Mail size={14} />}
-                {inviting ? "Sending..." : "Send Invite"}
-              </button>
-            </form>
-            {teamData?.canInviteMore === false && (
-              <p style={{ fontSize: 12, color: c.warning, marginTop: 10 }}>Member limit reached. Upgrade to add more.</p>
-            )}
-            {inviteMsg && (
-              <div style={{
-                marginTop: 12, padding: '10px 14px', borderRadius: 8,
-                backgroundColor: inviteMsg.ok ? c.successSubtle : c.dangerSubtle,
-                border: `1px solid ${inviteMsg.ok ? c.successBorder : c.dangerBorder}`,
-                color: inviteMsg.ok ? c.success : c.danger,
-                fontSize: 13,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {inviteMsg.ok ? <Check size={13} /> : <X size={13} />}
-                  {inviteMsg.text}
-                </div>
-                {inviteMsg.inviteUrl && (
-                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                    <input
-                      readOnly
-                      value={inviteMsg.inviteUrl}
-                      style={{
-                        ...inputBase,
-                        flex: 1,
-                        fontSize: 12,
-                        fontFamily: 'var(--font-mono)',
-                        color: c.textSecondary,
-                      }}
-                      onClick={e => (e.target as HTMLInputElement).select()}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => { navigator.clipboard.writeText(inviteMsg.inviteUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-                      style={{
-                        ...ghostBtn,
-                        padding: '8px 14px', fontSize: 12, whiteSpace: 'nowrap',
-                        color: copied ? c.success : c.textSecondary,
-                        borderColor: copied ? c.successBorder : c.borderStrong,
-                      }}
-                    >
-                      {copied ? <Check size={13} /> : <Copy size={13} />}
-                      {copied ? 'Copied!' : 'Copy link'}
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Active members — avatar + name + role badge rows */}
-          {teamData?.members && teamData.members.length > 0 && (
-            <div style={{ ...card, padding: '20px 24px', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Team Members</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {teamData.members.map((m: any) => {
-                  const isOwner = m.role === 'owner';
-                  const roleColors: Record<string, { bg: string; color: string }> = {
-                    owner: { bg: c.warningSubtle, color: c.warning },
-                    admin: { bg: c.accentSubtle, color: c.accent },
-                    member: { bg: 'rgba(59,130,246,0.08)', color: '#3b82f6' },
-                    viewer: { bg: 'rgba(85,85,85,0.08)', color: c.textMuted },
-                  };
-                  const rc = roleColors[m.role] || roleColors.member;
-                  return (
-                    <div key={m.id} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '12px 14px', borderRadius: 8,
-                      backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`,
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{
-                          width: 34, height: 34, borderRadius: '50%',
-                          backgroundColor: c.accentSubtle,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 13, fontWeight: 700, color: c.accent, textTransform: 'uppercase',
-                        }}>
-                          {(m.name || m.email || '?').substring(0, 2)}
-                        </div>
-                        <div>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>
-                            {m.name || 'Unknown'}{isOwner ? ' (You)' : ''}
-                          </div>
-                          <div style={{ fontSize: 12, color: c.textMuted }}>{m.email}</div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        {isOwner ? (
-                          <span style={{
-                            fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
-                            backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
-                          }}>
-                            Owner
-                          </span>
-                        ) : (
-                          <>
-                            <select
-                              value={m.role}
-                              onChange={async (e) => {
-                                const newRole = e.target.value;
-                                const session = (await supabase.auth.getSession()).data.session;
-                                if (!session) return;
-                                try {
-                                  const res = await fetch('/api/team/member', {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                                    body: JSON.stringify({ workspace_id: workspace.id, member_id: m.id, role: newRole }),
-                                  });
-                                  if (res.ok) refreshTeamData();
-                                } catch {}
-                              }}
-                              style={{
-                                fontSize: 12, fontWeight: 600, padding: '5px 8px', borderRadius: 6,
-                                backgroundColor: rc.bg, color: rc.color, border: `1px solid ${rc.color}30`,
-                                cursor: 'pointer', appearance: 'auto',
-                              }}
-                            >
-                              <option value="admin">Admin</option>
-                              <option value="member">Member</option>
-                              <option value="viewer">Viewer</option>
-                            </select>
-                            <button
-                              onClick={async () => {
-                                if (!confirm(`Remove ${m.name || m.email} from this workspace?`)) return;
-                                const session = (await supabase.auth.getSession()).data.session;
-                                if (!session) return;
-                                try {
-                                  const res = await fetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
-                                    method: 'DELETE',
-                                    headers: { Authorization: `Bearer ${session.access_token}` },
-                                  });
-                                  if (res.ok) refreshTeamData();
-                                } catch {}
-                              }}
-                              style={{
-                                padding: '5px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                                cursor: 'pointer', backgroundColor: 'transparent',
-                                color: c.danger, border: `1px solid ${c.danger}40`,
-                                display: 'flex', alignItems: 'center', gap: 4,
-                              }}
-                              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'; }}
-                              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                            >
-                              Remove
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Pending invites */}
-          {teamData?.invites && teamData.invites.filter((inv: any) => inv.status === 'pending').length > 0 && (
-            <div style={{ ...card, padding: '20px 24px' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Pending Invites</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {teamData.invites.filter((inv: any) => inv.status === 'pending').map((inv: any) => {
-                  const roleColors: Record<string, { bg: string; color: string }> = {
-                    admin: { bg: c.accentSubtle, color: c.accent },
-                    member: { bg: 'rgba(59,130,246,0.08)', color: '#3b82f6' },
-                    viewer: { bg: 'rgba(85,85,85,0.08)', color: c.textMuted },
-                  };
-                  const rc = roleColors[inv.role] || roleColors.member;
-                  const expiresAt = inv.expires_at ? new Date(inv.expires_at) : null;
-                  const daysLeft = expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
-                  const invUrl = inv.token ? `${window.location.origin}/auth/signup?invite=${inv.token}` : null;
-                  return (
-                    <div key={inv.id || inv.email} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '12px 14px', borderRadius: 8,
-                      backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`,
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{
-                          width: 34, height: 34, borderRadius: '50%',
-                          backgroundColor: c.accentSubtle,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 13, fontWeight: 700, color: c.accent,
-                        }}>
-                          {inv.email[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <div style={{ fontSize: 14, fontWeight: 500, color: c.text }}>{inv.email}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                            <span style={{
-                              fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6,
-                              backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
-                            }}>
-                              {inv.role || 'member'}
-                            </span>
-                            {daysLeft !== null && (
-                              <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: daysLeft <= 1 ? c.danger : c.textMuted }}>
-                                <Clock size={10} />
-                                Expires in {daysLeft} day{daysLeft !== 1 ? 's' : ''}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        {invUrl && (
-                          <button
-                            type="button"
-                            onClick={() => { navigator.clipboard.writeText(invUrl); }}
-                            style={{
-                              ...ghostBtn,
-                              padding: '6px 12px', fontSize: 12,
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {!connected ? (
+                        <Button variant="gradient" className="flex-1" onClick={() => handleConnect(p.id)}>
+                          Connect
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            variant={isSynced(p.id) ? "outline" : "default"}
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handleSync(p.id)}
+                            disabled={isSyncing}
+                          >
+                            <RefreshCw size={13} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+                            {isSyncing ? 'Syncing...' : 'Sync Now'}
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={async () => {
+                              if (!int || !confirm(`Disconnect ${p.name}? You can reconnect anytime.`)) return;
+                              try {
+                                await fetch('/api/integrations/disconnect', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ integration_id: int.id }),
+                                });
+                                refetch();
+                              } catch {}
                             }}
                           >
-                            <Link size={12} />
-                            Copy link
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => handleRevokeInvite(inv.id)}
-                          disabled={revokingId === inv.id}
-                          title="Revoke invite"
-                          style={{
-                            ...destructiveBtn,
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            padding: '6px 12px', fontSize: 12,
-                            opacity: revokingId === inv.id ? 0.6 : 1,
-                            cursor: revokingId === inv.id ? 'wait' : 'pointer',
-                          }}
-                        >
-                          {revokingId === inv.id
-                            ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
-                            : <Trash2 size={12} />
-                          }
-                          {revokingId === inv.id ? 'Revoking...' : 'Revoke'}
-                        </button>
-                      </div>
+                            <X size={13} />
+                            Disconnect
+                          </Button>
+                        </>
+                      )}
                     </div>
-                  );
-                })}
+                    {p.id === 'meta_ads' && (
+                      <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', fontSize: 12, color: '#60a5fa', lineHeight: 1.5 }}>
+                        After connecting, you also need to accept the <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline' }}>Meta Ad Library Terms of Service</a> to use the Competitor Ad Spy feature.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+        </TabsContent>
+
+        {/* ─── Team Tab ─── */}
+        <TabsContent value="team">
+          <div style={{ maxWidth: 560 }}>
+            {/* Slots indicator */}
+            <div style={{
+              ...card,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '16px 20px', marginBottom: 20,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Crown size={16} color={c.warning} />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: c.text, textTransform: 'capitalize' }}>{workspace?.plan || 'free'} Plan</div>
+                  <div style={{ fontSize: 12, color: c.textSecondary }}>{workspace?.plan === 'agency' ? 'Unlimited' : `Up to ${teamData?.maxSlots || 2}`} team members</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'var(--font-mono)' }}>
+                {teamData?.slotsUsed || 0} / {teamData?.maxSlots || 2}
+                <span style={{ fontSize: 12, color: c.textSecondary, fontWeight: 400, marginLeft: 4 }}>used</span>
               </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* ─── Alerts Tab ─── */}
-      {activeTab === "alerts" && (
-        <div>
-          <NotificationsTab />
-          <div style={{ marginTop: 32 }}>
-            {workspace?.id && <AlertsTab workspaceId={workspace.id} />}
+            {/* Invite form */}
+            <div style={{ ...card, padding: '20px 24px', marginBottom: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 4 }}>Invite a team member</h3>
+              <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>They&#39;ll receive an email with a link to sign up and join your workspace.</p>
+              <form onSubmit={handleInvite} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
+                  <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: c.textMuted }} />
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={e => setInviteEmail(e.target.value)}
+                    placeholder="colleague@company.com"
+                    required
+                    disabled={teamData?.canInviteMore === false}
+                    style={{
+                      ...inputBase,
+                      padding: '10px 14px 10px 36px',
+                      opacity: teamData?.canInviteMore === false ? 0.5 : 1,
+                    }}
+                    onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+                    onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
+                  />
+                </div>
+                <select
+                  value={inviteRole}
+                  onChange={e => setInviteRole(e.target.value)}
+                  style={{ ...inputBase, width: 'auto', padding: '10px 12px', fontWeight: 500, cursor: 'pointer' }}
+                >
+                  <option value="admin">Admin</option>
+                  <option value="member">Member</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+                <Button
+                  type="submit"
+                  variant="gradient"
+                  disabled={inviting || !inviteEmail || teamData?.canInviteMore === false}
+                >
+                  {inviting ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Mail size={14} />}
+                  {inviting ? "Sending..." : "Send Invite"}
+                </Button>
+              </form>
+              {teamData?.canInviteMore === false && (
+                <p style={{ fontSize: 12, color: c.warning, marginTop: 10 }}>Member limit reached. Upgrade to add more.</p>
+              )}
+              {inviteMsg && (
+                <div style={{
+                  marginTop: 12, padding: '10px 14px', borderRadius: 8,
+                  backgroundColor: inviteMsg.ok ? c.successSubtle : c.dangerSubtle,
+                  border: `1px solid ${inviteMsg.ok ? c.successBorder : c.dangerBorder}`,
+                  color: inviteMsg.ok ? c.success : c.danger,
+                  fontSize: 13,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {inviteMsg.ok ? <Check size={13} /> : <X size={13} />}
+                    {inviteMsg.text}
+                  </div>
+                  {inviteMsg.inviteUrl && (
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                      <input
+                        readOnly
+                        value={inviteMsg.inviteUrl}
+                        style={{
+                          ...inputBase,
+                          flex: 1,
+                          fontSize: 12,
+                          fontFamily: 'var(--font-mono)',
+                          color: c.textSecondary,
+                        }}
+                        onClick={e => (e.target as HTMLInputElement).select()}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => { navigator.clipboard.writeText(inviteMsg.inviteUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                      >
+                        {copied ? <Check size={13} /> : <Copy size={13} />}
+                        {copied ? 'Copied!' : 'Copy link'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Active members — avatar + name + role badge rows */}
+            {teamData?.members && teamData.members.length > 0 && (
+              <div style={{ ...card, padding: '20px 24px', marginBottom: 20 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Team Members</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {teamData.members.map((m: any) => {
+                    const isOwner = m.role === 'owner';
+                    const roleColors: Record<string, { bg: string; color: string }> = {
+                      owner: { bg: c.warningSubtle, color: c.warning },
+                      admin: { bg: c.accentSubtle, color: c.accent },
+                      member: { bg: 'rgba(59,130,246,0.08)', color: '#3b82f6' },
+                      viewer: { bg: 'rgba(85,85,85,0.08)', color: c.textMuted },
+                    };
+                    const rc = roleColors[m.role] || roleColors.member;
+                    return (
+                      <div key={m.id} style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '12px 14px', borderRadius: 8,
+                        backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{
+                            width: 34, height: 34, borderRadius: '50%',
+                            backgroundColor: c.accentSubtle,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 13, fontWeight: 700, color: c.accent, textTransform: 'uppercase',
+                          }}>
+                            {(m.name || m.email || '?').substring(0, 2)}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>
+                              {m.name || 'Unknown'}{isOwner ? ' (You)' : ''}
+                            </div>
+                            <div style={{ fontSize: 12, color: c.textMuted }}>{m.email}</div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {isOwner ? (
+                            <span style={{
+                              fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                              backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
+                            }}>
+                              Owner
+                            </span>
+                          ) : (
+                            <>
+                              <select
+                                value={m.role}
+                                onChange={async (e) => {
+                                  const newRole = e.target.value;
+                                  const session = (await supabase.auth.getSession()).data.session;
+                                  if (!session) return;
+                                  try {
+                                    const res = await fetch('/api/team/member', {
+                                      method: 'PATCH',
+                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                                      body: JSON.stringify({ workspace_id: workspace.id, member_id: m.id, role: newRole }),
+                                    });
+                                    if (res.ok) refreshTeamData();
+                                  } catch {}
+                                }}
+                                style={{
+                                  fontSize: 12, fontWeight: 600, padding: '5px 8px', borderRadius: 6,
+                                  backgroundColor: rc.bg, color: rc.color, border: `1px solid ${rc.color}30`,
+                                  cursor: 'pointer', appearance: 'auto',
+                                }}
+                              >
+                                <option value="admin">Admin</option>
+                                <option value="member">Member</option>
+                                <option value="viewer">Viewer</option>
+                              </select>
+                              <Button
+                                variant="destructive"
+                                size="xs"
+                                onClick={async () => {
+                                  if (!confirm(`Remove ${m.name || m.email} from this workspace?`)) return;
+                                  const session = (await supabase.auth.getSession()).data.session;
+                                  if (!session) return;
+                                  try {
+                                    const res = await fetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
+                                      method: 'DELETE',
+                                      headers: { Authorization: `Bearer ${session.access_token}` },
+                                    });
+                                    if (res.ok) refreshTeamData();
+                                  } catch {}
+                                }}
+                              >
+                                Remove
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Pending invites */}
+            {teamData?.invites && teamData.invites.filter((inv: any) => inv.status === 'pending').length > 0 && (
+              <div style={{ ...card, padding: '20px 24px' }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Pending Invites</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {teamData.invites.filter((inv: any) => inv.status === 'pending').map((inv: any) => {
+                    const roleColors: Record<string, { bg: string; color: string }> = {
+                      admin: { bg: c.accentSubtle, color: c.accent },
+                      member: { bg: 'rgba(59,130,246,0.08)', color: '#3b82f6' },
+                      viewer: { bg: 'rgba(85,85,85,0.08)', color: c.textMuted },
+                    };
+                    const rc = roleColors[inv.role] || roleColors.member;
+                    const expiresAt = inv.expires_at ? new Date(inv.expires_at) : null;
+                    const daysLeft = expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
+                    const invUrl = inv.token ? `${window.location.origin}/auth/signup?invite=${inv.token}` : null;
+                    return (
+                      <div key={inv.id || inv.email} style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '12px 14px', borderRadius: 8,
+                        backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{
+                            width: 34, height: 34, borderRadius: '50%',
+                            backgroundColor: c.accentSubtle,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 13, fontWeight: 700, color: c.accent,
+                          }}>
+                            {inv.email[0].toUpperCase()}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 500, color: c.text }}>{inv.email}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                              <span style={{
+                                fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6,
+                                backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
+                              }}>
+                                {inv.role || 'member'}
+                              </span>
+                              {daysLeft !== null && (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: daysLeft <= 1 ? c.danger : c.textMuted }}>
+                                  <Clock size={10} />
+                                  Expires in {daysLeft} day{daysLeft !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {invUrl && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="xs"
+                              onClick={() => { navigator.clipboard.writeText(invUrl); }}
+                            >
+                              <Link size={12} />
+                              Copy link
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="xs"
+                            onClick={() => handleRevokeInvite(inv.id)}
+                            disabled={revokingId === inv.id}
+                            title="Revoke invite"
+                          >
+                            {revokingId === inv.id
+                              ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
+                              : <Trash2 size={12} />
+                            }
+                            {revokingId === inv.id ? 'Revoking...' : 'Revoke'}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-          {/* Slack Integration */}
-          <SlackSection workspaceId={workspace?.id} />
-        </div>
-      )}
+        </TabsContent>
 
-      {/* ─── Billing Tab ─── */}
-      {activeTab === "billing" && <BillingTab />}
+        {/* ─── Alerts Tab ─── */}
+        <TabsContent value="alerts">
+          <div>
+            <NotificationsTab />
+            <div style={{ marginTop: 32 }}>
+              {workspace?.id && <AlertsTab workspaceId={workspace.id} />}
+            </div>
+            {/* Slack Integration */}
+            <SlackSection workspaceId={workspace?.id} />
+          </div>
+        </TabsContent>
 
-      {/* Fallback for any unmapped tab */}
-      {activeTab !== "general" && activeTab !== "integrations" && activeTab !== "team" && activeTab !== "alerts" && activeTab !== "billing" && (
-        <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: 12, border: `1px dashed ${c.border}` }}>
-          <p style={{ fontSize: 15, color: c.textMuted }}>Coming soon &mdash; {activeTab} settings</p>
-        </div>
-      )}
+        {/* ─── Billing Tab ─── */}
+        <TabsContent value="billing">
+          <BillingTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

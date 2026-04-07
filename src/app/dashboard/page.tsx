@@ -7,6 +7,10 @@ import { useWorkspace, useGA4Data, useGSCData, useIntegrations, useUnifiedData }
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { KpiGridSkeleton } from '@/components/PageShell';
 
 const PlatformLogo = ({ name, size = 18 }: { name: string; size?: number }) => (
   <img src={`https://cdn.simpleicons.org/${name}`} width={size} height={size} alt={name} style={{ flexShrink: 0 }} />
@@ -23,7 +27,10 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
         {platformLogo && <PlatformLogo name={platformLogo} size={14} />}
       </div>
       {loading ? (
-        <div style={{ height: 32, backgroundColor: c.bgCardHover, borderRadius: 6, marginBottom: 8, width: '55%' }} className="animate-pulse" />
+        <div>
+          <Skeleton className="h-8 w-[55%] mb-2" />
+          <Skeleton className="h-3 w-[35%]" />
+        </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
           <div style={{ fontSize: 30, fontWeight: 500, color: c.text, letterSpacing: '-0.04em', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
@@ -117,8 +124,8 @@ export default function DashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: c.text, letterSpacing: '-0.04em', lineHeight: 1.15, fontFamily: 'var(--font-display)' }}>
-            {userName ? `Welcome back, ${userName}` : 'Dashboard'}
+          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.15, fontFamily: 'var(--font-display)' }}>
+            {userName ? <><span style={{ color: c.text }}>Welcome back, </span><span className="gradient-text">{userName}</span></> : <span style={{ color: c.text }}>Dashboard</span>}
           </h1>
           <p style={{ color: c.textMuted, fontSize: 13, marginTop: 4 }}>
             {connectedProviders.length > 0
@@ -298,14 +305,9 @@ export default function DashboardPage() {
             <h3 style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 4 }}>Connect your first data source</h3>
             <p style={{ fontSize: 13, color: c.textMuted }}>Link GSC, GA4, Google Ads, or Meta Ads to populate your dashboard with real data.</p>
           </div>
-          <button
-            onClick={() => router.push('/dashboard/settings')}
-            style={{ padding: '10px 20px', borderRadius: 8, border: 'none', backgroundColor: c.accent, color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'background-color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = c.accentHover)}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = c.accent)}
-          >
-            Connect now →
-          </button>
+          <Button variant="gradient" onClick={() => router.push('/dashboard/settings')}>
+            Connect now <ArrowRight size={14} />
+          </Button>
         </div>
       )}
 

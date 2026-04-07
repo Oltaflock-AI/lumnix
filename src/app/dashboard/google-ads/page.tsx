@@ -8,6 +8,9 @@ import { useIntegrations, useGoogleAdsData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: string; label: string; value: string; sub?: string }) {
   const { c } = useTheme();
@@ -24,17 +27,20 @@ function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: 
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { color: string; bg: string; label: string }> = {
-    ENABLED: { color: '#10B981', bg: 'rgba(16,185,129,0.08)', label: 'Active' },
-    PAUSED: { color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', label: 'Paused' },
-    REMOVED: { color: '#EF4444', bg: 'rgba(239,68,68,0.08)', label: 'Removed' },
+  const variantMap: Record<string, 'default' | 'secondary' | 'destructive'> = {
+    ENABLED: 'default',
+    PAUSED: 'secondary',
+    REMOVED: 'destructive',
   };
-  const { c } = useTheme();
-  const s = map[status] || { color: c.textMuted, bg: 'rgba(85,85,85,0.1)', label: status };
+  const labelMap: Record<string, string> = {
+    ENABLED: 'Active',
+    PAUSED: 'Paused',
+    REMOVED: 'Removed',
+  };
   return (
-    <span style={{ fontSize: 11, fontWeight: 600, color: s.color, backgroundColor: s.bg, padding: '2px 8px', borderRadius: 4 }}>
-      {s.label}
-    </span>
+    <Badge variant={variantMap[status] || 'outline'}>
+      {labelMap[status] || status}
+    </Badge>
   );
 }
 
@@ -93,7 +99,7 @@ export default function GoogleAdsPage() {
       {loading || dataLoading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, height: 90, animation: 'pulse 1.5s ease-in-out infinite' }} />
+            <Skeleton key={i} className="h-[90px] w-full rounded-xl" />
           ))}
         </div>
       ) : !integration ? (
@@ -121,20 +127,10 @@ export default function GoogleAdsPage() {
                 </>
               ) : 'Never synced'}
             </div>
-            <button
-              onClick={handleSync}
-              disabled={syncing}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                borderRadius: 8, border: `1px solid ${c.borderStrong}`, backgroundColor: c.bgCard,
-                color: c.textSecondary, fontSize: 13, cursor: syncing ? 'not-allowed' : 'pointer'
-              }}
-              onMouseEnter={e => { if (!syncing) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard; }}
-            >
+            <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
               <RefreshCw size={14} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />
               {syncing ? 'Syncing...' : 'Sync Now'}
-            </button>
+            </Button>
           </div>
 
           {/* Error */}

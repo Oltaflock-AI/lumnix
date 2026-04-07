@@ -8,17 +8,12 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import { useWorkspace, useGA4Data } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 const COLORS = ['#7C3AED','#0891B2','#10B981','#F59E0B','#ec4899','#3b82f6'];
 
-function SkeletonBox({ h = 100 }: { h?: number }) {
-  const { c } = useTheme();
-  return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, height: `${h}px`, animation: 'pulse 1.5s ease-in-out infinite' }}>
-      <div style={{ margin: '18px', height: '12px', backgroundColor: c.bgCardHover, borderRadius: '4px', width: '40%' }} />
-    </div>
-  );
-}
 
 function InsightCard({ icon: Icon, color, title, value, sub }: { icon: any; color: string; title: string; value: string; sub: string }) {
   const { c } = useTheme();
@@ -109,8 +104,8 @@ export default function AnalyticsPage() {
 
       {loading && (
         <>
-          <div className="kpi-grid">{[1,2,3,4].map(i => <SkeletonBox key={i} h={100} />)}</div>
-          <SkeletonBox h={200} />
+          <div className="kpi-grid">{[1,2,3,4].map(i => <Skeleton key={i} className="h-[100px] rounded-xl" />)}</div>
+          <Skeleton className="h-[200px] rounded-xl" />
         </>
       )}
 
@@ -257,9 +252,9 @@ export default function AnalyticsPage() {
                     <h2 style={{ fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 4 }}>Top Pages</h2>
                     <p style={{ fontSize: 12, color: c.textMuted }}>Highest traffic pages</p>
                   </div>
-                  <button onClick={() => exportPagesCSV(topPages)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, border: `1px solid ${c.borderStrong}`, backgroundColor: 'transparent', color: c.textSecondary, fontSize: 11, cursor: 'pointer' }}>
+                  <Button variant="outline" size="sm" onClick={() => exportPagesCSV(topPages)}>
                     <Download size={11} /> Export
-                  </button>
+                  </Button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {topPages.slice(0, 8).map((p, i) => (
