@@ -527,7 +527,7 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '14px 18px', borderRadius: 12,
                 backgroundColor: c.bgCard,
-                border: `1px solid ${rule.is_active ? 'rgba(99,102,241,0.2)' : c.border}`,
+                border: `1px solid ${rule.is_active ? 'rgba(124,58,237,0.2)' : c.border}`,
                 opacity: rule.is_active ? 1 : 0.6,
               }}>
                 <div style={{ flex: 1 }}>

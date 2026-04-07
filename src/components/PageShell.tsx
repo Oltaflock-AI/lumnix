@@ -11,8 +11,8 @@ export function PageShell({ title, description, icon: Icon, badge, action, child
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 600, color: c.text, letterSpacing: '-0.02em' }}>{title}</h1>
-            {badge && <span style={{ fontSize: 10, fontWeight: 600, color: c.accent, backgroundColor: c.accentSubtle, padding: '3px 8px', borderRadius: 100, letterSpacing: '0.02em' }}>{badge}</span>}
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: c.text, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)' }}>{title}</h1>
+            {badge && <span style={{ fontSize: 9, fontWeight: 700, color: c.accent, backgroundColor: c.accentSubtle, padding: '3px 10px', borderRadius: 100, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>{badge}</span>}
           </div>
           <p style={{ fontSize: 13, color: c.textMuted, lineHeight: 1.6 }}>{description}</p>
         </div>
@@ -32,7 +32,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
       <div style={{ width: 48, height: 48, borderRadius: 12, background: c.accentSubtle, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
         <Icon size={22} color={c.accent} />
       </div>
-      <h3 style={{ fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 8 }}>{title}</h3>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 8, letterSpacing: '-0.03em', fontFamily: 'var(--font-display)' }}>{title}</h3>
       <p style={{ fontSize: 13, color: c.textMuted, maxWidth: 380, margin: '0 auto 20px', lineHeight: 1.6 }}>{description}</p>
       {actionLabel && onAction && (
         <button onClick={onAction} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: c.accent, color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background-color 0.2s' }}>

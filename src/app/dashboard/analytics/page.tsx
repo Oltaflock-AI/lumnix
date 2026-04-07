@@ -9,7 +9,7 @@ import { useWorkspace, useGA4Data } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 
-const COLORS = ['#6366F1','#3b82f6','#10B981','#F59E0B','#ec4899','#06b6d4'];
+const COLORS = ['#7C3AED','#0891B2','#10B981','#F59E0B','#ec4899','#3b82f6'];
 
 function SkeletonBox({ h = 100 }: { h?: number }) {
   const { c } = useTheme();

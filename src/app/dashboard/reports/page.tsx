@@ -858,7 +858,7 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
             <>
               {/* Fake cover block */}
               <div style={{
-                background: `linear-gradient(135deg, ${c.surfaceElevated}, rgba(99,102,241,0.1))`,
+                background: `linear-gradient(135deg, ${c.surfaceElevated}, rgba(124,58,237,0.1))`,
                 borderRadius: 8,
                 padding: 20,
                 marginBottom: 20,
@@ -1472,8 +1472,8 @@ export default function ReportsPage() {
               >
                 <div style={{
                   width: 42, height: 42, borderRadius: 10,
-                  backgroundColor: isSelected ? 'rgba(99,102,241,0.12)' : c.surfaceElevated,
-                  border: `1px solid ${isSelected ? 'rgba(99,102,241,0.2)' : c.border}`,
+                  backgroundColor: isSelected ? 'rgba(124,58,237,0.12)' : c.surfaceElevated,
+                  border: `1px solid ${isSelected ? 'rgba(124,58,237,0.2)' : c.border}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
                   <Icon size={20} color={isSelected ? c.accent : c.textSecondary} />
@@ -1490,8 +1490,8 @@ export default function ReportsPage() {
                         fontSize: 11, color: c.textSecondary,
                         padding: '3px 8px',
                         borderRadius: 4,
-                        backgroundColor: isSelected ? 'rgba(99,102,241,0.06)' : c.bgPage,
-                        border: `1px solid ${isSelected ? 'rgba(99,102,241,0.15)' : c.surfaceElevated}`,
+                        backgroundColor: isSelected ? 'rgba(124,58,237,0.06)' : c.bgPage,
+                        border: `1px solid ${isSelected ? 'rgba(124,58,237,0.15)' : c.surfaceElevated}`,
                       }}>
                         <div style={{
                           width: 10, height: 10, borderRadius: 3,

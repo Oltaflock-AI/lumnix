@@ -58,7 +58,7 @@ const SPOTLIGHTS = [
 ];
 
 const TESTIMONIALS = [
-  { name: 'Sarah Mitchell', role: 'Head of Growth', company: 'Meridian Digital', color: '#6366F1', quote: 'We caught a 40% traffic drop on our biggest client\'s site before they even noticed. Lumnix paid for itself that week.' },
+  { name: 'Sarah Mitchell', role: 'Head of Growth', company: 'Meridian Digital', color: '#7C3AED', quote: 'We caught a 40% traffic drop on our biggest client\'s site before they even noticed. Lumnix paid for itself that week.' },
   { name: 'James Chen', role: 'Marketing Director', company: 'Apex Growth', color: '#10B981', quote: 'Replaced SEMrush, Google Analytics, and our manual reporting spreadsheet. Saving my team about 12 hours a week.' },
   { name: 'Priya Sharma', role: 'Founder', company: 'NovaCraft', color: '#F59E0B', quote: 'The competitor ad spy alone is worth the subscription. We saw exactly when our competitor doubled their Meta spend and adjusted our strategy same-day.' },
   { name: 'Marcus Thompson', role: 'VP Marketing', company: 'Stellar Media', color: '#EF4444', quote: 'Client reporting used to take us all of Monday. Now it auto-generates overnight. Our clients think we hired more people.' },
@@ -258,8 +258,8 @@ function LandingInner() {
         borderBottom: scrolled ? `1px solid ${c.border}` : '1px solid transparent',
         transition: 'all 0.35s ease',
       }}>
-        <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.5px', color: c.text, position: 'relative', zIndex: 201 }}>
-          <span style={{ color: c.accent }}>L</span>umnix
+        <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.05em', color: c.text, position: 'relative', zIndex: 201, fontFamily: 'var(--font-display)' }}>
+          Lumnix
         </span>
 
         {/* Desktop links */}
@@ -297,14 +297,14 @@ function LandingInner() {
         <div style={{
           position: 'absolute', top: -200, left: '50%', transform: 'translateX(-50%)',
           width: 900, height: 500,
-          background: `radial-gradient(ellipse 60% 50% at 50% 40%, rgba(99,102,241,0.15) 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse 60% 50% at 50% 40%, rgba(124,58,237,0.15) 0%, transparent 70%)`,
           pointerEvents: 'none', zIndex: -1,
         }} />
 
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
           padding: '6px 18px', borderRadius: 100,
-          border: '1px solid rgba(99,102,241,0.25)',
+          border: '1px solid rgba(124,58,237,0.25)',
           backgroundColor: c.accentSubtle, marginBottom: 36,
         }}>
           <Sparkles size={13} color={c.accent} />
@@ -337,10 +337,10 @@ function LandingInner() {
               padding: '16px 32px', borderRadius: 12, border: 'none',
               background: `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`,
               color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.25s', boxShadow: `0 4px 24px rgba(99,102,241,0.3)`,
+              transition: 'all 0.25s', boxShadow: `0 4px 24px rgba(124,58,237,0.3)`,
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(99,102,241,0.4)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(99,102,241,0.3)'; }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(124,58,237,0.4)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(124,58,237,0.3)'; }}
           >
             Join the waitlist <ArrowRight size={18} />
           </button>
@@ -353,13 +353,13 @@ function LandingInner() {
           marginTop: 64, position: 'relative', borderRadius: 16,
           border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
           padding: 20, overflow: 'hidden',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.4), 0 0 120px rgba(99,102,241,0.08)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.4), 0 0 120px rgba(124,58,237,0.08)',
         }}>
           {/* top glow */}
           <div style={{
             position: 'absolute', top: -80, left: '50%', transform: 'translateX(-50%)',
             width: 700, height: 200,
-            background: 'radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, transparent 70%)',
             pointerEvents: 'none',
           }} />
 
@@ -560,7 +560,7 @@ function LandingInner() {
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 14px',
-              borderRadius: 100, backgroundColor: c.accentSubtle, border: `1px solid rgba(99,102,241,0.2)`,
+              borderRadius: 100, backgroundColor: c.accentSubtle, border: `1px solid rgba(124,58,237,0.2)`,
               marginBottom: 20,
             }}>
               <Zap size={12} color={c.accent} />
@@ -593,7 +593,7 @@ function LandingInner() {
                 }} />
                 <div style={{
                   width: 48, height: 48, borderRadius: 12,
-                  backgroundColor: c.accentSubtle, border: `1px solid rgba(99,102,241,0.15)`,
+                  backgroundColor: c.accentSubtle, border: `1px solid rgba(124,58,237,0.15)`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   marginBottom: 22,
                 }}>
@@ -622,7 +622,7 @@ function LandingInner() {
                 <div style={{ flex: '1 1 400px' }}>
                   <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px',
-                    borderRadius: 6, backgroundColor: c.accentSubtle, border: `1px solid rgba(99,102,241,0.2)`,
+                    borderRadius: 6, backgroundColor: c.accentSubtle, border: `1px solid rgba(124,58,237,0.2)`,
                     marginBottom: 20,
                   }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: c.accent }}>{spot.badge}</span>
@@ -655,7 +655,7 @@ function LandingInner() {
                   <div style={{
                     position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)',
                     width: 400, height: 120,
-                    background: `radial-gradient(ellipse, rgba(99,102,241,0.1) 0%, transparent 70%)`,
+                    background: `radial-gradient(ellipse, rgba(124,58,237,0.1) 0%, transparent 70%)`,
                     pointerEvents: 'none',
                   }} />
 
@@ -735,7 +735,7 @@ function LandingInner() {
                           </div>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
-                          {[{ l: 'Sessions', v: '45.2K', c: '#10B981' }, { l: 'Conversions', v: '1,247', c: '#6366F1' }, { l: 'Revenue', v: '$89.4K', c: '#F59E0B' }].map((s, i) => (
+                          {[{ l: 'Sessions', v: '45.2K', c: '#10B981' }, { l: 'Conversions', v: '1,247', c: '#7C3AED' }, { l: 'Revenue', v: '$89.4K', c: '#F59E0B' }].map((s, i) => (
                             <div key={i} style={{ backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12, textAlign: 'center' }}>
                               <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>{s.l}</div>
                               <div style={{ fontSize: 18, fontWeight: 700, color: s.c }}>{s.v}</div>
@@ -764,7 +764,7 @@ function LandingInner() {
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 14px',
-              borderRadius: 100, backgroundColor: c.accentSubtle, border: `1px solid rgba(99,102,241,0.2)`,
+              borderRadius: 100, backgroundColor: c.accentSubtle, border: `1px solid rgba(124,58,237,0.2)`,
               marginBottom: 20,
             }}>
               <Users size={12} color={c.accent} />
@@ -839,7 +839,7 @@ function LandingInner() {
           <div style={{ textAlign: 'center', marginBottom: 20 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 14px',
-              borderRadius: 100, backgroundColor: c.accentSubtle, border: `1px solid rgba(99,102,241,0.2)`,
+              borderRadius: 100, backgroundColor: c.accentSubtle, border: `1px solid rgba(124,58,237,0.2)`,
               marginBottom: 20,
             }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: c.accent }}>Pricing</span>
@@ -891,7 +891,7 @@ function LandingInner() {
                     border: `1px solid ${p.highlight ? c.accent : c.border}`,
                     borderRadius: 16, padding: 36, position: 'relative',
                     transition: 'all 0.25s',
-                    ...(p.highlight ? { boxShadow: '0 0 80px rgba(99,102,241,0.12)', transform: 'scale(1.03)' } : {}),
+                    ...(p.highlight ? { boxShadow: '0 0 80px rgba(124,58,237,0.12)', transform: 'scale(1.03)' } : {}),
                   }}
                   onMouseEnter={e => { if (!p.highlight) { e.currentTarget.style.borderColor = c.borderStrong; e.currentTarget.style.transform = 'translateY(-4px)'; } }}
                   onMouseLeave={e => { if (!p.highlight) { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.transform = 'translateY(0)'; } }}
@@ -997,14 +997,14 @@ function LandingInner() {
         <div style={{
           ...sectionMax, maxWidth: 900, textAlign: 'center',
           borderRadius: 24, padding: '80px 40px',
-          background: `linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.08) 50%, rgba(6,182,212,0.06) 100%)`,
-          border: `1px solid rgba(99,102,241,0.2)`,
+          background: `linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(139,92,246,0.08) 50%, rgba(6,182,212,0.06) 100%)`,
+          border: `1px solid rgba(124,58,237,0.2)`,
           position: 'relative', overflow: 'hidden',
         }}>
           {/* Glow orbs */}
           <div style={{
             position: 'absolute', top: -100, left: '20%', width: 300, height: 300,
-            background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%)',
             pointerEvents: 'none',
           }} />
           <div style={{
@@ -1034,10 +1034,10 @@ function LandingInner() {
               background: `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`,
               color: '#fff', fontSize: 17, fontWeight: 700, cursor: 'pointer',
               transition: 'all 0.25s', position: 'relative',
-              boxShadow: '0 4px 24px rgba(99,102,241,0.3)',
+              boxShadow: '0 4px 24px rgba(124,58,237,0.3)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 40px rgba(99,102,241,0.45)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(99,102,241,0.3)'; }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 40px rgba(124,58,237,0.45)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(124,58,237,0.3)'; }}
           >
             Join the waitlist <ArrowRight size={20} />
           </button>
@@ -1057,8 +1057,8 @@ function LandingInner() {
           <div style={{ display: 'flex', gap: 60, flexWrap: 'wrap', marginBottom: 48 }}>
             {/* Brand column */}
             <div style={{ flex: '1 1 240px' }}>
-              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', color: c.text, marginBottom: 12 }}>
-                <span style={{ color: c.accent }}>L</span>umnix
+              <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.05em', color: c.text, marginBottom: 12, fontFamily: 'var(--font-display)' }}>
+                Lumnix
               </div>
               <p style={{ fontSize: 14, color: c.textMuted, lineHeight: 1.7, maxWidth: 260, marginBottom: 20 }}>
                 AI-powered marketing intelligence. One dashboard to replace them all.
@@ -1247,7 +1247,7 @@ function LandingInner() {
                       background: `linear-gradient(135deg, ${c.accent}, ${c.accentHover})`,
                       color: '#fff', fontSize: 15, fontWeight: 700, cursor: wlSubmitting ? 'not-allowed' : 'pointer',
                       opacity: wlSubmitting ? 0.7 : 1, transition: 'all 0.2s',
-                      boxShadow: '0 4px 16px rgba(99,102,241,0.3)',
+                      boxShadow: '0 4px 16px rgba(124,58,237,0.3)',
                       marginTop: 4,
                     }}
                   >

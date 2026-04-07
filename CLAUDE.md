@@ -23,6 +23,10 @@ You're working inside the **WAT framework** (Workflows, Agents, Tools). This arc
 
 **Why this matters:** When AI tries to handle every step directly, accuracy drops fast. If each step is 90% accurate, you're down to 59% success after just five steps. By offloading execution to deterministic scripts, you stay focused on orchestration and decision-making where you excel.
 
+## Test Before You Ship
+
+Never deploy changes blindly. After making any code change — whether it's a bug fix, new feature, or refactor — verify it works locally first. Run the dev server, hit the affected routes, check the UI, and confirm the behavior matches expectations. Only after you've confirmed things work should you push or deploy. If a change touches an API route, call it. If it touches a UI component, render it. If it touches a cron job or background task, dry-run it. "It looks right" is not the same as "it works." Test it, then ship it.
+
 ## How to Operate
 
 **1. Look for existing tools first**
