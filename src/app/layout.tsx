@@ -1,7 +1,29 @@
 import type { Metadata } from 'next';
+import { Bricolage_Grotesque, Outfit, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-bricolage',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-jetbrains',
+  display: 'swap',
+  weight: ['400', '500'],
+});
 
 export const metadata: Metadata = {
   title: 'Lumnix — AI-Powered Marketing Intelligence',
@@ -11,22 +33,21 @@ export const metadata: Metadata = {
     apple: '/favicon.png',
   },
   other: {
-    'theme-color': '#09090B',
+    'theme-color': '#07070A',
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-theme="dark" style={{ colorScheme: 'dark' }} suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Sora:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body style={{ margin: 0, backgroundColor: '#09090B', color: '#FAFAFA' }}>
+    <html
+      lang="en"
+      data-theme="dark"
+      style={{ colorScheme: 'dark' }}
+      className={`${bricolage.variable} ${outfit.variable} ${jetbrainsMono.variable}`}
+
+      suppressHydrationWarning
+    >
+      <body style={{ margin: 0, backgroundColor: '#07070A', color: '#EDEDF0' }}>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <TooltipProvider>
           {children}

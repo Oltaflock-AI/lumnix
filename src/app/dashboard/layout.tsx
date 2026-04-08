@@ -205,7 +205,7 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
       width: sidebarWidth, minHeight: '100vh', backgroundColor: c.bgPage,
       display: 'flex', flexDirection: 'column', padding: collapsed ? '20px 8px' : '20px 12px',
       flexShrink: 0, borderRight: `1px solid ${c.bgCardHover}`,
-      transition: 'width 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+      transition: 'width 0.25s cubic-bezier(0.23, 1, 0.32, 1)',
       overflow: 'hidden',
     }}>
       {/* Logo + Collapse */}
@@ -263,7 +263,7 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                     fontSize: 13, fontWeight: active ? 500 : 400,
                     textDecoration: 'none', cursor: 'pointer',
                     background: active ? (collapsed ? c.accentSubtle : `linear-gradient(90deg, ${c.accentSubtle}, transparent)`) : 'transparent',
-                    transition: 'background-color 0.15s ease, color 0.15s ease',
+                    transition: 'background-color 0.15s cubic-bezier(0.23,1,0.32,1), color 0.15s cubic-bezier(0.23,1,0.32,1), transform 0.16s cubic-bezier(0.23,1,0.32,1)',
                     position: 'relative',
                   }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.backgroundColor = c.bgCardHover; }}
@@ -272,7 +272,7 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                   <div style={{
                     width: 28, height: 28, borderRadius: 8,
                     backgroundColor: active ? c.accentSubtle : 'rgba(255,255,255,0.04)',
-                    border: active ? '1px solid rgba(124,58,237,0.15)' : '1px solid transparent',
+                    border: active ? '1px solid rgba(255,97,84,0.15)' : '1px solid transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'background-color 0.15s',
                     flexShrink: 0,
@@ -413,7 +413,13 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  if (!checked) return <div style={{ minHeight: '100vh' }} />;
+  if (!checked) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-page)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+        <img src="/favicon.png" alt="Lumnix" style={{ width: 32, height: 32, borderRadius: 8, opacity: 0.6 }} className="animate-pulse" />
+      </div>
+    </div>
+  );
   if (!authed) return null;
   return <>{children}</>;
 }
@@ -516,7 +522,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
                 color: c.textMuted, fontSize: 12, cursor: 'pointer',
                 transition: 'border-color 0.2s, color 0.2s, box-shadow 0.2s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,58,237,0.25)'; e.currentTarget.style.color = c.textSecondary; e.currentTarget.style.boxShadow = '0 0 16px rgba(124,58,237,0.06)'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,97,84,0.25)'; e.currentTarget.style.color = c.textSecondary; e.currentTarget.style.boxShadow = '0 0 16px rgba(255,97,84,0.06)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.textMuted; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <Search size={13} />

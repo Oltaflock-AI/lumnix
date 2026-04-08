@@ -42,65 +42,65 @@ interface ThemeCtx {
 }
 
 const DARK: ColorTokens = {
-  bgPage: '#09090B',
-  bgSidebar: '#09090B',
-  bgCard: '#111113',
-  bgCardHover: '#1A1A1E',
-  bgInput: '#111113',
-  bgTag: '#1A1A1E',
-  border: '#222228',
-  borderSubtle: '#1A1A1E',
-  borderStrong: '#333340',
-  text: '#FAFAFA',
-  textSecondary: '#8B8B9E',
-  textMuted: '#52525E',
+  bgPage: '#07070A',
+  bgSidebar: '#07070A',
+  bgCard: '#0E0E13',
+  bgCardHover: '#16161E',
+  bgInput: '#0E0E13',
+  bgTag: '#16161E',
+  border: '#1E1E2A',
+  borderSubtle: '#16161E',
+  borderStrong: '#2A2A3A',
+  text: '#EDEDF0',
+  textSecondary: '#8585A0',
+  textMuted: '#4E4E66',
   shadow: 'none',
-  surfaceElevated: '#1A1A1E',
-  accent: '#7C3AED',
-  accentHover: '#6D28D9',
-  accentSubtle: 'rgba(124,58,237,0.08)',
-  success: '#10B981',
-  successSubtle: 'rgba(16,185,129,0.08)',
-  successBorder: 'rgba(16,185,129,0.2)',
-  warning: '#F59E0B',
-  warningSubtle: 'rgba(245,158,11,0.08)',
-  warningBorder: 'rgba(245,158,11,0.2)',
-  danger: '#EF4444',
-  dangerSubtle: 'rgba(239,68,68,0.08)',
-  dangerBorder: 'rgba(239,68,68,0.2)',
-  accentGlow: '0 0 20px rgba(124,58,237,0.15), 0 0 60px rgba(124,58,237,0.05)',
-  accentTeal: '#0891B2',
+  surfaceElevated: '#16161E',
+  accent: '#FF6154',
+  accentHover: '#E5503F',
+  accentSubtle: 'rgba(255,97,84,0.07)',
+  success: '#34D399',
+  successSubtle: 'rgba(52,211,153,0.07)',
+  successBorder: 'rgba(52,211,153,0.18)',
+  warning: '#FBBF24',
+  warningSubtle: 'rgba(251,191,36,0.07)',
+  warningBorder: 'rgba(251,191,36,0.18)',
+  danger: '#F87171',
+  dangerSubtle: 'rgba(248,113,113,0.07)',
+  dangerBorder: 'rgba(248,113,113,0.18)',
+  accentGlow: '0 0 24px rgba(255,97,84,0.12), 0 0 64px rgba(255,97,84,0.04)',
+  accentTeal: '#22D3EE',
 };
 
 const LIGHT: ColorTokens = {
-  bgPage: '#FAFAFA',
+  bgPage: '#FAF9F7',
   bgSidebar: '#FFFFFF',
   bgCard: '#FFFFFF',
-  bgCardHover: '#F5F5F7',
+  bgCardHover: '#F3F2EE',
   bgInput: '#FFFFFF',
-  bgTag: '#F0F0F2',
-  border: '#E5E5EA',
-  borderSubtle: '#F0F0F2',
-  borderStrong: '#D4D4DA',
-  text: '#09090B',
-  textSecondary: '#52525E',
-  textMuted: '#8B8B9E',
-  shadow: '0 1px 3px rgba(0,0,0,0.08)',
-  surfaceElevated: '#F5F5F7',
-  accent: '#7C3AED',
-  accentHover: '#6D28D9',
-  accentSubtle: 'rgba(124,58,237,0.06)',
+  bgTag: '#EEEEE8',
+  border: '#E0DED8',
+  borderSubtle: '#F0EEE8',
+  borderStrong: '#D8D6D0',
+  text: '#111118',
+  textSecondary: '#55546A',
+  textMuted: '#8B8A9E',
+  shadow: '0 1px 4px rgba(0,0,0,0.06)',
+  surfaceElevated: '#F3F2EE',
+  accent: '#FF6154',
+  accentHover: '#E5503F',
+  accentSubtle: 'rgba(255,97,84,0.06)',
   success: '#059669',
-  successSubtle: 'rgba(5,150,105,0.08)',
-  successBorder: 'rgba(5,150,105,0.2)',
+  successSubtle: 'rgba(5,150,105,0.06)',
+  successBorder: 'rgba(5,150,105,0.18)',
   warning: '#D97706',
-  warningSubtle: 'rgba(217,119,6,0.08)',
-  warningBorder: 'rgba(217,119,6,0.2)',
+  warningSubtle: 'rgba(217,119,6,0.06)',
+  warningBorder: 'rgba(217,119,6,0.18)',
   danger: '#DC2626',
-  dangerSubtle: 'rgba(220,38,38,0.08)',
-  dangerBorder: 'rgba(220,38,38,0.2)',
-  accentGlow: '0 0 16px rgba(124,58,237,0.1), 0 0 40px rgba(124,58,237,0.04)',
-  accentTeal: '#0891B2',
+  dangerSubtle: 'rgba(220,38,38,0.06)',
+  dangerBorder: 'rgba(220,38,38,0.18)',
+  accentGlow: '0 0 20px rgba(255,97,84,0.08), 0 0 48px rgba(255,97,84,0.03)',
+  accentTeal: '#22D3EE',
 };
 
 const Ctx = createContext<ThemeCtx>({
@@ -132,12 +132,12 @@ function applyAccent(base: ColorTokens, hex: string, isDark: boolean): ColorToke
     accent: hex,
     accentHover: darkenHex(hex, 20),
     accentSubtle: isDark
-      ? `rgba(${rgb.r},${rgb.g},${rgb.b},0.08)`
+      ? `rgba(${rgb.r},${rgb.g},${rgb.b},0.07)`
       : `rgba(${rgb.r},${rgb.g},${rgb.b},0.06)`,
   };
 }
 
-const DEFAULT_ACCENT = '#7C3AED';
+const DEFAULT_ACCENT = '#FF6154';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
@@ -180,7 +180,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.body.style.color = c.text;
   }, [theme, c]);
 
-  // Prevent flash of wrong theme
   if (!mounted) {
     return <div style={{ visibility: 'hidden' }}>{children}</div>;
   }

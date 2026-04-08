@@ -21,7 +21,7 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
 }) {
   const { c } = useTheme();
   return (
-    <div className="card-accent" style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
+    <div className="card-accent" style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontSize: 10, fontWeight: 700, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-display)' }}>{label}</span>
         {platformLogo && <PlatformLogo name={platformLogo} size={14} />}
@@ -33,7 +33,7 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <div style={{ fontSize: 30, fontWeight: 500, color: c.text, letterSpacing: '-0.04em', lineHeight: 1, fontFamily: 'var(--font-mono)' }}>
+          <div style={{ fontSize: 30, fontWeight: 700, color: c.text, letterSpacing: '-0.04em', lineHeight: 1, fontFamily: 'var(--font-display)', fontVariantNumeric: 'tabular-nums' }}>
             {value}
           </div>
           {change && (
@@ -268,7 +268,7 @@ export default function DashboardPage() {
 
         {/* Quick actions */}
         <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 16 }}>Quick actions</h3>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)', marginBottom: 16 }}>Quick actions</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[
               { label: 'Run keyword gap analysis', icon: Search, href: '/dashboard/competitors' },
@@ -316,7 +316,7 @@ export default function DashboardPage() {
         <div className="two-col stagger-in" style={{ marginBottom: 20 }}>
           {/* Integration Status */}
           <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 16 }}>Data Sources</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)', marginBottom: 16 }}>Data Sources</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {(unifiedResp?.integrations || []).map((int: any) => {
                 const providerNames: Record<string, string> = { gsc: 'Google Search Console', ga4: 'Google Analytics', google_ads: 'Google Ads', meta_ads: 'Meta Ads' };
@@ -339,7 +339,7 @@ export default function DashboardPage() {
           <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <div className="icon-pill-sm"><Sparkles size={14} color={c.accent} /></div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Cross-Channel</h3>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Cross-Channel</h3>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {hasGSC && hasAds && totalAdSpend > 0 && (
@@ -399,10 +399,10 @@ function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefine
       .catch(() => setLoading(false));
   }, [workspaceId]);
 
-  const priorityColors: Record<string, string> = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
+  const priorityColors: Record<string, string> = { high: c.danger, medium: c.warning, low: c.success };
 
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <div className="icon-pill-sm"><Lightbulb size={14} color={c.accent} /></div>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Recommendations</h3>
@@ -448,7 +448,7 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
   const avgForecast = forecast.length > 0 ? Math.round(forecast.reduce((s: number, f: any) => s + f.predicted, 0) / forecast.length) : 0;
 
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <div className="icon-pill-sm" style={{ backgroundColor: c.successSubtle, borderColor: 'rgba(16,185,129,0.12)' }}><TrendingUp size={14} color={c.success} /></div>
         <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Traffic Forecast</h3>
@@ -459,7 +459,7 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
         <p style={{ fontSize: 12, color: c.textMuted }}>{prediction?.message || 'Connect GA4 and sync data to see traffic predictions.'}</p>
       ) : (
         <div>
-          <div style={{ fontSize: 32, fontWeight: 500, color: c.text, fontFamily: 'var(--font-mono)', letterSpacing: '-0.04em', marginBottom: 4 }}>
+          <div style={{ fontSize: 32, fontWeight: 700, color: c.text, fontFamily: 'var(--font-display)', letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums', marginBottom: 4 }}>
             ~{avgForecast.toLocaleString()}
           </div>
           <p style={{ fontSize: 11, color: c.textSecondary, marginBottom: 12 }}>avg daily sessions forecast (next 14 days)</p>

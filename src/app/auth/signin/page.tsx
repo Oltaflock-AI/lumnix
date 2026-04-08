@@ -53,7 +53,7 @@ function SignInInner() {
         padding: '48px', backgroundColor: c.bgPage,
         borderRight: `1px solid ${c.border}`, position: 'relative', overflow: 'hidden',
       }} className="auth-left-panel">
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 50% at 20% 20%, rgba(124,58,237,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 80% 80%, rgba(8,145,178,0.08) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 50% 50%, rgba(124,58,237,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 50% at 20% 20%, rgba(255,97,84,0.10) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 80% 80%, rgba(34,211,238,0.08) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 50% 50%, rgba(255,97,84,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         <div>
           <span style={{ fontSize: '30px', fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', color: c.text }}>
@@ -98,7 +98,7 @@ function SignInInner() {
             onClick={handleGoogleSignIn}
             style={{
               width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '10px', padding: '11px 16px', borderRadius: '8px',
+              gap: '10px', padding: '11px 16px', borderRadius: '10px',
               border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
               color: c.text, fontSize: '14px', fontWeight: 500,
               cursor: 'pointer', marginBottom: '20px', transition: 'background-color 0.15s ease',
@@ -129,7 +129,7 @@ function SignInInner() {
                 id="signin-email" name="email" autoComplete="email" spellCheck={false}
                 type="email" placeholder="Work email…" value={email}
                 onChange={e => setEmail(e.target.value)} required
-                style={{ width: '100%', padding: '11px 14px 11px 40px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
+                style={{ width: '100%', padding: '11px 14px 11px 40px', borderRadius: '10px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
                 onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
                 onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
@@ -142,7 +142,7 @@ function SignInInner() {
                 id="signin-password" name="password" autoComplete="current-password"
                 type={showPassword ? 'text' : 'password'} placeholder="Password…" value={password}
                 onChange={e => setPassword(e.target.value)} required
-                style={{ width: '100%', padding: '11px 40px 11px 40px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
+                style={{ width: '100%', padding: '11px 40px 11px 40px', borderRadius: '10px', border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: '14px', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' } as React.CSSProperties}
                 onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
                 onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
               />
@@ -160,9 +160,9 @@ function SignInInner() {
 
             <button
               type="submit" disabled={loading}
-              style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #7C3AED, #6D28D9)', boxShadow: '0 2px 16px rgba(124,58,237,0.25)', color: 'white', fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'box-shadow 0.15s', marginTop: '4px' }}
-              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 24px rgba(124,58,237,0.4)'; }}
-              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 16px rgba(124,58,237,0.25)'; }}
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #FF6154, #FF7A5C)', boxShadow: '0 2px 16px rgba(255,97,84,0.25), inset 0 1px 0 rgba(255,255,255,0.15)', color: 'white', fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'box-shadow 0.15s, transform 0.16s cubic-bezier(0.23,1,0.32,1)', marginTop: '4px' }}
+              onMouseEnter={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgba(255,97,84,0.35), inset 0 1px 0 rgba(255,255,255,0.2)'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; } }}
+              onMouseLeave={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 16px rgba(255,97,84,0.25), inset 0 1px 0 rgba(255,255,255,0.15)'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; } }}
             >
               {loading ? 'Signing in...' : (<>Sign in <ArrowRight size={15} /></>)}
             </button>

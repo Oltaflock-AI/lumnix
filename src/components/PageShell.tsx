@@ -1,26 +1,57 @@
 'use client';
+import { useEffect, useRef } from 'react';
 import { type LucideIcon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 
+/**
+ * Intersection Observer hook for scroll-triggered reveal animations.
+ * Adds 'revealed' class when element enters viewport.
+ */
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const children = el.querySelectorAll('.reveal-on-scroll');
+    if (children.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '-40px' }
+    );
+    children.forEach((child) => observer.observe(child));
+    return () => observer.disconnect();
+  }, []);
+  return ref;
+}
+
 export function PageShell({ title, description, icon: Icon, badge, action, children }: {
   title: string; description: string; icon: LucideIcon; badge?: string; action?: React.ReactNode; children: React.ReactNode;
 }) {
   const { c } = useTheme();
+  const scrollRef = useScrollReveal();
   return (
-    <div className="fade-in" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+    <div ref={scrollRef} className="page-enter" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
+      <div className="fade-in" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-          <div className="icon-pill">
+          <div className="icon-pill scale-in">
             <Icon size={18} color={c.accent} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <h1 style={{ fontSize: 26, fontWeight: 800, color: c.text, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)' }}>{title}</h1>
               {badge && (
-                <Badge variant="outline" className="text-[9px] font-bold tracking-wider uppercase border-[rgba(124,58,237,0.3)] text-[#7C3AED] bg-[rgba(124,58,237,0.08)]">
+                <Badge variant="outline" className="text-[9px] font-bold tracking-wider uppercase border-[rgba(255,97,84,0.3)] text-[var(--accent)] bg-[rgba(255,97,84,0.08)]">
                   {badge}
                 </Badge>
               )}
@@ -41,7 +72,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
   const { c } = useTheme();
   return (
     <div className="card-hero" style={{ backgroundColor: c.bgCard, borderRadius: 14, padding: '60px 40px', textAlign: 'center' }}>
-      <div style={{ width: 60, height: 60, borderRadius: 16, background: 'linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(8,145,178,0.08) 100%)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, border: '1px solid rgba(124,58,237,0.18)', boxShadow: '0 0 20px rgba(124,58,237,0.08)' }}>
+      <div style={{ width: 60, height: 60, borderRadius: 16, background: 'linear-gradient(135deg, rgba(255,97,84,0.12) 0%, rgba(34,211,238,0.08) 100%)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, border: '1px solid rgba(255,97,84,0.18)', boxShadow: '0 0 20px rgba(255,97,84,0.08)' }}>
         <Icon size={26} color={c.accent} />
       </div>
       <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 8, letterSpacing: '-0.03em', fontFamily: 'var(--font-display)' }}>{title}</h3>
