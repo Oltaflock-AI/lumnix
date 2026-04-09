@@ -49,7 +49,7 @@ export default function SharedDashboardPage({ params }: { params: Promise<{ toke
           {[
             { label: 'Sessions', value: totals.sessions?.toLocaleString() || '—', icon: BarChart3 },
             { label: 'Organic Clicks', value: totals.organic_clicks?.toLocaleString() || '—', icon: Search },
-            { label: 'Ad Spend', value: totals.ad_spend ? `$${totals.ad_spend.toFixed(0)}` : '—', icon: DollarSign },
+            { label: 'Ad Spend', value: totals.ad_spend ? `₹${totals.ad_spend.toFixed(0)}` : '—', icon: DollarSign },
             { label: 'ROAS', value: totals.roas ? `${totals.roas}x` : '—', icon: TrendingUp },
           ].map(kpi => (
             <div key={kpi.label} style={{ backgroundColor: '#111113', border: '1px solid #222228', borderRadius: 12, padding: 18 }}>

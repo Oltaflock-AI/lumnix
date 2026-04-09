@@ -23,7 +23,7 @@ const CURRENCY_MAP: Record<string, { symbol: string; locale: string }> = {
 };
 
 function getCurrency(code: string) {
-  const upper = (code || 'USD').toUpperCase();
+  const upper = (code || 'INR').toUpperCase();
   return CURRENCY_MAP[upper] || { symbol: upper + ' ', locale: 'en-US' };
 }
 

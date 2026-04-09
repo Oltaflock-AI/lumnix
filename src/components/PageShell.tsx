@@ -89,7 +89,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
 /* ── Skeleton Presets ── */
 export function StatCardSkeleton() {
   return (
-    <div className="rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface)] p-5">
+    <div className="rounded-xl border border-[var(--border-strong)] p-5" style={{ backgroundColor: "var(--bg-surface)" }}>
       <Skeleton className="h-3 w-20 mb-3" />
       <Skeleton className="h-8 w-28 mb-2" />
       <Skeleton className="h-3 w-16" />
@@ -109,7 +109,7 @@ export function KpiGridSkeleton({ count = 4 }: { count?: number }) {
 
 export function ChartSkeleton({ height = 240 }: { height?: number }) {
   return (
-    <div className="rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface)] p-5">
+    <div className="rounded-xl border border-[var(--border-strong)] p-5" style={{ backgroundColor: "var(--bg-surface)" }}>
       <div className="flex items-center justify-between mb-4">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-6 w-24 rounded-md" />
@@ -121,16 +121,16 @@ export function ChartSkeleton({ height = 240 }: { height?: number }) {
 
 export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
-    <div className="rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface)] overflow-hidden">
+    <div className="rounded-xl border border-[var(--border-strong)] overflow-hidden" style={{ backgroundColor: "var(--bg-surface)" }}>
       {/* Header */}
-      <div className="flex gap-4 p-4 border-b border-[var(--bg-elevated)]">
+      <div className="flex gap-4 p-4 border-b" style={{ borderColor: "var(--bg-elevated)" }}>
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-3 flex-1" />
         ))}
       </div>
       {/* Rows */}
       {Array.from({ length: rows }).map((_, ri) => (
-        <div key={ri} className="flex gap-4 p-4 border-b border-[var(--bg-elevated)] last:border-0">
+        <div key={ri} className="flex gap-4 p-4 border-b last:border-0" style={{ borderColor: "var(--bg-elevated)" }}>
           {Array.from({ length: cols }).map((_, ci) => (
             <Skeleton key={ci} className="h-4 flex-1" />
           ))}

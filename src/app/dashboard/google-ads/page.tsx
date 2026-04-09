@@ -162,11 +162,11 @@ export default function GoogleAdsPage() {
           {hasData && (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
-                <StatCard icon={DollarSign} color="#F59E0B" label="Total Spend" value={`$${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub={`Last ${days} days`} />
+                <StatCard icon={DollarSign} color="#F59E0B" label="Total Spend" value={`₹${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub={`Last ${days} days`} />
                 <StatCard icon={MousePointerClick} color={c.accent} label="Total Clicks" value={totalClicks.toLocaleString()} sub={`${totalImpressions.toLocaleString()} impressions`} />
-                <StatCard icon={Target} color="#10B981" label="Conversions" value={totalConversions.toLocaleString()} sub={`$${totalConvValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} value`} />
+                <StatCard icon={Target} color="#10B981" label="Conversions" value={totalConversions.toLocaleString()} sub={`₹${totalConvValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} value`} />
                 <StatCard icon={TrendingUp} color={c.accent} label="ROAS" value={`${roas.toFixed(2)}x`} sub={roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'} />
-                <StatCard icon={Zap} color="#EF4444" label="Avg CPC" value={`$${avgCPC.toFixed(2)}`} sub="Per click average" />
+                <StatCard icon={Zap} color="#EF4444" label="Avg CPC" value={`₹${avgCPC.toFixed(2)}`} sub="Per click average" />
                 <StatCard icon={BarChart3} color={c.textSecondary} label="Campaigns" value={campaigns.length.toString()} sub={`${campaigns.filter((c: any) => c.status === 'ENABLED').length} active`} />
               </div>
 
@@ -195,11 +195,11 @@ export default function GoogleAdsPage() {
                           >
                             <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</td>
                             <td style={{ padding: '12px 12px 12px 0' }}><StatusBadge status={camp.status} /></td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>${(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>₹{(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.clicks || 0).toLocaleString()}</td>
                             <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.impressions || 0).toLocaleString()}</td>
                             <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.conversions || 0).toFixed(1)}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{cCpc !== '—' ? `$${cCpc}` : '—'}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
                             <td style={{ padding: '12px 0', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)', color: parseFloat(cRoas as string) >= 3 ? '#10B981' : parseFloat(cRoas as string) >= 1 ? '#F59E0B' : '#EF4444' }}>
                               {cRoas !== '—' ? `${cRoas}x` : '—'}
                             </td>

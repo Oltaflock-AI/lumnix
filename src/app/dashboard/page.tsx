@@ -116,7 +116,7 @@ export default function DashboardPage() {
   const quickWins = gscKeywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < 3).slice(0, 3);
   const topKeywords = gscKeywords.slice(0, 5);
 
-  const fmtCurrency = (v: number) => v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v.toFixed(0)}`;
+  const fmtCurrency = (v: number) => v >= 1000 ? `₹${(v / 1000).toFixed(1)}k` : `₹${v.toFixed(0)}`;
 
   return (
     <div style={{ fontFamily: 'var(--font-body)' }}>

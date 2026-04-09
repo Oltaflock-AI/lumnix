@@ -603,7 +603,7 @@ export default function CompetitorsPage() {
                           return [
                             { label: 'Active Ads', value: latest.active_ads, change: adChange },
                             { label: 'Total Ads', value: latest.total_ads },
-                            { label: 'Est. Spend', value: `$${(latest.estimated_spend_lower || 0).toLocaleString()} - $${(latest.estimated_spend_upper || 0).toLocaleString()}` },
+                            { label: 'Est. Spend', value: `₹${(latest.estimated_spend_lower || 0).toLocaleString()} - ₹${(latest.estimated_spend_upper || 0).toLocaleString()}` },
                             { label: 'New Today', value: latest.new_ads_today || 0 },
                           ].map((s, i) => (
                             <div key={i} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 10, padding: 16 }}>

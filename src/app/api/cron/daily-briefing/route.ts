@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
       const changes: any[] = [];
       if (sessions > 0) changes.push({ metric: 'Sessions', value: sessions, period: '7d' });
       if (gscClicks > 0) changes.push({ metric: 'Organic Clicks', value: gscClicks, period: '7d' });
-      if (totalSpend > 0) changes.push({ metric: 'Ad Spend', value: `$${totalSpend.toFixed(0)}`, period: '7d' });
+      if (totalSpend > 0) changes.push({ metric: 'Ad Spend', value: `₹${totalSpend.toFixed(0)}`, period: '7d' });
       if (roas > 0) changes.push({ metric: 'ROAS', value: `${roas}x`, period: '7d' });
 
       // Build recommendations
@@ -67,7 +67,7 @@ export async function GET(req: NextRequest) {
       const parts: string[] = [];
       if (sessions > 0) parts.push(`${sessions.toLocaleString()} sessions`);
       if (gscClicks > 0) parts.push(`${gscClicks.toLocaleString()} organic clicks`);
-      if (totalSpend > 0) parts.push(`$${totalSpend.toFixed(0)} ad spend (${roas}x ROAS)`);
+      if (totalSpend > 0) parts.push(`₹${totalSpend.toFixed(0)} ad spend (${roas}x ROAS)`);
       const anomalyNote = unreadAnomalies.length > 0 ? `${unreadAnomalies.length} anomalies need attention.` : 'No anomalies detected.';
       let summary = parts.length > 0
         ? `Weekly snapshot: ${parts.join(', ')}. ${anomalyNote}`

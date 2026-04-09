@@ -123,7 +123,7 @@ export default function AttributionPage() {
             <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: c.textSecondary, textTransform: 'uppercase', marginBottom: 10 }}>Total Value</div>
               <div style={{ fontSize: 28, fontWeight: 500, color: c.text, fontFamily: 'var(--font-mono)' }}>
-                {data?.totalValue ? `$${data.totalValue.toLocaleString()}` : '$0'}
+                {data?.totalValue ? `₹${data.totalValue.toLocaleString()}` : '₹0'}
               </div>
             </div>
           </div>
@@ -189,7 +189,7 @@ export default function AttributionPage() {
                       </div>
                     </td>
                     <td style={{ padding: '12px 16px', fontSize: 13, color: c.text, fontFamily: 'var(--font-mono)' }}>{row.conversions.toLocaleString()}</td>
-                    <td style={{ padding: '12px 16px', fontSize: 13, color: c.text, fontFamily: 'var(--font-mono)' }}>{row.value > 0 ? `$${row.value.toLocaleString()}` : '-'}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 13, color: c.text, fontFamily: 'var(--font-mono)' }}>{row.value > 0 ? `₹${row.value.toLocaleString()}` : '-'}</td>
                   </tr>
                 ))}
               </tbody>

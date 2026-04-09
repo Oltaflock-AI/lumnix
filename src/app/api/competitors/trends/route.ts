@@ -112,6 +112,6 @@ export async function POST(req: NextRequest) {
     snapshot_date: today,
     total_ads: totalAds,
     active_ads: activeAds,
-    estimated_spend: `$${estimatedSpendLower.toLocaleString()} - $${estimatedSpendUpper.toLocaleString()}`,
+    estimated_spend: `₹${estimatedSpendLower.toLocaleString()} - ₹${estimatedSpendUpper.toLocaleString()}`,
   });
 }

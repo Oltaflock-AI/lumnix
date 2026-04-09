@@ -739,7 +739,7 @@ function LandingInner() {
                           </div>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
-                          {[{ l: 'Sessions', v: '45.2K', c: '#10B981' }, { l: 'Conversions', v: '1,247', c: '#7C3AED' }, { l: 'Revenue', v: '$89.4K', c: '#F59E0B' }].map((s, i) => (
+                          {[{ l: 'Sessions', v: '45.2K', c: '#10B981' }, { l: 'Conversions', v: '1,247', c: '#7C3AED' }, { l: 'Revenue', v: '₹74.2L', c: '#F59E0B' }].map((s, i) => (
                             <div key={i} style={{ backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12, textAlign: 'center' }}>
                               <div style={{ fontSize: 10, color: '#888', marginBottom: 4 }}>{s.l}</div>
                               <div style={{ fontSize: 18, fontWeight: 700, color: s.c }}>{s.v}</div>

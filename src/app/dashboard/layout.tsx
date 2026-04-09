@@ -201,39 +201,36 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
   const sidebarWidth = collapsed ? 68 : 240;
 
   return (
-    <div style={{
-      width: sidebarWidth, minHeight: '100vh', backgroundColor: c.bgPage,
+    <div className="sidebar-glass" style={{
+      width: sidebarWidth, minHeight: '100vh',
       display: 'flex', flexDirection: 'column', padding: collapsed ? '20px 8px' : '20px 12px',
-      flexShrink: 0, borderRight: `1px solid ${c.bgCardHover}`,
+      flexShrink: 0,
       transition: 'width 0.25s cubic-bezier(0.23, 1, 0.32, 1)',
-      overflow: 'hidden',
+      overflow: 'hidden', position: 'relative',
     }}>
       {/* Logo + Collapse */}
       <div style={{ padding: collapsed ? '2px 0 18px' : '2px 10px 18px', display: 'flex', alignItems: 'center', gap: 9, justifyContent: collapsed ? 'center' : 'flex-start' }}>
-        <img src="/favicon.png" alt="Lumnix" style={{ width: 26, height: 26, borderRadius: 7, objectFit: 'contain' }} />
+        <img src="/favicon.png" alt="Lumnix" style={{ width: 26, height: 26, borderRadius: 7, objectFit: 'contain', flexShrink: 0 }} />
         {!collapsed && (
           <span className="gradient-text" style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', flex: 1 }}>
             Lumnix
           </span>
         )}
-        {!collapsed && onCollapse && (
+        {onCollapse && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <button onClick={onCollapse} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: 2, borderRadius: 4, display: 'flex' }}
-                onMouseEnter={e => e.currentTarget.style.color = c.textSecondary}
-                onMouseLeave={e => e.currentTarget.style.color = c.textMuted}
-              >
-                <PanelLeftClose size={16} />
+              <button onClick={onCollapse} className="sidebar-toggle" aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
+                {collapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right">Collapse sidebar</TooltipContent>
+            <TooltipContent side="right">{collapsed ? 'Expand sidebar' : 'Collapse sidebar'}</TooltipContent>
           </Tooltip>
         )}
       </div>
 
       <WorkspaceSwitcher collapsed={collapsed} />
 
-      <Separator className="my-3 bg-[var(--bg-elevated)]" />
+      <Separator className="my-3" style={{ backgroundColor: "var(--bg-elevated)" }} />
 
       {/* Nav */}
       <nav aria-label="Main navigation" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -244,7 +241,7 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                 {group.label}
               </div>
             )}
-            {collapsed && group.label && <Separator className="my-2 bg-[var(--bg-elevated)]" />}
+            {collapsed && group.label && <Separator className="my-2" style={{ backgroundColor: "var(--bg-elevated)" }} />}
             {group.items.map(item => {
               const active = isActive(item.href);
               const navLink = (
@@ -309,20 +306,6 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
 
       {/* Bottom Controls */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {collapsed && onCollapse && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button onClick={onCollapse} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '8px 0', borderRadius: 8, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', color: c.textMuted }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = c.bgCardHover}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <PanelLeft size={16} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Expand sidebar</TooltipContent>
-          </Tooltip>
-        )}
-
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -343,7 +326,7 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
           <TooltipContent side="right">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</TooltipContent>
         </Tooltip>
 
-        <Separator className="my-2 bg-[var(--bg-elevated)]" />
+        <Separator className="my-2" style={{ backgroundColor: "var(--bg-elevated)" }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10, padding: collapsed ? '8px 0' : '8px 10px', justifyContent: collapsed ? 'center' : 'flex-start' }}>
           <div style={{
@@ -366,7 +349,11 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                 <TooltipTrigger asChild>
                   <button
                     aria-label="Sign out"
-                    onClick={() => window.location.href = '/'}
+                    onClick={async () => {
+                      const { supabase } = await import('@/lib/supabase');
+                      await supabase.auth.signOut();
+                      window.location.href = '/auth/signin';
+                    }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: 2 }}
                     onMouseEnter={e => (e.currentTarget.style.color = c.textSecondary)}
                     onMouseLeave={e => (e.currentTarget.style.color = c.textMuted)}

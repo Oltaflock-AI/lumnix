@@ -12,40 +12,54 @@ import type { CSSProperties } from "react";
 
 /* ─── Shared Styles Hook ─── */
 function useStyles() {
-  const { c } = useTheme();
+  const { c, theme } = useTheme();
+  const isDark = theme === 'dark';
   const inputBase: React.CSSProperties = {
     width: '100%',
-    padding: '10px 12px',
-    borderRadius: 8,
+    padding: '10px 14px',
+    borderRadius: 10,
     border: `1px solid ${c.border}`,
-    backgroundColor: c.bgCard,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#FFFFFF',
     color: c.text,
     fontSize: 13,
     boxSizing: 'border-box',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
+    outline: 'none',
   };
   const primaryBtn: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: 8,
-    padding: '10px 24px', borderRadius: 8, border: 'none',
-    backgroundColor: c.accent, color: '#fff',
+    padding: '10px 24px', borderRadius: 10, border: 'none',
+    background: `linear-gradient(135deg, ${c.accent}, ${c.accent}dd)`,
+    color: '#fff',
     fontSize: 14, fontWeight: 600, cursor: 'pointer',
+    boxShadow: `0 2px 12px ${c.accent}40`,
+    transition: 'all 0.2s cubic-bezier(0.23, 1, 0.32, 1)',
   };
   const ghostBtn: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: 8,
-    padding: '10px 20px', borderRadius: 8,
-    border: `1px solid ${c.borderStrong}`,
-    backgroundColor: 'transparent', color: c.textSecondary,
+    padding: '10px 20px', borderRadius: 10,
+    border: `1px solid ${c.border}`,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
+    color: c.textSecondary,
     fontSize: 13, fontWeight: 500, cursor: 'pointer',
+    transition: 'all 0.2s cubic-bezier(0.23, 1, 0.32, 1)',
   };
   const destructiveBtn: React.CSSProperties = {
     background: c.dangerSubtle, color: c.danger,
     border: `1px solid ${c.dangerBorder}`,
-    borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
-    fontSize: 13, fontWeight: 500,
+    borderRadius: 10, padding: '8px 16px', cursor: 'pointer',
+    fontSize: 13, fontWeight: 600,
+    transition: 'all 0.2s cubic-bezier(0.23, 1, 0.32, 1)',
   };
   const card: React.CSSProperties = {
-    backgroundColor: c.bgCard,
-    border: `1px solid ${c.border}`,
-    borderRadius: 12,
+    backgroundColor: isDark ? 'rgba(14,14,19,0.5)' : 'rgba(255,255,255,0.7)',
+    backdropFilter: 'blur(20px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+    borderRadius: 14,
+    boxShadow: isDark
+      ? 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.2)'
+      : '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)',
   };
   const label: React.CSSProperties = {
     display: 'block', fontSize: 12, fontWeight: 600,
@@ -672,7 +686,7 @@ function BillingTab() {
     {
       id: 'free',
       name: 'Free',
-      price: '$0',
+      price: '₹0',
       period: '/mo',
       features: ['2 integrations', '30-day data retention', '2 team members', 'Basic insights'],
       current: currentPlan === 'free',
@@ -680,7 +694,7 @@ function BillingTab() {
     {
       id: 'starter',
       name: 'Starter',
-      price: '$29',
+      price: '₹2,499',
       period: '/mo',
       features: ['4 integrations', '90-day data retention', '5 team members', 'AI insights', 'PDF reports'],
       current: currentPlan === 'starter',
@@ -689,7 +703,7 @@ function BillingTab() {
     {
       id: 'growth',
       name: 'Growth',
-      price: '$79',
+      price: '₹6,499',
       period: '/mo',
       features: ['All integrations', '1-year data retention', '15 team members', 'AI insights + chat', 'White-label reports', 'Competitor tracking'],
       current: currentPlan === 'growth',
@@ -698,7 +712,7 @@ function BillingTab() {
     {
       id: 'agency',
       name: 'Agency',
-      price: '$199',
+      price: '₹16,499',
       period: '/mo',
       features: ['Unlimited integrations', 'Unlimited data retention', 'Unlimited team members', 'Everything in Growth', 'Multi-workspace', 'Priority support', 'API access'],
       current: currentPlan === 'agency',
@@ -1270,7 +1284,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-7">
+        <TabsList className="mb-8">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="brand">Brand</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
@@ -1351,17 +1365,16 @@ export default function SettingsPage() {
                         Last synced: {new Date(int.last_sync_at).toLocaleString()}
                       </p>
                     )}
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 12 }}>
                       {!connected ? (
-                        <Button variant="gradient" className="flex-1" onClick={() => handleConnect(p.id)}>
+                        <Button variant="gradient" className="flex-1 h-10" onClick={() => handleConnect(p.id)}>
                           Connect
                         </Button>
                       ) : (
                         <>
                           <Button
                             variant={isSynced(p.id) ? "outline" : "default"}
-                            size="sm"
-                            className="flex-1"
+                            className="flex-1 h-10"
                             onClick={() => handleSync(p.id)}
                             disabled={isSyncing}
                           >
@@ -1370,7 +1383,7 @@ export default function SettingsPage() {
                           </Button>
                           <Button
                             variant="destructive"
-                            size="sm"
+                            className="h-10"
                             onClick={async () => {
                               if (!int || !confirm(`Disconnect ${p.name}? You can reconnect anytime.`)) return;
                               try {
