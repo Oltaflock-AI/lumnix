@@ -34,8 +34,8 @@ export async function fetchGoogleAdsCampaigns(
       segments.date
     FROM campaign
     WHERE segments.date DURING LAST_30_DAYS
-    ORDER BY metrics.cost_micros DESC
-    LIMIT 50
+      AND metrics.cost_micros > 0
+    ORDER BY segments.date DESC
   `;
 
   const headers: Record<string, string> = {
