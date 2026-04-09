@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     apple: '/favicon.png',
   },
   other: {
-    'theme-color': '#07070A',
+    'theme-color': '#F8FAFC',
   },
 };
 
@@ -42,12 +42,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       data-theme="dark"
-      style={{ colorScheme: 'dark' }}
+      style={{ colorScheme: 'light' }}
       className={`${bricolage.variable} ${outfit.variable} ${jetbrainsMono.variable}`}
 
       suppressHydrationWarning
     >
-      <body style={{ margin: 0, backgroundColor: '#07070A', color: '#EDEDF0' }}>
+      <body style={{ margin: 0, backgroundColor: '#F8FAFC', color: '#0F172A' }}>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <TooltipProvider>
           {children}

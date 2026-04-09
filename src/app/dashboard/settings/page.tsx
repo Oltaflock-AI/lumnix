@@ -13,57 +13,54 @@ import type { CSSProperties } from "react";
 /* ─── Shared Styles Hook ─── */
 function useStyles() {
   const { c, theme } = useTheme();
-  const isDark = theme === 'dark';
   const inputBase: React.CSSProperties = {
     width: '100%',
     padding: '10px 14px',
-    borderRadius: 10,
-    border: `1px solid ${c.border}`,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#FFFFFF',
-    color: c.text,
+    borderRadius: 8,
+    border: '1px solid #E2E8F0',
+    backgroundColor: '#FFFFFF',
+    color: '#0F172A',
     fontSize: 13,
     boxSizing: 'border-box',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
+    transition: 'border-color 150ms, box-shadow 150ms',
     outline: 'none',
   };
   const primaryBtn: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: 8,
-    padding: '10px 24px', borderRadius: 10, border: 'none',
-    background: `linear-gradient(135deg, ${c.accent}, ${c.accent}dd)`,
-    color: '#fff',
-    fontSize: 14, fontWeight: 600, cursor: 'pointer',
-    boxShadow: `0 2px 12px ${c.accent}40`,
-    transition: 'all 0.2s cubic-bezier(0.23, 1, 0.32, 1)',
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '9px 18px', borderRadius: 8, border: 'none',
+    background: '#7C3AED',
+    color: '#FFFFFF',
+    fontSize: 13, fontWeight: 600, cursor: 'pointer',
+    fontFamily: "'DM Sans', sans-serif",
+    transition: 'background 150ms, box-shadow 150ms, transform 100ms',
   };
   const ghostBtn: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: 8,
-    padding: '10px 20px', borderRadius: 10,
-    border: `1px solid ${c.border}`,
-    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#FFFFFF',
-    color: c.textSecondary,
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    padding: '9px 18px', borderRadius: 8,
+    border: '1px solid #E2E8F0',
+    backgroundColor: '#F8FAFC',
+    color: '#475569',
     fontSize: 13, fontWeight: 500, cursor: 'pointer',
-    transition: 'all 0.2s cubic-bezier(0.23, 1, 0.32, 1)',
+    transition: 'background 150ms',
   };
   const destructiveBtn: React.CSSProperties = {
-    background: c.dangerSubtle, color: c.danger,
-    border: `1px solid ${c.dangerBorder}`,
-    borderRadius: 10, padding: '8px 16px', cursor: 'pointer',
-    fontSize: 13, fontWeight: 600,
-    transition: 'all 0.2s cubic-bezier(0.23, 1, 0.32, 1)',
+    background: 'transparent', color: '#EF4444',
+    border: '1px solid #FCA5A5',
+    borderRadius: 8, padding: '9px 18px', cursor: 'pointer',
+    fontSize: 13, fontWeight: 500,
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    transition: 'background 150ms, border-color 150ms',
   };
   const card: React.CSSProperties = {
-    backgroundColor: isDark ? 'rgba(14,14,19,0.5)' : 'rgba(255,255,255,0.7)',
-    backdropFilter: 'blur(20px) saturate(150%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(150%)',
-    border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-    borderRadius: 14,
-    boxShadow: isDark
-      ? 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.2)'
-      : '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03)',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    borderRadius: 12,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+    transition: 'box-shadow 200ms, border-color 200ms',
   };
   const label: React.CSSProperties = {
     display: 'block', fontSize: 12, fontWeight: 600,
-    color: c.textSecondary, marginBottom: 6,
+    color: '#64748B', marginBottom: 6,
   };
   return { c, inputBase, primaryBtn, ghostBtn, destructiveBtn, card, label };
 }
@@ -90,17 +87,15 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 }
 
 function StatusPill({ connected, label }: { connected: boolean; label?: string }) {
-  const { c } = useTheme();
   return (
     <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
+      display: 'inline-flex', alignItems: 'center', gap: 4,
       fontSize: 11, fontWeight: 600,
-      padding: '4px 10px', borderRadius: 20,
-      backgroundColor: connected ? c.successSubtle : 'rgba(113,113,122,0.08)',
-      color: connected ? c.success : c.textMuted,
-      border: `1px solid ${connected ? c.successBorder : c.border}`,
+      padding: '2px 10px', borderRadius: 20,
+      backgroundColor: connected ? '#DCFCE7' : '#F1F5F9',
+      color: connected ? '#166534' : '#64748B',
     }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: connected ? c.success : c.textMuted }} />
+      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: connected ? '#22C55E' : '#94A3B8' }} />
       {label || (connected ? 'Connected' : 'Disconnected')}
     </span>
   );

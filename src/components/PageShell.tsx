@@ -45,18 +45,18 @@ export function PageShell({ title, description, icon: Icon, badge, action, child
       <div className="fade-in" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
           <div className="icon-pill scale-in">
-            <Icon size={18} color={c.accent} />
+            <Icon size={18} color="#7C3AED" />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <h1 style={{ fontSize: 26, fontWeight: 800, color: c.text, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)' }}>{title}</h1>
+              <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0F172A', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{title}</h1>
               {badge && (
-                <Badge variant="outline" className="text-[9px] font-bold tracking-wider uppercase border-[rgba(255,97,84,0.3)] text-[var(--accent)] bg-[rgba(255,97,84,0.08)]">
+                <Badge variant="outline" className="text-[9px] font-bold tracking-wider uppercase border-[rgba(124,58,237,0.3)] text-[#7C3AED] bg-[rgba(124,58,237,0.08)]">
                   {badge}
                 </Badge>
               )}
             </div>
-            <p style={{ fontSize: 13, color: c.textMuted, lineHeight: 1.6 }}>{description}</p>
+            <p style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.6 }}>{description}</p>
           </div>
         </div>
         {action && <div style={{ flexShrink: 0 }}>{action}</div>}
@@ -71,12 +71,12 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
 }) {
   const { c } = useTheme();
   return (
-    <div className="card-hero" style={{ backgroundColor: c.bgCard, borderRadius: 14, padding: '60px 40px', textAlign: 'center' }}>
-      <div style={{ width: 60, height: 60, borderRadius: 16, background: 'linear-gradient(135deg, rgba(255,97,84,0.12) 0%, rgba(34,211,238,0.08) 100%)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, border: '1px solid rgba(255,97,84,0.18)', boxShadow: '0 0 20px rgba(255,97,84,0.08)' }}>
-        <Icon size={26} color={c.accent} />
+    <div className="card-hero" style={{ backgroundColor: '#FFFFFF', borderRadius: 12, padding: '60px 40px', textAlign: 'center' }}>
+      <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(124,58,237,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, border: '1px solid rgba(124,58,237,0.15)' }}>
+        <Icon size={26} color="#7C3AED" />
       </div>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 8, letterSpacing: '-0.03em', fontFamily: 'var(--font-display)' }}>{title}</h3>
-      <p style={{ fontSize: 13, color: c.textMuted, maxWidth: 380, margin: '0 auto 20px', lineHeight: 1.6 }}>{description}</p>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{title}</h3>
+      <p style={{ fontSize: 13, color: '#94A3B8', maxWidth: 380, margin: '0 auto 20px', lineHeight: 1.6 }}>{description}</p>
       {actionLabel && onAction && (
         <Button variant="gradient" size="sm" onClick={onAction}>
           {actionLabel}

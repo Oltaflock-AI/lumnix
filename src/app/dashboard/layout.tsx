@@ -11,7 +11,6 @@ import {
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
@@ -62,9 +61,8 @@ const navGroups: NavGroup[] = [
 /* ── Workspace Switcher ── */
 function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
   const [open, setOpen] = useState(false);
-  const { c } = useTheme();
   const { workspace, workspaces, switchWorkspace } = useWorkspaceCtx();
-  const accent = workspace?.brand_color || c.accent;
+  const accent = workspace?.brand_color || '#7C3AED';
   const initials = workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : 'LX';
 
   function handleSwitch(id: string) {
@@ -78,7 +76,7 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10,
         padding: collapsed ? '8px 0' : '8px 10px', borderRadius: 8, justifyContent: collapsed ? 'center' : 'flex-start',
-        border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
+        border: '1px solid rgba(255,255,255,0.08)', backgroundColor: '#1E293B',
         cursor: 'pointer', textAlign: 'left',
       }}
     >
@@ -90,11 +88,11 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
       {!collapsed && (
         <>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: c.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: 12, fontWeight: 500, color: '#E2E8F0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {workspace?.name || 'My Workspace'}
             </div>
           </div>
-          <ChevronDown size={12} color={c.textMuted} style={{ flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+          <ChevronDown size={12} color="#64748B" style={{ flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
         </>
       )}
     </button>
@@ -109,7 +107,7 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
         </Tooltip>
       ) : trigger}
       {open && !collapsed && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`, borderRadius: 10, overflow: 'hidden', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, backgroundColor: '#1E293B', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, overflow: 'hidden', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
           <div style={{ padding: '4px 6px', maxHeight: 200, overflowY: 'auto' }}>
             {workspaces.map(ws => {
               const isCurrent = ws.id === workspace?.id;
@@ -121,24 +119,24 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: 8,
                     padding: '8px 8px', borderRadius: 6, border: 'none',
-                    backgroundColor: isCurrent ? c.accentSubtle : 'transparent',
+                    backgroundColor: isCurrent ? 'rgba(124,58,237,0.15)' : 'transparent',
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'background-color 0.15s',
                   }}
-                  onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = c.bgCardHover; }}
+                  onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
                   onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : c.borderStrong, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: 'white', flexShrink: 0 }}>{wsInitials}</div>
-                  <span style={{ fontSize: 12, color: isCurrent ? c.text : c.textSecondary, flex: 1, fontWeight: isCurrent ? 600 : 400 }}>{ws.name}</span>
+                  <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: 'white', flexShrink: 0 }}>{wsInitials}</div>
+                  <span style={{ fontSize: 12, color: isCurrent ? '#FFFFFF' : '#94A3B8', flex: 1, fontWeight: isCurrent ? 600 : 400 }}>{ws.name}</span>
                   {isCurrent && (
-                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                   )}
                 </button>
               );
             })}
           </div>
-          <div style={{ borderTop: `1px solid ${c.border}`, padding: '4px 6px' }}>
-            <button onClick={() => setOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 4px', borderRadius: 6, border: 'none', backgroundColor: 'transparent', color: c.textMuted, fontSize: 12, cursor: 'pointer' }}>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '4px 6px' }}>
+            <button onClick={() => setOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 4px', borderRadius: 6, border: 'none', backgroundColor: 'transparent', color: '#64748B', fontSize: 12, cursor: 'pointer' }}>
               <Plus size={12} /> Add workspace
             </button>
           </div>
@@ -195,17 +193,17 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
   const pathname = usePathname();
   const router = useRouter();
   const { workspace } = useWorkspaceCtx();
-  const { c, theme, toggle } = useTheme();
+  const { theme, toggle } = useTheme();
 
   const isActive = (href: string) => href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
-  const sidebarWidth = collapsed ? 68 : 240;
+  const sidebarWidth = collapsed ? 64 : 220;
 
   return (
     <div className="sidebar-glass" style={{
       width: sidebarWidth, minHeight: '100vh',
       display: 'flex', flexDirection: 'column', padding: collapsed ? '20px 8px' : '20px 12px',
       flexShrink: 0,
-      transition: 'width 0.25s cubic-bezier(0.23, 1, 0.32, 1)',
+      transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden', position: 'relative',
     }}>
       {/* Logo + Collapse */}
@@ -230,18 +228,18 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
 
       <WorkspaceSwitcher collapsed={collapsed} />
 
-      <Separator className="my-3" style={{ backgroundColor: "var(--bg-elevated)" }} />
+      <Separator className="my-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />
 
       {/* Nav */}
       <nav aria-label="Main navigation" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
         {navGroups.map((group, gi) => (
           <div key={gi} style={{ marginBottom: 8 }}>
             {group.label && !collapsed && (
-              <div style={{ fontSize: 10, fontWeight: 700, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', padding: '10px 10px 5px', fontFamily: 'var(--font-display)' }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.12em', padding: '16px 16px 6px 16px', fontFamily: "'DM Sans', sans-serif" }}>
                 {group.label}
               </div>
             )}
-            {collapsed && group.label && <Separator className="my-2" style={{ backgroundColor: "var(--bg-elevated)" }} />}
+            {collapsed && group.label && <Separator className="my-2" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />}
             {group.items.map(item => {
               const active = isActive(item.href);
               const navLink = (
@@ -249,38 +247,31 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                   key={item.href}
                   href={item.href}
                   onClick={(e) => { e.preventDefault(); router.push(item.href); onClose?.(); }}
-                  className={active ? 'nav-active-pill' : ''}
+                  className={active && !collapsed ? 'nav-active-pill' : ''}
                   style={{
                     display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10,
                     padding: collapsed ? '8px 0' : '8px 10px',
                     paddingLeft: active && !collapsed ? 7 : collapsed ? 0 : 10,
                     borderRadius: collapsed ? 8 : '0 8px 8px 0',
                     justifyContent: collapsed ? 'center' : 'flex-start',
-                    color: active ? c.text : c.textSecondary,
-                    fontSize: 13, fontWeight: active ? 500 : 400,
+                    color: active ? '#FFFFFF' : '#94A3B8',
+                    fontSize: 13, fontWeight: 500,
+                    fontFamily: "'DM Sans', sans-serif",
+                    letterSpacing: '0.01em',
                     textDecoration: 'none', cursor: 'pointer',
-                    background: active ? (collapsed ? c.accentSubtle : `linear-gradient(90deg, ${c.accentSubtle}, transparent)`) : 'transparent',
-                    transition: 'background-color 0.15s cubic-bezier(0.23,1,0.32,1), color 0.15s cubic-bezier(0.23,1,0.32,1), transform 0.16s cubic-bezier(0.23,1,0.32,1)',
+                    background: active ? 'rgba(124, 58, 237, 0.15)' : 'transparent',
+                    transition: 'background-color 0.15s, color 0.15s',
                     position: 'relative',
                   }}
-                  onMouseEnter={e => { if (!active) e.currentTarget.style.backgroundColor = c.bgCardHover; }}
-                  onMouseLeave={e => { if (!active) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#E2E8F0'; } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#94A3B8'; } }}
                 >
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    backgroundColor: active ? c.accentSubtle : 'rgba(255,255,255,0.04)',
-                    border: active ? '1px solid rgba(255,97,84,0.15)' : '1px solid transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'background-color 0.15s',
-                    flexShrink: 0,
-                  }}>
-                    <item.icon size={14} color={active ? c.accent : c.textMuted} strokeWidth={active ? 2 : 1.75} />
-                  </div>
+                  <item.icon size={16} color={active ? '#7C3AED' : '#64748B'} strokeWidth={1.5} />
                   {!collapsed && (
                     <>
-                      <span style={{ flex: 1 }}>{item.label}</span>
+                      <span style={{ flex: 1, opacity: 1, overflow: 'hidden', whiteSpace: 'nowrap', transition: 'opacity 250ms' }}>{item.label}</span>
                       {'badge' in item && item.badge && (
-                        <Badge variant="destructive" className="h-4 min-w-4 px-1 text-[10px]">3</Badge>
+                        <span style={{ background: '#7C3AED', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px', marginLeft: 'auto' }}>3</span>
                       )}
                     </>
                   )}
@@ -305,7 +296,7 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
       </nav>
 
       {/* Bottom Controls */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -315,10 +306,10 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: '100%', padding: '8px 0', borderRadius: 8,
                 border: 'none', backgroundColor: 'transparent',
-                cursor: 'pointer', color: c.textMuted,
+                cursor: 'pointer', color: '#64748B',
               }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = c.bgCardHover}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94A3B8'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#64748B'; }}
             >
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
@@ -326,24 +317,22 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
           <TooltipContent side="right">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</TooltipContent>
         </Tooltip>
 
-        <Separator className="my-2" style={{ backgroundColor: "var(--bg-elevated)" }} />
-
         <div style={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10, padding: collapsed ? '8px 0' : '8px 10px', justifyContent: collapsed ? 'center' : 'flex-start' }}>
           <div style={{
             width: 30, height: 30, borderRadius: 8,
-            backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`,
+            backgroundColor: '#1E293B', border: '1px solid rgba(255,255,255,0.08)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
           }}>
-            <User size={14} color={c.textSecondary} />
+            <User size={14} color="#94A3B8" />
           </div>
           {!collapsed && (
             <>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 500, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#E2E8F0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {workspace?.name || 'Workspace'}
                 </div>
-                <div style={{ fontSize: 11, color: c.textMuted }}>Settings</div>
+                <div style={{ fontSize: 12, color: '#64748B' }}>Settings</div>
               </div>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -354,9 +343,9 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                       await supabase.auth.signOut();
                       window.location.href = '/auth/signin';
                     }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: 2 }}
-                    onMouseEnter={e => (e.currentTarget.style.color = c.textSecondary)}
-                    onMouseLeave={e => (e.currentTarget.style.color = c.textMuted)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 2 }}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#94A3B8')}
+                    onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}
                   >
                     <LogOut size={14} />
                   </button>
@@ -369,9 +358,9 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
         {!collapsed && (
           <a
             href="mailto:khush@oltaflock.ai?subject=Lumnix Beta Feedback"
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', fontSize: 12, color: c.textMuted, textDecoration: 'none', transition: 'color 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = c.accent)}
-            onMouseLeave={e => (e.currentTarget.style.color = c.textMuted)}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', fontSize: 12, color: '#64748B', textDecoration: 'none', transition: 'color 0.15s' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#7C3AED')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}
           >
             <MessageCircle size={13} /> Give feedback
           </a>
@@ -401,7 +390,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (!checked) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-page)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
         <img src="/favicon.png" alt="Lumnix" style={{ width: 32, height: 32, borderRadius: 8, opacity: 0.6 }} className="animate-pulse" />
       </div>
@@ -416,7 +405,6 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
-  const { c } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -454,7 +442,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   }, [router, toggleCollapse]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: c.bgPage }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
       {/* Desktop sidebar */}
       <div className="desktop-sidebar" style={{ display: 'none' }}>
         <SidebarInner collapsed={collapsed} onCollapse={toggleCollapse} />
@@ -462,11 +450,11 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <style>{`.desktop-sidebar { display: flex !important; } @media (max-width: 768px) { .desktop-sidebar { display: none !important; } }`}</style>
 
       {/* Mobile header */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: c.bgPage, borderBottom: `1px solid ${c.border}`, padding: '10px 16px', display: 'none' }} className="mobile-header">
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '10px 16px', display: 'none' }} className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src="/favicon.png" alt="Lumnix" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain' }} />
-            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', color: c.text }}>
+            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', color: '#0F172A' }}>
               Lumnix
             </span>
           </div>
@@ -496,25 +484,26 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
 
       {/* Main content */}
-      <main id="main-content" style={{ flex: 1, overflow: 'auto', maxHeight: '100vh', backgroundColor: c.bgPage }} className="main-content">
-        <div style={{ padding: 32 }}>
+      <main id="main-content" style={{ flex: 1, overflow: 'auto', maxHeight: '100vh', backgroundColor: '#F8FAFC' }} className="main-content">
+        <div style={{ padding: '28px 32px', maxWidth: 1400 }}>
           {/* Cmd+K hint bar */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
             <button
               onClick={() => setCmdOpen(true)}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '6px 14px', borderRadius: 10,
-                border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
-                color: c.textMuted, fontSize: 12, cursor: 'pointer',
-                transition: 'border-color 0.2s, color 0.2s, box-shadow 0.2s',
+                padding: '8px 12px', borderRadius: 8,
+                border: '1px solid #E2E8F0', backgroundColor: '#F1F5F9',
+                color: '#475569', fontSize: 13, cursor: 'pointer',
+                width: 240,
+                transition: 'border-color 150ms, box-shadow 150ms',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,97,84,0.25)'; e.currentTarget.style.color = c.textSecondary; e.currentTarget.style.boxShadow = '0 0 16px rgba(255,97,84,0.06)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.textMuted; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <Search size={13} />
-              <span style={{ minWidth: 100 }}>Search anything...</span>
-              <kbd style={{ fontSize: 10, padding: '2px 6px', borderRadius: 5, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontFamily: 'var(--font-mono)', color: c.textMuted, letterSpacing: '0.02em' }}>
+              <span style={{ flex: 1, textAlign: 'left' }}>Search anything...</span>
+              <kbd style={{ fontSize: 10, padding: '2px 6px', borderRadius: 5, backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', fontFamily: 'var(--font-mono)', color: '#94A3B8', letterSpacing: '0.02em' }}>
                 ⌘K
               </kbd>
             </button>

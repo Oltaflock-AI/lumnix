@@ -9,18 +9,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+        default: "bg-[#7C3AED] text-white hover:bg-[#6D28D9] hover:shadow-[0_4px_12px_rgba(124,58,237,0.3)] active:scale-[0.98]",
         gradient:
-          "bg-gradient-to-br from-[#FF6154] via-[#FF7A5C] to-[#FF6154] text-white shadow-[0_2px_12px_rgba(255,97,84,0.3),inset_0_1px_0_rgba(255,255,255,0.15)] hover:shadow-[0_6px_24px_rgba(255,97,84,0.45),inset_0_1px_0_rgba(255,255,255,0.2)] hover:-translate-y-px active:translate-y-0 transition-all duration-200",
+          "bg-[#7C3AED] text-white shadow-[0_2px_12px_rgba(124,58,237,0.3)] hover:bg-[#6D28D9] hover:shadow-[0_6px_24px_rgba(124,58,237,0.4)] hover:-translate-y-px active:translate-y-0 transition-all duration-200",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border-[#E2E8F0] bg-white text-[#374151] hover:border-[#7C3AED] hover:text-[#7C3AED] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-white text-[#374151] border border-[#E2E8F0] hover:border-[#7C3AED] hover:text-[#7C3AED] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)]",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "hover:bg-[#F1F5F9] hover:text-foreground aria-expanded:bg-[#F1F5F9] aria-expanded:text-foreground",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-transparent text-[#EF4444] border border-[#FCA5A5] hover:bg-[#FEF2F2] hover:border-[#EF4444]",
+        link: "text-[#7C3AED] underline-offset-4 hover:underline",
       },
       size: {
         default:
