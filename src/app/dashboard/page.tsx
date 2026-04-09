@@ -104,7 +104,7 @@ export default function DashboardPage() {
   const totalAdSpend = uTotals.ad_spend || 0;
   const totalAdRevenue = uTotals.ad_revenue || 0;
   const totalROAS = uTotals.roas || 0;
-  const totalConversions = uTotals.conversions || 0;
+  const totalConversions = Math.round(uTotals.conversions || 0);
 
   // Combined chart: organic clicks vs paid clicks
   const unifiedDaily: any[] = unifiedResp?.daily || [];
@@ -152,8 +152,8 @@ export default function DashboardPage() {
       <div className="kpi-grid stagger-in" style={{ marginBottom: 20 }}>
         <StatCard label="Sessions" value={hasGA4 ? totalSessions.toLocaleString() : '—'} sub={hasGA4 ? `${totalUsers.toLocaleString()} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
         <StatCard label="Organic Clicks" value={hasGSC ? totalClicks.toLocaleString() : '—'} sub={hasGSC ? `${totalImpressions.toLocaleString()} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
-        <StatCard label="Ad Spend" value={hasAds ? fmtCurrency(totalAdSpend) : '—'} sub={hasAds ? `${totalConversions} conversions` : 'Connect Ads'} color={c.warning} icon={Zap} loading={loading} />
-        <StatCard label="ROAS" value={hasAds ? `${totalROAS}x` : '—'} sub={hasAds ? `${fmtCurrency(totalAdRevenue)} revenue` : 'Connect Ads'} color={totalROAS >= 2 ? c.success : c.warning} icon={Target} loading={loading} />
+        <StatCard label="Ad Spend" value={hasAds ? fmtCurrency(totalAdSpend) : '—'} sub={hasAds ? `${totalConversions.toLocaleString()} conversions` : 'Connect Ads'} color="#F97316" icon={Zap} loading={loading} />
+        <StatCard label="ROAS" value={hasAds ? `${Number(totalROAS).toFixed(2)}x` : '—'} sub={hasAds ? `${fmtCurrency(totalAdRevenue)} revenue` : 'Connect Ads'} color={totalROAS >= 2 ? '#22C55E' : '#F59E0B'} icon={Target} loading={loading} />
       </div>
 
       {/* Anomalies — full width */}
