@@ -184,7 +184,7 @@ export async function GET(req: NextRequest) {
           }
         }
 
-        await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
+        await db.from('integrations').update({ status: 'connected', last_sync_at: new Date().toISOString() }).eq('id', integration.id);
       } catch (e: any) {
         syncStatus = 'error';
         errors.push({ provider: integration.provider, workspace_id: integration.workspace_id, error: e.message });

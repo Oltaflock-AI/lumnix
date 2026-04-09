@@ -146,7 +146,7 @@ export async function GET(req: NextRequest) {
           errors.push({ id: integration.id, provider: 'gsc', error: result.error, attempts: result.attempts });
           results.push({ id: integration.id, provider: 'gsc', status: 'error', error: result.error });
         } else {
-          await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
+          await db.from('integrations').update({ status: 'connected', last_sync_at: new Date().toISOString() }).eq('id', integration.id);
           if (jobId) await completeSyncJob(db, jobId, 'completed', result.data);
           results.push({ id: integration.id, provider: 'gsc', status: 'synced', ...result.data, attempts: result.attempts });
         }
@@ -191,7 +191,7 @@ export async function GET(req: NextRequest) {
           errors.push({ id: integration.id, provider: 'ga4', error: result.error, attempts: result.attempts });
           results.push({ id: integration.id, provider: 'ga4', status: 'error', error: result.error });
         } else {
-          await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
+          await db.from('integrations').update({ status: 'connected', last_sync_at: new Date().toISOString() }).eq('id', integration.id);
           if (jobId) await completeSyncJob(db, jobId, 'completed', result.data);
           results.push({ id: integration.id, provider: 'ga4', status: 'synced', ...result.data, attempts: result.attempts });
         }
@@ -233,7 +233,7 @@ export async function GET(req: NextRequest) {
           errors.push({ id: integration.id, provider: 'google_ads', error: result.error, attempts: result.attempts });
           results.push({ id: integration.id, provider: 'google_ads', status: 'error', error: result.error });
         } else {
-          await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
+          await db.from('integrations').update({ status: 'connected', last_sync_at: new Date().toISOString() }).eq('id', integration.id);
           if (jobId) await completeSyncJob(db, jobId, 'completed', result.data);
           results.push({ id: integration.id, provider: 'google_ads', status: 'synced', ...result.data, attempts: result.attempts });
         }
@@ -275,7 +275,7 @@ export async function GET(req: NextRequest) {
           errors.push({ id: integration.id, provider: 'meta_ads', error: result.error, attempts: result.attempts });
           results.push({ id: integration.id, provider: 'meta_ads', status: 'error', error: result.error });
         } else {
-          await db.from('integrations').update({ last_sync_at: new Date().toISOString() }).eq('id', integration.id);
+          await db.from('integrations').update({ status: 'connected', last_sync_at: new Date().toISOString() }).eq('id', integration.id);
           if (jobId) await completeSyncJob(db, jobId, 'completed', result.data);
           results.push({ id: integration.id, provider: 'meta_ads', status: 'synced', ...result.data, attempts: result.attempts });
         }
