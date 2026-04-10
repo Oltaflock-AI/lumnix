@@ -5,62 +5,67 @@ import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hook
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { CSSProperties } from "react";
 
-/* ─── Shared Styles Hook ─── */
+/* ─── Shared Styles Hook (theme-aware) ─── */
 function useStyles() {
   const { c, theme } = useTheme();
   const inputBase: React.CSSProperties = {
     width: '100%',
-    padding: '10px 14px',
+    height: 40,
+    padding: '0 12px',
     borderRadius: 8,
-    border: '1px solid #E2E8F0',
-    backgroundColor: '#FFFFFF',
-    color: '#0F172A',
-    fontSize: 13,
+    border: `1px solid var(--border-default)`,
+    backgroundColor: 'var(--bg-page)',
+    color: 'var(--text-primary)',
+    fontSize: 14,
+    fontFamily: "'DM Sans', sans-serif",
     boxSizing: 'border-box',
     transition: 'border-color 150ms, box-shadow 150ms',
     outline: 'none',
   };
   const primaryBtn: React.CSSProperties = {
     display: 'inline-flex', alignItems: 'center', gap: 6,
-    padding: '9px 18px', borderRadius: 8, border: 'none',
+    height: 40, padding: '0 20px', borderRadius: 8, border: 'none',
     background: '#7C3AED',
     color: '#FFFFFF',
-    fontSize: 13, fontWeight: 600, cursor: 'pointer',
+    fontSize: 14, fontWeight: 600, cursor: 'pointer',
     fontFamily: "'DM Sans', sans-serif",
-    transition: 'background 150ms, box-shadow 150ms, transform 100ms',
+    transition: 'background 150ms, box-shadow 150ms',
   };
   const ghostBtn: React.CSSProperties = {
     display: 'inline-flex', alignItems: 'center', gap: 6,
-    padding: '9px 18px', borderRadius: 8,
-    border: '1px solid #E2E8F0',
-    backgroundColor: '#F8FAFC',
-    color: '#475569',
-    fontSize: 13, fontWeight: 500, cursor: 'pointer',
-    transition: 'background 150ms',
+    height: 40, padding: '0 16px', borderRadius: 8,
+    border: `1px solid var(--border-default)`,
+    backgroundColor: 'transparent',
+    color: 'var(--text-secondary)',
+    fontSize: 14, fontWeight: 500, cursor: 'pointer',
+    fontFamily: "'DM Sans', sans-serif",
+    transition: 'background 150ms, border-color 150ms',
   };
   const destructiveBtn: React.CSSProperties = {
     background: 'transparent', color: '#EF4444',
-    border: '1px solid #FCA5A5',
-    borderRadius: 8, padding: '9px 18px', cursor: 'pointer',
-    fontSize: 13, fontWeight: 500,
+    border: '1px solid #FECACA',
+    borderRadius: 8, height: 40, padding: '0 16px', cursor: 'pointer',
+    fontSize: 14, fontWeight: 500,
+    fontFamily: "'DM Sans', sans-serif",
     display: 'inline-flex', alignItems: 'center', gap: 6,
     transition: 'background 150ms, border-color 150ms',
   };
   const card: React.CSSProperties = {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E2E8F0',
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border-default)',
     borderRadius: 12,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-    transition: 'box-shadow 200ms, border-color 200ms',
+    padding: 24,
+    marginBottom: 16,
   };
   const label: React.CSSProperties = {
-    display: 'block', fontSize: 12, fontWeight: 600,
-    color: '#64748B', marginBottom: 6,
+    display: 'block', fontSize: 13, fontWeight: 500,
+    color: 'var(--text-secondary)',
+    fontFamily: "'DM Sans', sans-serif",
+    marginBottom: 6,
   };
   return { c, inputBase, primaryBtn, ghostBtn, destructiveBtn, card, label };
 }
@@ -142,17 +147,19 @@ function NotificationsTab() {
   }
 
   return (
-    <div style={{ maxWidth: 560 }}>
-      <div style={{ ...card, overflow: 'hidden', marginBottom: 20 }}>
+    <div>
+      <div style={{ ...card }}>
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Notification Preferences</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Choose which alerts and reports you want to receive.</p>
         {notifItems.map((item, i) => (
           <div key={item.id} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '16px 20px',
-            borderBottom: i < notifItems.length - 1 ? `1px solid ${c.border}` : 'none',
+            padding: '16px 0', gap: 16,
+            borderBottom: i < notifItems.length - 1 ? '1px solid var(--border-subtle)' : 'none',
           }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: c.text }}>{item.label}</div>
-              <div style={{ fontSize: 12, color: c.textSecondary, marginTop: 2 }}>{item.desc}</div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: "'DM Sans', sans-serif" }}>{item.label}</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginTop: 2 }}>{item.desc}</div>
             </div>
             <Toggle on={!!toggles[item.id]} onToggle={() => setToggles(t => ({ ...t, [item.id]: !t[item.id] }))} />
           </div>
@@ -160,7 +167,7 @@ function NotificationsTab() {
       </div>
       <button onClick={save} style={{
         ...primaryBtn,
-        backgroundColor: saved ? c.success : c.accent,
+        backgroundColor: saved ? c.success : '#7C3AED',
       }}>
         {saved ? <><Check size={16} /> Saved!</> : "Save Preferences"}
       </button>
@@ -249,9 +256,10 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
   }
 
   return (
-    <div style={{ maxWidth: 560 }}>
-      <div style={{ ...card, padding: 24, marginBottom: 20 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 20 }}>Brand Identity</h3>
+    <div>
+      <div style={{ ...card }}>
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Brand Identity</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Customize your brand name, logo, and colors.</p>
 
         {/* Brand Name */}
         <div style={{ marginBottom: 20 }}>
@@ -272,10 +280,10 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
           <label style={label}>Logo</label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div style={{
-              width: 60, height: 60, borderRadius: 12,
-              backgroundColor: c.bgCard, display: 'flex', alignItems: 'center',
+              width: 64, height: 64, borderRadius: 8,
+              backgroundColor: 'var(--bg-card)', display: 'flex', alignItems: 'center',
               justifyContent: 'center', overflow: 'hidden', flexShrink: 0,
-              border: `1px solid ${c.border}`,
+              border: '1px solid var(--border-default)',
             }}>
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -301,14 +309,14 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
         {/* Brand Color Presets */}
         <div>
           <label style={{ ...label, marginBottom: 10 }}>Brand Color</label>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {BRAND_COLORS.map(bc => (
               <button
                 key={bc.value}
                 onClick={() => setBrandColor(bc.value)}
                 title={bc.label}
                 style={{
-                  width: 36, height: 36, borderRadius: '50%',
+                  width: 32, height: 32, borderRadius: '50%',
                   backgroundColor: bc.value, border: 'none', cursor: 'pointer',
                   outline: brandColor === bc.value ? `2px solid ${c.accent}` : '2px solid transparent',
                   outlineOffset: 3, position: 'relative',
@@ -322,18 +330,20 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
             ))}
           </div>
           <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <input
-              type="color"
-              value={brandColor}
-              onChange={e => setBrandColor(e.target.value)}
-              style={{ width: 36, height: 36, border: 'none', cursor: 'pointer', borderRadius: 8, padding: 0, background: 'none' }}
-              title="Pick custom color"
-            />
+            <div style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: brandColor, flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
+              <input
+                type="color"
+                value={brandColor}
+                onChange={e => setBrandColor(e.target.value)}
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', cursor: 'pointer', opacity: 0 }}
+                title="Pick custom color"
+              />
+            </div>
             <input
               type="text"
               value={brandColor}
               onChange={e => { const v = e.target.value; if (/^#[0-9a-fA-F]{0,6}$/.test(v)) setBrandColor(v); }}
-              style={{ ...inputBase, width: 110, fontFamily: 'var(--font-mono)', fontSize: 13, padding: '8px 10px' }}
+              style={{ ...inputBase, width: 140, fontFamily: 'var(--font-mono)', fontSize: 14, padding: '0 10px' }}
               maxLength={7}
             />
             <span style={{ fontSize: 12, color: c.textMuted }}>or pick from presets above</span>
@@ -455,12 +465,12 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
   }
 
   return (
-    <div style={{ maxWidth: 640 }}>
+    <div>
       {/* Header + Add button */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div style={{ ...card, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 4 }}>Alert Rules</h3>
-          <p style={{ fontSize: 13, color: c.textSecondary, margin: 0 }}>Get notified when metrics cross your thresholds. Checked every hour.</p>
+          <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Alert Rules</h3>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", margin: 0 }}>Get notified when metrics cross your thresholds.</p>
         </div>
         <button
           onClick={() => setShowForm(f => !f)}
@@ -523,10 +533,10 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
           <Loader2 size={20} color={c.accent} style={{ animation: 'spin 1s linear infinite' }} />
         </div>
       ) : rules.length === 0 ? (
-        <div style={{ ...card, padding: 40, textAlign: 'center' }}>
-          <AlertTriangle size={28} color={c.textMuted} style={{ marginBottom: 10 }} />
-          <p style={{ fontSize: 14, color: c.textSecondary, marginBottom: 4 }}>No alert rules yet</p>
-          <p style={{ fontSize: 12, color: c.textMuted }}>Click &quot;Add Alert&quot; to create your first rule</p>
+        <div style={{ ...card, padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <AlertTriangle size={32} color="var(--text-muted)" style={{ marginBottom: 10 }} />
+          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: "'DM Sans', sans-serif", marginBottom: 4 }}>No alert rules yet</p>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif" }}>Click &quot;Add Alert&quot; to create your first rule</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
@@ -634,8 +644,9 @@ function ProfileTab() {
   }
 
   return (
-    <div style={{ ...card, padding: 24, maxWidth: 500 }}>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 20 }}>Profile Settings</h3>
+    <div style={{ ...card }}>
+      <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Profile Settings</h3>
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Update your personal information.</p>
       <div style={{ marginBottom: 16 }}>
         <label style={label}>Full Name</label>
         <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
@@ -645,8 +656,8 @@ function ProfileTab() {
       </div>
       <div style={{ marginBottom: 16 }}>
         <label style={label}>Email</label>
-        <input value={email} readOnly placeholder="your@email.com" style={{ ...inputBase, padding: '12px 14px', fontSize: 14, opacity: 0.6, cursor: 'not-allowed' }} />
-        <p style={{ fontSize: 11, color: c.textMuted, marginTop: 4 }}>Email cannot be changed here</p>
+        <input value={email} readOnly placeholder="your@email.com" style={{ ...inputBase, backgroundColor: 'var(--bg-card-secondary)', color: 'var(--text-muted)', cursor: 'not-allowed' }} />
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginTop: 4 }}>Email cannot be changed here</p>
       </div>
       <div style={{ marginBottom: 20 }}>
         <label style={label}>Company</label>
@@ -779,9 +790,10 @@ function BillingTab() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <div style={{
             padding: '4px 10px', borderRadius: 6,
-            backgroundColor: currentPlan === 'free' ? 'rgba(85,85,85,0.1)' : c.accentSubtle,
-            color: currentPlan === 'free' ? c.textMuted : c.accent,
-            fontSize: 12, fontWeight: 600, textTransform: 'uppercase',
+            backgroundColor: 'rgba(124,58,237,0.1)',
+            color: '#7C3AED',
+            fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+            fontFamily: "'DM Sans', sans-serif",
           }}>
             {currentPlan} plan
           </div>
@@ -800,28 +812,29 @@ function BillingTab() {
       <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, alignItems: 'start' }}>
         {plans.map(plan => (
           <div key={plan.id} style={{
-            ...card,
-            border: plan.current ? '2px solid #E2E8F0' : `1px solid ${plan.popular ? c.accent : c.border}`,
-            padding: 24,
-            paddingTop: plan.popular ? 36 : 24,
+            backgroundColor: 'var(--bg-card)',
+            border: plan.popular ? '2px solid #7C3AED' : '1px solid var(--border-default)',
+            borderRadius: 12,
+            padding: 20,
+            paddingTop: plan.popular ? 28 : 20,
             position: 'relative',
             minWidth: 0,
             width: '100%',
           }}>
             {plan.popular && (
-              <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', padding: '4px 12px', borderRadius: 20, backgroundColor: '#7C3AED', color: 'white', fontSize: 12, fontWeight: 600, fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap' }}>
+              <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', padding: '4px 12px', borderRadius: 20, backgroundColor: '#7C3AED', color: 'white', fontSize: 11, fontWeight: 600, fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap' }}>
                 Most Popular
               </div>
             )}
-            <div style={{ fontSize: 18, fontWeight: 700, color: c.text, marginBottom: 4, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{plan.name}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{plan.name}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 12 }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: c.text, letterSpacing: '-0.03em', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{plan.price}</span>
-              <span style={{ fontSize: 13, color: c.textMuted }}>{plan.period}</span>
+              <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{plan.price}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", verticalAlign: 'middle' }}>{plan.period}</span>
             </div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0' }}>
+            <ul style={{ listStyle: 'none', padding: 0, margin: '14px 0 18px 0', display: 'flex', flexDirection: 'column', gap: 7 }}>
               {plan.features.map((f, i) => (
-                <li key={i} style={{ fontSize: 13, color: c.textSecondary, padding: '3px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Check size={14} color={c.success} style={{ flexShrink: 0 }} />
+                <li key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', sans-serif" }}>
+                  <Check size={12} color="#10B981" style={{ flexShrink: 0 }} />
                   {f}
                 </li>
               ))}
@@ -831,20 +844,20 @@ function BillingTab() {
               disabled={plan.current || plan.id === 'free' || loading === plan.id}
               style={{
                 width: '100%',
-                height: 44,
+                height: 40,
                 borderRadius: 8,
-                border: plan.current ? 'none' : 'none',
-                backgroundColor: plan.current ? '#F1F5F9' : plan.popular ? '#7C3AED' : c.surfaceElevated,
-                color: plan.current ? '#9CA3AF' : plan.popular ? 'white' : c.text,
-                fontSize: 14,
+                border: plan.current ? 'none' : plan.id === 'free' ? '1px solid var(--border-default)' : 'none',
+                backgroundColor: plan.current ? 'var(--bg-card-secondary)' : (plan.id === 'free' ? 'transparent' : '#7C3AED'),
+                color: plan.current ? 'var(--text-muted)' : (plan.id === 'free' ? 'var(--text-muted)' : '#FFFFFF'),
+                fontSize: 13,
                 fontWeight: 600,
                 fontFamily: "'DM Sans', sans-serif",
-                cursor: plan.current || plan.id === 'free' ? 'default' : 'pointer',
+                cursor: plan.current || plan.id === 'free' ? 'not-allowed' : 'pointer',
                 opacity: loading === plan.id ? 0.7 : 1,
                 transition: 'background-color 150ms',
               }}
-              onMouseEnter={e => { if (!plan.current && plan.popular) e.currentTarget.style.backgroundColor = '#6D28D9'; }}
-              onMouseLeave={e => { if (!plan.current && plan.popular) e.currentTarget.style.backgroundColor = '#7C3AED'; }}
+              onMouseEnter={e => { if (!plan.current && plan.id !== 'free') e.currentTarget.style.backgroundColor = '#6D28D9'; }}
+              onMouseLeave={e => { if (!plan.current && plan.id !== 'free') e.currentTarget.style.backgroundColor = '#7C3AED'; }}
             >
               {plan.current ? 'Current Plan' : plan.id === 'free' ? 'Free' : loading === plan.id ? 'Loading...' : 'Upgrade'}
             </button>
@@ -853,9 +866,9 @@ function BillingTab() {
       </div>
 
       {/* Coupon Redemption */}
-      <div style={{ ...card, padding: 24, marginTop: 24 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 4 }}>Have a coupon code?</h3>
-        <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>Enter your early access or promo code to unlock a plan.</p>
+      <div style={{ ...card, marginTop: 24 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Have a coupon code?</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 16 }}>Enter your early access or promo code to unlock a plan.</p>
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
           <input
             type="text"
@@ -897,153 +910,6 @@ function BillingTab() {
   );
 }
 
-function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
-  const { c, card, label, inputBase, primaryBtn, ghostBtn } = useStyles();
-  const [webhookUrl, setWebhookUrl] = useState('');
-  const [connected, setConnected] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ ok: boolean; text: string } | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!workspaceId) return;
-    fetch(`/api/settings/slack?workspace_id=${workspaceId}`)
-      .then(r => r.json())
-      .then(d => {
-        setWebhookUrl(d.slack_webhook_url || '');
-        setConnected(d.connected || false);
-      })
-      .catch(() => {});
-  }, [workspaceId]);
-
-  async function handleSave() {
-    if (!workspaceId) return;
-    setSaving(true);
-    setError('');
-    setTestResult(null);
-    try {
-      const res = await fetch('/api/settings/slack', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspace_id: workspaceId, slack_webhook_url: webhookUrl.trim() }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSaved(true);
-        setConnected(!!webhookUrl.trim());
-        setTimeout(() => setSaved(false), 2000);
-      } else {
-        setError(data.error || 'Failed to save');
-      }
-    } catch {
-      setError('Failed to save webhook URL');
-    }
-    setSaving(false);
-  }
-
-  async function handleTest() {
-    if (!workspaceId) return;
-    setTesting(true);
-    setTestResult(null);
-    try {
-      const res = await fetch('/api/settings/slack/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ workspace_id: workspaceId }),
-      });
-      const data = await res.json();
-      setTestResult(data.success ? { ok: true, text: 'Test message sent!' } : { ok: false, text: data.error || 'Test failed' });
-    } catch {
-      setTestResult({ ok: false, text: 'Failed to send test message' });
-    }
-    setTesting(false);
-  }
-
-  return (
-    <div style={{ marginTop: 32 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(74,21,75,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" fill="#4A154B"/>
-          </svg>
-        </div>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: c.text }}>Slack Notifications</div>
-          <StatusPill connected={connected} />
-        </div>
-      </div>
-
-      <div style={{ ...card, padding: 24 }}>
-        <div style={{ marginBottom: 16 }}>
-          <label style={label}>Slack Webhook URL</label>
-          <input
-            type="url"
-            value={webhookUrl}
-            onChange={e => setWebhookUrl(e.target.value)}
-            placeholder="https://hooks.slack.com/services/..."
-            style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
-            onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-            onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
-          />
-          <div style={{ marginTop: 8, padding: '12px 14px', borderRadius: 8, backgroundColor: `${c.accent}08`, border: `1px solid ${c.accent}20` }}>
-            <p style={{ fontSize: 12, color: c.textSecondary, lineHeight: 1.6, margin: 0 }}>
-              <strong style={{ color: c.text, display: 'block', marginBottom: 6 }}>How to get your Slack webhook URL:</strong>
-              1. Go to <a href="https://api.slack.com/apps" target="_blank" rel="noopener" style={{ color: c.accent, textDecoration: 'underline' }}>api.slack.com/apps</a> → Create New App → From scratch<br/>
-              2. Name it "Lumnix Alerts" → pick your workspace → Create App<br/>
-              3. In Features → Incoming Webhooks → toggle Activate → Add New Webhook to Workspace<br/>
-              4. Pick the channel for alerts → Allow → copy the Webhook URL and paste it above
-            </p>
-          </div>
-        </div>
-
-        {error && (
-          <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: 13 }}>
-            {error}
-          </div>
-        )}
-
-        {testResult && (
-          <div style={{
-            marginBottom: 12, padding: '8px 12px', borderRadius: 8,
-            backgroundColor: testResult.ok ? c.successSubtle : c.dangerSubtle,
-            border: `1px solid ${testResult.ok ? c.successBorder : c.dangerBorder}`,
-            color: testResult.ok ? c.success : c.danger, fontSize: 13,
-          }}>
-            {testResult.text}
-          </div>
-        )}
-
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            style={{
-              ...primaryBtn,
-              backgroundColor: saved ? c.success : c.accent,
-              opacity: saving ? 0.7 : 1,
-              cursor: saving ? 'wait' : 'pointer',
-            }}
-          >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
-            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
-          </button>
-          {connected && (
-            <button
-              onClick={handleTest}
-              disabled={testing}
-              style={{ ...ghostBtn, opacity: testing ? 0.7 : 1, cursor: testing ? 'wait' : 'pointer' }}
-            >
-              {testing ? <Loader2 size={14} className="animate-spin" /> : null}
-              {testing ? 'Sending...' : 'Send Test'}
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function DeleteAccountSection() {
   const { c, card, destructiveBtn } = useStyles();
@@ -1148,7 +1014,7 @@ function DeleteAccountSection() {
 }
 
 function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace: any; loading: boolean; onSaved?: () => void; onUpdate?: (w: any) => void }) {
-  const { c, card, label, inputBase, primaryBtn } = useStyles();
+  const { c, card, label, inputBase, primaryBtn, ghostBtn } = useStyles();
   const [name, setName] = useState(workspace?.name || '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -1194,7 +1060,7 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
 
   if (loading) {
     return (
-      <div style={{ ...card, padding: 24, maxWidth: 500 }}>
+      <div style={{ ...card }}>
         <Skeleton className="h-5 w-40 mb-4" />
         <Skeleton className="h-10 w-full mb-4" />
         <Skeleton className="h-10 w-full" />
@@ -1203,8 +1069,9 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
   }
 
   return (
-    <div style={{ ...card, padding: 24, maxWidth: 500 }}>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 20 }}>Workspace</h3>
+    <div style={{ ...card }}>
+      <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Workspace</h3>
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Your workspace name and ID.</p>
 
       <div style={{ marginBottom: 16 }}>
         <label style={label}>Workspace Name</label>
@@ -1228,21 +1095,17 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
             style={{
               ...inputBase, flex: 1, fontSize: 12,
               fontFamily: 'var(--font-mono)',
-              color: c.textMuted, cursor: 'default',
-              backgroundColor: '#F8FAFC',
+              color: 'var(--text-muted)', cursor: 'default',
+              backgroundColor: 'var(--bg-card-secondary)',
             }}
             onClick={e => (e.target as HTMLInputElement).select()}
           />
           <button
             onClick={handleCopyId}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              padding: '8px 12px', borderRadius: 8,
-              border: `1px solid ${c.border}`,
-              backgroundColor: copied ? '#DCFCE7' : '#F8FAFC',
-              color: copied ? '#166534' : c.textSecondary,
-              fontSize: 12, fontWeight: 500, cursor: 'pointer',
-              transition: 'all 150ms',
+              ...ghostBtn,
+              padding: '0 12px',
+              fontSize: 13,
             }}
           >
             {copied ? <Check size={13} /> : <Copy size={13} />}
@@ -1271,7 +1134,7 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
 }
 
 export default function SettingsPage() {
-  const { c, card, inputBase } = useStyles();
+  const { c, card, inputBase, primaryBtn, ghostBtn, destructiveBtn } = useStyles();
   const { toggle, theme } = useTheme();
   const isDark = theme === 'dark';
   const [activeTab, setActiveTab] = useState("general");
@@ -1420,32 +1283,47 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ backgroundColor: c.bgPage, minHeight: '100vh' }}>
-      <div style={{ maxWidth: 900, margin: '0 auto' }}>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Settings</h1>
-        <p style={{ fontSize: 14, color: c.textSecondary, marginTop: 4 }}>Manage integrations, brand, and preferences</p>
+    <div style={{ backgroundColor: 'var(--bg-page)', minHeight: '100vh' }}>
+      <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px' }}>
+      <div style={{ marginBottom: 4 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Settings</h1>
       </div>
+      <p style={{ fontSize: 14, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 28 }}>Manage integrations, brand, and preferences</p>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList
-          className="!bg-[#F1F5F9] !p-1 !rounded-xl !flex !gap-1 !h-auto !w-fit"
-          style={{ marginBottom: 24 }}
-        >
+        <div style={{
+          display: 'inline-flex',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-default)',
+          borderRadius: 10,
+          padding: 4,
+          gap: 2,
+          marginBottom: 28,
+        }}>
           {(['general', 'brand', 'integrations', 'team', 'alerts', 'billing'] as const).map((tab) => (
-            <TabsTrigger
+            <button
               key={tab}
-              value={tab}
-              className={`!rounded-lg !border-none !shadow-none !px-4 !py-2 !text-sm !font-medium !transition-all !duration-150 !font-[DM_Sans] after:!hidden ${
-                activeTab === tab
-                  ? '!bg-[#7C3AED] !text-white'
-                  : '!bg-transparent !text-[#64748B] hover:!bg-[rgba(124,58,237,0.08)] hover:!text-[#475569]'
-              }`}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: '7px 16px',
+                borderRadius: 7,
+                fontSize: 13,
+                fontWeight: 500,
+                fontFamily: "'DM Sans', sans-serif",
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                border: 'none',
+                background: activeTab === tab ? '#7C3AED' : 'transparent',
+                color: activeTab === tab ? '#FFFFFF' : 'var(--text-muted)',
+                transition: 'background 150ms, color 150ms',
+              }}
+              onMouseEnter={e => { if (activeTab !== tab) { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'var(--text-secondary)'; } }}
+              onMouseLeave={e => { if (activeTab !== tab) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; } }}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </TabsTrigger>
+            </button>
           ))}
-        </TabsList>
+        </div>
 
         {/* ─── General Tab ─── */}
         <TabsContent value="general">
@@ -1479,15 +1357,23 @@ export default function SettingsPage() {
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 11, color: c.textMuted }}>Auto-syncs daily at 2AM UTC</span>
-                <Button
-                  variant="gradient"
-                  size="sm"
+                <button
                   onClick={handleSyncAll}
                   disabled={syncing === 'all'}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    height: 36, padding: '0 16px', borderRadius: 8, border: 'none',
+                    background: '#7C3AED', color: '#FFFFFF',
+                    fontSize: 13, fontWeight: 600, cursor: syncing === 'all' ? 'not-allowed' : 'pointer',
+                    fontFamily: "'DM Sans', sans-serif",
+                    opacity: syncing === 'all' ? 0.7 : 1,
+                  }}
+                  onMouseEnter={e => { if (syncing !== 'all') e.currentTarget.style.background = '#6D28D9'; }}
+                  onMouseLeave={e => { if (syncing !== 'all') e.currentTarget.style.background = '#7C3AED'; }}
                 >
                   <RefreshCw size={13} style={{ animation: syncing === 'all' ? 'spin 1s linear infinite' : 'none' }} />
                   {syncing === 'all' ? 'Syncing...' : 'Sync All Now'}
-                </Button>
+                </button>
               </div>
             </div>
             <div className="integration-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -1546,8 +1432,8 @@ export default function SettingsPage() {
                     {connected && (
                       <div style={{
                         padding: '10px 12px', borderRadius: 8, marginBottom: 14,
-                        backgroundColor: isErrored ? 'rgba(239,68,68,0.05)' : '#F8FAFC',
-                        border: `1px solid ${isErrored ? 'rgba(239,68,68,0.15)' : '#E2E8F0'}`,
+                        backgroundColor: isErrored ? 'rgba(239,68,68,0.05)' : 'var(--bg-page)',
+                        border: `1px solid ${isErrored ? 'rgba(239,68,68,0.15)' : 'var(--border-default)'}`,
                       }}>
                         {/* Last sync timestamp */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: lastSyncTime ? 6 : 0 }}>
@@ -1610,24 +1496,37 @@ export default function SettingsPage() {
                         </button>
                       ) : isErrored ? (
                         <>
-                          <Button
-                            variant="default"
-                            className="h-10"
-                            style={{ flex: 1 }}
+                          <button
+                            style={{
+                              flex: 1, height: 40, borderRadius: 8, border: 'none',
+                              backgroundColor: '#7C3AED', color: '#FFFFFF',
+                              fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                              fontFamily: "'DM Sans', sans-serif",
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            }}
                             onClick={() => handleConnect(p.id)}
+                            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#6D28D9')}
+                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#7C3AED')}
                           >
                             <RefreshCw size={13} />
                             Reconnect
-                          </Button>
-                          <Button
-                            variant="outline"
-                            className="h-10"
+                          </button>
+                          <button
+                            style={{
+                              height: 40, padding: '0 16px', borderRadius: 8,
+                              border: '1px solid var(--border-default)',
+                              backgroundColor: 'transparent', color: 'var(--text-secondary)',
+                              fontSize: 14, fontWeight: 500, cursor: isSyncing ? 'not-allowed' : 'pointer',
+                              fontFamily: "'DM Sans', sans-serif",
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              opacity: isSyncing ? 0.7 : 1,
+                            }}
                             onClick={() => handleSync(p.id)}
                             disabled={isSyncing}
                           >
                             <RefreshCw size={13} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
                             {isSyncing ? 'Retrying...' : 'Retry Sync'}
-                          </Button>
+                          </button>
                         </>
                       ) : (
                         <>
@@ -1683,11 +1582,6 @@ export default function SettingsPage() {
                         </>
                       )}
                     </div>
-                    {p.id === 'meta_ads' && (
-                      <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', fontSize: 12, color: '#60a5fa', lineHeight: 1.5 }}>
-                        After connecting, you also need to accept the <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline' }}>Meta Ad Library Terms of Service</a> to use the Competitor Ad Spy feature.
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -1698,12 +1592,11 @@ export default function SettingsPage() {
 
         {/* ─── Team Tab ─── */}
         <TabsContent value="team">
-          <div style={{ maxWidth: 560 }}>
+          <div>
             {/* Slots indicator */}
             <div style={{
               ...card,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '16px 20px', marginBottom: 20,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Crown size={16} color={c.warning} />
@@ -1750,14 +1643,18 @@ export default function SettingsPage() {
                   <option value="member">Member</option>
                   <option value="viewer">Viewer</option>
                 </select>
-                <Button
+                <button
                   type="submit"
-                  variant="gradient"
                   disabled={inviting || !inviteEmail || teamData?.canInviteMore === false}
+                  style={{
+                    ...primaryBtn,
+                    opacity: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 0.5 : 1,
+                    cursor: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 'not-allowed' : 'pointer',
+                  }}
                 >
                   {inviting ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Mail size={14} />}
                   {inviting ? "Sending..." : "Send Invite"}
-                </Button>
+                </button>
               </form>
               {teamData?.canInviteMore === false && (
                 <p style={{ fontSize: 12, color: c.warning, marginTop: 10 }}>Member limit reached. Upgrade to add more.</p>
@@ -1788,15 +1685,14 @@ export default function SettingsPage() {
                         }}
                         onClick={e => (e.target as HTMLInputElement).select()}
                       />
-                      <Button
+                      <button
                         type="button"
-                        variant="outline"
-                        size="sm"
                         onClick={() => { navigator.clipboard.writeText(inviteMsg.inviteUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                        style={{ ...ghostBtn, height: 32, padding: '0 12px', fontSize: 13 }}
                       >
                         {copied ? <Check size={13} /> : <Copy size={13} />}
                         {copied ? 'Copied!' : 'Copy link'}
-                      </Button>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1825,10 +1721,11 @@ export default function SettingsPage() {
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                           <div style={{
-                            width: 34, height: 34, borderRadius: '50%',
-                            backgroundColor: c.accentSubtle,
+                            width: 36, height: 36, borderRadius: '50%',
+                            backgroundColor: '#7C3AED',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 13, fontWeight: 700, color: c.accent, textTransform: 'uppercase',
+                            fontSize: 14, fontWeight: 600, color: '#FFFFFF', textTransform: 'uppercase',
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
                           }}>
                             {(m.name || m.email || '?').substring(0, 2)}
                           </div>
@@ -1842,8 +1739,9 @@ export default function SettingsPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           {isOwner ? (
                             <span style={{
-                              fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
-                              backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
+                              fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20,
+                              backgroundColor: '#FEF3C7', color: '#92400E',
+                              fontFamily: "'DM Sans', sans-serif",
                             }}>
                               Owner
                             </span>
@@ -1865,8 +1763,10 @@ export default function SettingsPage() {
                                   } catch {}
                                 }}
                                 style={{
-                                  fontSize: 12, fontWeight: 600, padding: '5px 8px', borderRadius: 6,
-                                  backgroundColor: rc.bg, color: rc.color, border: `1px solid ${rc.color}30`,
+                                  height: 32, fontSize: 13, fontWeight: 500, padding: '0 10px', borderRadius: 8,
+                                  backgroundColor: 'transparent', color: 'var(--text-secondary)',
+                                  border: '1px solid var(--border-default)',
+                                  fontFamily: "'DM Sans', sans-serif",
                                   cursor: 'pointer', appearance: 'auto',
                                 }}
                               >
@@ -1874,9 +1774,7 @@ export default function SettingsPage() {
                                 <option value="member">Member</option>
                                 <option value="viewer">Viewer</option>
                               </select>
-                              <Button
-                                variant="destructive"
-                                size="xs"
+                              <button
                                 onClick={async () => {
                                   if (!confirm(`Remove ${m.name || m.email} from this workspace?`)) return;
                                   const session = (await supabase.auth.getSession()).data.session;
@@ -1889,9 +1787,19 @@ export default function SettingsPage() {
                                     if (res.ok) refreshTeamData();
                                   } catch {}
                                 }}
+                                style={{
+                                  height: 32, padding: '0 12px', borderRadius: 8,
+                                  background: 'transparent', color: '#EF4444',
+                                  border: '1px solid #FECACA',
+                                  fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                                  fontFamily: "'DM Sans', sans-serif",
+                                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEF2F2'; e.currentTarget.style.borderColor = '#EF4444'; }}
+                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = '#FECACA'; }}
                               >
                                 Remove
-                              </Button>
+                              </button>
                             </>
                           )}
                         </div>
@@ -1952,30 +1860,38 @@ export default function SettingsPage() {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           {invUrl && (
-                            <Button
+                            <button
                               type="button"
-                              variant="outline"
-                              size="xs"
                               onClick={() => { navigator.clipboard.writeText(invUrl); }}
+                              style={{ ...ghostBtn, height: 32, padding: '0 12px', fontSize: 13 }}
                             >
                               <Link size={12} />
                               Copy link
-                            </Button>
+                            </button>
                           )}
-                          <Button
+                          <button
                             type="button"
-                            variant="destructive"
-                            size="xs"
                             onClick={() => handleRevokeInvite(inv.id)}
                             disabled={revokingId === inv.id}
                             title="Revoke invite"
+                            style={{
+                              height: 32, padding: '0 12px', borderRadius: 8,
+                              background: 'transparent', color: '#EF4444',
+                              border: '1px solid #FECACA',
+                              fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                              fontFamily: "'DM Sans', sans-serif",
+                              display: 'inline-flex', alignItems: 'center', gap: 4,
+                              opacity: revokingId === inv.id ? 0.6 : 1,
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEF2F2'; e.currentTarget.style.borderColor = '#EF4444'; }}
+                            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = '#FECACA'; }}
                           >
                             {revokingId === inv.id
                               ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
                               : <Trash2 size={12} />
                             }
                             {revokingId === inv.id ? 'Revoking...' : 'Revoke'}
-                          </Button>
+                          </button>
                         </div>
                       </div>
                     );
@@ -1993,8 +1909,6 @@ export default function SettingsPage() {
             <div style={{ marginTop: 32 }}>
               {workspace?.id && <AlertsTab workspaceId={workspace.id} />}
             </div>
-            {/* Slack Integration */}
-            <SlackSection workspaceId={workspace?.id} />
           </div>
         </TabsContent>
 

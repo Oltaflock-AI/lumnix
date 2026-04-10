@@ -2,9 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { type LucideIcon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
 
 /**
  * Intersection Observer hook for scroll-triggered reveal animations.
@@ -49,14 +47,19 @@ export function PageShell({ title, description, icon: Icon, badge, action, child
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0F172A', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{title}</h1>
+              <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{title}</h1>
               {badge && (
-                <Badge variant="outline" className="text-[9px] font-bold tracking-wider uppercase border-[rgba(124,58,237,0.3)] text-[#7C3AED] bg-[rgba(124,58,237,0.08)]">
+                <span style={{
+                  fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+                  color: '#7C3AED', backgroundColor: 'rgba(124,58,237,0.1)',
+                  padding: '3px 8px', borderRadius: 6,
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>
                   {badge}
-                </Badge>
+                </span>
               )}
             </div>
-            <p style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.6 }}>{description}</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{description}</p>
           </div>
         </div>
         {action && <div style={{ flexShrink: 0 }}>{action}</div>}

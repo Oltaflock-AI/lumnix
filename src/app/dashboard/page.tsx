@@ -679,13 +679,13 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
             const Icon = INSIGHT_ICONS[insight.type] || Zap;
             const dotColor = INSIGHT_DOT_COLORS[insight.type] || c.accent;
             return (
-              <div key={insight.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0 }} />
+              <div key={insight.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, minHeight: 64 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0, marginTop: 6 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: c.text, marginBottom: 2 }}>{insight.title}</p>
-                  <p style={{ fontSize: 12, color: c.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{insight.description}</p>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: c.text, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'DM Sans', sans-serif" }}>{insight.title}</p>
+                  <p style={{ fontSize: 13, color: c.textSecondary, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.5, fontFamily: "'DM Sans', sans-serif" }}>{insight.description}</p>
                 </div>
-                <Icon size={14} color={dotColor} style={{ flexShrink: 0 }} />
+                <Icon size={20} color={dotColor} style={{ flexShrink: 0, marginTop: 2 }} />
               </div>
             );
           })}

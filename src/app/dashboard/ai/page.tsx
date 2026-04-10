@@ -65,21 +65,21 @@ function MarkdownRenderer({ content }: { content: string }) {
   while (i < lines.length) {
     const line = lines[i];
     if (line.startsWith('### ')) {
-      elements.push(<h3 key={i} style={{ fontSize: 15, fontWeight: 700, color: c.text, margin: '12px 0 4px' }}>{line.slice(4)}</h3>);
+      elements.push(<h3 key={i} style={{ fontSize: 14, fontWeight: 600, color: c.text, margin: '12px 0 4px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{line.slice(4)}</h3>);
     } else if (line.startsWith('## ')) {
-      elements.push(<h2 key={i} style={{ fontSize: 16, fontWeight: 700, color: c.text, margin: '14px 0 6px', borderBottom: `1px solid ${c.border}`, paddingBottom: 4 }}>{line.slice(3)}</h2>);
+      elements.push(<h2 key={i} style={{ fontSize: 14, fontWeight: 600, color: c.text, margin: '14px 0 6px', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{line.slice(3)}</h2>);
     } else if (line.startsWith('- ') || line.startsWith('* ')) {
       const listItems: ReactElement[] = [];
       while (i < lines.length && (lines[i].startsWith('- ') || lines[i].startsWith('* '))) {
-        listItems.push(<li key={i} style={{ color: c.textSecondary, fontSize: 14, lineHeight: 1.6, marginBottom: 3 }}>{formatInlineThemed(lines[i].slice(2))}</li>);
+        listItems.push(<li key={i} style={{ color: c.text, fontSize: 14, lineHeight: 1.6, marginBottom: 3 }}>{formatInlineThemed(lines[i].slice(2))}</li>);
         i++;
       }
-      elements.push(<ul key={`ul-${i}`} style={{ paddingLeft: 20, margin: '6px 0' }}>{listItems}</ul>);
+      elements.push(<ul key={`ul-${i}`} style={{ paddingLeft: 16, margin: '6px 0' }}>{listItems}</ul>);
       continue;
     } else if (/^\d+\.\s/.test(line)) {
       const listItems: ReactElement[] = [];
       while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
-        listItems.push(<li key={i} style={{ color: c.textSecondary, fontSize: 14, lineHeight: 1.6, marginBottom: 3 }}>{formatInlineThemed(lines[i].replace(/^\d+\.\s/, ''))}</li>);
+        listItems.push(<li key={i} style={{ color: c.text, fontSize: 14, lineHeight: 1.6, marginBottom: 3 }}>{formatInlineThemed(lines[i].replace(/^\d+\.\s/, ''))}</li>);
         i++;
       }
       elements.push(<ol key={`ol-${i}`} style={{ paddingLeft: 20, margin: '6px 0' }}>{listItems}</ol>);
@@ -94,11 +94,11 @@ function MarkdownRenderer({ content }: { content: string }) {
         </pre>
       );
     } else if (line === '---' || line === '***') {
-      elements.push(<hr key={i} style={{ border: 'none', borderTop: `1px solid ${c.border}`, margin: '10px 0' }} />);
+      elements.push(<hr key={i} style={{ border: 'none', borderTop: '1px solid var(--border-subtle)', margin: '8px 0' }} />);
     } else if (line.trim() === '') {
       elements.push(<div key={i} style={{ height: 6 }} />);
     } else {
-      elements.push(<p key={i} style={{ color: c.textSecondary, fontSize: 14, lineHeight: 1.65, margin: '2px 0' }}>{formatInlineThemed(line)}</p>);
+      elements.push(<p key={i} style={{ color: c.text, fontSize: 14, lineHeight: 1.6, margin: '2px 0' }}>{formatInlineThemed(line)}</p>);
     }
     i++;
   }
@@ -427,32 +427,33 @@ export default function AIPage() {
             <span style={{ fontSize: 11, color: c.textMuted }}>Live data context</span>
           </div>
 
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 16, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 320px)', minHeight: 500 }}>
+          <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 12, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 320px)', minHeight: 500, overflow: 'hidden' }}>
             {/* Chat area */}
-            <div style={{ flex: 1, padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, padding: 20, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
               {messages.length === 0 ? (
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                   <div style={{ width: 64, height: 64, borderRadius: 16, background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                     <Brain size={28} color={c.accent} />
                   </div>
-                  <h3 style={{ fontSize: 20, fontWeight: 700, color: c.text, marginBottom: 8 }}>Ask Lumnix AI</h3>
-                  <p style={{ fontSize: 14, color: c.textSecondary, maxWidth: 420, lineHeight: 1.6, marginBottom: 32 }}>
-                    Your data-aware marketing assistant. Powered by Claude AI with full context of your connected marketing data.
-                  </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, maxWidth: 560, width: '100%' }}>
-                    {SUGGESTIONS.map(s => (
+                  <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>What can I help you with?</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, maxWidth: 560, width: '100%' }}>
+                    {SUGGESTIONS.slice(0, 4).map(s => (
                       <button
                         key={s.text}
                         onClick={() => { setInput(s.text); inputRef.current?.focus(); }}
-                        style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: 'transparent', color: c.textSecondary, fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.4 }}
-                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover}
-                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
+                        style={{
+                          padding: '12px 16px', borderRadius: 10,
+                          border: '1px solid var(--border-default)',
+                          backgroundColor: 'var(--bg-card)',
+                          color: 'var(--text-secondary)',
+                          fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.4,
+                          fontFamily: "'DM Sans', sans-serif",
+                          transition: 'border-color 150ms, background 150ms, color 150ms',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.backgroundColor = 'rgba(124,58,237,0.04)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
                       >
-                        <s.icon size={15} color={c.accent} style={{ flexShrink: 0, marginTop: 1 }} />
-                        <div>
-                          <div style={{ fontSize: 11, color: c.textMuted, marginBottom: 2 }}>{s.category}</div>
-                          {s.text}
-                        </div>
+                        {s.text}
                       </button>
                     ))}
                   </div>
@@ -462,18 +463,18 @@ export default function AIPage() {
                   {messages.map((msg, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: 10 }}>
                       {msg.role === 'assistant' && (
-                        <div style={{ width: 28, height: 28, borderRadius: 8, background: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2, fontWeight: 700, fontSize: 13, color: '#FFFFFF', fontFamily: 'var(--font-display)' }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #7C3AED, #0891B2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2, fontWeight: 700, fontSize: 13, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                           L
                         </div>
                       )}
-                      <div style={{ maxWidth: '78%' }}>
+                      <div style={{ maxWidth: msg.role === 'user' ? '70%' : '75%' }}>
                         <div style={{
                           padding: '12px 16px',
-                          borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-                          backgroundColor: msg.role === 'user' ? '#7C3AED' : '#1E293B',
+                          borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                          backgroundColor: msg.role === 'user' ? '#7C3AED' : 'var(--bg-card-secondary)',
                         }}>
                           {msg.role === 'user' ? (
-                            <p style={{ color: 'white', fontSize: 14, lineHeight: 1.6, margin: 0 }}>{msg.content}</p>
+                            <p style={{ color: '#FFFFFF', fontSize: 14, lineHeight: 1.5, margin: 0, fontFamily: "'DM Sans', sans-serif" }}>{msg.content}</p>
                           ) : msg.content ? (
                             <MarkdownRenderer content={msg.content} />
                           ) : (
@@ -499,7 +500,7 @@ export default function AIPage() {
                       <div style={{ width: 28, height: 28, borderRadius: 8, background: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: 13, color: '#FFFFFF', fontFamily: 'var(--font-display)' }}>
                         L
                       </div>
-                      <div style={{ padding: '12px 16px', borderRadius: '14px 14px 14px 4px', backgroundColor: '#1E293B', color: '#E2E8F0', fontSize: 13 }} className="animate-pulse">
+                      <div style={{ padding: '12px 16px', borderRadius: '18px 18px 18px 4px', backgroundColor: 'var(--bg-card-secondary)', color: 'var(--text-primary)', fontSize: 13 }} className="animate-pulse">
                         Lumi is thinking...
                       </div>
                     </div>
@@ -516,20 +517,20 @@ export default function AIPage() {
             )}
 
             {/* Input bar */}
-            <div style={{ padding: '16px 24px', borderTop: `1px solid ${c.border}` }}>
+            <div style={{ padding: 16, borderTop: '1px solid var(--border-default)', backgroundColor: 'var(--bg-card)' }}>
               {messages.length > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
                   <button
                     onClick={() => { setMessages([]); try { localStorage.removeItem('lumnix-chat-history'); } catch {} }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, border: `1px solid ${c.borderStrong}`, backgroundColor: 'transparent', color: c.textMuted, fontSize: 12, cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover}
+                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border-default)', backgroundColor: 'transparent', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-card-secondary)'}
                     onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
                   >
                     <Trash2 size={11} /> Clear chat
                   </button>
                 </div>
               )}
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div style={{ position: 'relative' }}>
                 <input
                   ref={inputRef}
                   value={input}
@@ -537,19 +538,40 @@ export default function AIPage() {
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
                   placeholder="Ask anything about your marketing data..."
                   disabled={!isIdle}
-                  style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: 14, opacity: !isIdle ? 0.7 : 1, fontFamily: 'var(--font-body)' }}
-                  onFocus={e => (e.currentTarget as HTMLInputElement).style.borderColor = c.accent}
-                  onBlur={e => (e.currentTarget as HTMLInputElement).style.borderColor = c.border}
+                  style={{
+                    width: '100%', minHeight: 44,
+                    padding: '10px 50px 10px 14px',
+                    borderRadius: 10,
+                    border: '1px solid var(--border-default)',
+                    backgroundColor: 'var(--bg-page)',
+                    color: 'var(--text-primary)',
+                    fontSize: 14, fontFamily: "'DM Sans', sans-serif",
+                    opacity: !isIdle ? 0.7 : 1,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)'; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.boxShadow = 'none'; }}
                 />
                 <button
                   onClick={() => sendMessage(input)}
                   disabled={!isIdle || !input.trim()}
-                  style={{ padding: '12px 16px', borderRadius: 10, border: 'none', backgroundColor: c.accent, color: 'white', cursor: (!isIdle || !input.trim()) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', opacity: (!isIdle || !input.trim()) ? 0.5 : 1 }}
+                  style={{
+                    position: 'absolute', right: 10, bottom: 6,
+                    width: 32, height: 32, borderRadius: 8,
+                    border: 'none',
+                    backgroundColor: (!isIdle || !input.trim()) ? 'var(--border-default)' : '#7C3AED',
+                    color: 'white',
+                    cursor: (!isIdle || !input.trim()) ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                  onMouseEnter={e => { if (isIdle && input.trim()) e.currentTarget.style.backgroundColor = '#6D28D9'; }}
+                  onMouseLeave={e => { if (isIdle && input.trim()) e.currentTarget.style.backgroundColor = '#7C3AED'; }}
                 >
-                  <Send size={18} />
+                  <Send size={16} />
                 </button>
               </div>
-              <p style={{ fontSize: 11, color: c.textMuted, marginTop: 8, textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, textAlign: 'center', fontFamily: "'DM Sans', sans-serif" }}>
                 Powered by Claude AI · Context: {connectedSources.length} data source{connectedSources.length !== 1 ? 's' : ''} connected
               </p>
             </div>

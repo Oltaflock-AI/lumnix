@@ -2,28 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { callClaude } from '@/lib/anthropic';
 
-async function sendSlackMessage(webhookUrl: string, blocks: any[]) {
-  try {
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ blocks }),
-    });
-  } catch (e) {
-    console.error('Slack notification failed:', e);
-  }
-}
-
-function buildSlackBlocks(workspaceName: string, anomaly: { title: string; description: string; severity: string }) {
-  const emoji = anomaly.severity === 'high' ? '🚨' : anomaly.severity === 'medium' ? '⚠️' : 'ℹ️';
-  return [
-    { type: 'header', text: { type: 'plain_text', text: `${emoji} Lumnix Alert — ${workspaceName}`, emoji: true } },
-    { type: 'section', text: { type: 'mrkdwn', text: `*${anomaly.title}*\n${anomaly.description}` } },
-    { type: 'context', elements: [{ type: 'mrkdwn', text: `Severity: *${anomaly.severity}* | <https://lumnix-ai.vercel.app/dashboard|View in Lumnix>` }] },
-    { type: 'divider' },
-  ];
-}
-
 // GET /api/cron/detect-anomalies — daily at 8am UTC
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
@@ -272,13 +250,6 @@ export async function GET(req: NextRequest) {
           generated.push({ title: `${a.type.replace(/_/g, ' ')} detected`, description: a.context });
         }
 
-        // Get workspace info for Slack
-        const { data: workspace } = await db
-          .from('workspaces')
-          .select('name, slack_webhook_url')
-          .eq('id', workspaceId)
-          .single();
-
         // Insert anomalies
         const inserts = anomaliesFound.map((a, i) => ({
           workspace_id: workspaceId,
@@ -298,18 +269,6 @@ export async function GET(req: NextRequest) {
         if (insertError) {
           errors.push({ workspace_id: workspaceId, error: insertError.message });
           continue;
-        }
-
-        // Send Slack notifications for high/medium severity
-        if (workspace?.slack_webhook_url) {
-          for (let i = 0; i < inserts.length; i++) {
-            if (inserts[i].severity === 'high' || inserts[i].severity === 'medium') {
-              await sendSlackMessage(
-                workspace.slack_webhook_url,
-                buildSlackBlocks(workspace.name || 'Your workspace', inserts[i])
-              );
-            }
-          }
         }
 
         results.push({ workspace_id: workspaceId, anomalies_found: inserts.length });

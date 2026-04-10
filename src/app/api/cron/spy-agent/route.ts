@@ -19,27 +19,6 @@ function parseJSON(text: string) {
   }
 }
 
-async function sendSlackAlert(webhookUrl: string, blocks: any[]) {
-  try {
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ blocks }),
-    });
-  } catch (e) {
-    console.error('Slack notification failed:', e);
-  }
-}
-
-function buildSpySlackBlocks(workspaceName: string, competitorName: string, newAds: number, pausedAds: number, topHeadline: string) {
-  return [
-    { type: 'header', text: { type: 'plain_text', text: `🕵️ Ad Spy Alert — ${workspaceName}`, emoji: true } },
-    { type: 'section', text: { type: 'mrkdwn', text: `*${competitorName}* has changes:\n• *${newAds}* new ad${newAds !== 1 ? 's' : ''} detected\n${pausedAds > 0 ? `• *${pausedAds}* ad${pausedAds !== 1 ? 's' : ''} paused\n` : ''}${topHeadline ? `• Top new ad: _"${topHeadline.slice(0, 80)}"_` : ''}` } },
-    { type: 'context', elements: [{ type: 'mrkdwn', text: `<https://lumnix-ai.vercel.app/dashboard/competitors|View in Lumnix>` }] },
-    { type: 'divider' },
-  ];
-}
-
 async function scrapeCompetitorAds(
   db: ReturnType<typeof getSupabaseAdmin>,
   competitor: any,
@@ -308,29 +287,7 @@ export async function GET(req: NextRequest) {
         analysisResult = await runAIAnalysis(db, competitor.id, competitor.name);
       }
 
-      // Step 3: Send Slack notification if new ads found
-      if (scrapeResult.newAds > 0 || scrapeResult.paused > 0) {
-        const { data: workspace } = await db
-          .from('workspaces')
-          .select('name, slack_webhook_url')
-          .eq('id', competitor.workspace_id)
-          .single();
-
-        if (workspace?.slack_webhook_url) {
-          await sendSlackAlert(
-            workspace.slack_webhook_url,
-            buildSpySlackBlocks(
-              workspace.name || 'Your workspace',
-              competitor.name,
-              scrapeResult.newAds,
-              scrapeResult.paused,
-              scrapeResult.topHeadline
-            )
-          );
-        }
-      }
-
-      // Step 4: Save trend snapshot
+      // Step 3: Save trend snapshot
       try {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         await fetch(`${appUrl}/api/competitors/trends`, {
