@@ -12,8 +12,9 @@ export async function DELETE(
 
   const supabase = getSupabaseAdmin();
 
-  // Delete related data first (ads, analysis, ideas, alerts, keyword gaps)
+  // Delete related data first (ads, briefs, analysis, ideas, alerts)
   await supabase.from('competitor_ads').delete().eq('competitor_id', id);
+  await supabase.from('competitor_briefs').delete().eq('competitor_id', id);
   await supabase.from('ai_analysis').delete().eq('competitor_id', id);
   await supabase.from('ad_ideas').delete().eq('competitor_id', id);
   await supabase.from('change_alerts').delete().eq('competitor_id', id);

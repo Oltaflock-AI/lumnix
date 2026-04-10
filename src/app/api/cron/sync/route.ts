@@ -294,6 +294,38 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // ── Competitor Ad Spy re-scrape ──
+    // Re-scrape competitors where last_scraped_at is older than 48 hours
+    try {
+      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+      const { data: staleCompetitors } = await db
+        .from('competitor_brands')
+        .select('id, workspace_id, winning_ads_count')
+        .not('facebook_page_id', 'is', null)
+        .or(`last_scraped_at.is.null,last_scraped_at.lt.${fortyEightHoursAgo}`)
+        .limit(10); // Max 10 per cron run to avoid timeout
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      for (const competitor of staleCompetitors || []) {
+        const jobId = await createSyncJob(db, competitor.workspace_id, 'competitor_spy');
+        try {
+          const scrapeRes = await fetch(`${appUrl}/api/competitors/scrape`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ competitor_id: competitor.id, workspace_id: competitor.workspace_id }),
+          });
+          const scrapeData = await scrapeRes.json();
+          if (jobId) await completeSyncJob(db, jobId, 'completed', scrapeData);
+          results.push({ id: competitor.id, provider: 'competitor_spy', status: 'synced', ...scrapeData });
+        } catch (err: any) {
+          if (jobId) await completeSyncJob(db, jobId, 'failed', null, err.message);
+          errors.push({ id: competitor.id, provider: 'competitor_spy', error: err.message });
+        }
+      }
+    } catch (err: any) {
+      errors.push({ provider: 'competitor_spy', error: `Competitor re-scrape failed: ${err.message}` });
+    }
+
     return NextResponse.json({
       success: true,
       synced: results.filter(r => r.status === 'synced').length,
