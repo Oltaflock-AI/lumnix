@@ -195,12 +195,12 @@ export default function GoogleAdsPage() {
                           >
                             <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</td>
                             <td style={{ padding: '12px 12px 12px 0' }}><StatusBadge status={camp.status} /></td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>₹{(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.clicks || 0).toLocaleString()}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.impressions || 0).toLocaleString()}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(camp.conversions || 0).toFixed(1)}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
-                            <td style={{ padding: '12px 0', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-mono)', color: parseFloat(cRoas as string) >= 3 ? '#10B981' : parseFloat(cRoas as string) >= 1 ? '#F59E0B' : '#EF4444' }}>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>₹{(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.clicks || 0).toLocaleString()}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.impressions || 0).toLocaleString()}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.conversions || 0).toFixed(1)}</td>
+                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
+                            <td style={{ padding: '12px 0', fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: parseFloat(cRoas as string) >= 3 ? '#10B981' : parseFloat(cRoas as string) >= 1 ? '#F59E0B' : '#EF4444' }}>
                               {cRoas !== '—' ? `${cRoas}x` : '—'}
                             </td>
                           </tr>

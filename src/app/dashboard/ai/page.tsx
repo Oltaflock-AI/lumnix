@@ -268,12 +268,12 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
                 {(insight.metric || insight.change) && (
                   <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
                     {insight.metric && (
-                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, backgroundColor: c.accentSubtle, color: c.text, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, backgroundColor: c.accentSubtle, color: c.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                         {insight.metric}
                       </span>
                     )}
                     {insight.change && (
-                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, backgroundColor: insight.change.startsWith('+') ? 'rgba(16,185,129,0.08)' : insight.change.startsWith('-') ? 'rgba(239,68,68,0.08)' : c.accentSubtle, color: insight.change.startsWith('+') ? '#10B981' : insight.change.startsWith('-') ? '#EF4444' : c.textMuted, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, backgroundColor: insight.change.startsWith('+') ? 'rgba(16,185,129,0.08)' : insight.change.startsWith('-') ? 'rgba(239,68,68,0.08)' : c.accentSubtle, color: insight.change.startsWith('+') ? '#10B981' : insight.change.startsWith('-') ? '#EF4444' : c.textMuted, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                         {insight.change}
                       </span>
                     )}

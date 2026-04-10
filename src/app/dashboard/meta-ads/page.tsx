@@ -100,7 +100,7 @@ function ChartTooltip({ active, payload, label, sym }: any) {
         <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: p.color, display: 'inline-block' }} />
           <span style={{ color: c.textSecondary }}>{p.dataKey === 'spend' ? 'Spend' : 'Clicks'}:</span>
-          <span style={{ color: c.text, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+          <span style={{ color: c.text, fontWeight: 600 }}>
             {p.dataKey === 'spend' ? `${sym}${p.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : p.value.toLocaleString()}
           </span>
         </div>
@@ -512,15 +512,15 @@ export default function MetaAdsPage() {
                   <div style={{ display: 'flex', gap: 16 }}>
                     <div>
                       <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>Spend</div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontFamily: 'var(--font-mono)', marginTop: 2 }}>{typeof camp.spend === 'string' ? camp.spend : fmtMoney(camp.spend || 0)}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{typeof camp.spend === 'string' ? camp.spend : fmtMoney(camp.spend || 0)}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>ROAS</div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: numVal(camp.roas) >= 1 ? c.success : c.danger, fontFamily: 'var(--font-mono)', marginTop: 2 }}>{typeof camp.roas === 'string' ? camp.roas : numVal(camp.roas) > 0 ? `${numVal(camp.roas).toFixed(2)}x` : '--'}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: numVal(camp.roas) >= 1 ? c.success : c.danger, fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{typeof camp.roas === 'string' ? camp.roas : numVal(camp.roas) > 0 ? `${numVal(camp.roas).toFixed(2)}x` : '--'}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>Clicks</div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: c.textSecondary, fontFamily: 'var(--font-mono)', marginTop: 2 }}>{typeof camp.clicks === 'string' ? camp.clicks : fmtNum(camp.clicks || 0)}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: c.textSecondary, fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{typeof camp.clicks === 'string' ? camp.clicks : fmtNum(camp.clicks || 0)}</div>
                     </div>
                   </div>
                 </div>
@@ -620,22 +620,22 @@ export default function MetaAdsPage() {
                       <td style={{ padding: '12px 16px', color: c.textMuted, fontSize: 12 }}>
                         {campaign.objective || '--'}
                       </td>
-                      <td style={{ padding: '12px 16px', fontWeight: 500, color: c.text, fontSize: 13, fontFamily: 'var(--font-mono)', textAlign: 'right' }}>
+                      <td style={{ padding: '12px 16px', fontWeight: 500, color: c.text, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
                         {typeof campaign.spend === 'string' ? campaign.spend : fmtMoney(campaign.spend || 0)}
                       </td>
-                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontFamily: 'var(--font-mono)', textAlign: 'right' }}>
+                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
                         {typeof campaign.clicks === 'string' ? campaign.clicks : fmtNum(campaign.clicks || 0)}
                       </td>
-                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontFamily: 'var(--font-mono)', textAlign: 'right' }}>
+                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
                         {typeof campaign.impressions === 'string' ? campaign.impressions : fmtNum(campaign.impressions || 0)}
                       </td>
-                      <td style={{ padding: '12px 16px', color: c.textMuted, fontWeight: 500, fontSize: 13, fontFamily: 'var(--font-mono)', textAlign: 'right' }}>
+                      <td style={{ padding: '12px 16px', color: c.textMuted, fontWeight: 500, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
                         {typeof campaign.ctr === 'string' ? campaign.ctr : numVal(campaign.ctr) > 0 ? `${numVal(campaign.ctr).toFixed(2)}%` : '--'}
                       </td>
-                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontFamily: 'var(--font-mono)', textAlign: 'right' }}>
+                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
                         {typeof campaign.cpc === 'string' ? campaign.cpc : numVal(campaign.cpc) > 0 ? `${sym}${numVal(campaign.cpc).toFixed(2)}` : '--'}
                       </td>
-                      <td style={{ padding: '12px 16px', color: c.textMuted, fontWeight: 600, fontSize: 13, fontFamily: 'var(--font-mono)', textAlign: 'right' }}>
+                      <td style={{ padding: '12px 16px', color: c.textMuted, fontWeight: 600, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
                         {typeof campaign.roas === 'string' ? campaign.roas : numVal(campaign.roas) > 0 ? `${numVal(campaign.roas).toFixed(2)}x` : '--'}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'center' }}>
@@ -656,25 +656,25 @@ export default function MetaAdsPage() {
                           }}>
                             <div>
                               <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }}>Reach</div>
-                              <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontFamily: 'var(--font-mono)' }}>
+                              <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontVariantNumeric: 'tabular-nums' }}>
                                 {typeof campaign.reach === 'string' ? campaign.reach : fmtNum(campaign.reach || 0)}
                               </div>
                             </div>
                             <div>
                               <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }}>Conversions</div>
-                              <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontFamily: 'var(--font-mono)' }}>
+                              <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontVariantNumeric: 'tabular-nums' }}>
                                 {typeof campaign.conversions === 'string' ? campaign.conversions : fmtNum(campaign.conversions || 0)}
                               </div>
                             </div>
                             <div>
                               <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }}>Revenue</div>
-                              <div style={{ fontSize: 15, fontWeight: 600, color: c.success, fontFamily: 'var(--font-mono)' }}>
+                              <div style={{ fontSize: 15, fontWeight: 600, color: c.success, fontVariantNumeric: 'tabular-nums' }}>
                                 {typeof campaign.revenue === 'string' ? campaign.revenue : campaign.revenue > 0 ? fmtMoney(campaign.revenue) : '--'}
                               </div>
                             </div>
                             <div>
                               <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }}>Budget</div>
-                              <div style={{ fontSize: 15, fontWeight: 600, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>
+                              <div style={{ fontSize: 15, fontWeight: 600, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>
                                 {typeof campaign.budget === 'string' ? campaign.budget : campaign.budget > 0 ? fmtMoney(campaign.budget) : '--'}
                               </div>
                             </div>

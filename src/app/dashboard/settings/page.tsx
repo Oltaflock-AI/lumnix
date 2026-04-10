@@ -797,28 +797,31 @@ function BillingTab() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+      <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, alignItems: 'start' }}>
         {plans.map(plan => (
           <div key={plan.id} style={{
             ...card,
-            border: `1px solid ${plan.popular ? c.accent : plan.current ? c.successBorder : c.border}`,
+            border: plan.current ? '2px solid #E2E8F0' : `1px solid ${plan.popular ? c.accent : c.border}`,
             padding: 24,
+            paddingTop: plan.popular ? 36 : 24,
             position: 'relative',
+            minWidth: 0,
+            width: '100%',
           }}>
             {plan.popular && (
-              <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', padding: '3px 12px', borderRadius: 6, backgroundColor: c.accent, color: 'white', fontSize: 11, fontWeight: 600 }}>
+              <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', padding: '4px 12px', borderRadius: 20, backgroundColor: '#7C3AED', color: 'white', fontSize: 12, fontWeight: 600, fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap' }}>
                 Most Popular
               </div>
             )}
-            <div style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 4 }}>{plan.name}</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 16 }}>
-              <span style={{ fontSize: 32, fontWeight: 800, color: c.text, letterSpacing: '-0.03em', fontFamily: 'var(--font-mono)' }}>{plan.price}</span>
+            <div style={{ fontSize: 18, fontWeight: 700, color: c.text, marginBottom: 4, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{plan.name}</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 12 }}>
+              <span style={{ fontSize: 28, fontWeight: 800, color: c.text, letterSpacing: '-0.03em', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{plan.price}</span>
               <span style={{ fontSize: 13, color: c.textMuted }}>{plan.period}</span>
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0' }}>
               {plan.features.map((f, i) => (
-                <li key={i} style={{ fontSize: 13, color: c.textSecondary, padding: '4px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Check size={13} color={c.success} />
+                <li key={i} style={{ fontSize: 13, color: c.textSecondary, padding: '3px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Check size={14} color={c.success} style={{ flexShrink: 0 }} />
                   {f}
                 </li>
               ))}
@@ -828,16 +831,20 @@ function BillingTab() {
               disabled={plan.current || plan.id === 'free' || loading === plan.id}
               style={{
                 width: '100%',
-                padding: 10,
+                height: 44,
                 borderRadius: 8,
-                border: plan.current ? `1px solid ${c.borderStrong}` : 'none',
-                backgroundColor: plan.current ? 'transparent' : plan.popular ? c.accent : c.surfaceElevated,
-                color: plan.current ? c.textMuted : plan.popular ? 'white' : c.text,
+                border: plan.current ? 'none' : 'none',
+                backgroundColor: plan.current ? '#F1F5F9' : plan.popular ? '#7C3AED' : c.surfaceElevated,
+                color: plan.current ? '#9CA3AF' : plan.popular ? 'white' : c.text,
                 fontSize: 14,
                 fontWeight: 600,
+                fontFamily: "'DM Sans', sans-serif",
                 cursor: plan.current || plan.id === 'free' ? 'default' : 'pointer',
                 opacity: loading === plan.id ? 0.7 : 1,
+                transition: 'background-color 150ms',
               }}
+              onMouseEnter={e => { if (!plan.current && plan.popular) e.currentTarget.style.backgroundColor = '#6D28D9'; }}
+              onMouseLeave={e => { if (!plan.current && plan.popular) e.currentTarget.style.backgroundColor = '#7C3AED'; }}
             >
               {plan.current ? 'Current Plan' : plan.id === 'free' ? 'Free' : loading === plan.id ? 'Loading...' : 'Upgrade'}
             </button>
@@ -1265,7 +1272,8 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
 
 export default function SettingsPage() {
   const { c, card, inputBase } = useStyles();
-  const { toggle } = useTheme();
+  const { toggle, theme } = useTheme();
+  const isDark = theme === 'dark';
   const [activeTab, setActiveTab] = useState("general");
   const { workspace, loading: wsLoading, refetch: refetchWorkspace, setWorkspace } = useWorkspaceCtx();
   const { integrations, loading: intLoading, refetch } = useIntegrations(workspace?.id);
@@ -1413,19 +1421,30 @@ export default function SettingsPage() {
 
   return (
     <div style={{ backgroundColor: c.bgPage, minHeight: '100vh' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto' }}>
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: c.text, letterSpacing: '-0.5px' }}>Settings</h1>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Settings</h1>
         <p style={{ fontSize: 14, color: c.textSecondary, marginTop: 4 }}>Manage integrations, brand, and preferences</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-8">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="brand">Brand</TabsTrigger>
-          <TabsTrigger value="integrations">Integrations</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
-          <TabsTrigger value="alerts">Alerts</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
+        <TabsList
+          className="!bg-[#F1F5F9] !p-1 !rounded-xl !flex !gap-1 !h-auto !w-fit"
+          style={{ marginBottom: 24 }}
+        >
+          {(['general', 'brand', 'integrations', 'team', 'alerts', 'billing'] as const).map((tab) => (
+            <TabsTrigger
+              key={tab}
+              value={tab}
+              className={`!rounded-lg !border-none !shadow-none !px-4 !py-2 !text-sm !font-medium !transition-all !duration-150 !font-[DM_Sans] after:!hidden ${
+                activeTab === tab
+                  ? '!bg-[#7C3AED] !text-white'
+                  : '!bg-transparent !text-[#64748B] hover:!bg-[rgba(124,58,237,0.08)] hover:!text-[#475569]'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         {/* ─── General Tab ─── */}
@@ -1471,7 +1490,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+            <div className="integration-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               {providers.map(p => {
                 const Icon = p.icon;
                 const connected = isConnected(p.id);
@@ -1495,7 +1514,8 @@ export default function SettingsPage() {
                   <div key={p.id} style={{
                     ...card,
                     border: `1px solid ${borderColor}`,
-                    padding: 24,
+                    borderRadius: 12,
+                    padding: 20,
                   }}>
                     {/* Header: icon + name + status */}
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -1573,16 +1593,27 @@ export default function SettingsPage() {
                     )}
 
                     {/* Action buttons */}
-                    <div style={{ display: 'flex', gap: 10 }}>
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center', width: '100%', marginTop: 12 }}>
                       {!connected ? (
-                        <Button variant="gradient" className="flex-1 h-10" onClick={() => handleConnect(p.id)}>
+                        <button
+                          onClick={() => handleConnect(p.id)}
+                          style={{
+                            width: '100%', height: 44, borderRadius: 8, border: 'none',
+                            backgroundColor: '#7C3AED', color: 'white',
+                            fontSize: 14, fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
+                            cursor: 'pointer', transition: 'background-color 150ms',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#6D28D9')}
+                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#7C3AED')}
+                        >
                           Connect
-                        </Button>
+                        </button>
                       ) : isErrored ? (
                         <>
                           <Button
                             variant="default"
-                            className="flex-1 h-10"
+                            className="h-10"
+                            style={{ flex: 1 }}
                             onClick={() => handleConnect(p.id)}
                           >
                             <RefreshCw size={13} />
@@ -1600,18 +1631,27 @@ export default function SettingsPage() {
                         </>
                       ) : (
                         <>
-                          <Button
-                            variant={isSynced(p.id) ? "outline" : "default"}
-                            className="flex-1 h-10"
+                          <button
                             onClick={() => handleSync(p.id)}
                             disabled={isSyncing}
+                            style={{
+                              flex: 1, height: 40, borderRadius: 8,
+                              border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : '#E2E8F0'}`,
+                              backgroundColor: 'transparent',
+                              color: isDark ? '#CBD5E1' : '#374151',
+                              fontSize: 14, fontWeight: 500, fontFamily: "'DM Sans', sans-serif",
+                              cursor: isSyncing ? 'not-allowed' : 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                              transition: 'background-color 150ms',
+                              opacity: isSyncing ? 0.7 : 1,
+                            }}
+                            onMouseEnter={e => { if (!isSyncing) e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : '#F9FAFB'; }}
+                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                           >
-                            <RefreshCw size={13} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+                            <RefreshCw size={16} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
                             {isSyncing ? 'Syncing...' : 'Sync Now'}
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            className="h-10"
+                          </button>
+                          <button
                             onClick={async () => {
                               if (!int || !confirm(`Disconnect ${p.name}? You can reconnect anytime.`)) return;
                               try {
@@ -1624,10 +1664,22 @@ export default function SettingsPage() {
                                 refetch();
                               } catch {}
                             }}
+                            style={{
+                              height: 40, padding: '0 16px', borderRadius: 8,
+                              border: '1px solid #FCA5A5',
+                              backgroundColor: 'transparent',
+                              color: '#EF4444',
+                              fontSize: 14, fontWeight: 500, fontFamily: "'DM Sans', sans-serif",
+                              cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              transition: 'background-color 150ms, border-color 150ms',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEF2F2'; e.currentTarget.style.borderColor = '#EF4444'; }}
+                            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = '#FCA5A5'; }}
                           >
-                            <X size={13} />
+                            <X size={16} />
                             Disconnect
-                          </Button>
+                          </button>
                         </>
                       )}
                     </div>
@@ -1660,7 +1712,7 @@ export default function SettingsPage() {
                   <div style={{ fontSize: 12, color: c.textSecondary }}>{workspace?.plan === 'agency' ? 'Unlimited' : `Up to ${teamData?.maxSlots || 2}`} team members</div>
                 </div>
               </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'var(--font-mono)' }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'var(--font-display)' }}>
                 {teamData?.slotsUsed || 0} / {teamData?.maxSlots || 2}
                 <span style={{ fontSize: 12, color: c.textSecondary, fontWeight: 400, marginLeft: 4 }}>used</span>
               </div>
@@ -1951,6 +2003,7 @@ export default function SettingsPage() {
           <BillingTab />
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

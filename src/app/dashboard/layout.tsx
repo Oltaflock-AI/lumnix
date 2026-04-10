@@ -1,12 +1,12 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
   Menu, LogOut, ChevronDown, Plus, User,
   Sun, Moon, MessageCircle,
-  PanelLeftClose, PanelLeft, Command as CommandIcon
+  Command as CommandIcon
 } from 'lucide-react';
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
@@ -56,55 +56,46 @@ const navGroups: NavGroup[] = [
 ];
 
 /* ── Workspace Switcher ── */
-function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
+function WorkspaceSwitcher() {
   const [open, setOpen] = useState(false);
   const { workspace, workspaces, switchWorkspace } = useWorkspaceCtx();
+  const { theme } = useTheme();
   const accent = workspace?.brand_color || '#7C3AED';
-  const initials = workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : 'LX';
+  const isDark = theme === 'dark';
 
   function handleSwitch(id: string) {
     setOpen(false);
     if (id !== workspace?.id) switchWorkspace(id);
   }
 
-  const trigger = (
-    <button
-      onClick={() => setOpen(!open)}
-      style={{
-        width: '100%', display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10,
-        padding: collapsed ? '8px 0' : '8px 10px', borderRadius: 8, justifyContent: collapsed ? 'center' : 'flex-start',
-        border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)',
-        cursor: 'pointer', textAlign: 'left',
-      }}
-    >
-      {workspace?.logo_url ? (
-        <img src={workspace.logo_url} alt="Logo" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-      ) : (
-        <div style={{ width: 24, height: 24, borderRadius: 6, backgroundColor: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: 'white', flexShrink: 0 }}>{initials}</div>
-      )}
-      {!collapsed && (
-        <>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: '#E2E8F0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {workspace?.name || 'My Workspace'}
-            </div>
-          </div>
-          <ChevronDown size={12} color="#64748B" style={{ flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
-        </>
-      )}
-    </button>
-  );
-
   return (
     <div style={{ position: 'relative', marginBottom: 4 }}>
-      {collapsed ? (
-        <Tooltip>
-          <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-          <TooltipContent side="right">{workspace?.name || 'My Workspace'}</TooltipContent>
-        </Tooltip>
-      ) : trigger}
-      {open && !collapsed && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, backgroundColor: '#1E293B', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, overflow: 'hidden', zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+          padding: '8px 10px', borderRadius: 8,
+          border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E2E8F0',
+          backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#F8FAFC',
+          cursor: 'pointer', textAlign: 'left',
+        }}
+      >
+        {workspace?.logo_url ? (
+          <img src={workspace.logo_url} alt="Logo" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+        ) : (
+          <div style={{ width: 24, height: 24, borderRadius: 6, backgroundColor: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 600, color: 'white', flexShrink: 0 }}>
+            {workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : 'LX'}
+          </div>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: isDark ? '#F1F5F9' : '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {workspace?.name || 'My Workspace'}
+          </div>
+        </div>
+        <ChevronDown size={12} color={isDark ? '#94A3B8' : '#9CA3AF'} style={{ flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, backgroundColor: isDark ? '#1E293B' : '#FFFFFF', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #E2E8F0', borderRadius: 10, overflow: 'hidden', zIndex: 100, boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.12)' }}>
           <div style={{ padding: '4px 6px', maxHeight: 200, overflowY: 'auto' }}>
             {workspaces.map(ws => {
               const isCurrent = ws.id === workspace?.id;
@@ -120,11 +111,11 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'background-color 0.15s',
                   }}
-                  onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; }}
+                  onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; }}
                   onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: 'white', flexShrink: 0 }}>{wsInitials}</div>
-                  <span style={{ fontSize: 12, color: isCurrent ? '#FFFFFF' : '#94A3B8', flex: 1, fontWeight: isCurrent ? 600 : 400 }}>{ws.name}</span>
+                  <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : (isDark ? '#334155' : '#E2E8F0'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: isCurrent ? 'white' : (isDark ? 'white' : '#374151'), flexShrink: 0 }}>{wsInitials}</div>
+                  <span style={{ fontSize: 12, color: isCurrent ? (isDark ? '#FFFFFF' : '#7C3AED') : (isDark ? '#94A3B8' : '#6B7280'), flex: 1, fontWeight: isCurrent ? 600 : 400 }}>{ws.name}</span>
                   {isCurrent && (
                     <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                   )}
@@ -132,8 +123,8 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
               );
             })}
           </div>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '4px 6px' }}>
-            <button onClick={() => setOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 4px', borderRadius: 6, border: 'none', backgroundColor: 'transparent', color: '#64748B', fontSize: 12, cursor: 'pointer' }}>
+          <div style={{ borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #E2E8F0', padding: '4px 6px' }}>
+            <button onClick={() => setOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 4px', borderRadius: 6, border: 'none', backgroundColor: 'transparent', color: isDark ? '#94A3B8' : '#6B7280', fontSize: 12, cursor: 'pointer' }}>
               <Plus size={12} /> Add workspace
             </button>
           </div>
@@ -186,12 +177,50 @@ function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (
 }
 
 /* ── Sidebar ── */
-function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; onCollapse?: () => void; onClose?: () => void }) {
+function SidebarInner({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { workspace } = useWorkspaceCtx();
   const { theme, toggle } = useTheme();
   const [unreadAlerts, setUnreadAlerts] = useState(0);
+  const isDark = theme === 'dark';
+
+  // Sidebar color tokens per spec
+  const sc = isDark ? {
+    sectionLabel: '#6B7280',
+    navText: '#CBD5E1',
+    navIcon: '#CBD5E1',
+    navTextHover: '#FFFFFF',
+    navIconHover: '#A78BFA',
+    navHoverBg: 'rgba(124, 58, 237, 0.10)',
+    navActiveText: '#FFFFFF',
+    navActiveIcon: '#A78BFA',
+    navActiveBg: 'rgba(124, 58, 237, 0.18)',
+    wsName: '#F1F5F9',
+    userName: '#E2E8F0',
+    userSub: '#94A3B8',
+    separator: 'rgba(255,255,255,0.06)',
+    avatarBg: 'rgba(255,255,255,0.1)',
+    avatarBorder: 'rgba(255,255,255,0.08)',
+    mutedIcon: '#94A3B8',
+  } : {
+    sectionLabel: '#9CA3AF',
+    navText: '#374151',
+    navIcon: '#6B7280',
+    navTextHover: '#111827',
+    navIconHover: '#7C3AED',
+    navHoverBg: 'rgba(124, 58, 237, 0.06)',
+    navActiveText: '#7C3AED',
+    navActiveIcon: '#7C3AED',
+    navActiveBg: 'rgba(124, 58, 237, 0.08)',
+    wsName: '#111827',
+    userName: '#374151',
+    userSub: '#6B7280',
+    separator: '#E2E8F0',
+    avatarBg: '#F1F5F9',
+    avatarBorder: '#E2E8F0',
+    mutedIcon: '#6B7280',
+  };
 
   useEffect(() => {
     if (!workspace?.id) return;
@@ -205,175 +234,161 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
   }, [workspace?.id]);
 
   const isActive = (href: string) => href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
-  const sidebarWidth = collapsed ? 64 : 220;
 
   return (
     <div className="sidebar-glass" style={{
-      width: sidebarWidth, minHeight: '100vh',
-      display: 'flex', flexDirection: 'column', padding: collapsed ? '20px 8px' : '20px 12px',
+      width: 220, minHeight: '100vh',
+      display: 'flex', flexDirection: 'column', padding: '20px 12px',
       flexShrink: 0,
-      transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden', position: 'relative',
     }}>
-      {/* Logo + Collapse */}
-      <div style={{ padding: collapsed ? '2px 0 18px' : '2px 10px 18px', display: 'flex', alignItems: 'center', gap: 9, justifyContent: collapsed ? 'center' : 'flex-start' }}>
+      {/* Logo */}
+      <div style={{ padding: '2px 10px 18px', display: 'flex', alignItems: 'center', gap: 9 }}>
         <img src="/favicon.png" alt="Lumnix" style={{ width: 26, height: 26, borderRadius: 7, objectFit: 'contain', flexShrink: 0 }} />
-        {!collapsed && (
-          <span className="gradient-text" style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', flex: 1 }}>
-            Lumnix
-          </span>
-        )}
-        {onCollapse && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button onClick={onCollapse} className="sidebar-toggle" aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-                {collapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">{collapsed ? 'Expand sidebar' : 'Collapse sidebar'}</TooltipContent>
-          </Tooltip>
-        )}
+        <span className="gradient-text" style={{
+          fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)',
+          overflow: 'hidden', whiteSpace: 'nowrap',
+        }}>
+          Lumnix
+        </span>
       </div>
 
-      <WorkspaceSwitcher collapsed={collapsed} />
+      <WorkspaceSwitcher />
 
-      <Separator className="my-3" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />
+      <Separator className="my-3" style={{ backgroundColor: sc.separator }} />
 
       {/* Nav */}
       <nav aria-label="Main navigation" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
         {navGroups.map((group, gi) => (
           <div key={gi} style={{ marginBottom: 8 }}>
-            {group.label && !collapsed && (
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '16px 16px 6px 16px', fontFamily: "'DM Sans', sans-serif" }}>
+            {group.label && (
+              <div style={{ fontSize: 10, fontWeight: 700, color: sc.sectionLabel, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '16px 16px 6px 16px', fontFamily: "'DM Sans', sans-serif" }}>
                 {group.label}
               </div>
             )}
-            {collapsed && group.label && <Separator className="my-2" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />}
+
             {group.items.map(item => {
               const active = isActive(item.href);
-              const navLink = (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={(e) => { e.preventDefault(); router.push(item.href); onClose?.(); }}
-                  className={active && !collapsed ? 'nav-active-pill' : ''}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10,
-                    padding: collapsed ? '8px 0' : '8px 10px',
-                    paddingLeft: active && !collapsed ? 7 : collapsed ? 0 : 10,
-                    borderRadius: collapsed ? 8 : '0 8px 8px 0',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    color: active ? '#FFFFFF' : '#94A3B8',
-                    fontSize: 13, fontWeight: 500,
-                    fontFamily: "'DM Sans', sans-serif",
-                    letterSpacing: '0.01em',
-                    textDecoration: 'none', cursor: 'pointer',
-                    background: active ? 'rgba(124, 58, 237, 0.15)' : 'transparent',
-                    transition: 'background-color 0.15s, color 0.15s',
-                    position: 'relative',
-                  }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = 'rgba(124, 58, 237, 0.08)'; e.currentTarget.style.color = '#E2E8F0'; const icon = e.currentTarget.querySelector('svg'); if (icon) (icon as SVGElement).style.color = '#7C3AED'; } }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#94A3B8'; const icon = e.currentTarget.querySelector('svg'); if (icon) (icon as SVGElement).style.color = '#64748B'; } }}
-                >
-                  <item.icon size={16} color={active ? '#7C3AED' : '#64748B'} strokeWidth={1.5} />
-                  {!collapsed && (
-                    <>
-                      <span style={{ flex: 1, opacity: 1, overflow: 'hidden', whiteSpace: 'nowrap', transition: 'opacity 250ms' }}>{item.label}</span>
-                      {'badge' in item && item.badge && unreadAlerts > 0 && (
-                        <span style={{ background: '#7C3AED', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px', marginLeft: 'auto' }}>{unreadAlerts}</span>
-                      )}
-                    </>
-                  )}
-                </a>
-              );
 
-              if (collapsed) {
-                return (
-                  <Tooltip key={item.href}>
-                    <TooltipTrigger asChild>{navLink}</TooltipTrigger>
-                    <TooltipContent side="right">
-                      {item.label}
-                      {'shortcut' in item && item.shortcut && <span className="ml-2 text-muted-foreground text-xs">{item.shortcut}</span>}
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              }
-              return <div key={item.href}>{navLink}</div>;
+              return (
+                <div key={item.href}>
+                  <a
+                    href={item.href}
+                    onClick={(e) => { e.preventDefault(); router.push(item.href); onClose?.(); }}
+                    className={active ? 'nav-active-pill' : ''}
+                    style={{
+                      display: 'flex', alignItems: 'center',
+                      gap: 10,
+                      padding: '8px 10px',
+                      paddingLeft: active ? 7 : 10,
+                      borderRadius: '0 8px 8px 0',
+                      color: active ? sc.navActiveText : sc.navText,
+                      fontSize: 13, fontWeight: 500,
+                      fontFamily: "'DM Sans', sans-serif",
+                      letterSpacing: '0.01em',
+                      textDecoration: 'none', cursor: 'pointer',
+                      background: active ? sc.navActiveBg : 'transparent',
+                      transition: 'background-color 0.15s, color 0.15s',
+                      position: 'relative',
+                    }}
+                    onMouseEnter={e => {
+                      if (!active) {
+                        e.currentTarget.style.backgroundColor = sc.navHoverBg;
+                        e.currentTarget.style.color = sc.navTextHover;
+                        const icon = e.currentTarget.querySelector('svg');
+                        if (icon) (icon as SVGElement).style.color = sc.navIconHover;
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!active) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = sc.navText;
+                        const icon = e.currentTarget.querySelector('svg');
+                        if (icon) (icon as SVGElement).style.color = sc.navIcon;
+                      }
+                    }}
+                  >
+                    <item.icon size={16} color={active ? sc.navActiveIcon : sc.navIcon} strokeWidth={1.5} style={{ transition: 'color 0.15s' }} />
+                    <span style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.label}</span>
+                    {'badge' in item && item.badge && unreadAlerts > 0 && (
+                      <span style={{ background: '#7C3AED', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px', marginLeft: 'auto' }}>{unreadAlerts}</span>
+                    )}
+                  </a>
+                </div>
+              );
             })}
           </div>
         ))}
       </nav>
 
       {/* Bottom Controls */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 'auto', borderTop: `1px solid ${sc.separator}`, paddingTop: 12 }}>
+        {/* Theme toggle */}
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               onClick={toggle}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: '100%', padding: '8px 0', borderRadius: 8,
                 border: 'none', backgroundColor: 'transparent',
-                cursor: 'pointer', color: '#64748B',
+                cursor: 'pointer', color: sc.mutedIcon,
+                transition: 'background-color 0.15s, color 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94A3B8'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#64748B'; }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(124,58,237,0.12)'; e.currentTarget.style.color = '#A78BFA'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = sc.mutedIcon; }}
             >
-              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </TooltipTrigger>
-          <TooltipContent side="right">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</TooltipContent>
+          <TooltipContent side="right">{isDark ? 'Light mode' : 'Dark mode'}</TooltipContent>
         </Tooltip>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10, padding: collapsed ? '8px 0' : '8px 10px', justifyContent: collapsed ? 'center' : 'flex-start' }}>
+        {/* User area */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px' }}>
           <div style={{
             width: 30, height: 30, borderRadius: 8,
-            backgroundColor: '#1E293B', border: '1px solid rgba(255,255,255,0.08)',
+            backgroundColor: sc.avatarBg, border: `1px solid ${sc.avatarBorder}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
+            flexShrink: 0, color: sc.userName, fontSize: 13, fontWeight: 600,
+            fontFamily: 'var(--font-display)',
           }}>
-            <User size={14} color="#94A3B8" />
+            {workspace?.name ? workspace.name.charAt(0).toUpperCase() : <User size={14} color={sc.mutedIcon} />}
           </div>
-          {!collapsed && (
-            <>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#E2E8F0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {workspace?.name || 'Workspace'}
-                </div>
-                <div style={{ fontSize: 12, color: '#64748B' }}>Settings</div>
-              </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    aria-label="Sign out"
-                    onClick={async () => {
-                      const { supabase } = await import('@/lib/supabase');
-                      await supabase.auth.signOut();
-                      window.location.href = '/auth/signin';
-                    }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 2 }}
-                    onMouseEnter={e => (e.currentTarget.style.color = '#94A3B8')}
-                    onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}
-                  >
-                    <LogOut size={14} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Sign out</TooltipContent>
-              </Tooltip>
-            </>
-          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: sc.userName, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {workspace?.name || 'Workspace'}
+            </div>
+            <div style={{ fontSize: 12, color: sc.userSub }}>Settings</div>
+          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                aria-label="Sign out"
+                onClick={async () => {
+                  const { supabase } = await import('@/lib/supabase');
+                  await supabase.auth.signOut();
+                  window.location.href = '/auth/signin';
+                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: sc.mutedIcon, padding: 2 }}
+                onMouseEnter={e => (e.currentTarget.style.color = sc.userName)}
+                onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
+              >
+                <LogOut size={14} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Sign out</TooltipContent>
+          </Tooltip>
         </div>
-        {!collapsed && (
-          <a
-            href="mailto:khush@oltaflock.ai?subject=Lumnix Beta Feedback"
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', fontSize: 12, color: '#64748B', textDecoration: 'none', transition: 'color 0.15s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#7C3AED')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#64748B')}
-          >
-            <MessageCircle size={13} /> Give feedback
-          </a>
-        )}
+        <a
+          href="mailto:khush@oltaflock.ai?subject=Lumnix Beta Feedback"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', fontSize: 12, color: sc.mutedIcon, textDecoration: 'none', transition: 'color 0.15s' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#7C3AED')}
+          onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
+        >
+          <MessageCircle size={13} /> Give feedback
+        </a>
       </div>
     </div>
   );
@@ -399,7 +414,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (!checked) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FAFC' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-page, #F8FAFC)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
         <img src="/favicon.png" alt="Lumnix" style={{ width: 32, height: 32, borderRadius: 8, opacity: 0.6 }} className="animate-pulse" />
       </div>
@@ -411,32 +426,16 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
 /* ── Dashboard Shell ── */
 function DashboardInner({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const { c } = useTheme();
   const router = useRouter();
-
-  useEffect(() => {
-    const saved = localStorage.getItem('lumnix-sidebar-collapsed');
-    if (saved === 'true') setCollapsed(true);
-  }, []);
-
-  const toggleCollapse = useCallback(() => {
-    setCollapsed(prev => {
-      localStorage.setItem('lumnix-sidebar-collapsed', String(!prev));
-      return !prev;
-    });
-  }, []);
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setCmdOpen(prev => !prev);
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-        e.preventDefault();
-        toggleCollapse();
       }
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
@@ -448,22 +447,22 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     }
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [router, toggleCollapse]);
+  }, [router]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: c.bgPage }}>
       {/* Desktop sidebar */}
       <div className="desktop-sidebar" style={{ display: 'none' }}>
-        <SidebarInner collapsed={collapsed} onCollapse={toggleCollapse} />
+        <SidebarInner />
       </div>
       <style>{`.desktop-sidebar { display: flex !important; } @media (max-width: 768px) { .desktop-sidebar { display: none !important; } }`}</style>
 
       {/* Mobile header */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '10px 16px', display: 'none' }} className="mobile-header">
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: c.bgCard, borderBottom: `1px solid ${c.border}`, padding: '10px 16px', display: 'none' }} className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src="/favicon.png" alt="Lumnix" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain' }} />
-            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', color: '#0F172A' }}>
+            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', color: c.text }}>
               Lumnix
             </span>
           </div>
@@ -485,7 +484,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           <SheetHeader className="sr-only">
             <SheetTitle>Navigation</SheetTitle>
           </SheetHeader>
-          <SidebarInner collapsed={false} onClose={() => setMobileOpen(false)} />
+          <SidebarInner onClose={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
@@ -493,7 +492,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
 
       {/* Main content */}
-      <main id="main-content" style={{ flex: 1, overflow: 'auto', maxHeight: '100vh', backgroundColor: '#F8FAFC' }} className="main-content">
+      <main id="main-content" style={{ flex: 1, overflow: 'auto', maxHeight: '100vh', backgroundColor: c.bgPage }} className="main-content">
         <div style={{ padding: '28px 32px', maxWidth: 1400 }}>
           {/* Cmd+K hint bar */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
@@ -502,17 +501,17 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 padding: '8px 12px', borderRadius: 8,
-                border: '1px solid #E2E8F0', backgroundColor: '#F1F5F9',
-                color: '#475569', fontSize: 13, cursor: 'pointer',
+                border: `1px solid ${c.border}`, backgroundColor: c.bgCardHover,
+                color: c.textSecondary, fontSize: 13, cursor: 'pointer',
                 width: 240,
                 transition: 'border-color 150ms, box-shadow 150ms',
               }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.boxShadow = 'none'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <Search size={13} />
               <span style={{ flex: 1, textAlign: 'left' }}>Search anything...</span>
-              <kbd style={{ fontSize: 10, padding: '2px 6px', borderRadius: 5, backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', fontFamily: 'var(--font-mono)', color: '#94A3B8', letterSpacing: '0.02em' }}>
+              <kbd style={{ fontSize: 10, padding: '2px 6px', borderRadius: 5, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, fontFamily: 'var(--font-mono)', color: c.textMuted, letterSpacing: '0.02em' }}>
                 ⌘K
               </kbd>
             </button>

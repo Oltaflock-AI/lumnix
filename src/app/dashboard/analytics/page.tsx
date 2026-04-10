@@ -160,7 +160,7 @@ export default function AnalyticsPage() {
                   <kpi.icon size={14} color={kpi.color} />
                   <span style={{ fontSize: 12, color: c.textSecondary }}>{kpi.label}</span>
                 </div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: 'var(--font-mono)', marginBottom: 3 }}>{kpi.value}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: 'var(--font-display)', marginBottom: 3 }}>{kpi.value}</div>
                 <div style={{ fontSize: 11, color: c.textMuted }}>{kpi.sub}</div>
               </div>
             ))}
@@ -232,7 +232,7 @@ export default function AnalyticsPage() {
                       <div key={i}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                           <span style={{ fontSize: 13, color: c.text, fontWeight: 500, textTransform: 'capitalize' }}>{s.source || 'direct'}</span>
-                          <span style={{ fontSize: 12, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(s.sessions || 0).toLocaleString()} ({pct.toFixed(1)}%)</span>
+                          <span style={{ fontSize: 12, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(s.sessions || 0).toLocaleString()} ({pct.toFixed(1)}%)</span>
                         </div>
                         <div style={{ height: 6, borderRadius: 3, backgroundColor: c.bgCardHover, overflow: 'hidden' }}>
                           <div style={{ height: '100%', borderRadius: 3, backgroundColor: COLORS[i % COLORS.length], width: `${pct}%` }} />
@@ -259,9 +259,9 @@ export default function AnalyticsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {topPages.slice(0, 8).map((p, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: i < 7 ? `1px solid ${c.border}` : 'none' }}>
-                      <span style={{ fontSize: 11, color: c.textMuted, width: 20, textAlign: 'right', flexShrink: 0, fontFamily: 'var(--font-mono)' }}>{i + 1}</span>
+                      <span style={{ fontSize: 11, color: c.textMuted, width: 20, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
                       <span style={{ flex: 1, fontSize: 12, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.page}</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: c.text, flexShrink: 0, fontFamily: 'var(--font-mono)' }}>{(p.pageviews || 0).toLocaleString()}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: c.text, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{(p.pageviews || 0).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>

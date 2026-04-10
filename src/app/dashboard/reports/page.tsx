@@ -1393,7 +1393,7 @@ export default function ReportsPage() {
 
         {loading && <Loader2 size={14} color={c.accent} style={{ animation: 'spin 1s linear infinite' }} />}
         {!loading && hasData && (
-          <span style={{ fontSize: 12, color: c.textMuted, fontFamily: 'var(--font-mono)' }}>
+          <span style={{ fontSize: 12, color: c.textMuted }}>
             {periodLabel}
           </span>
         )}
@@ -1430,7 +1430,7 @@ export default function ReportsPage() {
           display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24,
         }}>
           <Sparkles size={14} />
-          <span>Data loaded — <strong style={{ fontFamily: 'var(--font-mono)' }}>{gscKeywords.length}</strong> keywords from GSC{hasGA4 ? ' + GA4 traffic data' : ''} — Reports include {workspace?.name || 'your brand name'}</span>
+          <span>Data loaded — <strong>{gscKeywords.length}</strong> keywords from GSC{hasGA4 ? ' + GA4 traffic data' : ''} — Reports include {workspace?.name || 'your brand name'}</span>
         </div>
       )}
 

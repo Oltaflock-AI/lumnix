@@ -42,39 +42,39 @@ interface ThemeCtx {
 }
 
 const DARK: ColorTokens = {
-  bgPage: '#F8FAFC',
+  bgPage: '#0F172A',
   bgSidebar: '#0F172A',
-  bgCard: '#FFFFFF',
-  bgCardHover: '#F1F5F9',
-  bgInput: '#F1F5F9',
-  bgTag: '#F1F5F9',
-  border: '#E2E8F0',
-  borderSubtle: '#F1F5F9',
-  borderStrong: '#CBD5E1',
-  text: '#0F172A',
-  textSecondary: '#64748B',
-  textMuted: '#94A3B8',
-  shadow: '0 1px 3px rgba(0,0,0,0.06)',
-  surfaceElevated: '#FFFFFF',
+  bgCard: '#1E293B',
+  bgCardHover: '#273548',
+  bgInput: '#1E293B',
+  bgTag: '#1E293B',
+  border: 'rgba(255,255,255,0.08)',
+  borderSubtle: 'rgba(255,255,255,0.04)',
+  borderStrong: 'rgba(255,255,255,0.12)',
+  text: '#F1F5F9',
+  textSecondary: '#94A3B8',
+  textMuted: '#475569',
+  shadow: '0 1px 3px rgba(0,0,0,0.3)',
+  surfaceElevated: '#1E293B',
   accent: '#7C3AED',
   accentHover: '#6D28D9',
-  accentSubtle: 'rgba(124,58,237,0.08)',
+  accentSubtle: 'rgba(124,58,237,0.12)',
   success: '#22C55E',
-  successSubtle: 'rgba(34,197,94,0.08)',
-  successBorder: 'rgba(34,197,94,0.2)',
+  successSubtle: 'rgba(34,197,94,0.12)',
+  successBorder: 'rgba(34,197,94,0.25)',
   warning: '#F59E0B',
-  warningSubtle: 'rgba(245,158,11,0.08)',
-  warningBorder: 'rgba(245,158,11,0.2)',
+  warningSubtle: 'rgba(245,158,11,0.12)',
+  warningBorder: 'rgba(245,158,11,0.25)',
   danger: '#EF4444',
-  dangerSubtle: 'rgba(239,68,68,0.08)',
-  dangerBorder: 'rgba(239,68,68,0.2)',
-  accentGlow: '0 0 24px rgba(124,58,237,0.12), 0 0 64px rgba(124,58,237,0.04)',
+  dangerSubtle: 'rgba(239,68,68,0.12)',
+  dangerBorder: 'rgba(239,68,68,0.25)',
+  accentGlow: '0 0 24px rgba(124,58,237,0.2), 0 0 64px rgba(124,58,237,0.08)',
   accentTeal: '#0891B2',
 };
 
 const LIGHT: ColorTokens = {
   bgPage: '#F8FAFC',
-  bgSidebar: '#0F172A',
+  bgSidebar: '#FFFFFF',
   bgCard: '#FFFFFF',
   bgCardHover: '#F1F5F9',
   bgInput: '#F1F5F9',
@@ -176,6 +176,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
     document.body.style.backgroundColor = c.bgPage;
     document.body.style.color = c.text;
   }, [theme, c]);

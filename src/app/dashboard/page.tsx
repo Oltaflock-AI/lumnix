@@ -22,15 +22,15 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
   const { c } = useTheme();
   return (
     <div style={{
-      backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12,
-      padding: '20px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+      backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12,
+      padding: '20px 24px', boxShadow: c.shadow,
       transition: 'box-shadow 200ms, border-color 200ms', position: 'relative', overflow: 'hidden',
     }}
     onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = '#C4B5FD'; }}
-    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = '#E2E8F0'; }}
+    onMouseLeave={e => { e.currentTarget.style.boxShadow = c.shadow; e.currentTarget.style.borderColor = c.border; }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#94A3B8' }}>{label}</span>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.textMuted }}>{label}</span>
         <div style={{
           width: 36, height: 36, borderRadius: 8,
           backgroundColor: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -45,7 +45,7 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#0F172A', lineHeight: 1, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
+          <div style={{ fontSize: 32, fontWeight: 700, color: c.text, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
             {value}
           </div>
           {change && (
@@ -58,7 +58,7 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
           )}
         </div>
       )}
-      {sub && <div style={{ fontSize: 12, color: '#94A3B8' }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: c.textMuted }}>{sub}</div>}
     </div>
   );
 }
@@ -136,10 +136,10 @@ export default function DashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, lineHeight: 1.15, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", color: '#0F172A' }}>
+          <h1 style={{ fontSize: 26, fontWeight: 700, lineHeight: 1.15, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", color: c.text }}>
             {userName ? <>Welcome back, <span style={{ color: '#7C3AED' }}>{userName}</span></> : 'Dashboard'}
           </h1>
-          <p style={{ color: '#94A3B8', fontSize: 13, marginTop: 2 }}>
+          <p style={{ color: c.textMuted, fontSize: 13, marginTop: 2 }}>
             {connectedProviders.length > 0
               ? `${connectedProviders.length} source${connectedProviders.length > 1 ? 's' : ''} connected · Last ${days} days`
               : 'Connect your first integration to see live data'}
@@ -162,18 +162,18 @@ export default function DashboardPage() {
       {/* Traffic chart + Top pages */}
       <div className="two-col stagger-in" style={{ marginBottom: 20, marginTop: 20 }}>
         {/* Traffic chart */}
-        <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '20px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', boxShadow: c.shadow }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>Organic vs Paid traffic</h3>
-              <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>Daily clicks — last 30 days</p>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>Organic vs Paid traffic</h3>
+              <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>Daily clicks — last 30 days</p>
             </div>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#64748B' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: c.textSecondary }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#7C3AED', display: 'inline-block' }} /> Organic
               </span>
               {hasAds && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#64748B' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: c.textSecondary }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#0891B2', display: 'inline-block' }} /> Paid
                 </span>
               )}
@@ -195,9 +195,9 @@ export default function DashboardPage() {
                 <XAxis dataKey="day" stroke="transparent" tick={{ fill: '#94A3B8', fontSize: 11 }} axisLine={false} tickLine={false} interval={2} />
                 <YAxis stroke="transparent" tick={{ fill: '#94A3B8', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ borderRadius: 8, border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 12, backgroundColor: '#FFFFFF' }}
-                  itemStyle={{ color: '#0F172A' }}
-                  labelStyle={{ color: '#64748B' }}
+                  contentStyle={{ borderRadius: 8, border: `1px solid ${c.border}`, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 12, backgroundColor: c.bgCard }}
+                  itemStyle={{ color: c.text }}
+                  labelStyle={{ color: c.textSecondary }}
                 />
                 <Area type="monotone" dataKey="clicks" name="Organic" stroke="#7C3AED" fill="url(#gDash)" strokeWidth={2} dot={false} />
                 {hasAds && <Area type="monotone" dataKey="paid" name="Paid" stroke="#0891B2" fill="url(#gPaid)" strokeWidth={2} dot={false} />}
@@ -214,9 +214,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Top pages / keywords table */}
-        <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '20px 24px' }}>
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>Top keywords</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>Top keywords</h3>
             {hasGSC && (
               <button onClick={() => router.push('/dashboard/seo')} style={{ fontSize: 12, color: '#7C3AED', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
                 View all →
@@ -225,7 +225,7 @@ export default function DashboardPage() {
           </div>
           {topKeywords.length > 0 ? (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #E2E8F0', fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${c.border}`, fontSize: 10, fontWeight: 700, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 <span style={{ width: 32 }}>#</span>
                 <span style={{ flex: 1 }}>Keyword</span>
                 <span style={{ width: 56, textAlign: 'right' }}>Clicks</span>
@@ -233,14 +233,14 @@ export default function DashboardPage() {
                 <span style={{ width: 48, textAlign: 'right' }}>CTR</span>
               </div>
               {topKeywords.map((kw: any, i: number) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '8px 0', borderBottom: i < topKeywords.length - 1 ? '1px solid #F8FAFC' : 'none', fontSize: 13, color: '#334155' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', width: 32, flexShrink: 0 }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '8px 0', borderBottom: i < topKeywords.length - 1 ? `1px solid ${c.borderSubtle}` : 'none', fontSize: 13, color: c.textSecondary }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: c.textMuted, width: 32, flexShrink: 0 }}>
                     #{Math.round(kw.position)}
                   </span>
-                  <span style={{ flex: 1, fontSize: 13, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kw.query}</span>
+                  <span style={{ flex: 1, fontSize: 13, color: c.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kw.query}</span>
                   <span style={{ fontWeight: 600, color: '#7C3AED', fontSize: 13, width: 56, textAlign: 'right', flexShrink: 0 }}>{kw.clicks}</span>
-                  <span style={{ fontSize: 12, color: '#64748B', width: 64, textAlign: 'right', flexShrink: 0 }}>{kw.impressions?.toLocaleString()}</span>
-                  <span style={{ fontSize: 12, color: '#64748B', width: 48, textAlign: 'right', flexShrink: 0 }}>{kw.ctr?.toFixed(1)}%</span>
+                  <span style={{ fontSize: 12, color: c.textSecondary, width: 64, textAlign: 'right', flexShrink: 0 }}>{kw.impressions?.toLocaleString()}</span>
+                  <span style={{ fontSize: 12, color: c.textSecondary, width: 48, textAlign: 'right', flexShrink: 0 }}>{kw.ctr?.toFixed(1)}%</span>
                 </div>
               ))}
             </div>
@@ -269,10 +269,10 @@ export default function DashboardPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {quickWins.map((kw: any, i: number) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: c.warning, fontFamily: 'var(--font-mono)', width: 32 }}>#{Math.round(kw.position)}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: c.warning, fontVariantNumeric: 'tabular-nums', width: 32 }}>#{Math.round(kw.position)}</span>
                   <span style={{ flex: 1, fontSize: 13, color: c.textSecondary }}>{kw.query}</span>
                   <span style={{ fontSize: 12, color: c.textMuted }}>{kw.impressions?.toLocaleString()} impr.</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: c.danger, fontFamily: 'var(--font-mono)' }}>{kw.ctr?.toFixed(1)}%</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: c.danger, fontVariantNumeric: 'tabular-nums' }}>{kw.ctr?.toFixed(1)}%</span>
                 </div>
               ))}
             </div>
@@ -284,8 +284,8 @@ export default function DashboardPage() {
         )}
 
         {/* Quick actions */}
-        <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '20px 24px' }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", marginBottom: 12 }}>Quick actions</h3>
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px' }}>
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", marginBottom: 12 }}>Quick actions</h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
             {[
               { label: 'Run keyword gap analysis', icon: Search, href: '/dashboard/competitors' },
@@ -298,13 +298,13 @@ export default function DashboardPage() {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '10px 16px', borderRadius: 8,
-                  border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF',
-                  color: '#374151', fontSize: 13, fontWeight: 500,
+                  border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
+                  color: c.textSecondary, fontSize: 13, fontWeight: 500,
                   cursor: 'pointer', textAlign: 'left',
                   transition: 'border-color 150ms, color 150ms, box-shadow 150ms',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.color = '#7C3AED'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(124,58,237,0.12)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.color = '#374151'; e.currentTarget.style.boxShadow = 'none'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.textSecondary; e.currentTarget.style.boxShadow = 'none'; }}
               >
                 <action.icon size={15} color="currentColor" />
                 <span>{action.label}</span>
@@ -525,11 +525,11 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const display = anomalies.slice(0, 5);
 
   return (
-    <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '20px 24px' }}>
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <AlertTriangle size={16} color="#F59E0B" />
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>AI Anomalies</h3>
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>AI Anomalies</h3>
           {unread.length > 0 && (
             <span style={{ background: '#FEF3C7', color: '#92400E', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20 }}>
               {unread.length} new
@@ -574,7 +574,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 13, fontWeight: 500, color: '#78350F' }}>{anomaly.title}</p>
                 </div>
-                <span style={{ fontSize: 11, color: '#94A3B8', flexShrink: 0 }}>
+                <span style={{ fontSize: 11, color: c.textMuted, flexShrink: 0 }}>
                   {anomaly.created_at ? new Date(anomaly.created_at).toLocaleDateString() : ''}
                 </span>
               </div>

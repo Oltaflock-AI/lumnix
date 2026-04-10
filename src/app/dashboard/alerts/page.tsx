@@ -157,7 +157,7 @@ export default function AlertsPage() {
           { label: 'Wins', count: counts.success, color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
         ].map(s => (
           <div key={s.label} style={{ padding: '12px 20px', borderRadius: 10, backgroundColor: s.bg, border: `1px solid ${s.color}20`, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: 'var(--font-mono)' }}>{s.count}</span>
+            <span style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: 'var(--font-display)' }}>{s.count}</span>
             <span style={{ fontSize: 13, color: c.textSecondary }}>{s.label}</span>
           </div>
         ))}

@@ -69,18 +69,37 @@ export function PageShell({ title, description, icon: Icon, badge, action, child
 export function EmptyState({ icon: Icon, title, description, actionLabel, onAction }: {
   icon: LucideIcon; title: string; description: string; actionLabel?: string; onAction?: () => void;
 }) {
-  const { c } = useTheme();
   return (
-    <div className="card-hero" style={{ backgroundColor: '#FFFFFF', borderRadius: 12, padding: '60px 40px', textAlign: 'center' }}>
-      <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(124,58,237,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20, border: '1px solid rgba(124,58,237,0.15)' }}>
-        <Icon size={26} color="#7C3AED" />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 32px', textAlign: 'center' }}>
+      <div style={{
+        width: 72, height: 72, borderRadius: 16,
+        background: 'rgba(124,58,237,0.1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginBottom: 20,
+      }}>
+        <Icon size={32} color="#7C3AED" />
       </div>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', marginBottom: 8, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{title}</h3>
-      <p style={{ fontSize: 13, color: '#94A3B8', maxWidth: 380, margin: '0 auto 20px', lineHeight: 1.6 }}>{description}</p>
+      <h2 style={{ fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontWeight: 700, fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>
+        {title}
+      </h2>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: 'var(--text-secondary)', maxWidth: 360, lineHeight: 1.6, marginBottom: 24 }}>
+        {description}
+      </p>
       {actionLabel && onAction && (
-        <Button variant="gradient" size="sm" onClick={onAction}>
+        <button
+          onClick={onAction}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '10px 20px', background: '#7C3AED', color: '#FFFFFF',
+            borderRadius: 8, border: 'none',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 14,
+            cursor: 'pointer', transition: 'background 150ms, box-shadow 150ms',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#6D28D9'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(124,58,237,0.3)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#7C3AED'; e.currentTarget.style.boxShadow = 'none'; }}
+        >
           {actionLabel}
-        </Button>
+        </button>
       )}
     </div>
   );

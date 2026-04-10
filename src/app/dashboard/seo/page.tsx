@@ -170,7 +170,7 @@ export default function SEOPage() {
                   <kpi.icon size={14} color={kpi.color} />
                   <span style={{ fontSize: 12, color: c.textSecondary }}>{kpi.label}</span>
                 </div>
-                <div style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: 'var(--font-mono)', marginBottom: 3 }}>{kpi.value}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: 'var(--font-display)', marginBottom: 3 }}>{kpi.value}</div>
                 <div style={{ fontSize: 11, color: c.textMuted }}>{kpi.sub}</div>
               </div>
             ))}
@@ -214,13 +214,13 @@ export default function SEOPage() {
                 </div>
               ) : quickWins.map(kw => (
                 <div key={kw.query} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 0', borderBottom: `1px solid ${c.border}` }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 6, backgroundColor: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 700, color: c.accent, fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 6, backgroundColor: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 700, color: c.accent }}>
                     {Math.round(kw.position)}
                   </div>
                   <span style={{ flex: 1, fontSize: 13, color: c.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kw.query}</span>
                   <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                    <div style={{ fontSize: 12, color: c.danger, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{kw.ctr.toFixed(1)}% CTR</div>
-                    <div style={{ fontSize: 11, color: c.textMuted, fontFamily: 'var(--font-mono)' }}>{kw.impressions.toLocaleString()} impr</div>
+                    <div style={{ fontSize: 12, color: c.danger, fontWeight: 600 }}>{kw.ctr.toFixed(1)}% CTR</div>
+                    <div style={{ fontSize: 11, color: c.textMuted }}>{kw.impressions.toLocaleString()} impr</div>
                   </div>
                 </div>
               ))}
@@ -291,13 +291,13 @@ export default function SEOPage() {
                       <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{kw.query}</div>
                     </td>
                     <td style={{ padding: '10px 8px' }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)', color: kw.position <= 3 ? c.success : kw.position <= 10 ? c.warning : c.textSecondary }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: kw.position <= 3 ? c.success : kw.position <= 10 ? c.warning : c.textSecondary }}>
                         #{Math.round(kw.position)}
                       </span>
                     </td>
-                    <td style={{ padding: '10px 8px', fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{(kw.impressions || 0).toLocaleString()}</td>
-                    <td style={{ padding: '10px 8px', fontSize: 13, fontWeight: 600, color: c.text, fontFamily: 'var(--font-mono)' }}>{(kw.clicks || 0).toLocaleString()}</td>
-                    <td style={{ padding: '10px 8px', fontSize: 13, fontFamily: 'var(--font-mono)', color: kw.ctr < 1 && kw.impressions > 500 ? c.danger : c.textSecondary }}>{(kw.ctr || 0).toFixed(1)}%</td>
+                    <td style={{ padding: '10px 8px', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(kw.impressions || 0).toLocaleString()}</td>
+                    <td style={{ padding: '10px 8px', fontSize: 13, fontWeight: 600, color: c.text, fontVariantNumeric: 'tabular-nums' }}>{(kw.clicks || 0).toLocaleString()}</td>
+                    <td style={{ padding: '10px 8px', fontSize: 13, fontVariantNumeric: 'tabular-nums', color: kw.ctr < 1 && kw.impressions > 500 ? c.danger : c.textSecondary }}>{(kw.ctr || 0).toFixed(1)}%</td>
                     <td style={{ padding: '10px 0' }}>
                       {kw.signal === 'top3' && <InsightPill color={c.success} label="Top 3" />}
                       {kw.signal === 'quick-win' && <InsightPill color={c.accent} label="Quick Win" />}

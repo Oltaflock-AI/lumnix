@@ -582,7 +582,7 @@ export default function CompetitorsPage() {
                             <div key={i} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 10, padding: 16 }}>
                               <div style={{ fontSize: 11, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', marginBottom: 6 }}>{s.label}</div>
                               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                                <span style={{ fontSize: 22, fontWeight: 600, color: c.text, fontFamily: 'var(--font-mono)' }}>{s.value}</span>
+                                <span style={{ fontSize: 22, fontWeight: 600, color: c.text, fontFamily: 'var(--font-display)' }}>{s.value}</span>
                                 {'change' in s && s.change !== 0 && (
                                   <span style={{ fontSize: 11, fontWeight: 600, color: (s.change as number) > 0 ? '#22c55e' : '#ef4444' }}>
                                     {(s.change as number) > 0 ? '+' : ''}{s.change}
@@ -604,10 +604,10 @@ export default function CompetitorsPage() {
                         {[...trends].reverse().slice(0, 30).map((t: any, i: number) => (
                           <div key={t.id || i} style={{ display: 'grid', gridTemplateColumns: '120px 80px 80px 80px 80px 1fr', gap: '8px', padding: '10px 16px', borderBottom: `1px solid ${c.border}`, alignItems: 'center' }}>
                             <span style={{ fontSize: 13, color: c.text }}>{new Date(t.snapshot_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                            <span style={{ fontSize: 13, color: c.text, fontFamily: 'var(--font-mono)' }}>{t.active_ads}</span>
-                            <span style={{ fontSize: 13, color: c.textSecondary, fontFamily: 'var(--font-mono)' }}>{t.total_ads}</span>
-                            <span style={{ fontSize: 13, color: t.new_ads_today > 0 ? '#22c55e' : c.textMuted, fontFamily: 'var(--font-mono)' }}>{t.new_ads_today > 0 ? `+${t.new_ads_today}` : '0'}</span>
-                            <span style={{ fontSize: 13, color: t.paused_today > 0 ? '#ef4444' : c.textMuted, fontFamily: 'var(--font-mono)' }}>{t.paused_today || '0'}</span>
+                            <span style={{ fontSize: 13, color: c.text, fontVariantNumeric: 'tabular-nums' }}>{t.active_ads}</span>
+                            <span style={{ fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{t.total_ads}</span>
+                            <span style={{ fontSize: 13, color: t.new_ads_today > 0 ? '#22c55e' : c.textMuted, fontVariantNumeric: 'tabular-nums' }}>{t.new_ads_today > 0 ? `+${t.new_ads_today}` : '0'}</span>
+                            <span style={{ fontSize: 13, color: t.paused_today > 0 ? '#ef4444' : c.textMuted, fontVariantNumeric: 'tabular-nums' }}>{t.paused_today || '0'}</span>
                             <span style={{ fontSize: 12, color: c.textSecondary }}>${(t.estimated_spend_lower || 0).toLocaleString()} - ${(t.estimated_spend_upper || 0).toLocaleString()}</span>
                           </div>
                         ))}
