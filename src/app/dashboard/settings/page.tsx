@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link } from "lucide-react";
+import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link, Database, AlertCircle } from "lucide-react";
 import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
@@ -86,16 +86,23 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   );
 }
 
-function StatusPill({ connected, label }: { connected: boolean; label?: string }) {
+function StatusPill({ connected, label, variant }: { connected: boolean; label?: string; variant?: 'success' | 'error' | 'warning' | 'default' }) {
+  const resolvedVariant = variant || (connected ? 'success' : 'default');
+  const styles: Record<string, { bg: string; color: string; dot: string }> = {
+    success: { bg: '#DCFCE7', color: '#166534', dot: '#22C55E' },
+    error: { bg: '#FEF2F2', color: '#991B1B', dot: '#EF4444' },
+    warning: { bg: '#FFFBEB', color: '#92400E', dot: '#F59E0B' },
+    default: { bg: '#F1F5F9', color: '#64748B', dot: '#94A3B8' },
+  };
+  const s = styles[resolvedVariant];
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 4,
       fontSize: 11, fontWeight: 600,
       padding: '2px 10px', borderRadius: 20,
-      backgroundColor: connected ? '#DCFCE7' : '#F1F5F9',
-      color: connected ? '#166534' : '#64748B',
+      backgroundColor: s.bg, color: s.color,
     }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: connected ? '#22C55E' : '#94A3B8' }} />
+      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: s.dot }} />
       {label || (connected ? 'Connected' : 'Disconnected')}
     </span>
   );
@@ -1133,6 +1140,129 @@ function DeleteAccountSection() {
   );
 }
 
+function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace: any; loading: boolean; onSaved?: () => void; onUpdate?: (w: any) => void }) {
+  const { c, card, label, inputBase, primaryBtn } = useStyles();
+  const [name, setName] = useState(workspace?.name || '');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (workspace?.name) setName(workspace.name);
+  }, [workspace?.name]);
+
+  async function handleSave() {
+    if (!name.trim()) return;
+    setSaving(true);
+    setError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch('/api/workspace', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+        onUpdate?.({ ...workspace, name: name.trim() });
+        onSaved?.();
+      } else {
+        setError('Failed to save workspace name');
+      }
+    } catch {
+      setError('Failed to save workspace name');
+    }
+    setSaving(false);
+  }
+
+  function handleCopyId() {
+    if (!workspace?.id) return;
+    navigator.clipboard.writeText(workspace.id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (loading) {
+    return (
+      <div style={{ ...card, padding: 24, maxWidth: 500 }}>
+        <Skeleton className="h-5 w-40 mb-4" />
+        <Skeleton className="h-10 w-full mb-4" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ ...card, padding: 24, maxWidth: 500 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 20 }}>Workspace</h3>
+
+      <div style={{ marginBottom: 16 }}>
+        <label style={label}>Workspace Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="My Workspace"
+          style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
+          onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+          onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
+        />
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <label style={label}>Workspace ID</label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            readOnly
+            value={workspace?.id || ''}
+            style={{
+              ...inputBase, flex: 1, fontSize: 12,
+              fontFamily: 'var(--font-mono)',
+              color: c.textMuted, cursor: 'default',
+              backgroundColor: '#F8FAFC',
+            }}
+            onClick={e => (e.target as HTMLInputElement).select()}
+          />
+          <button
+            onClick={handleCopyId}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              padding: '8px 12px', borderRadius: 8,
+              border: `1px solid ${c.border}`,
+              backgroundColor: copied ? '#DCFCE7' : '#F8FAFC',
+              color: copied ? '#166534' : c.textSecondary,
+              fontSize: 12, fontWeight: 500, cursor: 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            {copied ? <Check size={13} /> : <Copy size={13} />}
+            {copied ? 'Copied' : 'Copy'}
+          </button>
+        </div>
+      </div>
+
+      {error && <p style={{ fontSize: 13, color: '#EF4444', marginBottom: 12 }}>{error}</p>}
+
+      <button
+        onClick={handleSave}
+        disabled={saving || name.trim() === (workspace?.name || '')}
+        style={{
+          ...primaryBtn,
+          backgroundColor: saved ? '#22C55E' : '#7C3AED',
+          opacity: saving || name.trim() === (workspace?.name || '') ? 0.5 : 1,
+          cursor: saving || name.trim() === (workspace?.name || '') ? 'default' : 'pointer',
+        }}
+      >
+        {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : saved ? <Check size={16} /> : null}
+        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Workspace Name'}
+      </button>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { c, card, inputBase } = useStyles();
   const { toggle } = useTheme();
@@ -1140,6 +1270,7 @@ export default function SettingsPage() {
   const { workspace, loading: wsLoading, refetch: refetchWorkspace, setWorkspace } = useWorkspaceCtx();
   const { integrations, loading: intLoading, refetch } = useIntegrations(workspace?.id);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [syncResults, setSyncResults] = useState<Record<string, { rows?: number; error?: string; timestamp?: string }>>({});
 
   // Team invite state
   const [inviteEmail, setInviteEmail] = useState("");
@@ -1243,11 +1374,20 @@ export default function SettingsPage() {
     try {
       const result = await syncIntegration(int.id, workspace.id, providerId);
       if (result?.error) {
-        alert(`Sync failed: ${result.error}`);
+        setSyncResults(prev => ({ ...prev, [providerId]: { error: result.error, timestamp: new Date().toISOString() } }));
+      } else {
+        setSyncResults(prev => ({
+          ...prev,
+          [providerId]: {
+            rows: result?.rows_synced ?? undefined,
+            error: undefined,
+            timestamp: new Date().toISOString(),
+          },
+        }));
       }
       refetch();
-    } catch (err) {
-      alert(`Sync error: ${err}`);
+    } catch (err: any) {
+      setSyncResults(prev => ({ ...prev, [providerId]: { error: err?.message || 'Sync failed', timestamp: new Date().toISOString() } }));
     }
     setSyncing(null);
   }
@@ -1291,8 +1431,13 @@ export default function SettingsPage() {
         {/* ─── General Tab ─── */}
         <TabsContent value="general">
           <div>
+            {/* Workspace section */}
+            <WorkspaceSection workspace={workspace} loading={wsLoading} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
+
             {/* Profile section */}
-            <ProfileTab />
+            <div style={{ marginTop: 32 }}>
+              <ProfileTab />
+            </div>
 
             {/* Danger Zone — Delete Account */}
             <DeleteAccountSection />
@@ -1332,12 +1477,27 @@ export default function SettingsPage() {
                 const connected = isConnected(p.id);
                 const int = getIntegration(p.id);
                 const isSyncing = syncing === p.id;
+                const isErrored = int?.status === 'error';
+                const syncResult = syncResults[p.id];
+                const lastSyncTime = int?.last_sync_at ? new Date(int.last_sync_at) : null;
+                const syncAge = lastSyncTime ? Date.now() - lastSyncTime.getTime() : null;
+                const isStale = syncAge ? syncAge > 24 * 60 * 60 * 1000 : false;
+
+                const borderColor = isErrored
+                  ? 'rgba(239,68,68,0.4)'
+                  : connected && isSynced(p.id)
+                    ? 'rgba(16,185,129,0.3)'
+                    : connected
+                      ? 'rgba(245,158,11,0.4)'
+                      : c.border;
+
                 return (
                   <div key={p.id} style={{
                     ...card,
-                    border: `1px solid ${connected && isSynced(p.id) ? 'rgba(16,185,129,0.3)' : connected ? 'rgba(245,158,11,0.4)' : c.border}`,
+                    border: `1px solid ${borderColor}`,
                     padding: 24,
                   }}>
+                    {/* Header: icon + name + status */}
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: `${p.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -1348,23 +1508,96 @@ export default function SettingsPage() {
                           <div style={{ marginTop: 4 }}>
                             <StatusPill
                               connected={connected}
-                              label={connected ? (int?.display_name ? `Connected \u00b7 ${int.display_name}` : 'Connected') : 'Disconnected'}
+                              variant={isErrored ? 'error' : connected ? 'success' : 'default'}
+                              label={
+                                isErrored ? 'Sync Error'
+                                : connected ? (int?.display_name ? `Connected \u00b7 ${int.display_name}` : 'Connected')
+                                : 'Disconnected'
+                              }
                             />
                           </div>
                         </div>
                       </div>
                     </div>
-                    <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16, lineHeight: 1.4 }}>{p.desc}</p>
-                    {int?.last_sync_at && (
-                      <p style={{ fontSize: 11, color: c.textMuted, marginBottom: 12, fontFamily: 'var(--font-mono)' }}>
-                        Last synced: {new Date(int.last_sync_at).toLocaleString()}
-                      </p>
+
+                    <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 12, lineHeight: 1.4 }}>{p.desc}</p>
+
+                    {/* Sync details block — shown when connected */}
+                    {connected && (
+                      <div style={{
+                        padding: '10px 12px', borderRadius: 8, marginBottom: 14,
+                        backgroundColor: isErrored ? 'rgba(239,68,68,0.05)' : '#F8FAFC',
+                        border: `1px solid ${isErrored ? 'rgba(239,68,68,0.15)' : '#E2E8F0'}`,
+                      }}>
+                        {/* Last sync timestamp */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: lastSyncTime ? 6 : 0 }}>
+                          <Clock size={11} color={c.textMuted} />
+                          <span style={{ fontSize: 12, color: c.textSecondary }}>
+                            {lastSyncTime
+                              ? <>Last sync: <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 500 }}>{lastSyncTime.toLocaleString()}</span>
+                                {isStale && <span style={{ color: '#F59E0B', marginLeft: 6, fontWeight: 600 }}>(stale)</span>}
+                              </>
+                              : 'Never synced'
+                            }
+                          </span>
+                        </div>
+
+                        {/* Sync status from last sync attempt */}
+                        {lastSyncTime && !isErrored && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: syncResult?.rows !== undefined ? 6 : 0 }}>
+                            <Check size={11} color="#22C55E" />
+                            <span style={{ fontSize: 12, color: '#166534', fontWeight: 500 }}>Last sync succeeded</span>
+                          </div>
+                        )}
+
+                        {/* Row count — from latest manual sync result */}
+                        {syncResult?.rows !== undefined && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Database size={11} color={c.textMuted} />
+                            <span style={{ fontSize: 12, color: c.textSecondary }}>
+                              Rows synced: <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: c.text }}>{syncResult.rows.toLocaleString()}</span>
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Error message (from sync result or status) */}
+                        {(isErrored || syncResult?.error) && (
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginTop: 4 }}>
+                            <AlertCircle size={12} color="#EF4444" style={{ marginTop: 1, flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, color: '#EF4444', lineHeight: 1.4 }}>
+                              {syncResult?.error || 'Sync failed. Re-authenticate or try syncing again.'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     )}
-                    <div style={{ display: 'flex', gap: 12 }}>
+
+                    {/* Action buttons */}
+                    <div style={{ display: 'flex', gap: 10 }}>
                       {!connected ? (
                         <Button variant="gradient" className="flex-1 h-10" onClick={() => handleConnect(p.id)}>
                           Connect
                         </Button>
+                      ) : isErrored ? (
+                        <>
+                          <Button
+                            variant="default"
+                            className="flex-1 h-10"
+                            onClick={() => handleConnect(p.id)}
+                          >
+                            <RefreshCw size={13} />
+                            Reconnect
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="h-10"
+                            onClick={() => handleSync(p.id)}
+                            disabled={isSyncing}
+                          >
+                            <RefreshCw size={13} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+                            {isSyncing ? 'Retrying...' : 'Retry Sync'}
+                          </Button>
+                        </>
                       ) : (
                         <>
                           <Button
@@ -1387,6 +1620,7 @@ export default function SettingsPage() {
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({ integration_id: int.id }),
                                 });
+                                setSyncResults(prev => { const next = { ...prev }; delete next[p.id]; return next; });
                                 refetch();
                               } catch {}
                             }}

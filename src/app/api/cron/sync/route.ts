@@ -87,9 +87,21 @@ export async function GET(req: NextRequest) {
       // Create sync job for tracking
       const jobId = await createSyncJob(db, integration.workspace_id, integration.provider);
 
-      // Refresh token if expired (Google providers only — Meta uses long-lived tokens)
+      // Refresh token if expired or expiring within 5 minutes (Google providers only — Meta uses long-lived tokens)
+      const FIVE_MINUTES_MS = 5 * 60 * 1000;
       let accessToken = tokenRow.access_token;
-      if (integration.provider !== 'meta_ads' && tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date()) {
+
+      // For Meta Ads: check if long-lived token is expired/expiring — user must reconnect
+      if (integration.provider === 'meta_ads' && tokenRow.expires_at && new Date(tokenRow.expires_at).getTime() < Date.now() + FIVE_MINUTES_MS) {
+        const errMsg = 'Token refresh failed — user must reconnect';
+        await db.from('integrations').update({ status: 'error' }).eq('id', integration.id);
+        if (jobId) await completeSyncJob(db, jobId, 'failed', null, errMsg);
+        errors.push({ id: integration.id, provider: integration.provider, error: errMsg });
+        results.push({ id: integration.id, provider: integration.provider, status: 'token_expired' });
+        continue;
+      }
+
+      if (integration.provider !== 'meta_ads' && tokenRow.expires_at && new Date(tokenRow.expires_at).getTime() < Date.now() + FIVE_MINUTES_MS) {
         const refreshResult = await withRetry(
           () => refreshAccessToken(tokenRow.refresh_token),
           `${integration.provider} token refresh`,

@@ -1,21 +1,21 @@
 import type { Metadata } from 'next';
-import { Bricolage_Grotesque, Outfit, JetBrains_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
-const bricolage = Bricolage_Grotesque({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  variable: '--font-bricolage',
+  variable: '--font-display',
   display: 'swap',
   weight: ['400', '500', '600', '700', '800'],
 });
 
-const outfit = Outfit({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-outfit',
+  variable: '--font-body',
   display: 'swap',
-  weight: ['300', '400', '500', '600', '700', '800'],
+  weight: ['300', '400', '500', '600'],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -43,8 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       data-theme="dark"
       style={{ colorScheme: 'light' }}
-      className={`${bricolage.variable} ${outfit.variable} ${jetbrainsMono.variable}`}
-
+      className={`${plusJakarta.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <body style={{ margin: 0, backgroundColor: '#F8FAFC', color: '#0F172A' }}>

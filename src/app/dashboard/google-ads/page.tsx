@@ -20,7 +20,7 @@ function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: 
         <Icon size={14} color={color} />
         <span style={{ fontSize: 12, color: c.textSecondary }}>{label}</span>
       </div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: 'var(--font-mono)', marginBottom: 3 }}>{value}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: 'var(--font-display)', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums', marginBottom: 3 }}>{value}</div>
       {sub && <div style={{ fontSize: 11, color: c.textMuted }}>{sub}</div>}
     </div>
   );

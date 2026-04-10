@@ -543,33 +543,6 @@ export default function CompetitorsPage() {
                               {ad.landing_url && (
                                 <a href={ad.landing_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: c.accent, textDecoration: 'none' }}>View Ad &#8599;</a>
                               )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (!workspace?.id) return;
-                                  fetch('/api/creative/saves', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                      workspace_id: workspace.id,
-                                      source_type: 'meta_ad_library',
-                                      source_id: ad.id,
-                                      title: ad.ad_creative_link_title || '',
-                                      ad_copy: ad.ad_creative_body || '',
-                                      advertiser_name: ad.page_name || selectedCompetitor?.name || '',
-                                      platform: (ad.platforms || [])[0] || 'facebook',
-                                      started_running: ad.ad_delivery_start_time || null,
-                                      landing_page_url: ad.landing_url || '',
-                                      tags: (ad.platforms || []),
-                                    }),
-                                  }).then(r => r.json()).then(d => {
-                                    if (d.save) alert('Saved to Creative Studio!');
-                                  });
-                                }}
-                                style={{ fontSize: 12, color: c.accent, background: 'none', border: `1px solid ${c.accent}30`, borderRadius: 6, padding: '3px 10px', cursor: 'pointer', fontWeight: 500 }}
-                              >
-                                Save to swipe file
-                              </button>
                             </div>
                           )}
                         </div>

@@ -63,7 +63,7 @@ function StatCard({ icon: Icon, color, label, value, sub, trend }: { icon: any; 
         )}
       </div>
       <div style={{ fontSize: 11, fontWeight: 500, color: c.textSecondary, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', lineHeight: 1.1, fontFamily: 'var(--font-mono)' }}>{value}</div>
+      <div style={{ fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.03em', lineHeight: 1.1, fontFamily: 'var(--font-display)', fontVariantNumeric: 'tabular-nums' }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: c.textMuted, marginTop: 4 }}>{sub}</div>}
     </div>
   );

@@ -462,15 +462,15 @@ export default function AIPage() {
                   {messages.map((msg, i) => (
                     <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: 10 }}>
                       {msg.role === 'assistant' && (
-                        <div style={{ width: 28, height: 28, borderRadius: 8, background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                          <Brain size={14} color={c.accent} />
+                        <div style={{ width: 28, height: 28, borderRadius: 8, background: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2, fontWeight: 700, fontSize: 13, color: '#FFFFFF', fontFamily: 'var(--font-display)' }}>
+                          L
                         </div>
                       )}
                       <div style={{ maxWidth: '78%' }}>
                         <div style={{
                           padding: '12px 16px',
                           borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-                          backgroundColor: msg.role === 'user' ? c.accent : c.surfaceElevated,
+                          backgroundColor: msg.role === 'user' ? '#7C3AED' : '#1E293B',
                         }}>
                           {msg.role === 'user' ? (
                             <p style={{ color: 'white', fontSize: 14, lineHeight: 1.6, margin: 0 }}>{msg.content}</p>
@@ -496,11 +496,11 @@ export default function AIPage() {
                   ))}
                   {loading && (
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 8, background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Brain size={14} color={c.accent} />
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: 13, color: '#FFFFFF', fontFamily: 'var(--font-display)' }}>
+                        L
                       </div>
-                      <div style={{ padding: '12px 16px', borderRadius: '14px 14px 14px 4px', backgroundColor: c.surfaceElevated, color: c.textSecondary, fontSize: 13 }}>
-                        Analysing your data...
+                      <div style={{ padding: '12px 16px', borderRadius: '14px 14px 14px 4px', backgroundColor: '#1E293B', color: '#E2E8F0', fontSize: 13 }} className="animate-pulse">
+                        Lumi is thinking...
                       </div>
                     </div>
                   )}

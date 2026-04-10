@@ -24,7 +24,7 @@ function InsightCard({ icon: Icon, color, title, value, sub }: { icon: any; colo
       </div>
       <div>
         <div style={{ fontSize: 11, color: c.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>{title}</div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: c.text, fontFamily: 'var(--font-mono)', marginBottom: 2 }}>{value}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: c.text, fontFamily: 'var(--font-display)', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums', marginBottom: 2 }}>{value}</div>
         <div style={{ fontSize: 12, color: c.textSecondary }}>{sub}</div>
       </div>
     </div>

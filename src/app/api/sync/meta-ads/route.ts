@@ -31,6 +31,24 @@ function formatSpend(spend: number, currency: string): string {
   return `${sym}${spend.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 }
 
+const MAX_RETRIES = 3;
+const RETRY_DELAYS = [1000, 2000];
+
+async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      if (attempt === MAX_RETRIES) throw err;
+      console.warn(`${label} attempt ${attempt} failed: ${err.message}, retrying...`);
+      await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt - 1]));
+    }
+  }
+  throw new Error(`${label} failed after ${MAX_RETRIES} attempts`);
+}
+
+const FIVE_MINUTES_MS = 5 * 60 * 1000;
+
 export async function POST(req: NextRequest) {
   try {
     const { integration_id, workspace_id, ad_account_id } = await req.json();
@@ -48,7 +66,23 @@ export async function POST(req: NextRequest) {
 
     if (!tokenRow) return NextResponse.json({ error: 'No tokens found' }, { status: 404 });
 
-    const accessToken = tokenRow.access_token;
+    // Check if Meta token is expired or expiring within 5 minutes
+    // Meta uses long-lived tokens (60 days) — if expired, user must reconnect
+    let accessToken = tokenRow.access_token;
+    if (tokenRow.expires_at && new Date(tokenRow.expires_at).getTime() < Date.now() + FIVE_MINUTES_MS) {
+      console.error('Meta Ads token expired or expiring soon for integration:', integration_id);
+      await db.from('integrations').update({ status: 'error' }).eq('id', integration_id);
+      await db.from('sync_jobs').insert({
+        workspace_id,
+        integration_id,
+        job_type: 'manual',
+        status: 'error',
+        error_message: 'Token refresh failed — user must reconnect',
+        started_at: new Date().toISOString(),
+        completed_at: new Date().toISOString(),
+      });
+      return NextResponse.json({ error: 'Token refresh failed — user must reconnect' }, { status: 401 });
+    }
 
     // Get the integration to check saved ad_account_id
     const { data: integration } = await db
@@ -57,7 +91,7 @@ export async function POST(req: NextRequest) {
       .eq('id', integration_id)
       .single();
 
-    const accounts = await fetchMetaAdAccounts(accessToken);
+    const accounts = await withRetry(() => fetchMetaAdAccounts(accessToken), 'Meta fetchAdAccounts');
     if (!accounts.length) {
       return NextResponse.json({ error: 'No Meta Ad accounts found.' }, { status: 404 });
     }
@@ -68,7 +102,7 @@ export async function POST(req: NextRequest) {
     const adAccountId = account.id;
     const currency = account.currency || 'USD';
 
-    const insights = await fetchMetaInsights(accessToken, adAccountId);
+    const insights = await withRetry(() => fetchMetaInsights(accessToken, adAccountId), 'Meta fetchInsights');
 
     // Store in dedicated meta_ads_data table
     const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -109,7 +143,7 @@ export async function POST(req: NextRequest) {
       .eq('workspace_id', workspace_id)
       .eq('provider', 'meta_ads');
 
-    const campaignsRaw = await fetchMetaCampaigns(accessToken, adAccountId);
+    const campaignsRaw = await withRetry(() => fetchMetaCampaigns(accessToken, adAccountId), 'Meta fetchCampaigns');
 
     const campaigns = campaignsRaw.map((c: any) => {
       const campInsights = insights.filter((i: any) => i.campaign_name === c.name);

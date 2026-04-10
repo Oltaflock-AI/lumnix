@@ -4,6 +4,24 @@ import { fetchGoogleAdsCampaigns, fetchGoogleAdsAccounts } from '@/lib/connector
 import { refreshAccessToken } from '@/lib/google-oauth';
 import { rateLimit } from '@/lib/rate-limit';
 
+const MAX_RETRIES = 3;
+const RETRY_DELAYS = [1000, 2000];
+
+async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      if (attempt === MAX_RETRIES) throw err;
+      console.warn(`${label} attempt ${attempt} failed: ${err.message}, retrying...`);
+      await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt - 1]));
+    }
+  }
+  throw new Error(`${label} failed after ${MAX_RETRIES} attempts`);
+}
+
+const FIVE_MINUTES_MS = 5 * 60 * 1000;
+
 export async function POST(req: NextRequest) {
   try {
     const { integration_id, workspace_id } = await req.json();
@@ -19,34 +37,58 @@ export async function POST(req: NextRequest) {
 
     if (!tokenRow) return NextResponse.json({ error: 'No tokens found' }, { status: 404 });
 
+    // Proactively refresh if token expires within 5 minutes
     let accessToken = tokenRow.access_token;
-    // Always try to refresh if we have a refresh token (token might be expired even if expires_at is wrong)
-    if (tokenRow.refresh_token) {
+    if (tokenRow.expires_at && new Date(tokenRow.expires_at).getTime() < Date.now() + FIVE_MINUTES_MS) {
       try {
         const refreshed = await refreshAccessToken(tokenRow.refresh_token);
-        if (refreshed.access_token) {
-          accessToken = refreshed.access_token;
-          await getSupabaseAdmin().from('oauth_tokens').update({
-            access_token: refreshed.access_token,
-            expires_at: new Date(Date.now() + (refreshed.expires_in || 3600) * 1000).toISOString(),
-          }).eq('id', tokenRow.id);
+        if (refreshed.error) {
+          await getSupabaseAdmin().from('integrations').update({ status: 'error' }).eq('id', integration_id);
+          await getSupabaseAdmin().from('sync_jobs').insert({
+            workspace_id,
+            integration_id,
+            job_type: 'manual',
+            status: 'error',
+            error_message: 'Token refresh failed — user must reconnect',
+            started_at: new Date().toISOString(),
+            completed_at: new Date().toISOString(),
+          });
+          return NextResponse.json({ error: 'Token refresh failed — user must reconnect' }, { status: 401 });
         }
-      } catch {
-        // If refresh fails, try with existing token — it might still work
+        accessToken = refreshed.access_token;
+        await getSupabaseAdmin().from('oauth_tokens').update({
+          access_token: refreshed.access_token,
+          expires_at: new Date(Date.now() + (refreshed.expires_in || 3600) * 1000).toISOString(),
+          last_refreshed_at: new Date().toISOString(),
+        }).eq('id', tokenRow.id);
+      } catch (err: any) {
+        console.error('Google Ads token refresh error:', err);
+        await getSupabaseAdmin().from('integrations').update({ status: 'error' }).eq('id', integration_id);
+        await getSupabaseAdmin().from('sync_jobs').insert({
+          workspace_id,
+          integration_id,
+          job_type: 'manual',
+          status: 'error',
+          error_message: 'Token refresh failed — user must reconnect',
+          started_at: new Date().toISOString(),
+          completed_at: new Date().toISOString(),
+        });
+        return NextResponse.json({ error: 'Token refresh failed — user must reconnect' }, { status: 401 });
       }
     }
+
     if (!accessToken) {
       return NextResponse.json({ error: 'Google Ads token expired. Please reconnect in Settings → Integrations.' }, { status: 401 });
     }
 
-    // Get customer accounts
-    const customerIds = await fetchGoogleAdsAccounts(accessToken);
+    // Get customer accounts (with retry)
+    const customerIds = await withRetry(() => fetchGoogleAdsAccounts(accessToken), 'Google Ads fetchAccounts');
     if (!customerIds.length) {
       return NextResponse.json({ error: 'No Google Ads accounts found. Make sure you have access to a Google Ads account.' }, { status: 404 });
     }
 
     const customerId = customerIds[0].replace(/-/g, '');
-    const campaigns = await fetchGoogleAdsCampaigns(accessToken, customerId);
+    const campaigns = await withRetry(() => fetchGoogleAdsCampaigns(accessToken, customerId), 'Google Ads fetchCampaigns');
 
     const db = getSupabaseAdmin();
     const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];

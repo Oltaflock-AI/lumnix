@@ -4,8 +4,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
-  Menu, LogOut, ChevronDown, Plus, GitBranch, User,
-  Sun, Moon, MessageCircle, Palette, Rocket,
+  Menu, LogOut, ChevronDown, Plus, User,
+  Sun, Moon, MessageCircle,
   PanelLeftClose, PanelLeft, Command as CommandIcon
 } from 'lucide-react';
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
@@ -36,8 +36,6 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/dashboard/google-ads', label: 'Google Ads', icon: DollarSign },
       { href: '/dashboard/meta-ads', label: 'Meta Ads', icon: Target },
-      { href: '/dashboard/creative', label: 'Creative Studio', icon: Palette },
-      { href: '/dashboard/campaigns', label: 'Campaigns', icon: Rocket },
     ],
   },
   {
@@ -45,7 +43,6 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/dashboard/ai', label: 'AI Assistant', icon: Brain },
       { href: '/dashboard/competitors', label: 'Competitors', icon: Eye },
-      { href: '/dashboard/attribution', label: 'Attribution', icon: GitBranch },
     ],
   },
   {
@@ -76,7 +73,7 @@ function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10,
         padding: collapsed ? '8px 0' : '8px 10px', borderRadius: 8, justifyContent: collapsed ? 'center' : 'flex-start',
-        border: '1px solid rgba(255,255,255,0.08)', backgroundColor: '#1E293B',
+        border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)',
         cursor: 'pointer', textAlign: 'left',
       }}
     >
@@ -194,6 +191,18 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
   const router = useRouter();
   const { workspace } = useWorkspaceCtx();
   const { theme, toggle } = useTheme();
+  const [unreadAlerts, setUnreadAlerts] = useState(0);
+
+  useEffect(() => {
+    if (!workspace?.id) return;
+    fetch(`/api/anomalies?workspace_id=${workspace.id}`)
+      .then(r => r.json())
+      .then(data => {
+        const anomalies = data.anomalies || [];
+        setUnreadAlerts(anomalies.filter((a: any) => !a.is_read).length);
+      })
+      .catch(() => {});
+  }, [workspace?.id]);
 
   const isActive = (href: string) => href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
   const sidebarWidth = collapsed ? 64 : 220;
@@ -235,7 +244,7 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
         {navGroups.map((group, gi) => (
           <div key={gi} style={{ marginBottom: 8 }}>
             {group.label && !collapsed && (
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.12em', padding: '16px 16px 6px 16px', fontFamily: "'DM Sans', sans-serif" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '16px 16px 6px 16px', fontFamily: "'DM Sans', sans-serif" }}>
                 {group.label}
               </div>
             )}
@@ -263,15 +272,15 @@ function SidebarInner({ collapsed, onCollapse, onClose }: { collapsed: boolean; 
                     transition: 'background-color 0.15s, color 0.15s',
                     position: 'relative',
                   }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#E2E8F0'; } }}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#94A3B8'; } }}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = 'rgba(124, 58, 237, 0.08)'; e.currentTarget.style.color = '#E2E8F0'; const icon = e.currentTarget.querySelector('svg'); if (icon) (icon as SVGElement).style.color = '#7C3AED'; } }}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#94A3B8'; const icon = e.currentTarget.querySelector('svg'); if (icon) (icon as SVGElement).style.color = '#64748B'; } }}
                 >
                   <item.icon size={16} color={active ? '#7C3AED' : '#64748B'} strokeWidth={1.5} />
                   {!collapsed && (
                     <>
                       <span style={{ flex: 1, opacity: 1, overflow: 'hidden', whiteSpace: 'nowrap', transition: 'opacity 250ms' }}>{item.label}</span>
-                      {'badge' in item && item.badge && (
-                        <span style={{ background: '#7C3AED', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px', marginLeft: 'auto' }}>3</span>
+                      {'badge' in item && item.badge && unreadAlerts > 0 && (
+                        <span style={{ background: '#7C3AED', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px', marginLeft: 'auto' }}>{unreadAlerts}</span>
                       )}
                     </>
                   )}

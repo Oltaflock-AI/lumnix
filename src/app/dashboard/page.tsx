@@ -109,12 +109,12 @@ export default function DashboardPage() {
   // Combined chart: organic clicks vs paid clicks
   const unifiedDaily: any[] = unifiedResp?.daily || [];
   const chartData = (unifiedDaily.length > 0
-    ? unifiedDaily.slice(-14).map(r => ({
+    ? unifiedDaily.slice(-30).map(r => ({
         day: r.date?.slice(5) ?? '',
         clicks: r.organic_clicks || 0,
         paid: r.paid_clicks || 0,
       }))
-    : gscOverview.slice(-14).map(r => ({
+    : gscOverview.slice(-30).map(r => ({
         day: r.date?.slice(5) ?? '',
         clicks: r.clicks || 0,
         paid: 0,
@@ -126,7 +126,7 @@ export default function DashboardPage() {
   const hasGSC = connectedProviders.includes('gsc');
   const hasAds = connectedProviders.includes('google_ads') || connectedProviders.includes('meta_ads');
   const quickWins = gscKeywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < 3).slice(0, 3);
-  const topKeywords = gscKeywords.slice(0, 5);
+  const topKeywords = gscKeywords.slice(0, 10);
 
   const fmtCurrency = (v: number) => v >= 1000 ? `₹${(v / 1000).toFixed(1)}k` : `₹${v.toFixed(0)}`;
 
@@ -153,7 +153,7 @@ export default function DashboardPage() {
         <StatCard label="Sessions" value={hasGA4 ? totalSessions.toLocaleString() : '—'} sub={hasGA4 ? `${totalUsers.toLocaleString()} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
         <StatCard label="Organic Clicks" value={hasGSC ? totalClicks.toLocaleString() : '—'} sub={hasGSC ? `${totalImpressions.toLocaleString()} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
         <StatCard label="Ad Spend" value={hasAds ? fmtCurrency(totalAdSpend) : '—'} sub={hasAds ? `${totalConversions.toLocaleString()} conversions` : 'Connect Ads'} color="#F97316" icon={Zap} loading={loading} />
-        <StatCard label="ROAS" value={hasAds ? `${Number(totalROAS).toFixed(2)}x` : '—'} sub={hasAds ? `${fmtCurrency(totalAdRevenue)} revenue` : 'Connect Ads'} color={totalROAS >= 2 ? '#22C55E' : '#F59E0B'} icon={Target} loading={loading} />
+        <StatCard label="ROAS" value={hasAds && totalAdRevenue > 0 ? `${Number(totalROAS).toFixed(2)}x` : '—'} sub={hasAds && totalAdRevenue > 0 ? `${fmtCurrency(totalAdRevenue)} revenue` : hasAds ? 'No revenue data yet' : 'Connect Ads'} color={totalROAS >= 2 ? '#22C55E' : '#F59E0B'} icon={Target} loading={loading} />
       </div>
 
       {/* Anomalies — full width */}
@@ -166,7 +166,7 @@ export default function DashboardPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
               <h3 style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>Organic vs Paid traffic</h3>
-              <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>Daily clicks — last 14 days</p>
+              <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>Daily clicks — last 30 days</p>
             </div>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#64748B' }}>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
               </span>
               {hasAds && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#64748B' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#F59E0B', display: 'inline-block' }} /> Paid
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#0891B2', display: 'inline-block' }} /> Paid
                 </span>
               )}
             </div>
@@ -188,8 +188,8 @@ export default function DashboardPage() {
                     <stop offset="100%" stopColor="#7C3AED" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="gPaid" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#0891B2" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="#0891B2" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="day" stroke="transparent" tick={{ fill: '#94A3B8', fontSize: 11 }} axisLine={false} tickLine={false} interval={2} />
@@ -200,7 +200,7 @@ export default function DashboardPage() {
                   labelStyle={{ color: '#64748B' }}
                 />
                 <Area type="monotone" dataKey="clicks" name="Organic" stroke="#7C3AED" fill="url(#gDash)" strokeWidth={2} dot={false} />
-                {hasAds && <Area type="monotone" dataKey="paid" name="Paid" stroke="#F59E0B" fill="url(#gPaid)" strokeWidth={2} dot={false} />}
+                {hasAds && <Area type="monotone" dataKey="paid" name="Paid" stroke="#0891B2" fill="url(#gPaid)" strokeWidth={2} dot={false} />}
               </AreaChart>
             </ResponsiveContainer>
           ) : (
@@ -225,15 +225,22 @@ export default function DashboardPage() {
           </div>
           {topKeywords.length > 0 ? (
             <div>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #E2E8F0', fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <span style={{ width: 32 }}>#</span>
+                <span style={{ flex: 1 }}>Keyword</span>
+                <span style={{ width: 56, textAlign: 'right' }}>Clicks</span>
+                <span style={{ width: 64, textAlign: 'right' }}>Impr.</span>
+                <span style={{ width: 48, textAlign: 'right' }}>CTR</span>
+              </div>
               {topKeywords.map((kw: any, i: number) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < topKeywords.length - 1 ? '1px solid #F8FAFC' : 'none', fontSize: 13, color: '#334155' }}>
-                  <span style={{
-                    fontSize: 12, fontWeight: 700, color: '#94A3B8', width: 32, flexShrink: 0,
-                  }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '8px 0', borderBottom: i < topKeywords.length - 1 ? '1px solid #F8FAFC' : 'none', fontSize: 13, color: '#334155' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', width: 32, flexShrink: 0 }}>
                     #{Math.round(kw.position)}
                   </span>
                   <span style={{ flex: 1, fontSize: 13, color: '#334155', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kw.query}</span>
-                  <span style={{ fontWeight: 600, color: '#7C3AED', fontSize: 13, flexShrink: 0 }}>{kw.clicks}</span>
+                  <span style={{ fontWeight: 600, color: '#7C3AED', fontSize: 13, width: 56, textAlign: 'right', flexShrink: 0 }}>{kw.clicks}</span>
+                  <span style={{ fontSize: 12, color: '#64748B', width: 64, textAlign: 'right', flexShrink: 0 }}>{kw.impressions?.toLocaleString()}</span>
+                  <span style={{ fontSize: 12, color: '#64748B', width: 48, textAlign: 'right', flexShrink: 0 }}>{kw.ctr?.toFixed(1)}%</span>
                 </div>
               ))}
             </div>
@@ -515,7 +522,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   if (loading) return null;
 
   const unread = anomalies.filter(a => !a.is_read);
-  const display = anomalies.slice(0, 3);
+  const display = anomalies.slice(0, 5);
 
   return (
     <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '20px 24px' }}>
