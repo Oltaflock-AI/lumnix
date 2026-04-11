@@ -16,7 +16,18 @@ export async function GET(req: NextRequest) {
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = new Date().toISOString().split('T')[0];
 
-    const { data: rows } = await getSupabaseAdmin()
+    const db = getSupabaseAdmin();
+
+    // Resolve currency from the meta_ads integration (authoritative)
+    const { data: metaIntegration } = await db
+      .from('integrations')
+      .select('oauth_meta')
+      .eq('workspace_id', workspaceId)
+      .eq('provider', 'meta_ads')
+      .maybeSingle();
+    const integrationCurrency = metaIntegration?.oauth_meta?.currency;
+
+    const { data: rows } = await db
       .from('meta_ads_data')
       .select('*')
       .eq('workspace_id', workspaceId)
@@ -26,7 +37,7 @@ export async function GET(req: NextRequest) {
 
     if (!rows || rows.length === 0) {
       // Fallback: check analytics_data table for campaign-level data (stored by sync)
-      const { data: fallback } = await getSupabaseAdmin()
+      const { data: fallback } = await db
         .from('analytics_data')
         .select('data')
         .eq('workspace_id', workspaceId)
@@ -68,10 +79,13 @@ export async function GET(req: NextRequest) {
           roas: 0,
         };
 
-        return NextResponse.json({ campaigns, totals, source: 'analytics_data' });
+        const fallbackCurrency = integrationCurrency
+          || fallback.data.find((c: any) => c.currency)?.currency
+          || 'USD';
+        return NextResponse.json({ campaigns, totals, currency: fallbackCurrency, source: 'analytics_data' });
       }
 
-      return NextResponse.json({ campaigns: [], totals: null, message: 'No data yet. Click Sync Now to pull your Meta Ads data.' });
+      return NextResponse.json({ campaigns: [], totals: null, currency: integrationCurrency || 'USD', message: 'No data yet. Click Sync Now to pull your Meta Ads data.' });
     }
 
     // Aggregate by campaign
@@ -131,7 +145,7 @@ export async function GET(req: NextRequest) {
     }
     const daily = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 
-    return NextResponse.json({ campaigns, totals, daily });
+    return NextResponse.json({ campaigns, totals, daily, currency: integrationCurrency || 'USD' });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

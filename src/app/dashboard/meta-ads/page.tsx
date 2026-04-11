@@ -1,84 +1,68 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Target, DollarSign, Eye, MousePointer, TrendingUp, RefreshCw, Play, Pause, ChevronDown, ChevronRight, BarChart3, Percent, ShoppingCart, Award } from 'lucide-react';
+import { Target, DollarSign, Eye, MousePointer, TrendingUp, RefreshCw, Percent, ShoppingCart, User } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { useIntegrations, useMetaAdsData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/lib/theme';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import {
+  ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell,
+} from 'recharts';
 
-/* ─── Currency helpers ─── */
-const CURRENCY_MAP: Record<string, { symbol: string; locale: string }> = {
-  INR: { symbol: '₹', locale: 'en-IN' },
-  USD: { symbol: '$', locale: 'en-US' },
-  EUR: { symbol: '€', locale: 'en-DE' },
-  GBP: { symbol: '£', locale: 'en-GB' },
-  AUD: { symbol: 'A$', locale: 'en-AU' },
-  CAD: { symbol: 'C$', locale: 'en-CA' },
-  SGD: { symbol: 'S$', locale: 'en-SG' },
-  AED: { symbol: 'AED ', locale: 'en-AE' },
-  JPY: { symbol: '¥', locale: 'ja-JP' },
+/* ─── Currency formatter ─── */
+const CURRENCY_LOCALE: Record<string, string> = {
+  INR: 'en-IN', USD: 'en-US', EUR: 'de-DE', GBP: 'en-GB',
+  AUD: 'en-AU', CAD: 'en-CA', SGD: 'en-SG', AED: 'en-AE', JPY: 'ja-JP',
 };
 
-function getCurrency(code: string) {
-  const upper = (code || 'INR').toUpperCase();
-  return CURRENCY_MAP[upper] || { symbol: upper + ' ', locale: 'en-US' };
-}
-
-/* ─── StatusBadge ─── */
-function StatusBadge({ status }: { status: string }) {
-  const { c } = useTheme();
-  const s = status?.toUpperCase();
-  const map: Record<string, { color: string; bg: string }> = {
-    ACTIVE: { color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
-    PAUSED: { color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
-    ARCHIVED: { color: c.textMuted, bg: 'rgba(85,85,85,0.08)' },
+function makeFormatter(code: string) {
+  const upper = (code || 'USD').toUpperCase();
+  const locale = CURRENCY_LOCALE[upper] || 'en-US';
+  let moneyFmt: Intl.NumberFormat;
+  let numFmt: Intl.NumberFormat;
+  try {
+    moneyFmt = new Intl.NumberFormat(locale, { style: 'currency', currency: upper, maximumFractionDigits: 0 });
+    numFmt = new Intl.NumberFormat(locale);
+  } catch {
+    moneyFmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    numFmt = new Intl.NumberFormat('en-US');
+  }
+  const money2 = new Intl.NumberFormat(locale, { style: 'currency', currency: upper, minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return {
+    money: (v: number) => moneyFmt.format(v || 0),
+    money2: (v: number) => money2.format(v || 0),
+    num: (v: number) => numFmt.format(v || 0),
+    locale,
+    code: upper,
   };
-  const style = map[s] || { color: c.textMuted, bg: 'rgba(85,85,85,0.08)' };
-  return (
-    <span style={{ fontSize: 11, fontWeight: 500, color: style.color, backgroundColor: style.bg, padding: '3px 8px', borderRadius: 5, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-      {s === 'ACTIVE' ? <Play size={8} fill={style.color} /> : <Pause size={8} />}
-      {status}
-    </span>
-  );
 }
 
-/* ─── StatCard (enhanced with trend) ─── */
-function StatCard({ icon: Icon, color, label, value, sub, trend }: { icon: any; color: string; label: string; value: string; sub?: string; trend?: 'up' | 'down' | 'flat' }) {
-  const { c } = useTheme();
-  const trendColor = trend === 'up' ? c.success : trend === 'down' ? c.danger : c.textMuted;
-  const trendArrow = trend === 'up' ? '↑' : trend === 'down' ? '↓' : '–';
-  return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-          <Icon size={16} color={color} />
-        </div>
-        {trend && (
-          <span style={{ fontSize: 11, fontWeight: 600, color: trendColor, backgroundColor: `${trendColor}12`, padding: '2px 7px', borderRadius: 5 }}>
-            {trendArrow}
-          </span>
-        )}
-      </div>
-      <div style={{ fontSize: 11, fontWeight: 500, color: c.textSecondary, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.03em', lineHeight: 1.1, fontFamily: 'var(--font-display)', fontVariantNumeric: 'tabular-nums' }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: c.textMuted, marginTop: 4 }}>{sub}</div>}
-    </div>
-  );
-}
+/* ─── Objective mapping ─── */
+const OBJECTIVE_MAP: Record<string, string> = {
+  OUTCOME_TRAFFIC: 'Traffic',
+  OUTCOME_SALES: 'Sales',
+  LINK_CLICKS: 'Link clicks',
+  MESSAGES: 'Messages',
+  OUTCOME_AWARENESS: 'Awareness',
+  OUTCOME_LEADS: 'Leads',
+  OUTCOME_ENGAGEMENT: 'Engagement',
+  POST_ENGAGEMENT: 'Engagement',
+  PAGE_LIKES: 'Page likes',
+  REACH: 'Reach',
+  CONVERSIONS: 'Conversions',
+  OUTCOME_APP_PROMOTION: 'App promotion',
+  VIDEO_VIEWS: 'Video views',
+  BRAND_AWARENESS: 'Brand awareness',
+};
 
-/* ─── Date range tabs ─── */
-const DATE_RANGES = [
-  { label: '7d', days: 7 },
-  { label: '14d', days: 14 },
-  { label: '30d', days: 30 },
-  { label: '90d', days: 90 },
-] as const;
-
-/* ─── Sort helpers ─── */
-type SortKey = 'campaign_name' | 'spend' | 'clicks' | 'impressions' | 'ctr' | 'cpc' | 'roas' | 'objective' | 'conversions';
+const formatObjective = (raw?: string) => {
+  if (!raw) return '';
+  if (OBJECTIVE_MAP[raw]) return OBJECTIVE_MAP[raw];
+  return raw.replace(/^OUTCOME_/, '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+};
 
 function numVal(v: any): number {
   if (typeof v === 'number') return v;
@@ -89,19 +73,95 @@ function numVal(v: any): number {
   return 0;
 }
 
-/* ─── Custom chart tooltip ─── */
-function ChartTooltip({ active, payload, label, sym }: any) {
+/* ─── Status pill ─── */
+function StatusBadge({ status }: { status: string }) {
+  const active = (status || '').toUpperCase() === 'ACTIVE';
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 4,
+      fontSize: 11,
+      fontWeight: 600,
+      padding: '3px 10px',
+      borderRadius: 20,
+      backgroundColor: active ? '#DCFCE7' : '#FEF3C7',
+      color: active ? '#166534' : '#92400E',
+      fontFamily: "'DM Sans', sans-serif",
+      whiteSpace: 'nowrap',
+    }}>
+      <span style={{ fontSize: 7, lineHeight: 1 }}>{active ? '●' : '⏸'}</span>
+      {active ? 'Active' : 'Paused'}
+    </span>
+  );
+}
+
+/* ─── Metric card ─── */
+function MetricCard({
+  icon: Icon, label, value, sub, subColor,
+}: { icon: any; label: string; value: string; sub?: string; subColor?: string }) {
+  const { c } = useTheme();
+  return (
+    <div style={{
+      backgroundColor: c.bgCard,
+      border: `1px solid ${c.border}`,
+      borderRadius: 10,
+      padding: 16,
+      position: 'relative',
+      minWidth: 0,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{
+          fontSize: 11, fontWeight: 500, color: c.textMuted,
+          textTransform: 'uppercase', letterSpacing: '0.05em',
+          fontFamily: "'DM Sans', sans-serif",
+        }}>{label}</div>
+        <div style={{
+          width: 26, height: 26, borderRadius: 6,
+          backgroundColor: 'rgba(124,58,237,0.1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          <Icon size={14} color="#7C3AED" />
+        </div>
+      </div>
+      <div style={{
+        fontSize: 22, fontWeight: 700, color: c.text, lineHeight: 1,
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        fontVariantNumeric: 'tabular-nums',
+        letterSpacing: '-0.02em',
+      }}>{value}</div>
+      {sub && (
+        <div style={{
+          fontSize: 12, color: subColor || c.textMuted, marginTop: 5,
+          fontFamily: "'DM Sans', sans-serif",
+        }}>{sub}</div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Chart tooltip ─── */
+function ChartTooltip({ active, payload, label, fmtMoney, fmtNum }: any) {
   const { c } = useTheme();
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 8, padding: '10px 14px', fontSize: 12 }}>
+    <div style={{
+      backgroundColor: c.bgCard,
+      border: `1px solid ${c.border}`,
+      borderRadius: 8,
+      padding: '10px 14px',
+      fontSize: 12,
+      fontFamily: "'DM Sans', sans-serif",
+      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+    }}>
       <div style={{ color: c.textMuted, marginBottom: 6, fontWeight: 500 }}>{label}</div>
       {payload.map((p: any) => (
-        <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: p.color, display: 'inline-block' }} />
+        <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: p.stroke || p.color, display: 'inline-block' }} />
           <span style={{ color: c.textSecondary }}>{p.dataKey === 'spend' ? 'Spend' : 'Clicks'}:</span>
           <span style={{ color: c.text, fontWeight: 600 }}>
-            {p.dataKey === 'spend' ? `${sym}${p.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : p.value.toLocaleString()}
+            {p.dataKey === 'spend' ? fmtMoney(p.value) : fmtNum(p.value)}
           </span>
         </div>
       ))}
@@ -109,9 +169,12 @@ function ChartTooltip({ active, payload, label, sym }: any) {
   );
 }
 
-/* ─── Main page ─── */
+const DATE_RANGES = [7, 14, 30, 90] as const;
+
+type SortKey = 'spend' | 'clicks' | 'impressions' | 'ctr' | 'cpc' | 'roas' | 'objective';
+
 export default function MetaAdsPage() {
-  const { c } = useTheme();
+  const { c, theme } = useTheme();
   const router = useRouter();
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
@@ -121,105 +184,110 @@ export default function MetaAdsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
   const [sortKey, setSortKey] = useState<SortKey>('spend');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-  const [expandedRow, setExpandedRow] = useState<number | null>(null);
+  const [showAllPaused, setShowAllPaused] = useState(false);
+
+  const [adAccounts, setAdAccounts] = useState<any[]>([]);
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
 
   const integration = integrations.find(i => i.provider === 'meta_ads');
   const isConnected = integration?.status === 'connected';
 
-  /* Currency */
-  const currencyCode = integration?.oauth_meta?.currency || adsData?.currency || 'USD';
-  const cur = getCurrency(currencyCode);
-  const sym = cur.symbol;
-  const fmtMoney = (v: number) => `${sym}${v.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const fmtNum = (v: number) => v.toLocaleString(cur.locale);
+  const currencyCode = (adsData?.currency || integration?.oauth_meta?.currency || 'USD').toUpperCase();
+  const fmt = useMemo(() => makeFormatter(currencyCode), [currencyCode]);
 
-  /* Campaign data */
+  const currentAccountId = integration?.oauth_meta?.ad_account_id || '';
+  const currentAccountName = integration?.oauth_meta?.account_name || 'Meta Ads Account';
+
   const allCampaigns = adsData?.campaigns || [];
-  const filteredCampaigns = allCampaigns.filter((camp: any) => {
-    if (statusFilter === 'all') return true;
-    const s = (camp.status || '').toUpperCase();
-    if (statusFilter === 'active') return s === 'ACTIVE';
-    return s === 'PAUSED' || s === 'ARCHIVED';
-  });
+  const totals = adsData?.totals;
 
-  /* Sort campaigns */
-  const campaigns = useMemo(() => {
-    const sorted = [...filteredCampaigns].sort((a: any, b: any) => {
-      if (sortKey === 'campaign_name') {
-        const cmp = (a.campaign_name || '').localeCompare(b.campaign_name || '');
+  const totalSpend = totals?.spend || 0;
+  const totalClicks = totals?.clicks || 0;
+  const totalImpressions = totals?.impressions || 0;
+  const totalReach = totals?.reach || 0;
+  const totalRevenue = totals?.revenue || 0;
+  const totalConversions = totals?.conversions || 0;
+  const totalCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+  const roas = totalRevenue > 0 && totalSpend > 0 ? totalRevenue / totalSpend : null;
+
+  const activeCount = allCampaigns.filter((c: any) => (c.status || '').toUpperCase() === 'ACTIVE').length;
+  const pausedCount = allCampaigns.length - activeCount;
+  const totalCampaigns = allCampaigns.length;
+
+  /* Sorted + filtered campaigns */
+  const filteredCampaigns = useMemo(() => {
+    const base = allCampaigns.filter((camp: any) => {
+      if (statusFilter === 'all') return true;
+      const s = (camp.status || '').toUpperCase();
+      return statusFilter === 'active' ? s === 'ACTIVE' : s !== 'ACTIVE';
+    });
+    return base.slice().sort((a: any, b: any) => {
+      if (sortKey === 'objective') {
+        const cmp = (a.objective || '').localeCompare(b.objective || '');
         return sortDir === 'asc' ? cmp : -cmp;
       }
       const av = numVal(a[sortKey]);
       const bv = numVal(b[sortKey]);
       return sortDir === 'asc' ? av - bv : bv - av;
     });
-    return sorted;
-  }, [filteredCampaigns, sortKey, sortDir]);
+  }, [allCampaigns, statusFilter, sortKey, sortDir]);
 
-  const totals = adsData?.totals;
-
-  /* KPI values */
-  const totalSpend = totals?.spend || 0;
-  const totalClicks = totals?.clicks || 0;
-  const totalImpressions = totals?.impressions || 0;
-  const totalRoas = totals?.roas || 0;
-  const totalCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-  const totalConversions = totals?.conversions || 0;
-
-  /* Top performers by spend */
-  const topPerformers = useMemo(() => {
-    return [...allCampaigns]
-      .sort((a: any, b: any) => numVal(b.spend) - numVal(a.spend))
-      .slice(0, 3);
+  /* Top performer */
+  const topPerformer = useMemo(() => {
+    let top: any = null;
+    for (const camp of allCampaigns) {
+      if (!top || numVal(camp.spend) > numVal(top.spend)) top = camp;
+    }
+    return top && numVal(top.spend) > 0 ? top : null;
   }, [allCampaigns]);
+
+  /* Visible rows with zero-spend collapse */
+  const { visibleRows, hiddenZeroCount } = useMemo(() => {
+    const nonZero = filteredCampaigns.filter((c: any) => numVal(c.spend) > 0);
+    const zero = filteredCampaigns.filter((c: any) => numVal(c.spend) === 0);
+    if (showAllPaused || zero.length <= 5) {
+      return { visibleRows: [...nonZero, ...zero], hiddenZeroCount: 0 };
+    }
+    return { visibleRows: [...nonZero, ...zero.slice(0, 5)], hiddenZeroCount: zero.length - 5 };
+  }, [filteredCampaigns, showAllPaused]);
 
   /* Chart data */
   const chartData = useMemo(() => {
     if (adsData?.daily && Array.isArray(adsData.daily) && adsData.daily.length > 0) {
-      return adsData.daily.map((d: any) => ({
-        date: d.date || d.day,
-        spend: d.spend || 0,
-        clicks: d.clicks || 0,
-      }));
+      return adsData.daily.map((d: any) => {
+        const dt = new Date(d.date);
+        return {
+          date: dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          spend: d.spend || 0,
+          clicks: d.clicks || 0,
+        };
+      });
     }
-    // Generate synthetic aggregated view from campaigns if no daily data
-    if (allCampaigns.length > 0) {
+    if (allCampaigns.length > 0 && totalSpend > 0) {
       const points = Math.min(days, 14);
-      const totalS = totalSpend;
-      const totalC = totalClicks;
       return Array.from({ length: points }, (_, i) => {
         const jitter = 0.7 + Math.sin(i * 1.3) * 0.3 + Math.cos(i * 0.7) * 0.15;
-        const d = new Date();
-        d.setDate(d.getDate() - (points - 1 - i));
+        const dt = new Date();
+        dt.setDate(dt.getDate() - (points - 1 - i));
         return {
-          date: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-          spend: Math.round((totalS / points) * jitter * 100) / 100,
-          clicks: Math.round((totalC / points) * jitter),
+          date: dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          spend: Math.round((totalSpend / points) * jitter * 100) / 100,
+          clicks: Math.round((totalClicks / points) * jitter),
         };
       });
     }
     return [];
-  }, [adsData?.daily, allCampaigns, days, totalSpend, totalClicks]);
+  }, [adsData?.daily, allCampaigns.length, days, totalSpend, totalClicks]);
 
-  /* Sort handler */
-  function handleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDir('desc');
-    }
-  }
+  const chartDateRange = chartData.length > 0
+    ? `${chartData[0].date} — ${chartData[chartData.length - 1].date}`
+    : '';
 
-  /* Ad account selection */
-  const [adAccounts, setAdAccounts] = useState<any[]>([]);
-  const [showAccountPicker, setShowAccountPicker] = useState(false);
-  const [loadingAccounts, setLoadingAccounts] = useState(false);
-  const currentAccountId = integration?.oauth_meta?.ad_account_id || '';
-  const currentAccountName = integration?.oauth_meta?.account_name || '';
-
+  /* Handlers */
   async function loadAdAccounts() {
     if (!integration) return;
+    if (showAccountPicker) { setShowAccountPicker(false); return; }
     setLoadingAccounts(true);
     try {
       const res = await fetch(`/api/meta/accounts?integration_id=${integration.id}`);
@@ -246,7 +314,6 @@ export default function MetaAdsPage() {
     setSyncing(false);
   }
 
-  /* Sync */
   async function handleSync() {
     if (!integration || !workspace) return;
     setSyncing(true);
@@ -262,433 +329,890 @@ export default function MetaAdsPage() {
     setSyncing(false);
   }
 
+  function handleSort(key: SortKey) {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('desc'); }
+  }
+
   const loading = wsLoading || intLoading;
 
-  /* Find top performer index for highlight */
-  const topPerformerName = topPerformers[0]?.campaign_name;
-
-  const syncButton = (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
-      {currentAccountName && (
-        <button
-          onClick={loadAdAccounts}
-          disabled={loadingAccounts}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: 'transparent', color: c.textMuted, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}
-        >
-          {currentAccountName} <ChevronDown size={11} />
-        </button>
-      )}
-      {showAccountPicker && adAccounts.length > 0 && (
-        <div style={{
-          position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 100,
-          backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`, borderRadius: 10,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.4)', minWidth: 240, overflow: 'hidden',
-        }}>
-          <div style={{ padding: '8px 12px', borderBottom: `1px solid ${c.border}`, fontSize: 11, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Switch Ad Account
-          </div>
-          {adAccounts.map((acc: any) => (
+  /* ─── Header action: date tabs + sync button ─── */
+  const headerAction = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{
+        display: 'flex', gap: 2,
+        backgroundColor: c.bgCard,
+        border: `1px solid ${c.border}`,
+        borderRadius: 8, padding: 3,
+      }}>
+        {DATE_RANGES.map(d => {
+          const isActive = days === d;
+          return (
             <button
-              key={acc.id}
-              onClick={() => switchAdAccount(acc.id)}
+              key={d}
+              onClick={() => setDays(d)}
               style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 12px', border: 'none', cursor: 'pointer', textAlign: 'left',
-                backgroundColor: acc.id === currentAccountId ? c.accentSubtle : 'transparent',
-                transition: 'background-color 0.15s',
+                padding: '5px 11px',
+                borderRadius: 6,
+                fontSize: 12, fontWeight: 500,
+                cursor: 'pointer',
+                border: isActive ? `0.5px solid ${c.border}` : 'none',
+                background: isActive ? c.bgPage : 'transparent',
+                color: isActive ? c.text : c.textMuted,
+                fontFamily: "'DM Sans', sans-serif",
+                transition: 'all 150ms',
               }}
-              onMouseEnter={e => { if (acc.id !== currentAccountId) e.currentTarget.style.backgroundColor = c.bgCardHover; }}
-              onMouseLeave={e => { if (acc.id !== currentAccountId) e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: c.text }}>{acc.name}</div>
-                <div style={{ fontSize: 11, color: c.textMuted }}>{acc.id} · {acc.currency}</div>
-              </div>
-              {acc.id === currentAccountId && (
-                <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={c.accent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-              )}
+              {d}d
             </button>
-          ))}
-          <div style={{ borderTop: `1px solid ${c.border}`, padding: '6px 12px' }}>
-            <button onClick={() => setShowAccountPicker(false)} style={{ fontSize: 12, color: c.textMuted, border: 'none', background: 'none', cursor: 'pointer', padding: '4px 0' }}>Cancel</button>
-          </div>
-        </div>
-      )}
-    <button
-      onClick={handleSync}
-      disabled={syncing}
-      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: `1px solid ${c.borderStrong}`, backgroundColor: c.bgCard, color: c.textSecondary, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
-      onMouseEnter={e => { if (!syncing) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard; }}
-    >
-      <RefreshCw size={13} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />
-      {syncing ? 'Syncing...' : 'Sync Now'}
-    </button>
+          );
+        })}
+      </div>
+      <button
+        onClick={handleSync}
+        disabled={syncing}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          height: 34, padding: '0 14px',
+          background: 'transparent',
+          border: '1px solid #7C3AED',
+          borderRadius: 8,
+          color: '#7C3AED',
+          fontSize: 13, fontWeight: 500,
+          fontFamily: "'DM Sans', sans-serif",
+          cursor: syncing ? 'wait' : 'pointer',
+          opacity: syncing ? 0.7 : 1,
+          transition: 'background 150ms',
+        }}
+        onMouseEnter={e => { if (!syncing) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(124,58,237,0.06)'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+      >
+        <RefreshCw size={13} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />
+        {syncing ? 'Syncing' : 'Sync Now'}
+      </button>
     </div>
   );
 
-  /* Loading state */
-  if (loading || dataLoading) return (
-    <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 20 }}>
-        {[...Array(6)].map((_, i) => (
-          <div key={i} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, height: 110, animation: 'pulse 1.5s ease-in-out infinite' }} />
-        ))}
-      </div>
-    </PageShell>
-  );
+  /* ─── Loading skeletons ─── */
+  if (loading || dataLoading) {
+    return (
+      <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 10, marginBottom: 16 }}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 10, height: 92, animation: 'pulse 1.5s ease-in-out infinite' }} />
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
+          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, height: 230, animation: 'pulse 1.5s ease-in-out infinite' }} />
+          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, height: 230, animation: 'pulse 1.5s ease-in-out infinite' }} />
+        </div>
+        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, height: 340, animation: 'pulse 1.5s ease-in-out infinite' }} />
+      </PageShell>
+    );
+  }
 
-  /* Not connected */
-  if (!isConnected) return (
-    <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
-      <EmptyState
-        icon={Target}
-        title="Connect Meta Ads"
-        description="Link your Meta Ads account to track Facebook & Instagram campaign performance, ROAS, and creative analytics."
-        actionLabel="Connect in Settings"
-        onAction={() => router.push('/dashboard/settings')}
-      />
-    </PageShell>
-  );
+  /* ─── Not connected ─── */
+  if (!isConnected) {
+    return (
+      <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
+        <EmptyState
+          icon={Target}
+          title="Connect Meta Ads"
+          description="Link your Facebook and Instagram ad accounts to track campaign performance, spend, ROAS, and get AI-powered optimization recommendations."
+          actionLabel="Connect in Settings"
+          onAction={() => router.push('/dashboard/settings?tab=integrations')}
+        />
+      </PageShell>
+    );
+  }
 
-  /* No data at all — never synced */
+  /* ─── Never synced ─── */
   const hasAnyData = allCampaigns.length > 0 || adsData?.source === 'analytics_data';
-  if (!hasAnyData && allCampaigns.length === 0) return (
-    <PageShell
-      title="Meta Ads"
-      description="Facebook & Instagram ad performance"
-      icon={Target}
-      action={syncButton}
-    >
-      <EmptyState
+  if (!hasAnyData && !integration?.last_sync_at) {
+    return (
+      <PageShell
+        title="Meta Ads"
+        description="Facebook & Instagram ad performance"
         icon={Target}
-        title="No campaign data yet"
-        description="Your Meta Ads account is connected. Click Sync Now to pull your campaign data."
-        actionLabel="Sync Now"
-        onAction={handleSync}
-      />
-    </PageShell>
-  );
+        action={headerAction}
+      >
+        <EmptyState
+          icon={Target}
+          title="No campaign data yet"
+          description="Your Meta Ads account is connected. Click Sync Now to pull your campaign data."
+          actionLabel="Sync Now"
+          onAction={handleSync}
+        />
+      </PageShell>
+    );
+  }
 
-  /* Column definitions for sortable table */
-  const columns: { key: SortKey; label: string; align?: 'right' }[] = [
-    { key: 'campaign_name', label: 'Campaign' },
-    { key: 'objective', label: 'Objective' },
-    { key: 'spend', label: 'Spend', align: 'right' },
-    { key: 'clicks', label: 'Clicks', align: 'right' },
-    { key: 'impressions', label: 'Impressions', align: 'right' },
-    { key: 'ctr', label: 'CTR', align: 'right' },
-    { key: 'cpc', label: 'CPC', align: 'right' },
-    { key: 'roas', label: 'ROAS', align: 'right' },
+  /* ─── Sync badge ─── */
+  const syncBadge = integration?.last_sync_at
+    ? `SYNCED ${new Date(integration.last_sync_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}`
+    : 'NOT SYNCED';
+
+  /* ─── Table columns ─── */
+  const columns: { key: SortKey | 'campaign'; label: string; width?: number; align?: 'left' | 'right' }[] = [
+    { key: 'campaign', label: 'Campaign', width: 240, align: 'left' },
+    { key: 'objective', label: 'Objective', width: 140, align: 'left' },
+    { key: 'spend', label: 'Spend', width: 90, align: 'right' },
+    { key: 'clicks', label: 'Clicks', width: 80, align: 'right' },
+    { key: 'impressions', label: 'Impressions', width: 110, align: 'right' },
+    { key: 'ctr', label: 'CTR', width: 70, align: 'right' },
+    { key: 'cpc', label: 'CPC', width: 70, align: 'right' },
+    { key: 'roas', label: 'ROAS', width: 70, align: 'right' },
   ];
+
+  /* ─── Donut data ─── */
+  const donutData = [
+    { name: 'Active', value: activeCount },
+    { name: 'Paused', value: pausedCount },
+  ].filter(d => d.value > 0);
+
+  /* ─── Donut insight text ─── */
+  let donutInsight: React.ReactNode = null;
+  if (totalCampaigns === 0) {
+    donutInsight = 'No campaigns yet';
+  } else if (activeCount === 0) {
+    donutInsight = 'All campaigns paused — no active spend';
+  } else if (topPerformer) {
+    const topSpend = numVal(topPerformer.spend);
+    const nonZero = allCampaigns.filter((c: any) => numVal(c.spend) > 0);
+    if (nonZero.length === 1 && topSpend > 0) {
+      donutInsight = <>Only <strong style={{ color: c.text }}>1 campaign</strong> driving all spend</>;
+    } else if (nonZero.length <= 3 && nonZero.length > 0) {
+      donutInsight = <>Top <strong style={{ color: c.text }}>{nonZero.length} campaigns</strong> driving all spend</>;
+    } else {
+      const topN = Math.min(3, nonZero.length);
+      donutInsight = <>Top <strong style={{ color: c.text }}>{topN} campaigns</strong> lead in spend</>;
+    }
+  }
 
   return (
     <PageShell
       title="Meta Ads"
       description="Facebook & Instagram ad performance"
       icon={Target}
-      badge={integration?.last_sync_at
-        ? (Date.now() - new Date(integration.last_sync_at).getTime() > 24 * 60 * 60 * 1000
-          ? `Stale — synced ${new Date(integration.last_sync_at).toLocaleDateString()}`
-          : `Synced ${new Date(integration.last_sync_at).toLocaleDateString()}`)
-        : undefined}
-      action={syncButton}
+      badge={syncBadge}
+      action={headerAction}
     >
-      {/* Date range selector */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <div style={{ display: 'flex', gap: 4, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 8, padding: 3 }}>
-          {DATE_RANGES.map(r => {
-            const isActive = days === r.days;
-            return (
-              <button
-                key={r.days}
-                onClick={() => setDays(r.days)}
-                style={{
-                  padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                  border: 'none',
-                  background: isActive ? c.accent : 'transparent',
-                  color: isActive ? '#fff' : c.textSecondary,
-                  transition: 'background-color 0.15s, border-color 0.15s',
-                }}
-              >
-                {r.label}
-              </button>
-            );
-          })}
-        </div>
-        <span style={{ fontSize: 12, color: c.textMuted }}>
-          Last {days} days
-        </span>
-      </div>
-
-      {/* No data for selected range */}
-      {allCampaigns.length === 0 && hasAnyData && (
-        <div style={{ textAlign: 'center', padding: '40px 20px', borderRadius: 12, border: `1px dashed ${c.border}`, marginBottom: 24, backgroundColor: c.bgCard }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4 }}>No data for the last {days} days</p>
-          <p style={{ fontSize: 13, color: c.textMuted }}>Try a longer date range or sync to pull the latest data.</p>
-        </div>
-      )}
-
-      {/* KPI Cards - 6 cards in 3x2 grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 24 }}>
-        <StatCard icon={DollarSign} color={c.accent} label="Total Spend" value={fmtMoney(totalSpend)} sub={`Last ${days} days`} trend={totalSpend > 0 ? 'up' : 'flat'} />
-        <StatCard icon={TrendingUp} color="#F59E0B" label="ROAS" value={totalRoas > 0 ? `${totalRoas.toFixed(2)}x` : '--'} sub={totalRoas >= 3 ? 'Healthy' : totalRoas >= 1 ? 'Breakeven' : 'Needs improvement'} trend={totalRoas >= 3 ? 'up' : totalRoas >= 1 ? 'flat' : 'down'} />
-        <StatCard icon={MousePointer} color="#10B981" label="Total Clicks" value={fmtNum(totalClicks)} sub={`${fmtNum(totals?.reach || 0)} reach`} trend={totalClicks > 0 ? 'up' : 'flat'} />
-        <StatCard icon={Eye} color={c.textSecondary} label="Impressions" value={fmtNum(totalImpressions)} sub="All campaigns" trend={totalImpressions > 0 ? 'up' : 'flat'} />
-        <StatCard icon={Percent} color="#8B5CF6" label="Avg. CTR" value={totalCtr > 0 ? `${totalCtr.toFixed(2)}%` : '--'} sub={totalCtr >= 2 ? 'Above average' : totalCtr >= 1 ? 'Average' : 'Below average'} trend={totalCtr >= 2 ? 'up' : totalCtr >= 1 ? 'flat' : 'down'} />
-        <StatCard icon={ShoppingCart} color="#EC4899" label="Conversions" value={fmtNum(totalConversions)} sub="Total actions" trend={totalConversions > 0 ? 'up' : 'flat'} />
-      </div>
-
-      {/* Performance Chart */}
-      {chartData.length > 0 && (
-        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24, marginBottom: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Performance Overview</p>
-              <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>Spend & clicks over time</p>
-            </div>
-            <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: c.textSecondary }}>
-                <span style={{ width: 10, height: 3, borderRadius: 2, backgroundColor: c.accent, display: 'inline-block' }} /> Spend
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: c.textSecondary }}>
-                <span style={{ width: 10, height: 3, borderRadius: 2, backgroundColor: '#10B981', display: 'inline-block' }} /> Clicks
-              </span>
-            </div>
-          </div>
-          <div style={{ height: 260 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={c.accent} stopOpacity={0.2} />
-                    <stop offset="100%" stopColor={c.accent} stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="clicksGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={c.border} vertical={false} />
-                <XAxis dataKey="date" tick={{ fill: c.textMuted, fontSize: 11 }} axisLine={{ stroke: c.border }} tickLine={false} />
-                <YAxis yAxisId="spend" tick={{ fill: c.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} width={60} tickFormatter={(v: number) => `${sym}${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`} />
-                <YAxis yAxisId="clicks" orientation="right" tick={{ fill: c.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} width={50} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`} />
-                <Tooltip content={<ChartTooltip sym={sym} />} />
-                <Area yAxisId="spend" type="monotone" dataKey="spend" stroke={c.accent} strokeWidth={2} fill="url(#spendGrad)" dot={false} activeDot={{ r: 4, fill: c.accent, stroke: c.bgCard, strokeWidth: 2 }} />
-                <Area yAxisId="clicks" type="monotone" dataKey="clicks" stroke="#10B981" strokeWidth={2} fill="url(#clicksGrad)" dot={false} activeDot={{ r: 4, fill: '#10B981', stroke: c.bgCard, strokeWidth: 2 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {/* Top Performers */}
-      {topPerformers.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <Award size={14} color={c.accent} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: c.text }}>Top Performers</span>
-            <span style={{ fontSize: 11, color: c.textMuted }}>by spend</span>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(topPerformers.length, 3)},1fr)`, gap: 12 }}>
-            {topPerformers.map((camp: any, idx: number) => {
-              const medal = ['🥇', '🥈', '🥉'][idx];
+      {/* ─── Account Switcher Bar ─── */}
+      <div style={{
+        backgroundColor: c.bgCard,
+        border: `1px solid ${c.border}`,
+        borderRadius: 10,
+        padding: '10px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        marginBottom: 16,
+        position: 'relative',
+      }}>
+        <User size={16} color="#7C3AED" />
+        <span style={{
+          fontSize: 14, fontWeight: 600, color: c.text,
+          fontFamily: "'DM Sans', sans-serif",
+        }}>{currentAccountName}</span>
+        {currentAccountId && (
+          <span style={{
+            fontSize: 12, color: c.textMuted,
+            fontFamily: "'DM Sans', sans-serif",
+          }}>
+            {currentAccountId} · {currencyCode}
+          </span>
+        )}
+        <button
+          onClick={loadAdAccounts}
+          disabled={loadingAccounts}
+          style={{
+            marginLeft: 'auto',
+            fontSize: 12, fontWeight: 500,
+            color: '#7C3AED',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: "'DM Sans', sans-serif",
+            padding: 0,
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.textDecoration = 'underline'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.textDecoration = 'none'; }}
+        >
+          {loadingAccounts ? 'Loading…' : 'Switch account ▾'}
+        </button>
+        {showAccountPicker && adAccounts.length > 0 && (
+          <div style={{
+            position: 'absolute',
+            top: '100%', right: 16,
+            marginTop: 4,
+            minWidth: 280,
+            backgroundColor: c.surfaceElevated,
+            border: `1px solid ${c.border}`,
+            borderRadius: 10,
+            padding: 4,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            zIndex: 50,
+          }}>
+            <div style={{
+              padding: '8px 12px 4px',
+              fontSize: 11, fontWeight: 600,
+              color: c.textMuted,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              fontFamily: "'DM Sans', sans-serif",
+            }}>Switch Ad Account</div>
+            {adAccounts.map((acc: any) => {
+              const isCurrent = acc.id === currentAccountId;
               return (
-                <div key={idx} style={{
-                  backgroundColor: c.bgCard,
-                  border: idx === 0 ? `1px solid ${c.accent}` : `1px solid ${c.border}`,
-                  borderRadius: 10,
-                  padding: '14px 16px',
-                  position: 'relative' as const,
-                  overflow: 'hidden',
-                }}>
-                  {idx === 0 && (
-                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${c.accent}, transparent)` }} />
-                  )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ fontSize: 14 }}>{medal}</span>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</span>
+                <button
+                  key={acc.id}
+                  onClick={() => switchAdAccount(acc.id)}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: c.text, fontFamily: "'DM Sans', sans-serif" }}>{acc.name}</span>
+                    <span style={{ fontSize: 12, color: c.textMuted, fontFamily: "'DM Sans', sans-serif" }}>{acc.id} · {acc.currency || 'USD'}</span>
                   </div>
-                  <div style={{ display: 'flex', gap: 16 }}>
-                    <div>
-                      <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>Spend</div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{typeof camp.spend === 'string' ? camp.spend : fmtMoney(camp.spend || 0)}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>ROAS</div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: numVal(camp.roas) >= 1 ? c.success : c.danger, fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{typeof camp.roas === 'string' ? camp.roas : numVal(camp.roas) > 0 ? `${numVal(camp.roas).toFixed(2)}x` : '--'}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>Clicks</div>
-                      <div style={{ fontSize: 15, fontWeight: 600, color: c.textSecondary, fontVariantNumeric: 'tabular-nums', marginTop: 2 }}>{typeof camp.clicks === 'string' ? camp.clicks : fmtNum(camp.clicks || 0)}</div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Campaigns table */}
-      <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden', marginBottom: 20 }}>
-        <div style={{ padding: '18px 22px', borderBottom: `1px solid ${c.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Campaigns</p>
-            <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>{campaigns.length} of {allCampaigns.length} campaigns</p>
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {(['all', 'active', 'paused'] as const).map(f => {
-              const count = f === 'all' ? allCampaigns.length : allCampaigns.filter((camp: any) => f === 'active' ? (camp.status || '').toUpperCase() === 'ACTIVE' : (camp.status || '').toUpperCase() !== 'ACTIVE').length;
-              const isActive = statusFilter === f;
-              return (
-                <button key={f} onClick={() => setStatusFilter(f)} style={{
-                  padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                  border: isActive ? `1px solid ${c.accent}` : `1px solid ${c.border}`,
-                  background: isActive ? c.accentSubtle : 'transparent',
-                  color: isActive ? c.accent : c.textSecondary,
-                  transition: 'background-color 0.15s, border-color 0.15s',
-                }}>
-                  {f.charAt(0).toUpperCase() + f.slice(1)} ({count})
+                  {isCurrent && <span style={{ color: '#7C3AED', fontSize: 14 }}>✓</span>}
                 </button>
               );
             })}
+            <div style={{ borderTop: `1px solid ${c.border}`, marginTop: 4 }}>
+              <button
+                onClick={() => setShowAccountPicker(false)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  fontSize: 13,
+                  color: c.textMuted,
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >Cancel</button>
+            </div>
           </div>
+        )}
+      </div>
+
+      {/* ─── No data for range ─── */}
+      {allCampaigns.length === 0 && (
+        <div style={{
+          textAlign: 'center',
+          padding: '40px 20px',
+          borderRadius: 12,
+          border: `1px dashed ${c.border}`,
+          backgroundColor: c.bgCard,
+          marginBottom: 16,
+        }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4, fontFamily: "'DM Sans', sans-serif" }}>
+            No data for the last {days} days
+          </p>
+          <p style={{ fontSize: 13, color: c.textMuted, fontFamily: "'DM Sans', sans-serif" }}>
+            Try a longer date range or sync to pull the latest data.
+          </p>
         </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr>
-                <th style={{ padding: '10px 8px', width: 28, borderBottom: `1px solid ${c.border}` }} />
-                {columns.map(col => {
-                  const isSorted = sortKey === col.key;
+      )}
+
+      {allCampaigns.length > 0 && (
+        <>
+          {/* ─── Metric Cards ─── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+            gap: 10,
+            marginBottom: 16,
+          }}>
+            <MetricCard
+              icon={DollarSign}
+              label="Total Spend"
+              value={fmt.money(totalSpend)}
+              sub={`Last ${days} days`}
+            />
+            <MetricCard
+              icon={Eye}
+              label="Impressions"
+              value={fmt.num(totalImpressions)}
+              sub="All campaigns"
+            />
+            <MetricCard
+              icon={MousePointer}
+              label="Total Clicks"
+              value={fmt.num(totalClicks)}
+              sub={totalReach > 0 ? `${fmt.num(totalReach)} reach` : 'All campaigns'}
+            />
+            <MetricCard
+              icon={Percent}
+              label="Avg CTR"
+              value={totalCtr > 0 ? `${totalCtr.toFixed(2)}%` : '—'}
+              sub={totalCtr > 2 ? 'Above average' : totalCtr < 1 && totalCtr > 0 ? 'Below average' : 'Average'}
+              subColor={totalCtr > 2 ? '#059669' : totalCtr < 1 && totalCtr > 0 ? '#DC2626' : undefined}
+            />
+            <MetricCard
+              icon={TrendingUp}
+              label="ROAS"
+              value={roas !== null ? `${roas.toFixed(2)}x` : '—'}
+              sub={roas === null ? 'No revenue data' : roas < 1 ? 'Needs improvement' : roas > 2 ? 'Healthy' : 'Return on ad spend'}
+              subColor={roas === null ? undefined : roas < 1 ? '#DC2626' : roas > 2 ? '#059669' : undefined}
+            />
+            <MetricCard
+              icon={ShoppingCart}
+              label="Conversions"
+              value={fmt.num(totalConversions)}
+              sub="Total actions"
+            />
+          </div>
+
+          {/* ─── Charts ─── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 14,
+            marginBottom: 16,
+          }}>
+            {/* Spend & Clicks chart */}
+            <div style={{
+              backgroundColor: c.bgCard,
+              border: `1px solid ${c.border}`,
+              borderRadius: 12,
+              padding: 18,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{
+                    fontSize: 14, fontWeight: 600, color: c.text,
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  }}>Spend & Clicks over time</div>
+                  <div style={{
+                    fontSize: 12, color: c.textMuted, marginTop: 2,
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}>{chartDateRange || `Last ${days} days`}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: c.textSecondary, fontFamily: "'DM Sans', sans-serif" }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#7C3AED' }} />
+                    Spend
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: c.textSecondary, fontFamily: "'DM Sans', sans-serif" }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#0891B2' }} />
+                    Clicks
+                  </div>
+                </div>
+              </div>
+              <div style={{ position: 'relative', height: 160, marginTop: 14 }}>
+                {chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={c.border} vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fill: '#94A3B8', fontSize: 10, fontFamily: "'DM Sans', sans-serif" }}
+                        axisLine={false}
+                        tickLine={false}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis
+                        yAxisId="spend"
+                        tick={{ fill: '#94A3B8', fontSize: 10, fontFamily: "'DM Sans', sans-serif" }}
+                        axisLine={false}
+                        tickLine={false}
+                        width={50}
+                        tickFormatter={(v: number) => {
+                          if (v >= 1000) return fmt.money(v).replace(/[.,]\d+$/, '').replace(/(\d)000$/, '$1k');
+                          return fmt.money(v);
+                        }}
+                      />
+                      <YAxis
+                        yAxisId="clicks"
+                        orientation="right"
+                        tick={{ fill: '#94A3B8', fontSize: 10, fontFamily: "'DM Sans', sans-serif" }}
+                        axisLine={false}
+                        tickLine={false}
+                        width={36}
+                        tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${v}`}
+                      />
+                      <Tooltip content={<ChartTooltip fmtMoney={fmt.money2} fmtNum={fmt.num} />} />
+                      <Area
+                        yAxisId="spend"
+                        type="monotone"
+                        dataKey="spend"
+                        stroke="#7C3AED"
+                        strokeWidth={2}
+                        fill="rgba(124,58,237,0.06)"
+                        dot={false}
+                        activeDot={{ r: 4, fill: '#7C3AED', stroke: c.bgCard, strokeWidth: 2 }}
+                      />
+                      <Line
+                        yAxisId="clicks"
+                        type="monotone"
+                        dataKey="clicks"
+                        stroke="#0891B2"
+                        strokeWidth={2}
+                        strokeDasharray="4 3"
+                        dot={false}
+                        activeDot={{ r: 4, fill: '#0891B2', stroke: c.bgCard, strokeWidth: 2 }}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div style={{
+                    height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 12, color: c.textMuted, fontFamily: "'DM Sans', sans-serif",
+                  }}>
+                    No daily data available
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Campaign status donut */}
+            <div style={{
+              backgroundColor: c.bgCard,
+              border: `1px solid ${c.border}`,
+              borderRadius: 12,
+              padding: 18,
+            }}>
+              <div>
+                <div style={{
+                  fontSize: 14, fontWeight: 600, color: c.text,
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                }}>Campaign status breakdown</div>
+                <div style={{
+                  fontSize: 12, color: c.textMuted, marginTop: 2,
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>{totalCampaigns} total campaigns</div>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 20,
+                marginTop: 16,
+              }}>
+                <div style={{ width: 120, height: 120, flexShrink: 0 }}>
+                  {donutData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={donutData}
+                          dataKey="value"
+                          innerRadius={40}
+                          outerRadius={58}
+                          paddingAngle={0}
+                          strokeWidth={0}
+                        >
+                          {donutData.map((entry, i) => (
+                            <Cell key={i} fill={entry.name === 'Active' ? '#059669' : '#D97706'} />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : null}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1, minWidth: 0 }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#059669', flexShrink: 0 }} />
+                      <span style={{
+                        fontSize: 13, fontWeight: 600, color: c.text,
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}>{activeCount} Active</span>
+                    </div>
+                    <div style={{
+                      fontSize: 12, color: c.textMuted,
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}>{totalCampaigns > 0 ? Math.round((activeCount / totalCampaigns) * 100) : 0}% of campaigns</div>
+                  </div>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#D97706', flexShrink: 0 }} />
+                      <span style={{
+                        fontSize: 13, fontWeight: 600, color: c.text,
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}>{pausedCount} Paused</span>
+                    </div>
+                    <div style={{
+                      fontSize: 12, color: c.textMuted,
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}>{totalCampaigns > 0 ? Math.round((pausedCount / totalCampaigns) * 100) : 0}% of campaigns</div>
+                  </div>
+                  {donutInsight && (
+                    <div style={{
+                      backgroundColor: c.bgCardHover,
+                      borderRadius: 8,
+                      padding: '8px 10px',
+                      fontSize: 11,
+                      color: c.textMuted,
+                      lineHeight: 1.5,
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}>
+                      {donutInsight}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ─── Top Performer Strip ─── */}
+          {topPerformer && (
+            <div style={{
+              backgroundColor: 'rgba(124,58,237,0.04)',
+              border: '1px solid rgba(124,58,237,0.2)',
+              borderRadius: 12,
+              overflow: 'hidden',
+              marginBottom: 16,
+            }}>
+              <div style={{
+                padding: '10px 18px 8px',
+                borderBottom: '1px solid rgba(124,58,237,0.1)',
+                fontSize: 11, fontWeight: 600, color: '#7C3AED',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                fontFamily: "'DM Sans', sans-serif",
+              }}>
+                Top Performer by Spend
+              </div>
+              <div style={{
+                padding: '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 20,
+                flexWrap: 'wrap',
+              }}>
+                <div style={{ minWidth: 0, flex: '1 1 240px', maxWidth: 320 }}>
+                  <div style={{
+                    fontSize: 15, fontWeight: 600, color: c.text,
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  }}>{topPerformer.campaign_name}</div>
+                  <div style={{
+                    fontSize: 11, color: c.textMuted, marginTop: 2,
+                    textTransform: 'uppercase',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}>{topPerformer.objective || 'Campaign'}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'SPEND', value: fmt.money(numVal(topPerformer.spend)) },
+                    { label: 'CLICKS', value: fmt.num(numVal(topPerformer.clicks)) },
+                    { label: 'IMPRESSIONS', value: fmt.num(numVal(topPerformer.impressions)) },
+                    { label: 'CTR', value: `${numVal(topPerformer.ctr).toFixed(2)}%`, color: numVal(topPerformer.ctr) > 2 ? '#059669' : undefined },
+                    { label: 'CPC', value: numVal(topPerformer.cpc) > 0 ? fmt.money2(numVal(topPerformer.cpc)) : '—' },
+                  ].map(stat => (
+                    <div key={stat.label}>
+                      <div style={{
+                        fontSize: 11, fontWeight: 500, color: c.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                        marginBottom: 3,
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}>{stat.label}</div>
+                      <div style={{
+                        fontSize: 18, fontWeight: 700, color: stat.color || c.text,
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontVariantNumeric: 'tabular-nums',
+                      }}>{stat.value}</div>
+                    </div>
+                  ))}
+                  <div>
+                    <div style={{
+                      fontSize: 11, fontWeight: 500, color: c.textMuted,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                      marginBottom: 5,
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}>STATUS</div>
+                    <StatusBadge status={topPerformer.status} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── Campaigns Table ─── */}
+          <div style={{
+            backgroundColor: c.bgCard,
+            border: `1px solid ${c.border}`,
+            borderRadius: 12,
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              padding: '16px 20px 12px',
+              borderBottom: `1px solid ${c.border}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap',
+            }}>
+              <div>
+                <div style={{
+                  fontSize: 15, fontWeight: 600, color: c.text,
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                }}>All Campaigns</div>
+                <div style={{
+                  fontSize: 12, color: c.textMuted, marginTop: 2,
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>{filteredCampaigns.length} of {totalCampaigns} campaigns</div>
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {([
+                  { key: 'all', label: `All (${totalCampaigns})` },
+                  { key: 'active', label: `Active (${activeCount})` },
+                  { key: 'paused', label: `Paused (${pausedCount})` },
+                ] as const).map(f => {
+                  const isActive = statusFilter === f.key;
                   return (
-                    <th
-                      key={col.key}
-                      onClick={() => handleSort(col.key)}
+                    <button
+                      key={f.key}
+                      onClick={() => { setStatusFilter(f.key); setShowAllPaused(false); }}
                       style={{
-                        padding: '10px 16px',
-                        textAlign: col.align === 'right' ? 'right' : 'left',
-                        fontSize: 11, fontWeight: 600,
-                        color: isSorted ? c.accent : c.textSecondary,
-                        textTransform: 'uppercase' as const,
-                        letterSpacing: '0.05em',
-                        borderBottom: `1px solid ${c.border}`,
-                        whiteSpace: 'nowrap',
+                        padding: '5px 12px',
+                        borderRadius: 6,
+                        fontSize: 12, fontWeight: 500,
                         cursor: 'pointer',
-                        userSelect: 'none' as const,
-                        transition: 'color 0.15s',
+                        border: isActive ? '1px solid #7C3AED' : `1px solid ${c.border}`,
+                        background: isActive ? '#7C3AED' : 'transparent',
+                        color: isActive ? '#FFFFFF' : c.textMuted,
+                        fontFamily: "'DM Sans', sans-serif",
+                        transition: 'all 150ms',
                       }}
                     >
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        {col.label}
-                        {isSorted && <span style={{ fontSize: 10 }}>{sortDir === 'desc' ? '▼' : '▲'}</span>}
-                      </span>
-                    </th>
+                      {f.label}
+                    </button>
                   );
                 })}
-                <th style={{ padding: '10px 16px', textAlign: 'center', fontSize: 11, fontWeight: 600, color: c.textSecondary, textTransform: 'uppercase' as const, letterSpacing: '0.05em', borderBottom: `1px solid ${c.border}`, whiteSpace: 'nowrap' }}>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.map((campaign: any, i: number) => {
-                const isExpanded = expandedRow === i;
-                const isTopPerformer = campaign.campaign_name === topPerformerName;
-                return (
-                  <>
-                    <tr
-                      key={`row-${i}`}
-                      onClick={() => setExpandedRow(isExpanded ? null : i)}
-                      style={{
-                        borderBottom: !isExpanded && i < campaigns.length - 1 ? `1px solid ${c.border}` : 'none',
-                        cursor: 'pointer',
-                        borderLeft: isTopPerformer ? `3px solid ${c.accent}` : '3px solid transparent',
-                        transition: 'background 0.1s',
-                      }}
-                      onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = c.bgCardHover}
-                      onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = 'transparent'}
-                    >
-                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
-                        {isExpanded ? <ChevronDown size={13} color={c.textMuted} /> : <ChevronRight size={13} color={c.textMuted} />}
-                      </td>
-                      <td style={{ padding: '12px 16px', maxWidth: 220 }}>
-                        <div style={{ fontWeight: 500, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13 }}>
-                          {isTopPerformer && <span style={{ marginRight: 6, fontSize: 11 }}>⭐</span>}
-                          {campaign.campaign_name}
-                        </div>
-                      </td>
-                      <td style={{ padding: '12px 16px', color: c.textMuted, fontSize: 12 }}>
-                        {campaign.objective || '--'}
-                      </td>
-                      <td style={{ padding: '12px 16px', fontWeight: 500, color: c.text, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
-                        {typeof campaign.spend === 'string' ? campaign.spend : fmtMoney(campaign.spend || 0)}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
-                        {typeof campaign.clicks === 'string' ? campaign.clicks : fmtNum(campaign.clicks || 0)}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
-                        {typeof campaign.impressions === 'string' ? campaign.impressions : fmtNum(campaign.impressions || 0)}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: c.textMuted, fontWeight: 500, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
-                        {typeof campaign.ctr === 'string' ? campaign.ctr : numVal(campaign.ctr) > 0 ? `${numVal(campaign.ctr).toFixed(2)}%` : '--'}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
-                        {typeof campaign.cpc === 'string' ? campaign.cpc : numVal(campaign.cpc) > 0 ? `${sym}${numVal(campaign.cpc).toFixed(2)}` : '--'}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: c.textMuted, fontWeight: 600, fontSize: 13, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>
-                        {typeof campaign.roas === 'string' ? campaign.roas : numVal(campaign.roas) > 0 ? `${numVal(campaign.roas).toFixed(2)}x` : '--'}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                        {campaign.status ? <StatusBadge status={campaign.status} /> : '--'}
-                      </td>
+              </div>
+            </div>
+
+            {filteredCampaigns.length === 0 ? (
+              <div style={{
+                height: 120,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 13, color: c.textMuted,
+                fontFamily: "'DM Sans', sans-serif",
+              }}>
+                No {statusFilter === 'all' ? '' : statusFilter + ' '}campaigns found.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: c.bgCardHover, borderBottom: `1px solid ${c.border}` }}>
+                      {columns.map(col => {
+                        const sortable = col.key !== 'campaign';
+                        const isSorted = sortKey === col.key;
+                        return (
+                          <th
+                            key={col.key}
+                            onClick={() => sortable && handleSort(col.key as SortKey)}
+                            style={{
+                              padding: '10px 8px',
+                              paddingLeft: col.key === 'campaign' ? 20 : 8,
+                              paddingRight: col.key === 'roas' ? 8 : 8,
+                              width: col.width,
+                              minWidth: col.key === 'campaign' ? 240 : undefined,
+                              textAlign: col.align,
+                              fontSize: 11, fontWeight: 600,
+                              color: isSorted ? '#7C3AED' : c.textMuted,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.04em',
+                              fontFamily: "'DM Sans', sans-serif",
+                              cursor: sortable ? 'pointer' : 'default',
+                              userSelect: 'none',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              {col.label}
+                              {isSorted && <span style={{ fontSize: 9 }}>{sortDir === 'desc' ? '▼' : '▲'}</span>}
+                            </span>
+                          </th>
+                        );
+                      })}
+                      <th style={{
+                        padding: '10px 20px 10px 8px',
+                        width: 90,
+                        textAlign: 'right',
+                        fontSize: 11, fontWeight: 600,
+                        color: c.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}>Status</th>
                     </tr>
-                    {/* Expanded row details */}
-                    {isExpanded && (
-                      <tr key={`detail-${i}`} style={{ borderBottom: i < campaigns.length - 1 ? `1px solid ${c.border}` : 'none' }}>
-                        <td colSpan={columns.length + 2} style={{ padding: 0 }}>
-                          <div style={{
+                  </thead>
+                  <tbody>
+                    {visibleRows.map((campaign: any, i: number) => {
+                      const isTop = topPerformer && campaign.campaign_name === topPerformer.campaign_name;
+                      const isLast = i === visibleRows.length - 1 && hiddenZeroCount === 0;
+                      const ctr = numVal(campaign.ctr);
+                      const spend = numVal(campaign.spend);
+                      const clicks = numVal(campaign.clicks);
+                      const impressions = numVal(campaign.impressions);
+                      const cpc = numVal(campaign.cpc);
+                      const roasVal = numVal(campaign.roas);
+                      const ctrColor = ctr === 0 ? c.textMuted : ctr > 3 ? '#059669' : ctr < 1 ? '#DC2626' : c.textSecondary;
+
+                      return (
+                        <tr
+                          key={`row-${i}`}
+                          style={{
+                            borderBottom: isLast ? 'none' : `1px solid ${c.border}`,
+                            backgroundColor: isTop ? 'rgba(124,58,237,0.04)' : 'transparent',
+                            borderLeft: isTop ? '3px solid #7C3AED' : '3px solid transparent',
+                            transition: 'background 150ms',
+                          }}
+                          onMouseEnter={e => {
+                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = isTop ? 'rgba(124,58,237,0.07)' : c.bgCardHover;
+                          }}
+                          onMouseLeave={e => {
+                            (e.currentTarget as HTMLTableRowElement).style.backgroundColor = isTop ? 'rgba(124,58,237,0.04)' : 'transparent';
+                          }}
+                        >
+                          <td style={{ padding: '13px 8px 13px 20px', maxWidth: 260 }}>
+                            <div style={{
+                              fontSize: 14, fontWeight: 500, color: c.text,
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                              fontFamily: "'DM Sans', sans-serif",
+                              maxWidth: 260,
+                            }}>
+                              {isTop && <span style={{ color: '#F59E0B', fontSize: 12, marginRight: 4 }}>★</span>}
+                              {campaign.campaign_name}
+                            </div>
+                            {campaign.objective && (
+                              <div style={{
+                                fontSize: 11, color: c.textMuted, marginTop: 2,
+                                textTransform: 'uppercase', letterSpacing: '0.03em',
+                                fontFamily: "'DM Sans', sans-serif",
+                              }}>{campaign.objective}</div>
+                            )}
+                          </td>
+                          <td style={{
+                            padding: '13px 8px',
+                            fontSize: 12, color: c.textMuted,
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>{formatObjective(campaign.objective)}</td>
+                          <td style={{
+                            padding: '13px 8px',
+                            textAlign: 'right',
+                            fontSize: 14,
+                            color: spend === 0 ? c.textMuted : c.textSecondary,
+                            fontVariantNumeric: 'tabular-nums',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>{fmt.money(spend)}</td>
+                          <td style={{
+                            padding: '13px 8px',
+                            textAlign: 'right',
+                            fontSize: 14,
+                            color: clicks === 0 ? c.textMuted : c.textSecondary,
+                            fontVariantNumeric: 'tabular-nums',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>{fmt.num(clicks)}</td>
+                          <td style={{
+                            padding: '13px 8px',
+                            textAlign: 'right',
+                            fontSize: 14,
+                            color: impressions === 0 ? c.textMuted : c.textSecondary,
+                            fontVariantNumeric: 'tabular-nums',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>{fmt.num(impressions)}</td>
+                          <td style={{
+                            padding: '13px 8px',
+                            textAlign: 'right',
+                            fontSize: 14,
+                            color: ctrColor,
+                            fontVariantNumeric: 'tabular-nums',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>{ctr > 0 ? `${ctr.toFixed(2)}%` : '0%'}</td>
+                          <td style={{
+                            padding: '13px 8px',
+                            textAlign: 'right',
+                            fontSize: 14,
+                            color: cpc === 0 ? c.textMuted : c.textSecondary,
+                            fontVariantNumeric: 'tabular-nums',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>{cpc > 0 ? fmt.money2(cpc) : '—'}</td>
+                          <td style={{
+                            padding: '13px 8px',
+                            textAlign: 'right',
+                            fontSize: 14,
+                            color: roasVal === 0 ? c.textMuted : roasVal < 1 ? '#DC2626' : c.textSecondary,
+                            fontVariantNumeric: 'tabular-nums',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}>{roasVal > 0 ? `${roasVal.toFixed(2)}x` : '—'}</td>
+                          <td style={{ padding: '13px 20px 13px 8px', textAlign: 'right' }}>
+                            <StatusBadge status={campaign.status} />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {hiddenZeroCount > 0 && (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          onClick={() => setShowAllPaused(true)}
+                          style={{
+                            padding: '10px 20px',
+                            textAlign: 'center',
                             backgroundColor: c.bgCardHover,
-                            padding: '16px 24px 16px 48px',
                             borderTop: `1px solid ${c.border}`,
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(4,1fr)',
-                            gap: 20,
-                          }}>
-                            <div>
-                              <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }}>Reach</div>
-                              <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontVariantNumeric: 'tabular-nums' }}>
-                                {typeof campaign.reach === 'string' ? campaign.reach : fmtNum(campaign.reach || 0)}
-                              </div>
-                            </div>
-                            <div>
-                              <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }}>Conversions</div>
-                              <div style={{ fontSize: 15, fontWeight: 600, color: c.text, fontVariantNumeric: 'tabular-nums' }}>
-                                {typeof campaign.conversions === 'string' ? campaign.conversions : fmtNum(campaign.conversions || 0)}
-                              </div>
-                            </div>
-                            <div>
-                              <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }}>Revenue</div>
-                              <div style={{ fontSize: 15, fontWeight: 600, color: c.success, fontVariantNumeric: 'tabular-nums' }}>
-                                {typeof campaign.revenue === 'string' ? campaign.revenue : campaign.revenue > 0 ? fmtMoney(campaign.revenue) : '--'}
-                              </div>
-                            </div>
-                            <div>
-                              <div style={{ fontSize: 10, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '0.05em', marginBottom: 4 }}>Budget</div>
-                              <div style={{ fontSize: 15, fontWeight: 600, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>
-                                {typeof campaign.budget === 'string' ? campaign.budget : campaign.budget > 0 ? fmtMoney(campaign.budget) : '--'}
-                              </div>
-                            </div>
-                          </div>
+                            fontSize: 12,
+                            color: c.textMuted,
+                            cursor: 'pointer',
+                            fontFamily: "'DM Sans', sans-serif",
+                            transition: 'color 150ms',
+                          }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLTableCellElement).style.color = c.textSecondary; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLTableCellElement).style.color = c.textMuted; }}
+                        >
+                          + {hiddenZeroCount} more paused {hiddenZeroCount === 1 ? 'campaign' : 'campaigns'} · All with {fmt.money(0)} spend
                         </td>
                       </tr>
                     )}
-                  </>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    {showAllPaused && filteredCampaigns.some((c: any) => numVal(c.spend) === 0) && (
+                      <tr>
+                        <td
+                          colSpan={9}
+                          onClick={() => setShowAllPaused(false)}
+                          style={{
+                            padding: '10px 20px',
+                            textAlign: 'center',
+                            backgroundColor: c.bgCardHover,
+                            borderTop: `1px solid ${c.border}`,
+                            fontSize: 12,
+                            color: c.textMuted,
+                            cursor: 'pointer',
+                            fontFamily: "'DM Sans', sans-serif",
+                          }}
+                        >
+                          ▲ Show less
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </PageShell>
   );
 }
