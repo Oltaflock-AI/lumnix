@@ -22,8 +22,8 @@ interface Insight {
 }
 
 const INSIGHT_CONFIG: Record<InsightType, { color: string; bg: string; icon: any; label: string }> = {
-  win:         { color: '#10B981', bg: 'rgba(16,185,129,0.08)',  icon: TrendingUp,    label: 'Win' },
-  warning:     { color: '#EF4444', bg: 'rgba(239,68,68,0.08)',  icon: AlertTriangle,  label: 'Warning' },
+  win:         { color: '#059669', bg: 'rgba(5,150,105,0.08)',  icon: TrendingUp,    label: 'Win' },
+  warning:     { color: '#DC2626', bg: 'rgba(220,38,38,0.08)',  icon: AlertTriangle,  label: 'Warning' },
   opportunity: { color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', icon: Lightbulb,      label: 'Opportunity' },
   tip:         { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', icon: Zap,            label: 'Tip' },
 };
@@ -212,17 +212,27 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
     <div>
       {/* Header bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <span style={{ fontSize: 13, color: c.textMuted }}>
+        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 400, color: c.textMuted }}>
           {lastGenerated ? `Last generated: ${timeAgo(lastGenerated)}` : ''}
         </span>
         <button
           onClick={generateInsights}
           disabled={generating}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 8, border: `1px solid ${c.borderStrong}`, backgroundColor: c.bgCard, color: generating ? c.textMuted : c.text, fontSize: 13, fontWeight: 500, cursor: generating ? 'not-allowed' : 'pointer', opacity: generating ? 0.7 : 1 }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 14px', borderRadius: 8,
+            border: `1px solid ${c.border}`,
+            background: 'transparent',
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 13, fontWeight: 500,
+            color: generating ? c.textMuted : c.text,
+            cursor: generating ? 'not-allowed' : 'pointer',
+            opacity: generating ? 0.7 : 1,
+          }}
           onMouseEnter={e => { if (!generating) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
         >
-          <RefreshCw size={14} className={generating ? 'animate-spin' : ''} />
+          <RefreshCw size={13} style={{ transition: 'transform 0.6s ease', transform: generating ? 'rotate(360deg)' : 'rotate(0deg)' }} className={generating ? 'animate-spin' : ''} />
           {generating ? 'Generating...' : 'Refresh Insights'}
         </button>
       </div>
@@ -239,51 +249,90 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
 
       {/* Insights grid */}
       {!generating && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, alignItems: 'stretch' }}>
           {insights.map(insight => {
             const config = INSIGHT_CONFIG[insight.type] || INSIGHT_CONFIG.tip;
-            const Icon = config.icon;
+            const prioBg = insight.priority === 'high' ? 'rgba(220,38,38,0.1)' : insight.priority === 'medium' ? 'rgba(245,158,11,0.1)' : 'rgba(124,58,237,0.08)';
+            const prioColor = insight.priority === 'high' ? '#DC2626' : insight.priority === 'medium' ? '#F59E0B' : c.textMuted;
             return (
-              <div key={insight.id} style={{ backgroundColor: c.bgCard, borderRadius: 12, padding: 20, border: `1px solid ${c.border}`, borderLeft: `3px solid ${config.color}` }}>
-                {/* Type badge + priority */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 26, height: 26, borderRadius: 6, backgroundColor: config.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon size={13} color={config.color} />
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: config.color, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{config.label}</span>
-                  </div>
-                  <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, backgroundColor: insight.priority === 'high' ? 'rgba(239,68,68,0.08)' : insight.priority === 'medium' ? 'rgba(245,158,11,0.08)' : 'rgba(124,58,237,0.08)', color: insight.priority === 'high' ? '#EF4444' : insight.priority === 'medium' ? '#F59E0B' : c.textMuted, fontWeight: 600, textTransform: 'uppercase' }}>
+              <div key={insight.id} style={{
+                backgroundColor: c.bgCard,
+                borderRadius: 12,
+                padding: 20,
+                border: `1px solid ${c.border}`,
+                borderLeft: `3px solid ${config.color}`,
+                display: 'flex', flexDirection: 'column',
+              }}>
+                {/* Type label + priority */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                    color: config.color,
+                  }}>{config.label}</span>
+                  <span style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
+                    padding: '2px 8px', borderRadius: 4,
+                    background: prioBg, color: prioColor,
+                  }}>
                     {insight.priority}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h4 style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 6, lineHeight: 1.3 }}>{insight.title}</h4>
+                <h4 style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 15, fontWeight: 600, color: c.text,
+                  marginTop: 0, marginBottom: 6, lineHeight: 1.3,
+                }}>{insight.title}</h4>
 
                 {/* Description */}
-                <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 10 }}>{insight.description}</p>
+                <p style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 14, fontWeight: 400, color: c.textSecondary,
+                  lineHeight: 1.6, margin: '0 0 12px',
+                }}>{insight.description}</p>
 
                 {/* Metric + Change badges */}
                 {(insight.metric || insight.change) && (
                   <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
                     {insight.metric && (
-                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, backgroundColor: c.accentSubtle, color: c.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: 12, fontWeight: 600,
+                        padding: '4px 10px', borderRadius: 6,
+                        background: c.bgCardHover, color: c.text,
+                        fontVariantNumeric: 'tabular-nums',
+                      }}>
                         {insight.metric}
                       </span>
                     )}
                     {insight.change && (
-                      <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 6, backgroundColor: insight.change.startsWith('+') ? 'rgba(16,185,129,0.08)' : insight.change.startsWith('-') ? 'rgba(239,68,68,0.08)' : c.accentSubtle, color: insight.change.startsWith('+') ? '#10B981' : insight.change.startsWith('-') ? '#EF4444' : c.textMuted, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: 12, fontWeight: 600,
+                        padding: '4px 10px', borderRadius: 6,
+                        background: insight.change.startsWith('+') ? 'rgba(5,150,105,0.1)' : insight.change.startsWith('-') ? 'rgba(220,38,38,0.1)' : c.bgCardHover,
+                        color: insight.change.startsWith('+') ? '#059669' : insight.change.startsWith('-') ? '#DC2626' : c.textMuted,
+                        fontVariantNumeric: 'tabular-nums',
+                      }}>
                         {insight.change}
                       </span>
                     )}
                   </div>
                 )}
 
-                {/* Action button */}
+                {/* Action link */}
                 {insight.action && (
-                  <button style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0 }}>
-                    <ArrowRight size={12} /> {insight.action}
+                  <button style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 13, fontWeight: 400, color: '#7C3AED',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    padding: 0, marginTop: 'auto', paddingTop: 10,
+                  }}>
+                    {insight.action} <ArrowRight size={13} />
                   </button>
                 )}
               </div>

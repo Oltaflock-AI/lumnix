@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DollarSign, TrendingUp, Target, MousePointerClick, RefreshCw, AlertCircle, BarChart3, Zap } from 'lucide-react';
+import { DollarSign, TrendingUp, Target, MousePointerClick, RefreshCw, AlertCircle, BarChart3, Zap, Star } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useIntegrations, useGoogleAdsData } from '@/lib/hooks';
@@ -27,20 +27,18 @@ function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: 
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const variantMap: Record<string, 'default' | 'secondary' | 'destructive'> = {
-    ENABLED: 'default',
-    PAUSED: 'secondary',
-    REMOVED: 'destructive',
-  };
-  const labelMap: Record<string, string> = {
-    ENABLED: 'Active',
-    PAUSED: 'Paused',
-    REMOVED: 'Removed',
-  };
+  const label = status === 'ENABLED' ? 'Active' : status === 'PAUSED' ? 'Paused' : status === 'REMOVED' ? 'Removed' : status;
+  const bg = status === 'ENABLED' ? '#DCFCE7' : status === 'PAUSED' ? '#F1F5F9' : 'rgba(220,38,38,0.1)';
+  const color = status === 'ENABLED' ? '#166534' : status === 'PAUSED' ? '#475569' : '#DC2626';
   return (
-    <Badge variant={variantMap[status] || 'outline'}>
-      {labelMap[status] || status}
-    </Badge>
+    <span style={{
+      display: 'inline-flex', alignItems: 'center',
+      padding: '3px 10px', borderRadius: 20,
+      background: bg, color,
+      fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
+    }}>
+      {label}
+    </span>
   );
 }
 
@@ -161,55 +159,147 @@ export default function GoogleAdsPage() {
           {/* Stats cards */}
           {hasData && (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
-                <StatCard icon={DollarSign} color="#F59E0B" label="Total Spend" value={`₹${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} sub={`Last ${days} days`} />
-                <StatCard icon={MousePointerClick} color={c.accent} label="Total Clicks" value={totalClicks.toLocaleString()} sub={`${totalImpressions.toLocaleString()} impressions`} />
-                <StatCard icon={Target} color="#10B981" label="Conversions" value={totalConversions.toLocaleString()} sub={`₹${totalConvValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} value`} />
-                <StatCard icon={TrendingUp} color={c.accent} label="ROAS" value={`${roas.toFixed(2)}x`} sub={roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'} />
-                <StatCard icon={Zap} color="#EF4444" label="Avg CPC" value={`₹${avgCPC.toFixed(2)}`} sub="Per click average" />
-                <StatCard icon={BarChart3} color={c.textSecondary} label="Campaigns" value={campaigns.length.toString()} sub={`${campaigns.filter((c: any) => c.status === 'ENABLED').length} active`} />
-              </div>
-
-              {/* Campaign table */}
-              <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 14, padding: 24 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 16 }}>Campaigns</h2>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
-                    <thead>
-                      <tr>
-                        {['Campaign', 'Status', 'Spend', 'Clicks', 'Impressions', 'Conversions', 'CPC', 'ROAS'].map(h => (
-                          <th key={h} style={{ textAlign: 'left', fontSize: 11, fontWeight: 600, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.05em', paddingBottom: 10, borderBottom: `1px solid ${c.border}`, paddingRight: 12, whiteSpace: 'nowrap' }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {campaigns.map((camp: any, i: number) => {
-                        const cRoas = camp.roas > 0 ? camp.roas.toFixed(2) : '—';
-                        const cCpc = camp.avg_cpc > 0 ? camp.avg_cpc.toFixed(2) : '—';
-                        return (
-                          <tr
-                            key={camp.campaign_id || i}
-                            style={{ borderBottom: `1px solid ${c.border}` }}
-                            onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = c.bgCardHover}
-                            onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = 'transparent'}
-                          >
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</td>
-                            <td style={{ padding: '12px 12px 12px 0' }}><StatusBadge status={camp.status} /></td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>₹{(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.clicks || 0).toLocaleString()}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.impressions || 0).toLocaleString()}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.conversions || 0).toFixed(1)}</td>
-                            <td style={{ padding: '12px 12px 12px 0', fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
-                            <td style={{ padding: '12px 0', fontSize: 13, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: parseFloat(cRoas as string) >= 3 ? '#10B981' : parseFloat(cRoas as string) >= 1 ? '#F59E0B' : '#EF4444' }}>
-                              {cRoas !== '—' ? `${cRoas}x` : '—'}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 20 }}>
+                {/* Total Spend */}
+                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Spend</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                    ₹{totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>Last {days} days</div>
+                </div>
+                {/* Total Clicks */}
+                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Clicks</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                    {totalClicks.toLocaleString()}
+                  </div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{totalImpressions.toLocaleString()} impressions</div>
+                </div>
+                {/* Conversions */}
+                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Conversions</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                    {Math.round(totalConversions).toLocaleString()}
+                  </div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>₹{totalConvValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} value</div>
+                </div>
+                {/* ROAS — hero */}
+                <div style={{
+                  background: 'rgba(5,150,105,0.06)',
+                  border: '1px solid #A7F3D0',
+                  borderRadius: 12, padding: 18,
+                }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>ROAS</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 32, fontWeight: 700, color: '#065F46', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                    {roas.toFixed(2)}x
+                  </div>
+                  <span style={{
+                    display: 'inline-block', marginTop: 6,
+                    padding: '2px 10px', borderRadius: 20,
+                    background: '#DCFCE7', color: '#166534',
+                    fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
+                  }}>
+                    {roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'}
+                  </span>
+                </div>
+                {/* Avg CPC */}
+                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Avg CPC</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: avgCPC < 5 ? '#059669' : c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                    ₹{avgCPC.toFixed(2)}
+                  </div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>Per click average</div>
+                </div>
+                {/* Campaigns */}
+                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Campaigns</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                    {campaigns.length}
+                  </div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{campaigns.filter((c: any) => c.status === 'ENABLED').length} active</div>
                 </div>
               </div>
+
+              {/* Top performer highlight */}
+              {(() => {
+                const best = [...campaigns].filter(c => c.roas > 0).sort((a, b) => b.roas - a.roas)[0];
+                if (!best) return null;
+                return (
+                  <div style={{
+                    background: 'rgba(5,150,105,0.05)',
+                    border: '1px solid #A7F3D0',
+                    borderLeft: '3px solid #059669',
+                    borderRadius: 12, padding: '14px 18px', marginBottom: 16,
+                    display: 'flex', alignItems: 'center', gap: 14,
+                  }}>
+                    <Star size={18} color="#059669" fill="#059669" style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 700, color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Best ROAS</div>
+                      <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{best.campaign_name}</div>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 2 }}>
+                        <span style={{ color: '#059669', fontWeight: 700 }}>{best.roas.toFixed(2)}x ROAS</span>
+                        {' · '}₹{(best.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} spend · {(best.clicks || 0).toLocaleString()} clicks · {Math.round(best.conversions || 0)} conversions
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Campaign table */}
+              {(() => {
+                const sortedCampaigns = [...campaigns].sort((a, b) => (b.cost || 0) - (a.cost || 0));
+                const maxSpend = Math.max(...sortedCampaigns.map(c => c.cost || 0));
+                return (
+                  <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 14, padding: 24 }}>
+                    <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 16 }}>Campaigns</h2>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
+                        <thead>
+                          <tr>
+                            {['Campaign', 'Status', 'Spend ↓', 'Clicks', 'Impressions', 'Conversions', 'CPC', 'ROAS'].map(h => (
+                              <th key={h} style={{ textAlign: 'left', fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', paddingBottom: 10, borderBottom: `1px solid ${c.border}`, paddingRight: 12, whiteSpace: 'nowrap' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedCampaigns.map((camp: any, i: number) => {
+                            const cRoas = camp.roas > 0 ? camp.roas.toFixed(2) : '—';
+                            const cCpc = camp.avg_cpc > 0 ? camp.avg_cpc.toFixed(2) : '—';
+                            const roasVal = parseFloat(cRoas as string);
+                            const roasColor = roasVal >= 3 ? '#065F46' : roasVal >= 1 ? '#F59E0B' : '#DC2626';
+                            const spendPct = maxSpend > 0 ? ((camp.cost || 0) / maxSpend) * 100 : 0;
+                            return (
+                              <tr
+                                key={camp.campaign_id || i}
+                                style={{ borderBottom: `1px solid ${c.border}` }}
+                                onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = c.bgCardHover}
+                                onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = 'transparent'}
+                              >
+                                <td style={{ padding: '12px 12px 12px 0', maxWidth: 240 }}>
+                                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</div>
+                                  <div style={{ marginTop: 4, height: 3, borderRadius: 2, backgroundColor: c.bgCardHover, overflow: 'hidden' }}>
+                                    <div style={{ height: '100%', borderRadius: 2, background: '#7C3AED', width: `${spendPct}%` }} />
+                                  </div>
+                                </td>
+                                <td style={{ padding: '12px 12px 12px 0' }}><StatusBadge status={camp.status} /></td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>₹{(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.clicks || 0).toLocaleString()}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.impressions || 0).toLocaleString()}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{Math.round(camp.conversions || 0).toLocaleString()}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontVariantNumeric: 'tabular-nums', color: cCpc !== '—' && parseFloat(cCpc) < 5 ? '#059669' : c.textSecondary, fontWeight: cCpc !== '—' && parseFloat(cCpc) < 5 ? 600 : 400 }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
+                                <td style={{ padding: '12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: roasColor }}>
+                                  {cRoas !== '—' ? `${cRoas}x` : '—'}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                );
+              })()}
             </>
           )}
         </>

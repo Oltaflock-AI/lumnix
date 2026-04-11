@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, Bell, CheckCircle, FileText, Users, Search } from 'lucide-react';
+import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, Bell, CheckCircle, FileText, Users, Search, X } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useWorkspace, useGA4Data, useGSCData, useIntegrations, useUnifiedData } from '@/lib/hooks';
@@ -126,7 +126,7 @@ export default function DashboardPage() {
   const hasGSC = connectedProviders.includes('gsc');
   const hasAds = connectedProviders.includes('google_ads') || connectedProviders.includes('meta_ads');
   const quickWins = gscKeywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < 3).slice(0, 3);
-  const topKeywords = gscKeywords.slice(0, 10);
+  const topKeywords = [...gscKeywords].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
 
   const fmtCurrency = (v: number) => v >= 1000 ? `₹${(v / 1000).toFixed(1)}k` : `₹${v.toFixed(0)}`;
 
@@ -180,6 +180,14 @@ export default function DashboardPage() {
             </div>
           </div>
           {chartData.length > 0 ? (
+            <>
+            {!hasAds && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', sans-serif", fontSize: 12, marginTop: -8, marginBottom: 8, color: c.textMuted }}>
+                <button onClick={() => router.push('/dashboard/settings')} style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 500, fontSize: 12, cursor: 'pointer', padding: 0 }}>
+                  Connect Google Ads or Meta Ads →
+                </button>
+              </div>
+            )}
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={chartData}>
                 <defs>
@@ -199,10 +207,11 @@ export default function DashboardPage() {
                   itemStyle={{ color: c.text }}
                   labelStyle={{ color: c.textSecondary }}
                 />
-                <Area type="monotone" dataKey="clicks" name="Organic" stroke="#7C3AED" fill="url(#gDash)" strokeWidth={2} dot={false} />
-                {hasAds && <Area type="monotone" dataKey="paid" name="Paid" stroke="#0891B2" fill="url(#gPaid)" strokeWidth={2} dot={false} />}
+                <Area type="monotone" dataKey="clicks" name="Organic" stroke="#7C3AED" fill="url(#gDash)" strokeWidth={2.5} dot={false} />
+                {hasAds && <Area type="monotone" dataKey="paid" name="Paid" stroke="#0891B2" fill="none" strokeWidth={2} strokeDasharray="4 3" dot={false} />}
               </AreaChart>
             </ResponsiveContainer>
+            </>
           ) : (
             <div style={{ height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <p style={{ fontSize: 14, color: c.textMuted }}>No traffic data yet</p>
@@ -232,17 +241,27 @@ export default function DashboardPage() {
                 <span style={{ width: 64, textAlign: 'right' }}>Impr.</span>
                 <span style={{ width: 48, textAlign: 'right' }}>CTR</span>
               </div>
-              {topKeywords.map((kw: any, i: number) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '8px 0', borderBottom: i < topKeywords.length - 1 ? `1px solid ${c.borderSubtle}` : 'none', fontSize: 13, color: c.textSecondary }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: c.textMuted, width: 32, flexShrink: 0 }}>
-                    #{Math.round(kw.position)}
-                  </span>
-                  <span style={{ flex: 1, fontSize: 13, color: c.textSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kw.query}</span>
-                  <span style={{ fontWeight: 600, color: '#7C3AED', fontSize: 13, width: 56, textAlign: 'right', flexShrink: 0 }}>{kw.clicks}</span>
-                  <span style={{ fontSize: 12, color: c.textSecondary, width: 64, textAlign: 'right', flexShrink: 0 }}>{kw.impressions?.toLocaleString()}</span>
-                  <span style={{ fontSize: 12, color: c.textSecondary, width: 48, textAlign: 'right', flexShrink: 0 }}>{kw.ctr?.toFixed(1)}%</span>
-                </div>
-              ))}
+              {topKeywords.map((kw: any, i: number) => {
+                const pos = kw.position || 0;
+                const rankColor = pos <= 1 ? '#059669' : pos <= 3 ? '#059669' : pos <= 10 ? '#7C3AED' : pos <= 20 ? '#F59E0B' : '#94A3B8';
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: i < topKeywords.length - 1 ? `1px solid ${c.borderSubtle}` : 'none', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary }}>
+                    <span style={{ width: 32, flexShrink: 0 }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center',
+                        padding: '2px 7px', borderRadius: 20,
+                        background: `${rankColor}18`, color: rankColor,
+                        fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 700,
+                        fontVariantNumeric: 'tabular-nums',
+                      }}>#{Math.round(pos)}</span>
+                    </span>
+                    <span style={{ flex: 1, fontSize: 13, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: 4 }}>{kw.query}</span>
+                    <span style={{ fontWeight: (kw.clicks || 0) > 50 ? 700 : 600, color: (kw.clicks || 0) > 50 ? c.text : '#7C3AED', fontSize: 13, width: 56, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.clicks}</span>
+                    <span style={{ fontSize: 12, color: c.textSecondary, width: 64, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.impressions?.toLocaleString()}</span>
+                    <span style={{ fontSize: 12, color: c.textSecondary, width: 48, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.ctr?.toFixed(1)}%</span>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div style={{ height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -546,37 +565,60 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
 
       {display.length === 0 ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0' }}>
-          <CheckCircle size={16} color={c.success} />
-          <p style={{ fontSize: 13, color: c.textSecondary }}>No anomalies detected — everything looks healthy</p>
+          <CheckCircle size={16} color="#059669" />
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary }}>No anomalies detected — everything looks healthy</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {display.map((anomaly: any) => {
-            const color = SEVERITY_COLORS[anomaly.severity] || c.textSecondary;
+            const severity = anomaly.severity || 'low';
+            const dotColor = severity === 'high' ? '#DC2626' : severity === 'medium' ? '#F59E0B' : '#0891B2';
+            // Source badge — normalize from anomaly.source/provider
+            const sourceRaw: string = (anomaly.source || anomaly.provider || '').toString().toLowerCase();
+            let srcLabel = '', srcBg = '', srcColor = '';
+            if (sourceRaw.includes('gsc') || sourceRaw.includes('search')) { srcLabel = 'GSC'; srcBg = 'rgba(5,150,105,0.1)'; srcColor = '#065F46'; }
+            else if (sourceRaw.includes('ga4') || sourceRaw.includes('analytics')) { srcLabel = 'GA4'; srcBg = 'rgba(234,88,12,0.1)'; srcColor = '#9A3412'; }
+            else if (sourceRaw.includes('meta')) { srcLabel = 'Meta Ads'; srcBg = 'rgba(124,58,237,0.1)'; srcColor = '#5B21B6'; }
+            else if (sourceRaw.includes('google_ads') || sourceRaw.includes('google ads')) { srcLabel = 'Google Ads'; srcBg = 'rgba(37,99,235,0.1)'; srcColor = '#1D4ED8'; }
             return (
               <div
                 key={anomaly.id}
-                onClick={() => !anomaly.is_read && markAsRead(anomaly.id)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 12px', borderRadius: 8,
-                  backgroundColor: '#FFFBEB', border: '1px solid #FDE68A',
-                  fontSize: 13, color: '#78350F',
-                  cursor: anomaly.is_read ? 'default' : 'pointer',
-                  opacity: anomaly.is_read ? 0.6 : 1,
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 14px', borderRadius: 10,
+                  backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`,
+                  opacity: anomaly.is_read ? 0.55 : 1,
                   transition: 'background 150ms',
-                  marginBottom: 6,
                 }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEF3C7'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#FFFBEB'; }}
               >
-                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#F59E0B', flexShrink: 0 }} />
+                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: '#78350F' }}>{anomaly.title}</p>
+                  <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: c.text, margin: 0 }}>{anomaly.title}</p>
+                  {anomaly.description && (
+                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{anomaly.description}</p>
+                  )}
                 </div>
-                <span style={{ fontSize: 11, color: c.textMuted, flexShrink: 0 }}>
-                  {anomaly.created_at ? new Date(anomaly.created_at).toLocaleDateString() : ''}
-                </span>
+                {srcLabel && (
+                  <span style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 11, fontWeight: 600,
+                    padding: '3px 10px', borderRadius: 20,
+                    background: srcBg, color: srcColor,
+                    flexShrink: 0,
+                  }}>{srcLabel}</span>
+                )}
+                <button
+                  onClick={() => !anomaly.is_read && markAsRead(anomaly.id)}
+                  disabled={anomaly.is_read}
+                  aria-label="Dismiss"
+                  style={{
+                    background: 'none', border: 'none', padding: 4,
+                    color: c.textMuted, cursor: anomaly.is_read ? 'default' : 'pointer',
+                    display: 'flex', alignItems: 'center',
+                  }}
+                >
+                  <X size={14} />
+                </button>
               </div>
             );
           })}

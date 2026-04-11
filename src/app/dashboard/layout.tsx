@@ -351,7 +351,30 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
   const { workspace } = useWorkspaceCtx();
   const { theme, toggle } = useTheme();
   const [unreadAlerts, setUnreadAlerts] = useState(0);
+  const [userEmail, setUserEmail] = useState<string>('');
   const isDark = theme === 'dark';
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserEmail(session?.user?.email || '');
+    });
+  }, []);
+
+  function handleFeedback() {
+    const subject = encodeURIComponent(`Lumnix Feedback — Workspace: ${workspace?.name || ''}`);
+    const body = encodeURIComponent(
+`Hi Lumnix team,
+
+Workspace: ${workspace?.name || ''}
+Workspace ID: ${workspace?.id || ''}
+User: ${userEmail}
+
+My feedback:
+
+[Please write your feedback here]
+`);
+    window.open(`mailto:khush@oltaflock.ai?subject=${subject}&body=${body}`, '_blank');
+  }
 
   // Sidebar color tokens per spec
   const sc = isDark ? {
@@ -490,31 +513,9 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
       </nav>
 
       {/* Bottom Controls */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 'auto', borderTop: `1px solid ${sc.separator}`, paddingTop: 12 }}>
-        {/* Theme toggle */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              onClick={toggle}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: '100%', padding: '8px 0', borderRadius: 8,
-                border: 'none', backgroundColor: 'transparent',
-                cursor: 'pointer', color: sc.mutedIcon,
-                transition: 'background-color 0.15s, color 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(124,58,237,0.12)'; e.currentTarget.style.color = '#A78BFA'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = sc.mutedIcon; }}
-            >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right">{isDark ? 'Light mode' : 'Dark mode'}</TooltipContent>
-        </Tooltip>
-
-        {/* User area */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px' }}>
+      <div style={{ marginTop: 'auto', borderTop: `1px solid ${sc.separator}` }}>
+        {/* User row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
           <div style={{
             width: 30, height: 30, borderRadius: 8,
             backgroundColor: sc.avatarBg, border: `1px solid ${sc.avatarBorder}`,
@@ -524,18 +525,19 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
           }}>
             {workspace?.name ? workspace.name.charAt(0).toUpperCase() : <User size={14} color={sc.mutedIcon} />}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: sc.userName, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {workspace?.name || 'Workspace'}
-            </div>
-            <div style={{ fontSize: 12, color: sc.userSub }}>Settings</div>
+          <div style={{
+            flex: 1, minWidth: 0,
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 14, fontWeight: 500, color: sc.userName,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            {workspace?.name || 'Workspace'}
           </div>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 aria-label="Sign out"
                 onClick={async () => {
-                  const { supabase } = await import('@/lib/supabase');
                   await supabase.auth.signOut();
                   window.location.href = '/auth/signin';
                 }}
@@ -549,14 +551,52 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
             <TooltipContent side="right">Sign out</TooltipContent>
           </Tooltip>
         </div>
-        <a
-          href="mailto:khush@oltaflock.ai?subject=Lumnix Beta Feedback"
-          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px', fontSize: 12, color: sc.mutedIcon, textDecoration: 'none', transition: 'color 0.15s' }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#7C3AED')}
-          onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
-        >
-          <MessageCircle size={13} /> Give feedback
-        </a>
+
+        {/* Utility row */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '8px 14px',
+          borderTop: `1px solid ${sc.separator}`,
+        }}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                onClick={toggle}
+                style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  background: 'transparent',
+                  border: `1px solid ${sc.separator}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: sc.mutedIcon,
+                  transition: 'background-color 0.15s, color 0.15s',
+                  flexShrink: 0,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : '#F1F5F9'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+              >
+                {isDark ? <Moon size={16} /> : <Sun size={16} />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">{isDark ? 'Light mode' : 'Dark mode'}</TooltipContent>
+          </Tooltip>
+
+          <button
+            onClick={handleFeedback}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              padding: '4px 6px',
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 13, fontWeight: 400, color: sc.mutedIcon,
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = sc.userName)}
+            onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
+          >
+            <MessageCircle size={14} /> Give feedback
+          </button>
+        </div>
       </div>
     </div>
   );

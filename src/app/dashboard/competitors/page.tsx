@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Eye, Plus, RefreshCw, Trash2, X, Search, Loader2,
   Trophy, Clock, ExternalLink, Sparkles, Filter, ChevronRight,
+  Users,
 } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useTheme } from '@/lib/theme';
@@ -268,15 +269,41 @@ export default function CompetitorsPage() {
       {/* Stats Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Competitors', value: totalCompetitors },
-          { label: 'Winning Ads', value: totalWinningAds },
-          { label: 'AI Briefs', value: totalBriefs },
-        ].map(stat => (
-          <div key={stat.label} style={{ ...cardStyle, padding: '16px 20px' }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: c.textMuted, fontFamily: FONT_BODY, marginBottom: 4 }}>{stat.label}</div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: c.text, fontFamily: FONT_HEADING }}>{stat.value}</div>
-          </div>
-        ))}
+          { label: 'Competitors', value: totalCompetitors, icon: Users, sub: 'Tracked brands' },
+          { label: 'Winning Ads', value: totalWinningAds, icon: Trophy, sub: '90+ days running' },
+          { label: 'AI Briefs', value: totalBriefs, icon: Sparkles, sub: 'Creative suggestions' },
+        ].map(stat => {
+          const isEmpty = stat.value === 0;
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} style={{ ...cardStyle, padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'rgba(124,58,237,0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}>
+                <Icon size={16} color="#7C3AED" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 11, fontWeight: 500, color: '#6B7280',
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                  marginBottom: 2,
+                }}>{stat.label}</div>
+                <div style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 28, fontWeight: 700,
+                  color: isEmpty ? c.textMuted : c.text,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.1,
+                }}>{isEmpty ? '—' : stat.value}</div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: c.textMuted, marginTop: 2 }}>{stat.sub}</div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Main Layout: Left Panel + Right Panel */}
@@ -368,9 +395,75 @@ export default function CompetitorsPage() {
         {/* ── RIGHT PANEL ── */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
           {!selectedCompetitor ? (
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.textMuted, fontFamily: FONT_BODY, fontSize: 14 }}>
-              {competitors.length === 0 ? 'Add a competitor to get started' : 'Select a competitor'}
-            </div>
+            competitors.length === 0 ? (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 32px', textAlign: 'center' }}>
+                <div style={{
+                  width: 72, height: 72, borderRadius: '50%',
+                  background: 'rgba(124,58,237,0.1)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: 20,
+                }}>
+                  <Eye size={32} color="#7C3AED" />
+                </div>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: c.text, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+                  Track your competitors' ads
+                </h3>
+                <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: c.textSecondary, maxWidth: 420, margin: '0 0 20px', lineHeight: 1.6 }}>
+                  Discover what's working for them before you spend a rupee.
+                </p>
+                <button
+                  onClick={() => { setShowAddModal(true); resetModal(); }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '12px 22px', borderRadius: 10, border: 'none',
+                    background: '#7C3AED', color: '#fff',
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                    marginBottom: 32,
+                  }}
+                >
+                  <Plus size={16} /> Add Your First Competitor
+                </button>
+
+                <div style={{
+                  width: '100%', maxWidth: 680,
+                  background: c.bgCard,
+                  border: `1px solid ${c.border}`,
+                  borderRadius: 12, padding: 20,
+                }}>
+                  <div style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: 11, fontWeight: 600, color: '#6B7280',
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
+                    marginBottom: 14, textAlign: 'left',
+                  }}>How it works</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                    {[
+                      { n: 1, t: 'Enter name', d: 'Add a competitor\'s name or website' },
+                      { n: 2, t: 'Find ads', d: 'We pull their Facebook ads automatically' },
+                      { n: 3, t: 'Analyze', d: 'AI finds winners running 90+ days' },
+                      { n: 4, t: 'Get brief', d: 'Creative brief: what to make and why' },
+                    ].map(step => (
+                      <div key={step.n} style={{ textAlign: 'left' }}>
+                        <div style={{
+                          width: 24, height: 24, borderRadius: '50%',
+                          background: 'rgba(124,58,237,0.1)', color: '#7C3AED',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          fontSize: 12, fontWeight: 700, marginBottom: 8,
+                        }}>{step.n}</div>
+                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: c.text, marginBottom: 2 }}>{step.t}</div>
+                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, lineHeight: 1.4 }}>{step.d}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.textMuted, fontFamily: FONT_BODY, fontSize: 14 }}>
+                Select a competitor
+              </div>
+            )
           ) : (
             <>
               {/* Competitor Header + Tabs */}
