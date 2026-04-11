@@ -19,16 +19,20 @@ const CURRENCY_LOCALE: Record<string, string> = {
 };
 
 function makeFormatter(code: string) {
-  const upper = (code || 'USD').toUpperCase();
-  const locale = CURRENCY_LOCALE[upper] || 'en-US';
+  // Lumnix is India-first — all money is displayed in INR regardless of what the
+  // upstream provider returns. Why: Meta/Google ad accounts may report USD on
+  // older accounts but the business operates in INR. How to apply: ignore the
+  // incoming code and lock to INR across the app.
+  const upper = 'INR';
+  const locale = CURRENCY_LOCALE[upper] || 'en-IN';
   let moneyFmt: Intl.NumberFormat;
   let numFmt: Intl.NumberFormat;
   try {
     moneyFmt = new Intl.NumberFormat(locale, { style: 'currency', currency: upper, maximumFractionDigits: 0 });
     numFmt = new Intl.NumberFormat(locale);
   } catch {
-    moneyFmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-    numFmt = new Intl.NumberFormat('en-US');
+    moneyFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+    numFmt = new Intl.NumberFormat('en-IN');
   }
   const money2 = new Intl.NumberFormat(locale, { style: 'currency', currency: upper, minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return {
@@ -193,7 +197,8 @@ export default function MetaAdsPage() {
   const integration = integrations.find(i => i.provider === 'meta_ads');
   const isConnected = integration?.status === 'connected';
 
-  const currencyCode = (adsData?.currency || integration?.oauth_meta?.currency || 'USD').toUpperCase();
+  // Always display in INR — see makeFormatter() comment above
+  const currencyCode = 'INR';
   const fmt = useMemo(() => makeFormatter(currencyCode), [currencyCode]);
 
   const currentAccountId = integration?.oauth_meta?.ad_account_id || '';
@@ -584,7 +589,7 @@ export default function MetaAdsPage() {
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <span style={{ fontSize: 14, fontWeight: 500, color: c.text, fontFamily: "'DM Sans', sans-serif" }}>{acc.name}</span>
-                    <span style={{ fontSize: 12, color: c.textMuted, fontFamily: "'DM Sans', sans-serif" }}>{acc.id} · {acc.currency || 'USD'}</span>
+                    <span style={{ fontSize: 12, color: c.textMuted, fontFamily: "'DM Sans', sans-serif" }}>{acc.id} · INR</span>
                   </div>
                   {isCurrent && <span style={{ color: '#7C3AED', fontSize: 14 }}>✓</span>}
                 </button>

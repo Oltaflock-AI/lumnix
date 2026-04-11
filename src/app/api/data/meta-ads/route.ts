@@ -18,14 +18,8 @@ export async function GET(req: NextRequest) {
 
     const db = getSupabaseAdmin();
 
-    // Resolve currency from the meta_ads integration (authoritative)
-    const { data: metaIntegration } = await db
-      .from('integrations')
-      .select('oauth_meta')
-      .eq('workspace_id', workspaceId)
-      .eq('provider', 'meta_ads')
-      .maybeSingle();
-    const integrationCurrency = metaIntegration?.oauth_meta?.currency;
+    // Lumnix is India-first — always return INR. The frontend never mixes currencies.
+    const integrationCurrency = 'INR';
 
     const { data: rows } = await db
       .from('meta_ads_data')
@@ -79,13 +73,10 @@ export async function GET(req: NextRequest) {
           roas: 0,
         };
 
-        const fallbackCurrency = integrationCurrency
-          || fallback.data.find((c: any) => c.currency)?.currency
-          || 'USD';
-        return NextResponse.json({ campaigns, totals, currency: fallbackCurrency, source: 'analytics_data' });
+        return NextResponse.json({ campaigns, totals, currency: integrationCurrency, source: 'analytics_data' });
       }
 
-      return NextResponse.json({ campaigns: [], totals: null, currency: integrationCurrency || 'USD', message: 'No data yet. Click Sync Now to pull your Meta Ads data.' });
+      return NextResponse.json({ campaigns: [], totals: null, currency: integrationCurrency, message: 'No data yet. Click Sync Now to pull your Meta Ads data.' });
     }
 
     // Aggregate by campaign
@@ -145,7 +136,7 @@ export async function GET(req: NextRequest) {
     }
     const daily = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 
-    return NextResponse.json({ campaigns, totals, daily, currency: integrationCurrency || 'USD' });
+    return NextResponse.json({ campaigns, totals, daily, currency: integrationCurrency });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

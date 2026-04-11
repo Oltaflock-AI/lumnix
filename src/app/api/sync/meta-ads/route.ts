@@ -3,32 +3,23 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchMetaAdAccounts, fetchMetaCampaigns, fetchMetaInsights } from '@/lib/connectors/meta-ads';
 import { rateLimit } from '@/lib/rate-limit';
 
-// Meta returns budgets in the smallest currency unit (paise for INR, cents for USD)
-function formatBudget(amount: string | undefined, currency: string): string {
+// Lumnix is India-first — all money is persisted and displayed in INR,
+// regardless of the raw account currency returned by Meta.
+const INR_SYMBOL = '\u20B9';
+
+// Meta returns budgets in the smallest currency unit (paise for INR, cents for USD).
+// We normalize everything to INR symbol — the numeric value itself is whatever
+// the ad account reports (we display it as ₹ without FX conversion).
+function formatBudget(amount: string | undefined): string {
   if (!amount) return 'N/A';
   const raw = parseInt(amount);
   if (isNaN(raw)) return 'N/A';
   const val = raw / 100;
-  const sym = getCurrencySymbol(currency);
-  return `${sym}${val.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+  return `${INR_SYMBOL}${val.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 }
 
-function getCurrencySymbol(currency: string): string {
-  const map: Record<string, string> = {
-    INR: '\u20B9', // ₹
-    USD: '$',
-    EUR: '\u20AC', // €
-    GBP: '\u00A3', // £
-    AUD: 'A$',
-    CAD: 'C$',
-    SGD: 'S$',
-  };
-  return map[currency?.toUpperCase()] || currency + ' ';
-}
-
-function formatSpend(spend: number, currency: string): string {
-  const sym = getCurrencySymbol(currency);
-  return `${sym}${spend.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
+function formatSpend(spend: number): string {
+  return `${INR_SYMBOL}${spend.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 }
 
 const MAX_RETRIES = 3;
@@ -100,7 +91,8 @@ export async function POST(req: NextRequest) {
     const targetAccountId = ad_account_id || integration?.oauth_meta?.ad_account_id || accounts[0].id;
     const account = accounts.find((a: any) => a.id === targetAccountId) || accounts[0];
     const adAccountId = account.id;
-    const currency = account.currency || 'USD';
+    // Lumnix displays everything in INR — we don't honor the raw account currency
+    const currency = 'INR';
 
     const insights = await withRetry(() => fetchMetaInsights(accessToken, adAccountId), 'Meta fetchInsights');
 
@@ -153,24 +145,23 @@ export async function POST(req: NextRequest) {
       const totalRevenue = campInsights.reduce((s: number, i: any) => s + i.revenue, 0);
       const avgCTR = campInsights.length > 0
         ? campInsights.reduce((s: number, i: any) => s + i.ctr, 0) / campInsights.length : 0;
-      const sym = getCurrencySymbol(currency);
 
       return {
         name: c.name,
         status: c.status,
         objective: c.objective,
-        currency,
+        currency: 'INR',
         budget: c.daily_budget
-          ? `${formatBudget(c.daily_budget, currency)}/day`
+          ? `${formatBudget(c.daily_budget)}/day`
           : c.lifetime_budget
-          ? `${formatBudget(c.lifetime_budget, currency)} lifetime`
+          ? `${formatBudget(c.lifetime_budget)} lifetime`
           : 'N/A',
-        spend: formatSpend(totalSpend, currency),
+        spend: formatSpend(totalSpend),
         impressions: totalImpressions.toLocaleString('en-IN'),
         clicks: totalClicks.toLocaleString('en-IN'),
         ctr: avgCTR > 0 ? avgCTR.toFixed(2) + '%' : '0%',
         roas: totalSpend > 0 && totalRevenue > 0 ? (totalRevenue / totalSpend).toFixed(1) + 'x' : '-',
-        cpc: totalClicks > 0 ? `${sym}${(totalSpend / totalClicks).toFixed(2)}` : '-',
+        cpc: totalClicks > 0 ? `${INR_SYMBOL}${(totalSpend / totalClicks).toFixed(2)}` : '-',
       };
     });
 

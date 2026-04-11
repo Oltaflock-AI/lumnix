@@ -16,7 +16,10 @@ export async function GET(req: NextRequest) {
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = new Date().toISOString().split('T')[0];
 
-    const { data: rows } = await getSupabaseAdmin()
+    const db = getSupabaseAdmin();
+
+    // Primary source: google_ads_data table (one row per campaign per day)
+    const { data: rows } = await db
       .from('google_ads_data')
       .select('*')
       .eq('workspace_id', workspaceId)
@@ -24,54 +27,102 @@ export async function GET(req: NextRequest) {
       .lte('date', endDateStr)
       .order('date', { ascending: false });
 
-    if (!rows || rows.length === 0) {
-      return NextResponse.json({ campaigns: [], totals: null, message: 'No data yet. Sync your Google Ads integration first.' });
+    if (rows && rows.length > 0) {
+      return NextResponse.json(buildResponse(rows, 'google_ads_data'));
     }
 
-    // Aggregate by campaign
-    const campaignMap = new Map<string, any>();
-    for (const row of rows) {
-      const key = row.campaign_id || row.campaign_name;
-      const existing = campaignMap.get(key) || {
-        campaign_id: row.campaign_id,
-        campaign_name: row.campaign_name,
-        status: row.status,
-        customer_id: row.customer_id,
-        impressions: 0,
-        clicks: 0,
-        cost: 0,
-        conversions: 0,
-        conversions_value: 0,
-      };
-      existing.impressions += Number(row.impressions) || 0;
-      existing.clicks += Number(row.clicks) || 0;
-      existing.cost += Number(row.cost) || 0;
-      existing.conversions += Number(row.conversions) || 0;
-      existing.conversions_value += Number(row.conversions_value) || 0;
-      campaignMap.set(key, existing);
+    // Fallback: analytics_data — the cron sync writes campaigns here as a JSON blob
+    const { data: fallback } = await db
+      .from('analytics_data')
+      .select('data, date_range_start, date_range_end, synced_at')
+      .eq('workspace_id', workspaceId)
+      .eq('provider', 'google_ads')
+      .eq('metric_type', 'campaigns')
+      .order('synced_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (fallback?.data && Array.isArray(fallback.data) && fallback.data.length > 0) {
+      // Each item is a per-campaign-per-day row from fetchGoogleAdsCampaigns
+      return NextResponse.json(buildResponse(fallback.data, 'analytics_data'));
     }
 
-    const campaigns = Array.from(campaignMap.values()).map(c => ({
-      ...c,
-      ctr: c.impressions > 0 ? (c.clicks / c.impressions) * 100 : 0,
-      avg_cpc: c.clicks > 0 ? c.cost / c.clicks : 0,
-      roas: c.cost > 0 ? c.conversions_value / c.cost : 0,
-    })).sort((a, b) => b.cost - a.cost);
-
-    const totals = {
-      spend: campaigns.reduce((s, c) => s + c.cost, 0),
-      clicks: campaigns.reduce((s, c) => s + c.clicks, 0),
-      impressions: campaigns.reduce((s, c) => s + c.impressions, 0),
-      conversions: campaigns.reduce((s, c) => s + c.conversions, 0),
-      conversions_value: campaigns.reduce((s, c) => s + c.conversions_value, 0),
-      roas: 0,
-      avg_cpc: 0,
-    };
-    totals.roas = totals.spend > 0 ? totals.conversions_value / totals.spend : 0;
-    totals.avg_cpc = totals.clicks > 0 ? totals.spend / totals.clicks : 0;
-
-    return NextResponse.json({ campaigns, totals });
+    return NextResponse.json({
+      campaigns: [],
+      totals: null,
+      daily: [],
+      currency: 'INR',
+      message: 'No data yet. Click Sync Now to pull your Google Ads data.',
+    });
   } catch (error) {
+    console.error('google-ads route error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+function buildResponse(rows: any[], source: string) {
+  // Aggregate by campaign
+  const campaignMap = new Map<string, any>();
+  for (const row of rows) {
+    // Handle both google_ads_data (campaign_id/campaign_name/cost) and analytics_data JSON (id/name/spend)
+    const campaignId = row.campaign_id || row.id || row.campaign_name || row.name || 'unknown';
+    const campaignName = row.campaign_name || row.name || 'Unknown';
+    const cost = Number(row.cost ?? row.spend ?? 0);
+
+    const existing = campaignMap.get(campaignId) || {
+      campaign_id: campaignId,
+      campaign_name: campaignName,
+      status: row.status || 'UNKNOWN',
+      customer_id: row.customer_id || null,
+      impressions: 0,
+      clicks: 0,
+      cost: 0,
+      conversions: 0,
+      conversions_value: 0,
+    };
+    existing.impressions += Number(row.impressions) || 0;
+    existing.clicks += Number(row.clicks) || 0;
+    existing.cost += cost;
+    existing.conversions += Number(row.conversions) || 0;
+    existing.conversions_value += Number(row.conversions_value ?? row.conversionsValue ?? 0);
+    campaignMap.set(campaignId, existing);
+  }
+
+  const campaigns = Array.from(campaignMap.values()).map(c => ({
+    ...c,
+    ctr: c.impressions > 0 ? (c.clicks / c.impressions) * 100 : 0,
+    avg_cpc: c.clicks > 0 ? c.cost / c.clicks : 0,
+    roas: c.cost > 0 ? c.conversions_value / c.cost : 0,
+  })).sort((a, b) => b.cost - a.cost);
+
+  const totals = {
+    spend: campaigns.reduce((s, c) => s + c.cost, 0),
+    clicks: campaigns.reduce((s, c) => s + c.clicks, 0),
+    impressions: campaigns.reduce((s, c) => s + c.impressions, 0),
+    conversions: campaigns.reduce((s, c) => s + c.conversions, 0),
+    conversions_value: campaigns.reduce((s, c) => s + c.conversions_value, 0),
+    roas: 0,
+    avg_cpc: 0,
+    ctr: 0,
+  };
+  totals.roas = totals.spend > 0 ? totals.conversions_value / totals.spend : 0;
+  totals.avg_cpc = totals.clicks > 0 ? totals.spend / totals.clicks : 0;
+  totals.ctr = totals.impressions > 0 ? (totals.clicks / totals.impressions) * 100 : 0;
+
+  // Build daily breakdown for charts
+  const dailyMap = new Map<string, { date: string; spend: number; clicks: number; impressions: number; conversions: number }>();
+  for (const row of rows) {
+    const date = (row.date || '').split('T')[0];
+    if (!date) continue;
+    const cost = Number(row.cost ?? row.spend ?? 0);
+    const existing = dailyMap.get(date) || { date, spend: 0, clicks: 0, impressions: 0, conversions: 0 };
+    existing.spend += cost;
+    existing.clicks += Number(row.clicks) || 0;
+    existing.impressions += Number(row.impressions) || 0;
+    existing.conversions += Number(row.conversions) || 0;
+    dailyMap.set(date, existing);
+  }
+  const daily = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
+
+  return { campaigns, totals, daily, source, currency: 'INR' };
 }
