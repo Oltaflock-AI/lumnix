@@ -5,11 +5,12 @@ import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
   Menu, LogOut, ChevronDown, Plus, User,
-  Sun, Moon, MessageCircle,
+  Sun, Moon, MessageCircle, CreditCard,
   Command as CommandIcon
 } from 'lucide-react';
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -50,6 +51,7 @@ const navGroups: NavGroup[] = [
     items: [
       { href: '/dashboard/reports', label: 'Reports', icon: FileText },
       { href: '/dashboard/alerts', label: 'Alerts', icon: Bell, badge: true },
+      { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
       { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     ],
   },
@@ -58,7 +60,8 @@ const navGroups: NavGroup[] = [
 /* ── Workspace Switcher ── */
 function WorkspaceSwitcher() {
   const [open, setOpen] = useState(false);
-  const { workspace, workspaces, switchWorkspace } = useWorkspaceCtx();
+  const [showAddModal, setShowAddModal] = useState(false);
+  const { workspace, workspaces, switchWorkspace, refetch } = useWorkspaceCtx();
   const { theme } = useTheme();
   const accent = workspace?.brand_color || '#7C3AED';
   const isDark = theme === 'dark';
@@ -66,6 +69,11 @@ function WorkspaceSwitcher() {
   function handleSwitch(id: string) {
     setOpen(false);
     if (id !== workspace?.id) switchWorkspace(id);
+  }
+
+  function handleAddClick() {
+    setOpen(false);
+    setShowAddModal(true);
   }
 
   return (
@@ -124,12 +132,172 @@ function WorkspaceSwitcher() {
             })}
           </div>
           <div style={{ borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #E2E8F0', padding: '4px 6px' }}>
-            <button onClick={() => setOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 4px', borderRadius: 6, border: 'none', backgroundColor: 'transparent', color: isDark ? '#94A3B8' : '#6B7280', fontSize: 12, cursor: 'pointer' }}>
+            <button onClick={handleAddClick} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 4px', borderRadius: 6, border: 'none', backgroundColor: 'transparent', color: isDark ? '#94A3B8' : '#6B7280', fontSize: 12, cursor: 'pointer' }}>
               <Plus size={12} /> Add workspace
             </button>
           </div>
         </div>
       )}
+      {showAddModal && (
+        <AddWorkspaceModal
+          onClose={() => setShowAddModal(false)}
+          onCreated={(newWs) => {
+            setShowAddModal(false);
+            refetch();
+            if (newWs?.id) switchWorkspace(newWs.id);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Add Workspace Modal ── */
+function AddWorkspaceModal({ onClose, onCreated }: { onClose: () => void; onCreated: (ws: any) => void }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const [name, setName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [needsUpgrade, setNeedsUpgrade] = useState(false);
+  const router = useRouter();
+
+  async function handleCreate() {
+    const trimmed = name.trim();
+    if (!trimmed) { setError('Workspace name required'); return; }
+    setLoading(true);
+    setError(null);
+    setNeedsUpgrade(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setError('Not signed in'); setLoading(false); return; }
+
+      const res = await fetch('/api/workspace', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ name: trimmed }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 403 && data.required_plan === 'agency') {
+          setNeedsUpgrade(true);
+          setError(data.error || 'Multi-workspace requires Agency plan');
+        } else {
+          setError(data.error || 'Failed to create workspace');
+        }
+        setLoading(false);
+        return;
+      }
+
+      onCreated(data.workspace);
+    } catch (err: any) {
+      setError(err.message || 'Network error');
+    }
+    setLoading(false);
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 2000,
+        background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: 420, padding: 24, borderRadius: 16,
+          background: isDark ? '#1E293B' : '#FFFFFF',
+          border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #E2E8F0',
+          boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
+          fontFamily: "'DM Sans', sans-serif",
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: isDark ? '#F1F5F9' : '#0F172A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+            Create workspace
+          </h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: isDark ? '#94A3B8' : '#6B7280', fontSize: 20, lineHeight: 1 }}>×</button>
+        </div>
+        <p style={{ fontSize: 13, color: isDark ? '#94A3B8' : '#6B7280', marginBottom: 16 }}>
+          Each workspace keeps its own integrations, data, and team. Only the Agency plan supports multiple workspaces.
+        </p>
+
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: isDark ? '#CBD5E1' : '#374151', marginBottom: 6 }}>
+          Workspace name
+        </label>
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleCreate()}
+          placeholder="e.g. Acme Client"
+          disabled={loading || needsUpgrade}
+          autoFocus
+          style={{
+            width: '100%', padding: '10px 14px', borderRadius: 8,
+            border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E2E8F0',
+            background: isDark ? '#0F172A' : '#F8FAFC',
+            color: isDark ? '#F1F5F9' : '#0F172A',
+            fontSize: 14, outline: 'none', marginBottom: 12,
+          }}
+        />
+
+        {error && (
+          <div style={{
+            padding: '10px 12px', borderRadius: 8, marginBottom: 12,
+            background: needsUpgrade ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)',
+            border: needsUpgrade ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(239,68,68,0.3)',
+            color: needsUpgrade ? '#F59E0B' : '#EF4444',
+            fontSize: 13,
+          }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 4 }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '8px 16px', borderRadius: 8,
+              border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E2E8F0',
+              background: 'transparent', color: isDark ? '#CBD5E1' : '#374151',
+              fontSize: 13, fontWeight: 500, cursor: 'pointer',
+            }}
+          >
+            Cancel
+          </button>
+          {needsUpgrade ? (
+            <button
+              onClick={() => { onClose(); router.push('/dashboard/settings?tab=billing'); }}
+              style={{
+                padding: '8px 16px', borderRadius: 8, border: 'none',
+                background: '#7C3AED', color: '#fff',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}
+            >
+              Upgrade to Agency
+            </button>
+          ) : (
+            <button
+              onClick={handleCreate}
+              disabled={loading || !name.trim()}
+              style={{
+                padding: '8px 16px', borderRadius: 8, border: 'none',
+                background: '#7C3AED', color: '#fff',
+                fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                opacity: loading || !name.trim() ? 0.6 : 1,
+              }}
+            >
+              {loading ? 'Creating...' : 'Create workspace'}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -684,7 +684,7 @@ function ProfileTab() {
   );
 }
 
-function BillingTab() {
+export function BillingTab() {
   const { c, card, inputBase, primaryBtn } = useStyles();
   const { workspace, refetch: refetchWorkspace } = useWorkspaceCtx();
   const [loading, setLoading] = useState<string | null>(null);
@@ -1013,6 +1013,135 @@ function DeleteAccountSection() {
   );
 }
 
+function DeleteWorkspaceSection({ workspace, workspaceCount }: {
+  workspace: any;
+  workspaceCount: number;
+}) {
+  const { c, card, destructiveBtn } = useStyles();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
+
+  const isOnlyWorkspace = workspaceCount <= 1;
+  const requiredText = workspace?.name || '';
+
+  async function handleDelete() {
+    if (!workspace?.id) return;
+    if (confirmText !== requiredText) {
+      setError(`Please type "${requiredText}" exactly to confirm`);
+      return;
+    }
+    setDeleting(true);
+    setError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setError('Not signed in'); setDeleting(false); return; }
+      const res = await fetch(`/api/workspace/${workspace.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || 'Failed to delete workspace');
+        setDeleting(false);
+        return;
+      }
+      // Clear stale workspace from localStorage and hard-reload to /dashboard.
+      // A hard navigation guarantees a clean WorkspaceProvider re-mount with
+      // the user's remaining workspaces — React state reset, no stale context.
+      try { localStorage.removeItem('lumnix-active-workspace'); } catch {}
+      window.location.href = '/dashboard';
+    } catch (e: any) {
+      setError(e.message || 'Something went wrong');
+      setDeleting(false);
+    }
+  }
+
+  return (
+    <div style={{ ...card, marginTop: 32, border: `1px solid rgba(239,68,68,0.3)`, borderRadius: 12, padding: '24px 28px', backgroundColor: 'rgba(239,68,68,0.04)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <AlertTriangle size={16} color="#ef4444" />
+        </div>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#ef4444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Delete this workspace</h3>
+      </div>
+      <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 20 }}>
+        Permanently delete <strong>{workspace?.name || 'this workspace'}</strong> and all its data — integrations, analytics, competitors, team members, and reports. This cannot be undone.
+      </p>
+
+      {isOnlyWorkspace && (
+        <div style={{
+          padding: '10px 14px', borderRadius: 8, marginBottom: 16,
+          backgroundColor: 'rgba(245,158,11,0.1)',
+          border: '1px solid rgba(245,158,11,0.3)',
+          color: '#F59E0B', fontSize: 13,
+        }}>
+          You can't delete your only workspace. Create another one first.
+        </div>
+      )}
+
+      {!showConfirm ? (
+        <button
+          onClick={() => setShowConfirm(true)}
+          disabled={isOnlyWorkspace}
+          style={{
+            ...destructiveBtn,
+            display: 'flex', alignItems: 'center', gap: 8,
+            opacity: isOnlyWorkspace ? 0.5 : 1,
+            cursor: isOnlyWorkspace ? 'not-allowed' : 'pointer',
+          }}
+        >
+          <Trash2 size={14} /> Delete workspace
+        </button>
+      ) : (
+        <div style={{ padding: 20, borderRadius: 10, backgroundColor: c.dangerSubtle, border: `1px solid ${c.danger}` }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: c.danger, marginBottom: 12 }}>
+            This is permanent.
+          </p>
+          <p style={{ fontSize: 13, color: c.text, marginBottom: 8 }}>
+            Type <strong style={{ color: c.danger }}>{requiredText}</strong> to confirm:
+          </p>
+          <input
+            value={confirmText}
+            onChange={e => setConfirmText(e.target.value)}
+            placeholder={requiredText}
+            style={{
+              width: '100%', padding: '10px 12px', borderRadius: 8,
+              border: `1px solid ${c.danger}`, backgroundColor: c.bgPage,
+              color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
+              marginBottom: 12,
+              fontFamily: 'var(--font-mono)',
+            }}
+          />
+          {error && <p style={{ fontSize: 13, color: c.danger, marginBottom: 12 }}>{error}</p>}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={handleDelete}
+              disabled={deleting || confirmText !== requiredText}
+              style={{
+                ...destructiveBtn,
+                display: 'flex', alignItems: 'center', gap: 8,
+                opacity: deleting || confirmText !== requiredText ? 0.5 : 1,
+                cursor: deleting || confirmText !== requiredText ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <Trash2 size={14} />
+              {deleting ? 'Deleting...' : 'Permanently delete workspace'}
+            </button>
+            <button
+              onClick={() => { setShowConfirm(false); setConfirmText(''); setError(''); }}
+              style={{ padding: '10px 20px', borderRadius: 8, border: `1px solid ${c.border}`, background: 'transparent', color: c.textSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace: any; loading: boolean; onSaved?: () => void; onUpdate?: (w: any) => void }) {
   const { c, card, label, inputBase, primaryBtn, ghostBtn } = useStyles();
   const [name, setName] = useState(workspace?.name || '');
@@ -1138,7 +1267,7 @@ export default function SettingsPage() {
   const { toggle, theme } = useTheme();
   const isDark = theme === 'dark';
   const [activeTab, setActiveTab] = useState("general");
-  const { workspace, loading: wsLoading, refetch: refetchWorkspace, setWorkspace } = useWorkspaceCtx();
+  const { workspace, workspaces, loading: wsLoading, refetch: refetchWorkspace, setWorkspace } = useWorkspaceCtx();
   const { integrations, loading: intLoading, refetch } = useIntegrations(workspace?.id);
   const [syncing, setSyncing] = useState<string | null>(null);
   const [syncResults, setSyncResults] = useState<Record<string, { rows?: number; error?: string; timestamp?: string }>>({});
@@ -1300,7 +1429,7 @@ export default function SettingsPage() {
           gap: 2,
           marginBottom: 28,
         }}>
-          {(['general', 'brand', 'integrations', 'team', 'alerts', 'billing'] as const).map((tab) => (
+          {(['general', 'brand', 'integrations', 'team', 'alerts'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1335,6 +1464,14 @@ export default function SettingsPage() {
             <div style={{ marginTop: 32 }}>
               <ProfileTab />
             </div>
+
+            {/* Delete this workspace */}
+            {workspace && (
+              <DeleteWorkspaceSection
+                workspace={workspace}
+                workspaceCount={workspaces.length}
+              />
+            )}
 
             {/* Danger Zone — Delete Account */}
             <DeleteAccountSection />
@@ -1912,10 +2049,6 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        {/* ─── Billing Tab ─── */}
-        <TabsContent value="billing">
-          <BillingTab />
-        </TabsContent>
       </Tabs>
       </div>
     </div>

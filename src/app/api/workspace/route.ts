@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
+import { checkWorkspaceLimit } from '@/lib/plan-limits';
 
 function getUserClient(authHeader: string) {
   return createClient(
@@ -106,6 +107,62 @@ export async function GET(req: NextRequest) {
       workspaces: allWorkspaces.map(w => ({ id: w.workspace.id, name: w.workspace.name })),
     });
   } catch (error) {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// POST /api/workspace — create a new workspace (Agency plan only)
+export async function POST(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const supabase = getUserClient(authHeader);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const name = (body.name || '').trim();
+    if (!name) {
+      return NextResponse.json({ error: 'Workspace name required' }, { status: 400 });
+    }
+
+    // Plan gate: only Agency plan can create multiple workspaces
+    const limitError = await checkWorkspaceLimit(user.id);
+    if (limitError) return limitError;
+
+    const admin = getSupabaseAdmin();
+
+    // Create workspace
+    const { data: newWorkspace, error: createErr } = await admin
+      .from('workspaces')
+      .insert({
+        name,
+        owner_id: user.id,
+        created_by: user.id,
+        brand_color: body.brand_color || null,
+      })
+      .select()
+      .single();
+
+    if (createErr || !newWorkspace) {
+      return NextResponse.json({ error: createErr?.message || 'Failed to create workspace' }, { status: 500 });
+    }
+
+    // Add creator as owner in workspace_members
+    await admin.from('workspace_members').insert({
+      workspace_id: newWorkspace.id,
+      user_id: user.id,
+      role: 'owner',
+    });
+
+    return NextResponse.json({ workspace: newWorkspace });
+  } catch (error: any) {
+    console.error('POST /api/workspace error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
