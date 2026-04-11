@@ -565,15 +565,24 @@ My feedback:
                 onClick={toggle}
                 style={{
                   width: 32, height: 32, borderRadius: 8,
-                  background: 'transparent',
-                  border: `1px solid ${sc.separator}`,
+                  background: isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9',
+                  border: isDark ? '1px solid rgba(255,255,255,0.14)' : '1px solid #E2E8F0',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', color: sc.mutedIcon,
-                  transition: 'background-color 0.15s, color 0.15s',
+                  cursor: 'pointer',
+                  color: isDark ? '#F1F5F9' : '#475569',
+                  transition: 'background-color 0.15s, color 0.15s, border-color 0.15s',
                   flexShrink: 0,
                 }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : '#F1F5F9'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(124,58,237,0.18)' : 'rgba(124,58,237,0.08)';
+                  e.currentTarget.style.borderColor = '#7C3AED';
+                  e.currentTarget.style.color = isDark ? '#C4B5FD' : '#7C3AED';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9';
+                  e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.14)' : '#E2E8F0';
+                  e.currentTarget.style.color = isDark ? '#F1F5F9' : '#475569';
+                }}
               >
                 {isDark ? <Moon size={16} /> : <Sun size={16} />}
               </button>

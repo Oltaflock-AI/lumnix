@@ -288,7 +288,7 @@ export default function CompetitorsPage() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontFamily: "'DM Sans', sans-serif",
-                  fontSize: 11, fontWeight: 500, color: '#6B7280',
+                  fontSize: 11, fontWeight: 500, color: c.textMuted,
                   textTransform: 'uppercase', letterSpacing: '0.06em',
                   marginBottom: 2,
                 }}>{stat.label}</div>
@@ -433,7 +433,7 @@ export default function CompetitorsPage() {
                 }}>
                   <div style={{
                     fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 11, fontWeight: 600, color: '#6B7280',
+                    fontSize: 11, fontWeight: 600, color: c.textMuted,
                     textTransform: 'uppercase', letterSpacing: '0.06em',
                     marginBottom: 14, textAlign: 'left',
                   }}>How it works</div>

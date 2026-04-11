@@ -122,7 +122,8 @@ function CopyButton({ text }: { text: string }) {
 /* ─── Insights Tab ─── */
 
 function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
-  const { c } = useTheme();
+  const { c, theme } = useTheme();
+  const isDark = theme === 'dark';
   const [insights, setInsights] = useState<Insight[]>([]);
   const [lastGenerated, setLastGenerated] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -252,8 +253,16 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, alignItems: 'stretch' }}>
           {insights.map(insight => {
             const config = INSIGHT_CONFIG[insight.type] || INSIGHT_CONFIG.tip;
-            const prioBg = insight.priority === 'high' ? 'rgba(220,38,38,0.1)' : insight.priority === 'medium' ? 'rgba(245,158,11,0.1)' : 'rgba(124,58,237,0.08)';
-            const prioColor = insight.priority === 'high' ? '#DC2626' : insight.priority === 'medium' ? '#F59E0B' : c.textMuted;
+            const prioBg = insight.priority === 'high'
+              ? (isDark ? 'rgba(220,38,38,0.2)' : 'rgba(220,38,38,0.1)')
+              : insight.priority === 'medium'
+                ? (isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.1)')
+                : (isDark ? 'rgba(124,58,237,0.18)' : 'rgba(124,58,237,0.08)');
+            const prioColor = insight.priority === 'high'
+              ? (isDark ? '#FCA5A5' : '#DC2626')
+              : insight.priority === 'medium'
+                ? (isDark ? '#FCD34D' : '#F59E0B')
+                : c.textMuted;
             return (
               <div key={insight.id} style={{
                 backgroundColor: c.bgCard,
@@ -313,8 +322,8 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
                         fontFamily: "'DM Sans', sans-serif",
                         fontSize: 12, fontWeight: 600,
                         padding: '4px 10px', borderRadius: 6,
-                        background: insight.change.startsWith('+') ? 'rgba(5,150,105,0.1)' : insight.change.startsWith('-') ? 'rgba(220,38,38,0.1)' : c.bgCardHover,
-                        color: insight.change.startsWith('+') ? '#059669' : insight.change.startsWith('-') ? '#DC2626' : c.textMuted,
+                        background: insight.change.startsWith('+') ? (isDark ? 'rgba(5,150,105,0.2)' : 'rgba(5,150,105,0.1)') : insight.change.startsWith('-') ? (isDark ? 'rgba(220,38,38,0.2)' : 'rgba(220,38,38,0.1)') : c.bgCardHover,
+                        color: insight.change.startsWith('+') ? (isDark ? '#34D399' : '#059669') : insight.change.startsWith('-') ? (isDark ? '#FCA5A5' : '#DC2626') : c.textMuted,
                         fontVariantNumeric: 'tabular-nums',
                       }}>
                         {insight.change}

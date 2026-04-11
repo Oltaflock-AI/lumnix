@@ -37,7 +37,8 @@ export default function SEOPage() {
   const [filter, setFilter] = useState<'all' | 'quick-wins' | 'top3' | 'low-ctr'>('all');
   const [search, setSearch] = useState('');
   const router = useRouter();
-  const { c } = useTheme();
+  const { c, theme } = useTheme();
+  const isDark = theme === 'dark';
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const workspaceId = workspace?.id;
 
@@ -179,7 +180,7 @@ export default function SEOPage() {
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                       <kpi.icon size={14} color={kpi.iconColor} />
-                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{kpi.label}</span>
+                      <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{kpi.label}</span>
                     </div>
                     <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{kpi.value}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
@@ -235,8 +236,8 @@ export default function SEOPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {quickWins.map(kw => (
                     <div key={kw.query} style={{
-                      background: 'rgba(245,158,11,0.05)',
-                      border: '1px solid rgba(245,158,11,0.2)',
+                      background: isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.05)',
+                      border: isDark ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(245,158,11,0.2)',
                       borderRadius: 10, padding: '12px 14px',
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
@@ -293,7 +294,7 @@ export default function SEOPage() {
                   placeholder="Search keywords..."
                   style={{
                     height: 36, padding: '0 12px', borderRadius: 8,
-                    border: '1px solid #E2E8F0',
+                    border: `1px solid ${c.border}`,
                     backgroundColor: c.bgCardHover, color: c.text,
                     fontFamily: "'DM Sans', sans-serif", fontSize: 13, width: 200,
                     outline: 'none',
@@ -349,13 +350,28 @@ export default function SEOPage() {
                       <td style={{ padding: '10px 8px', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontVariantNumeric: 'tabular-nums', color: kw.ctr < 1 && kw.impressions > 500 ? '#DC2626' : c.textSecondary }}>{(kw.ctr || 0).toFixed(1)}%</td>
                       <td style={{ padding: '10px 0' }}>
                         {kw.signal === 'top3' && (
-                          <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 4, fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, background: '#ECFDF5', color: '#065F46' }}>Top 3</span>
+                          <span style={{
+                            display: 'inline-flex', padding: '2px 8px', borderRadius: 4,
+                            fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
+                            background: isDark ? 'rgba(5,150,105,0.2)' : '#ECFDF5',
+                            color: isDark ? '#6EE7B7' : '#065F46',
+                          }}>Top 3</span>
                         )}
                         {kw.signal === 'quick-win' && (
-                          <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 4, fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, background: '#FFFBEB', color: '#92400E' }}>Quick Win</span>
+                          <span style={{
+                            display: 'inline-flex', padding: '2px 8px', borderRadius: 4,
+                            fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
+                            background: isDark ? 'rgba(245,158,11,0.2)' : '#FFFBEB',
+                            color: isDark ? '#FCD34D' : '#92400E',
+                          }}>Quick Win</span>
                         )}
                         {kw.signal === 'low-ctr' && (
-                          <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 4, fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, background: 'rgba(220,38,38,0.1)', color: '#DC2626' }}>Low CTR</span>
+                          <span style={{
+                            display: 'inline-flex', padding: '2px 8px', borderRadius: 4,
+                            fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
+                            background: 'rgba(220,38,38,0.15)',
+                            color: isDark ? '#FCA5A5' : '#DC2626',
+                          }}>Low CTR</span>
                         )}
                       </td>
                     </tr>

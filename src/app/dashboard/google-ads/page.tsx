@@ -27,9 +27,20 @@ function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: 
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const label = status === 'ENABLED' ? 'Active' : status === 'PAUSED' ? 'Paused' : status === 'REMOVED' ? 'Removed' : status;
-  const bg = status === 'ENABLED' ? '#DCFCE7' : status === 'PAUSED' ? '#F1F5F9' : 'rgba(220,38,38,0.1)';
-  const color = status === 'ENABLED' ? '#166534' : status === 'PAUSED' ? '#475569' : '#DC2626';
+  let bg = '', color = '';
+  if (status === 'ENABLED') {
+    bg = isDark ? 'rgba(5,150,105,0.2)' : '#DCFCE7';
+    color = isDark ? '#6EE7B7' : '#166534';
+  } else if (status === 'PAUSED') {
+    bg = isDark ? 'rgba(148,163,184,0.15)' : '#F1F5F9';
+    color = isDark ? '#CBD5E1' : '#475569';
+  } else {
+    bg = 'rgba(220,38,38,0.15)';
+    color = isDark ? '#FCA5A5' : '#DC2626';
+  }
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center',
@@ -43,7 +54,8 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function GoogleAdsPage() {
-  const { c } = useTheme();
+  const { c, theme } = useTheme();
+  const isDark = theme === 'dark';
   const router = useRouter();
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
@@ -162,7 +174,7 @@ export default function GoogleAdsPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 20 }}>
                 {/* Total Spend */}
                 <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Spend</div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Spend</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
                     ₹{totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
@@ -170,7 +182,7 @@ export default function GoogleAdsPage() {
                 </div>
                 {/* Total Clicks */}
                 <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Clicks</div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Clicks</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
                     {totalClicks.toLocaleString()}
                   </div>
@@ -178,7 +190,7 @@ export default function GoogleAdsPage() {
                 </div>
                 {/* Conversions */}
                 <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Conversions</div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Conversions</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
                     {Math.round(totalConversions).toLocaleString()}
                   </div>
@@ -186,18 +198,19 @@ export default function GoogleAdsPage() {
                 </div>
                 {/* ROAS — hero */}
                 <div style={{
-                  background: 'rgba(5,150,105,0.06)',
-                  border: '1px solid #A7F3D0',
+                  background: isDark ? 'rgba(5,150,105,0.12)' : 'rgba(5,150,105,0.06)',
+                  border: isDark ? '1px solid rgba(5,150,105,0.4)' : '1px solid #A7F3D0',
                   borderRadius: 12, padding: 18,
                 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>ROAS</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 32, fontWeight: 700, color: '#065F46', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, color: isDark ? '#6EE7B7' : '#065F46', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>ROAS</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 32, fontWeight: 700, color: isDark ? '#34D399' : '#065F46', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
                     {roas.toFixed(2)}x
                   </div>
                   <span style={{
                     display: 'inline-block', marginTop: 6,
                     padding: '2px 10px', borderRadius: 20,
-                    background: '#DCFCE7', color: '#166534',
+                    background: isDark ? 'rgba(5,150,105,0.25)' : '#DCFCE7',
+                    color: isDark ? '#6EE7B7' : '#166534',
                     fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
                   }}>
                     {roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'}
@@ -205,15 +218,15 @@ export default function GoogleAdsPage() {
                 </div>
                 {/* Avg CPC */}
                 <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Avg CPC</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: avgCPC < 5 ? '#059669' : c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Avg CPC</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: avgCPC < 5 ? (isDark ? '#34D399' : '#059669') : c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
                     ₹{avgCPC.toFixed(2)}
                   </div>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>Per click average</div>
                 </div>
                 {/* Campaigns */}
                 <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Campaigns</div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Campaigns</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
                     {campaigns.length}
                   </div>
@@ -227,18 +240,18 @@ export default function GoogleAdsPage() {
                 if (!best) return null;
                 return (
                   <div style={{
-                    background: 'rgba(5,150,105,0.05)',
-                    border: '1px solid #A7F3D0',
+                    background: isDark ? 'rgba(5,150,105,0.1)' : 'rgba(5,150,105,0.05)',
+                    border: isDark ? '1px solid rgba(5,150,105,0.3)' : '1px solid #A7F3D0',
                     borderLeft: '3px solid #059669',
                     borderRadius: 12, padding: '14px 18px', marginBottom: 16,
                     display: 'flex', alignItems: 'center', gap: 14,
                   }}>
-                    <Star size={18} color="#059669" fill="#059669" style={{ flexShrink: 0 }} />
+                    <Star size={18} color={isDark ? '#34D399' : '#059669'} fill={isDark ? '#34D399' : '#059669'} style={{ flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 700, color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Best ROAS</div>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 700, color: isDark ? '#6EE7B7' : '#065F46', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Best ROAS</div>
                       <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{best.campaign_name}</div>
                       <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 2 }}>
-                        <span style={{ color: '#059669', fontWeight: 700 }}>{best.roas.toFixed(2)}x ROAS</span>
+                        <span style={{ color: isDark ? '#34D399' : '#059669', fontWeight: 700 }}>{best.roas.toFixed(2)}x ROAS</span>
                         {' · '}₹{(best.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} spend · {(best.clicks || 0).toLocaleString()} clicks · {Math.round(best.conversions || 0)} conversions
                       </div>
                     </div>
@@ -258,7 +271,7 @@ export default function GoogleAdsPage() {
                         <thead>
                           <tr>
                             {['Campaign', 'Status', 'Spend ↓', 'Clicks', 'Impressions', 'Conversions', 'CPC', 'ROAS'].map(h => (
-                              <th key={h} style={{ textAlign: 'left', fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', paddingBottom: 10, borderBottom: `1px solid ${c.border}`, paddingRight: 12, whiteSpace: 'nowrap' }}>{h}</th>
+                              <th key={h} style={{ textAlign: 'left', fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', paddingBottom: 10, borderBottom: `1px solid ${c.border}`, paddingRight: 12, whiteSpace: 'nowrap' }}>{h}</th>
                             ))}
                           </tr>
                         </thead>
@@ -267,7 +280,7 @@ export default function GoogleAdsPage() {
                             const cRoas = camp.roas > 0 ? camp.roas.toFixed(2) : '—';
                             const cCpc = camp.avg_cpc > 0 ? camp.avg_cpc.toFixed(2) : '—';
                             const roasVal = parseFloat(cRoas as string);
-                            const roasColor = roasVal >= 3 ? '#065F46' : roasVal >= 1 ? '#F59E0B' : '#DC2626';
+                            const roasColor = roasVal >= 3 ? (isDark ? '#34D399' : '#065F46') : roasVal >= 1 ? '#F59E0B' : '#DC2626';
                             const spendPct = maxSpend > 0 ? ((camp.cost || 0) / maxSpend) * 100 : 0;
                             return (
                               <tr
@@ -287,7 +300,7 @@ export default function GoogleAdsPage() {
                                 <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.clicks || 0).toLocaleString()}</td>
                                 <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.impressions || 0).toLocaleString()}</td>
                                 <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{Math.round(camp.conversions || 0).toLocaleString()}</td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontVariantNumeric: 'tabular-nums', color: cCpc !== '—' && parseFloat(cCpc) < 5 ? '#059669' : c.textSecondary, fontWeight: cCpc !== '—' && parseFloat(cCpc) < 5 ? 600 : 400 }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontVariantNumeric: 'tabular-nums', color: cCpc !== '—' && parseFloat(cCpc) < 5 ? (isDark ? '#34D399' : '#059669') : c.textSecondary, fontWeight: cCpc !== '—' && parseFloat(cCpc) < 5 ? 600 : 400 }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
                                 <td style={{ padding: '12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: roasColor }}>
                                   {cRoas !== '—' ? `${cRoas}x` : '—'}
                                 </td>

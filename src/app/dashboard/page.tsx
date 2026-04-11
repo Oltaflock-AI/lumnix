@@ -512,7 +512,8 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
 /* ─── Anomalies Dashboard Widget ─── */
 
 function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
-  const { c } = useTheme();
+  const { c, theme } = useTheme();
+  const isDark = theme === 'dark';
   const [anomalies, setAnomalies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -576,10 +577,23 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
             // Source badge — normalize from anomaly.source/provider
             const sourceRaw: string = (anomaly.source || anomaly.provider || '').toString().toLowerCase();
             let srcLabel = '', srcBg = '', srcColor = '';
-            if (sourceRaw.includes('gsc') || sourceRaw.includes('search')) { srcLabel = 'GSC'; srcBg = 'rgba(5,150,105,0.1)'; srcColor = '#065F46'; }
-            else if (sourceRaw.includes('ga4') || sourceRaw.includes('analytics')) { srcLabel = 'GA4'; srcBg = 'rgba(234,88,12,0.1)'; srcColor = '#9A3412'; }
-            else if (sourceRaw.includes('meta')) { srcLabel = 'Meta Ads'; srcBg = 'rgba(124,58,237,0.1)'; srcColor = '#5B21B6'; }
-            else if (sourceRaw.includes('google_ads') || sourceRaw.includes('google ads')) { srcLabel = 'Google Ads'; srcBg = 'rgba(37,99,235,0.1)'; srcColor = '#1D4ED8'; }
+            if (sourceRaw.includes('gsc') || sourceRaw.includes('search')) {
+              srcLabel = 'GSC';
+              srcBg = isDark ? 'rgba(5,150,105,0.18)' : 'rgba(5,150,105,0.1)';
+              srcColor = isDark ? '#6EE7B7' : '#065F46';
+            } else if (sourceRaw.includes('ga4') || sourceRaw.includes('analytics')) {
+              srcLabel = 'GA4';
+              srcBg = isDark ? 'rgba(234,88,12,0.2)' : 'rgba(234,88,12,0.1)';
+              srcColor = isDark ? '#FDBA74' : '#9A3412';
+            } else if (sourceRaw.includes('meta')) {
+              srcLabel = 'Meta Ads';
+              srcBg = isDark ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.1)';
+              srcColor = isDark ? '#C4B5FD' : '#5B21B6';
+            } else if (sourceRaw.includes('google_ads') || sourceRaw.includes('google ads')) {
+              srcLabel = 'Google Ads';
+              srcBg = isDark ? 'rgba(37,99,235,0.2)' : 'rgba(37,99,235,0.1)';
+              srcColor = isDark ? '#93C5FD' : '#1D4ED8';
+            }
             return (
               <div
                 key={anomaly.id}

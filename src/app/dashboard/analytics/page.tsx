@@ -46,7 +46,8 @@ export default function AnalyticsPage() {
   const [days, setDays] = useState(30);
   const [syncing, setSyncing] = useState(false);
   const router = useRouter();
-  const { c } = useTheme();
+  const { c, theme } = useTheme();
+  const isDark = theme === 'dark';
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const workspaceId = workspace?.id;
 
@@ -162,12 +163,12 @@ export default function AnalyticsPage() {
                   const isWowPos = k.wowCard && !k.wowNegative && wowChange !== 0;
                   return (
                     <div key={k.key} style={{
-                      backgroundColor: isWowNeg ? 'rgba(220,38,38,0.04)' : c.bgCard,
+                      backgroundColor: isWowNeg ? (isDark ? 'rgba(220,38,38,0.1)' : 'rgba(220,38,38,0.04)') : c.bgCard,
                       border: `1px solid ${c.border}`,
                       borderLeft: isWowNeg ? '3px solid #DC2626' : isWowPos ? '3px solid #059669' : `1px solid ${c.border}`,
                       borderRadius: 12, padding: 18,
                     }}>
-                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{k.label}</div>
+                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{k.label}</div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                         <div style={{
                           fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -179,8 +180,8 @@ export default function AnalyticsPage() {
                             display: 'inline-flex', alignItems: 'center', gap: 2,
                             fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
                             padding: '2px 7px', borderRadius: 20,
-                            background: k.trend > 0 ? 'rgba(5,150,105,0.1)' : 'rgba(220,38,38,0.1)',
-                            color: k.trend > 0 ? '#059669' : '#DC2626',
+                            background: k.trend > 0 ? (isDark ? 'rgba(5,150,105,0.2)' : 'rgba(5,150,105,0.1)') : (isDark ? 'rgba(220,38,38,0.2)' : 'rgba(220,38,38,0.1)'),
+                            color: k.trend > 0 ? (isDark ? '#34D399' : '#059669') : (isDark ? '#FCA5A5' : '#DC2626'),
                           }}>
                             {k.trend > 0 ? '▲' : '▼'} {Math.abs(k.trend)}%
                           </span>
@@ -199,13 +200,13 @@ export default function AnalyticsPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
               {wowChange !== 0 && (
                 <div style={{
-                  background: wowChange < 0 ? 'rgba(220,38,38,0.05)' : 'rgba(5,150,105,0.05)',
+                  background: wowChange < 0 ? (isDark ? 'rgba(220,38,38,0.12)' : 'rgba(220,38,38,0.05)') : (isDark ? 'rgba(5,150,105,0.12)' : 'rgba(5,150,105,0.05)'),
                   borderLeft: `3px solid ${wowChange < 0 ? '#DC2626' : '#059669'}`,
                   border: `1px solid ${c.border}`,
                   borderRadius: 12, padding: '16px 18px',
                 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Week-over-Week</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: wowChange < 0 ? '#DC2626' : '#059669', letterSpacing: '-0.02em' }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Week-over-Week</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: wowChange < 0 ? (isDark ? '#FCA5A5' : '#DC2626') : (isDark ? '#34D399' : '#059669'), letterSpacing: '-0.02em' }}>
                     {wowChange > 0 ? '+' : ''}{wowChange}%
                   </div>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 2 }}>
@@ -215,13 +216,13 @@ export default function AnalyticsPage() {
               )}
               {anomalies.length > 0 && (
                 <div style={{
-                  background: 'rgba(245,158,11,0.05)',
+                  background: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.05)',
                   borderLeft: '3px solid #F59E0B',
                   border: `1px solid ${c.border}`,
                   borderRadius: 12, padding: '16px 18px',
                 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Anomalies Detected</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: '#F59E0B', letterSpacing: '-0.02em' }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Anomalies Detected</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: isDark ? '#FCD34D' : '#F59E0B', letterSpacing: '-0.02em' }}>
                     {anomalies.length} anomalies
                   </div>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 2 }}>Unusual spikes or drops</div>
@@ -229,16 +230,16 @@ export default function AnalyticsPage() {
               )}
               {topSources[0] && (
                 <div style={{
-                  background: 'rgba(5,150,105,0.05)',
+                  background: isDark ? 'rgba(5,150,105,0.12)' : 'rgba(5,150,105,0.05)',
                   borderLeft: '3px solid #059669',
                   border: `1px solid ${c.border}`,
                   borderRadius: 12, padding: '16px 18px',
                 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: '#6B7280', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Top Source</div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Top Source</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', textTransform: 'capitalize' }}>
                     {(topSources[0].source || 'direct')}
                   </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: '#059669', marginTop: 2, fontWeight: 600 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: isDark ? '#34D399' : '#059669', marginTop: 2, fontWeight: 600 }}>
                     {(topSources[0].sessions || 0).toLocaleString()} sessions
                   </div>
                 </div>
