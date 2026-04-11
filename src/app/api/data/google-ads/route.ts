@@ -18,7 +18,8 @@ export async function GET(req: NextRequest) {
 
     const db = getSupabaseAdmin();
 
-    // Primary source: google_ads_data table (one row per campaign per day)
+    // Primary source: google_ads_data table (one row per campaign per day).
+    // Postgres filters by date on the query itself.
     const { data: rows } = await db
       .from('google_ads_data')
       .select('*')
@@ -28,10 +29,12 @@ export async function GET(req: NextRequest) {
       .order('date', { ascending: false });
 
     if (rows && rows.length > 0) {
-      return NextResponse.json(buildResponse(rows, 'google_ads_data'));
+      return NextResponse.json(buildResponse(rows, 'google_ads_data', startDateStr, endDateStr));
     }
 
-    // Fallback: analytics_data — the cron sync writes campaigns here as a JSON blob
+    // Fallback: analytics_data — the cron sync writes campaigns as a JSON blob
+    // containing per-campaign-per-day rows (each with a `date` field).
+    // We fetch the full blob and filter in-memory since it's already a flat array.
     const { data: fallback } = await db
       .from('analytics_data')
       .select('data, date_range_start, date_range_end, synced_at')
@@ -43,8 +46,7 @@ export async function GET(req: NextRequest) {
       .maybeSingle();
 
     if (fallback?.data && Array.isArray(fallback.data) && fallback.data.length > 0) {
-      // Each item is a per-campaign-per-day row from fetchGoogleAdsCampaigns
-      return NextResponse.json(buildResponse(fallback.data, 'analytics_data'));
+      return NextResponse.json(buildResponse(fallback.data, 'analytics_data', startDateStr, endDateStr));
     }
 
     return NextResponse.json({
@@ -60,10 +62,20 @@ export async function GET(req: NextRequest) {
   }
 }
 
-function buildResponse(rows: any[], source: string) {
+function buildResponse(rows: any[], source: string, startDateStr: string, endDateStr: string) {
+  // Filter rows by date range. google_ads_data is already filtered by Postgres,
+  // but analytics_data is a JSON blob — every row has a `date` field, so we
+  // apply the same window here. Rows without a date are dropped from filtering
+  // (they can't be attributed to a day).
+  const filtered = rows.filter(r => {
+    const d = (r.date || '').split('T')[0];
+    if (!d) return false;
+    return d >= startDateStr && d <= endDateStr;
+  });
+
   // Aggregate by campaign
   const campaignMap = new Map<string, any>();
-  for (const row of rows) {
+  for (const row of filtered) {
     // Handle both google_ads_data (campaign_id/campaign_name/cost) and analytics_data JSON (id/name/spend)
     const campaignId = row.campaign_id || row.id || row.campaign_name || row.name || 'unknown';
     const campaignName = row.campaign_name || row.name || 'Unknown';
@@ -111,7 +123,7 @@ function buildResponse(rows: any[], source: string) {
 
   // Build daily breakdown for charts
   const dailyMap = new Map<string, { date: string; spend: number; clicks: number; impressions: number; conversions: number }>();
-  for (const row of rows) {
+  for (const row of filtered) {
     const date = (row.date || '').split('T')[0];
     if (!date) continue;
     const cost = Number(row.cost ?? row.spend ?? 0);
@@ -124,5 +136,12 @@ function buildResponse(rows: any[], source: string) {
   }
   const daily = Array.from(dailyMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 
-  return { campaigns, totals, daily, source, currency: 'INR' };
+  return {
+    campaigns,
+    totals,
+    daily,
+    source,
+    currency: 'INR',
+    date_range: { start: startDateStr, end: endDateStr, days_of_data: daily.length },
+  };
 }

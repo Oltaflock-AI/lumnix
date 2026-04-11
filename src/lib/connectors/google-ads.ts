@@ -12,13 +12,22 @@ async function safeParse(res: Response): Promise<any> {
 
 export async function fetchGoogleAdsCampaigns(
   accessToken: string,
-  customerId: string
+  customerId: string,
+  days: number = 90,
 ) {
   const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN || '';
   if (!devToken) throw new Error('Google Ads developer token not configured');
 
   // Strip dashes from customer ID
   const cleanId = customerId.replace(/-/g, '');
+
+  // Pull a wider window (default 90 days) so the dashboard's date range
+  // picker (7/14/30/90) has meaningful data to filter from. The downstream
+  // API route filters this array by date on the fly.
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - Math.max(1, days));
+  const fmt = (d: Date) => d.toISOString().split('T')[0];
 
   const query = `
     SELECT
@@ -33,7 +42,7 @@ export async function fetchGoogleAdsCampaigns(
       metrics.average_cpc,
       segments.date
     FROM campaign
-    WHERE segments.date DURING LAST_30_DAYS
+    WHERE segments.date BETWEEN '${fmt(start)}' AND '${fmt(end)}'
       AND metrics.cost_micros > 0
     ORDER BY segments.date DESC
   `;
