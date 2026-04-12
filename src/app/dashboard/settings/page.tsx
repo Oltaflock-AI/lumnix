@@ -1275,6 +1275,9 @@ function SecurityTab() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isOAuthUser, setIsOAuthUser] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState('');
 
   useEffect(() => {
     async function checkProvider() {
@@ -1287,6 +1290,32 @@ function SecurityTab() {
     }
     checkProvider();
   }, []);
+
+  async function handleResetPassword() {
+    setResetError('');
+    setResetSending(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const email = session?.user?.email;
+      if (!email) {
+        setResetError('Unable to find your email address.');
+        setResetSending(false);
+        return;
+      }
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/settings`,
+      });
+      if (resetErr) {
+        setResetError(resetErr.message);
+      } else {
+        setResetSent(true);
+        setTimeout(() => setResetSent(false), 5000);
+      }
+    } catch {
+      setResetError('Failed to send reset email. Please try again.');
+    }
+    setResetSending(false);
+  }
 
   async function handleUpdatePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -1465,6 +1494,66 @@ function SecurityTab() {
           {saving ? 'Updating...' : saved ? 'Password Updated!' : 'Update Password'}
         </button>
       </form>
+
+      {/* Forgot Password Section */}
+      <div style={{
+        marginTop: 24, paddingTop: 20,
+        borderTop: '1px solid var(--border-default)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+          <Mail size={16} color={c.accent} />
+          <h4 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Forgot Your Password?</h4>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 14 }}>
+          If you don&apos;t remember your current password, we&apos;ll send a reset link to your email.
+        </p>
+
+        {resetError && (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8, marginBottom: 12,
+            backgroundColor: 'rgba(239,68,68,0.06)',
+            border: '1px solid rgba(239,68,68,0.15)',
+            color: '#EF4444', fontSize: 13,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <AlertCircle size={14} />
+            {resetError}
+          </div>
+        )}
+
+        {resetSent && (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8, marginBottom: 12,
+            backgroundColor: 'rgba(34,197,94,0.06)',
+            border: '1px solid rgba(34,197,94,0.15)',
+            color: '#22C55E', fontSize: 13,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <Check size={14} />
+            Reset link sent! Check your email inbox.
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleResetPassword}
+          disabled={resetSending || resetSent}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+            fontFamily: "'DM Sans', sans-serif",
+            backgroundColor: 'transparent',
+            border: `1px solid ${c.accent}`,
+            color: c.accent,
+            cursor: (resetSending || resetSent) ? 'not-allowed' : 'pointer',
+            opacity: (resetSending || resetSent) ? 0.5 : 1,
+            transition: 'all 0.15s ease',
+          }}
+        >
+          {resetSending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Mail size={14} />}
+          {resetSending ? 'Sending...' : resetSent ? 'Email Sent!' : 'Send Password Reset Email'}
+        </button>
+      </div>
     </div>
   );
 }
