@@ -649,19 +649,19 @@ function ProfileTab() {
       <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Update your personal information.</p>
       <div style={{ marginBottom: 16 }}>
         <label style={label}>Full Name</label>
-        <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
+        <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" autoComplete="name" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
           onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
           onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
         />
       </div>
       <div style={{ marginBottom: 16 }}>
         <label style={label}>Email</label>
-        <input value={email} readOnly placeholder="your@email.com" style={{ ...inputBase, backgroundColor: 'var(--bg-card-secondary)', color: 'var(--text-muted)', cursor: 'not-allowed' }} />
+        <input value={email} readOnly placeholder="your@email.com" autoComplete="email" style={{ ...inputBase, backgroundColor: 'var(--bg-card-secondary)', color: 'var(--text-muted)', cursor: 'not-allowed' }} />
         <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginTop: 4 }}>Email cannot be changed here</p>
       </div>
       <div style={{ marginBottom: 20 }}>
         <label style={label}>Company</label>
-        <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
+        <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" autoComplete="organization" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
           onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
           onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
         />
@@ -1328,6 +1328,7 @@ export default function SettingsPage() {
   }
 
   async function handleRevokeInvite(inviteId: string) {
+    if (!window.confirm('Revoke this invitation?')) return;
     if (!workspace?.id) return;
     setRevokingId(inviteId);
     const { data: { session } } = await supabase.auth.getSession();
@@ -1760,6 +1761,7 @@ export default function SettingsPage() {
                     value={inviteEmail}
                     onChange={e => setInviteEmail(e.target.value)}
                     placeholder="colleague@company.com"
+                    autoComplete="email"
                     required
                     disabled={teamData?.canInviteMore === false}
                     style={{

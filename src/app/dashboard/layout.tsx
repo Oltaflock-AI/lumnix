@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Search, BarChart3, DollarSign,
@@ -61,10 +61,13 @@ const navGroups: NavGroup[] = [
 function WorkspaceSwitcher() {
   const [open, setOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const { workspace, workspaces, switchWorkspace, refetch } = useWorkspaceCtx();
   const { theme } = useTheme();
   const accent = workspace?.brand_color || '#7C3AED';
   const isDark = theme === 'dark';
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   function handleSwitch(id: string) {
     setOpen(false);
@@ -76,10 +79,65 @@ function WorkspaceSwitcher() {
     setShowAddModal(true);
   }
 
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  // Keyboard navigation for the dropdown
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!open) {
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setOpen(true);
+        setFocusedIndex(0);
+      }
+      return;
+    }
+    switch (e.key) {
+      case 'Escape':
+        e.preventDefault();
+        setOpen(false);
+        setFocusedIndex(-1);
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        setFocusedIndex(i => Math.min(i + 1, workspaces.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setFocusedIndex(i => Math.max(i - 1, 0));
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        if (focusedIndex >= 0 && focusedIndex < workspaces.length) {
+          handleSwitch(workspaces[focusedIndex].id);
+        }
+        break;
+    }
+  }, [open, focusedIndex, workspaces]);
+
+  // Scroll focused item into view
+  useEffect(() => {
+    if (!open || focusedIndex < 0) return;
+    const items = listRef.current?.querySelectorAll('[role="option"]');
+    items?.[focusedIndex]?.scrollIntoView({ block: 'nearest' });
+  }, [focusedIndex, open]);
+
   return (
-    <div style={{ position: 'relative', marginBottom: 4 }}>
+    <div ref={containerRef} style={{ position: 'relative', marginBottom: 4 }}>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => { setOpen(!open); if (!open) setFocusedIndex(0); }}
+        onKeyDown={handleKeyDown}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Workspace: ${workspace?.name || 'My Workspace'}. Press Enter to switch.`}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: 10,
           padding: '8px 10px', borderRadius: 8,
@@ -103,23 +161,34 @@ function WorkspaceSwitcher() {
         <ChevronDown size={12} color={isDark ? '#94A3B8' : '#9CA3AF'} style={{ flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }} />
       </button>
       {open && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, backgroundColor: isDark ? '#1E293B' : '#FFFFFF', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #E2E8F0', borderRadius: 10, overflow: 'hidden', zIndex: 100, boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.12)' }}>
+        <div
+          role="listbox"
+          aria-label="Switch workspace"
+          ref={listRef}
+          onKeyDown={handleKeyDown}
+          style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, backgroundColor: isDark ? '#1E293B' : '#FFFFFF', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #E2E8F0', borderRadius: 10, overflow: 'hidden', zIndex: 100, boxShadow: isDark ? '0 8px 24px rgba(0,0,0,0.4)' : '0 8px 24px rgba(0,0,0,0.12)' }}
+        >
           <div style={{ padding: '4px 6px', maxHeight: 200, overflowY: 'auto' }}>
-            {workspaces.map(ws => {
+            {workspaces.map((ws, index) => {
               const isCurrent = ws.id === workspace?.id;
+              const isFocused = index === focusedIndex;
               const wsInitials = ws.name ? ws.name.substring(0, 2).toUpperCase() : '??';
               return (
                 <button
                   key={ws.id}
+                  role="option"
+                  aria-selected={isCurrent}
                   onClick={() => handleSwitch(ws.id)}
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: 8,
                     padding: '8px 8px', borderRadius: 6, border: 'none',
-                    backgroundColor: isCurrent ? 'rgba(124,58,237,0.15)' : 'transparent',
+                    backgroundColor: isFocused ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : isCurrent ? 'rgba(124,58,237,0.15)' : 'transparent',
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'background-color 0.15s',
+                    outline: isFocused ? '2px solid #7C3AED' : 'none',
+                    outlineOffset: -2,
                   }}
-                  onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; }}
+                  onMouseEnter={e => { setFocusedIndex(index); if (!isCurrent) e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; }}
                   onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
                   <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : (isDark ? '#334155' : '#E2E8F0'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: isCurrent ? 'white' : (isDark ? 'white' : '#374151'), flexShrink: 0 }}>{wsInitials}</div>
@@ -200,6 +269,29 @@ function AddWorkspaceModal({ onClose, onCreated }: { onClose: () => void; onCrea
     setLoading(false);
   }
 
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap + Escape key
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+    const focusable = modal.querySelectorAll<HTMLElement>('button, input, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
     <div
       onClick={onClose}
@@ -209,6 +301,10 @@ function AddWorkspaceModal({ onClose, onCreated }: { onClose: () => void; onCrea
       }}
     >
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-workspace-title"
         onClick={e => e.stopPropagation()}
         style={{
           width: 420, padding: 24, borderRadius: 16,
@@ -219,10 +315,10 @@ function AddWorkspaceModal({ onClose, onCreated }: { onClose: () => void; onCrea
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: isDark ? '#F1F5F9' : '#0F172A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <h3 id="create-workspace-title" style={{ fontSize: 18, fontWeight: 700, color: isDark ? '#F1F5F9' : '#0F172A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             Create workspace
           </h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: isDark ? '#94A3B8' : '#6B7280', fontSize: 20, lineHeight: 1 }}>×</button>
+          <button onClick={onClose} aria-label="Close dialog" style={{ background: 'none', border: 'none', cursor: 'pointer', color: isDark ? '#94A3B8' : '#6B7280', fontSize: 20, lineHeight: 1 }}>×</button>
         </div>
         <p style={{ fontSize: 13, color: isDark ? '#94A3B8' : '#6B7280', marginBottom: 16 }}>
           Each workspace keeps its own integrations, data, and team. Only the Agency plan supports multiple workspaces.
@@ -302,6 +398,44 @@ function AddWorkspaceModal({ onClose, onCreated }: { onClose: () => void; onCrea
   );
 }
 
+/* ── Sign Out Confirmation ── */
+function SignOutConfirmDialog({ isDark, onCancel, onConfirm }: { isDark: boolean; onCancel: () => void; onConfirm: () => void }) {
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) { if (e.key === 'Escape') onCancel(); }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onCancel]);
+
+  return (
+    <div onClick={onCancel} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div role="alertdialog" aria-modal="true" aria-labelledby="signout-title" onClick={e => e.stopPropagation()} style={{
+        width: 340, padding: 24, borderRadius: 14,
+        background: isDark ? '#1E293B' : '#FFFFFF',
+        border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #E2E8F0',
+        boxShadow: '0 24px 48px rgba(0,0,0,0.3)', fontFamily: "'DM Sans', sans-serif",
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <LogOut size={18} color="#EF4444" />
+          </div>
+          <h3 id="signout-title" style={{ fontSize: 16, fontWeight: 700, color: isDark ? '#F1F5F9' : '#0F172A', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Sign out?</h3>
+        </div>
+        <p style={{ fontSize: 13, color: isDark ? '#94A3B8' : '#6B7280', marginBottom: 20, lineHeight: 1.5 }}>
+          You&apos;ll need to sign in again to access your workspace.
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onCancel} autoFocus style={{ padding: '8px 16px', borderRadius: 8, border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E2E8F0', background: 'transparent', color: isDark ? '#CBD5E1' : '#374151', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+            Cancel
+          </button>
+          <button onClick={onConfirm} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #FECACA', background: 'transparent', color: '#EF4444', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            Sign out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Command Palette ── */
 function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const router = useRouter();
@@ -352,6 +486,7 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
   const { theme, toggle } = useTheme();
   const [unreadAlerts, setUnreadAlerts] = useState(0);
   const [userEmail, setUserEmail] = useState<string>('');
+  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const isDark = theme === 'dark';
 
   useEffect(() => {
@@ -537,10 +672,7 @@ My feedback:
             <TooltipTrigger asChild>
               <button
                 aria-label="Sign out"
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  window.location.href = '/auth/signin';
-                }}
+                onClick={() => setShowSignOutConfirm(true)}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: sc.mutedIcon, padding: 2 }}
                 onMouseEnter={e => (e.currentTarget.style.color = sc.userName)}
                 onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
@@ -550,6 +682,16 @@ My feedback:
             </TooltipTrigger>
             <TooltipContent side="right">Sign out</TooltipContent>
           </Tooltip>
+          {showSignOutConfirm && (
+            <SignOutConfirmDialog
+              isDark={isDark}
+              onCancel={() => setShowSignOutConfirm(false)}
+              onConfirm={async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/auth/signin';
+              }}
+            />
+          )}
         </div>
 
         {/* Utility row */}

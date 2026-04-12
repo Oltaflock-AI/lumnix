@@ -321,9 +321,10 @@ export default function SEOPage() {
             </div>
 
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <caption className="sr-only">SEO keyword performance data</caption>
               <thead>
                 <tr>{['Keyword', 'Position', 'Impressions', 'Clicks', 'CTR', 'Signal'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', fontSize: 11, fontWeight: 600, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px', paddingBottom: 10, borderBottom: `1px solid ${c.borderStrong}` }}>{h}</th>
+                  <th key={h} scope="col" style={{ textAlign: 'left', fontSize: 11, fontWeight: 600, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.5px', paddingBottom: 10, borderBottom: `1px solid ${c.borderStrong}` }}>{h}</th>
                 ))}</tr>
               </thead>
               <tbody>

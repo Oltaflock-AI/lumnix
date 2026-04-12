@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Eye, Plus, RefreshCw, Trash2, X, Search, Loader2,
   Trophy, Clock, ExternalLink, Sparkles, Filter, ChevronRight,
@@ -44,6 +44,7 @@ export default function CompetitorsPage() {
   const [selectedResult, setSelectedResult] = useState<number>(0);
   const [addStep, setAddStep] = useState<'search' | 'confirm'>('search');
   const [adding, setAdding] = useState(false);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Ads tab
   const [ads, setAds] = useState<any[]>([]);
@@ -580,7 +581,14 @@ export default function CompetitorsPage() {
                 <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                   <input
                     value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
+                    onChange={e => {
+                      const value = e.target.value;
+                      setSearchQuery(value);
+                      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                      searchDebounceRef.current = setTimeout(() => {
+                        if (value.trim()) handleSearch();
+                      }, 300);
+                    }}
                     onKeyDown={e => e.key === 'Enter' && handleSearch()}
                     placeholder='e.g. "Mamaearth", "mamaearth.in", "facebook.com/mamaearth"'
                     style={{

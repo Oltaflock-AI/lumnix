@@ -425,14 +425,19 @@ function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefine
   const { c } = useTheme();
   const [recs, setRecs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
-  useEffect(() => {
+  function loadRecs() {
     if (!workspaceId) { setLoading(false); return; }
+    setLoading(true);
+    setFetchError(false);
     fetch(`/api/recommendations/generate?workspace_id=${workspaceId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(d => { setRecs(d.recommendations || []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId]);
+      .catch(() => { setFetchError(true); setLoading(false); });
+  }
+
+  useEffect(() => { loadRecs(); }, [workspaceId]);
 
   const priorityColors: Record<string, string> = { high: c.danger, medium: c.warning, low: c.success };
 
@@ -444,6 +449,11 @@ function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefine
       </div>
       {loading ? (
         <div style={{ height: 80, backgroundColor: c.bgCardHover, borderRadius: 8 }} className="animate-pulse" />
+      ) : fetchError ? (
+        <div style={{ textAlign: 'center', padding: '12px 0' }}>
+          <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 8 }}>Failed to load recommendations</p>
+          <button onClick={loadRecs} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+        </div>
       ) : recs.length === 0 ? (
         <p style={{ fontSize: 12, color: c.textMuted }}>No recommendations yet. Connect integrations and sync data to get AI-powered suggestions.</p>
       ) : (
@@ -469,14 +479,19 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
   const { c } = useTheme();
   const [prediction, setPrediction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
 
-  useEffect(() => {
+  function loadPredictions() {
     if (!workspaceId) { setLoading(false); return; }
+    setLoading(true);
+    setFetchError(false);
     fetch(`/api/predictions?workspace_id=${workspaceId}&metric=sessions&days=14`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(d => { setPrediction(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId]);
+      .catch(() => { setFetchError(true); setLoading(false); });
+  }
+
+  useEffect(() => { loadPredictions(); }, [workspaceId]);
 
   const forecast = prediction?.forecast || [];
   const narrative = prediction?.narrative || '';
@@ -490,6 +505,11 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
       </div>
       {loading ? (
         <div style={{ height: 80, backgroundColor: c.bgCardHover, borderRadius: 8 }} className="animate-pulse" />
+      ) : fetchError ? (
+        <div style={{ textAlign: 'center', padding: '12px 0' }}>
+          <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 8 }}>Failed to load forecast</p>
+          <button onClick={loadPredictions} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+        </div>
       ) : forecast.length === 0 ? (
         <p style={{ fontSize: 12, color: c.textMuted }}>{prediction?.message || 'Connect GA4 and sync data to see traffic predictions.'}</p>
       ) : (
@@ -516,6 +536,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const isDark = theme === 'dark';
   const [anomalies, setAnomalies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const router = useRouter();
 
   const SEVERITY_COLORS: Record<string, string> = {
@@ -524,15 +545,18 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
     low: c.textSecondary,
   };
 
-  useEffect(() => {
+  function loadAnomalies() {
     if (!workspaceId) return;
     setLoading(true);
+    setFetchError(false);
     fetch(`/api/anomalies?workspace_id=${workspaceId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(data => setAnomalies(data.anomalies || []))
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
-  }, [workspaceId]);
+  }
+
+  useEffect(() => { loadAnomalies(); }, [workspaceId]);
 
   async function markAsRead(id: string) {
     await fetch(`/api/anomalies/${id}/read`, { method: 'POST' });
@@ -540,6 +564,14 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   }
 
   if (loading) return null;
+
+  if (fetchError) return (
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', textAlign: 'center' }}>
+      <AlertTriangle size={20} color={c.warning} style={{ margin: '0 auto 8px' }} />
+      <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 12 }}>Failed to load anomalies</p>
+      <button onClick={loadAnomalies} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+    </div>
+  );
 
   const unread = anomalies.filter(a => !a.is_read);
   const display = anomalies.slice(0, 5);
@@ -605,7 +637,12 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
                   transition: 'background 150ms',
                 }}
               >
-                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0 }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor }} />
+                  <span style={{ fontSize: 10, fontWeight: 600, color: dotColor, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    {severity === 'high' ? 'Critical' : severity === 'medium' ? 'Warning' : 'Info'}
+                  </span>
+                </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: c.text, margin: 0 }}>{anomaly.title}</p>
                   {anomaly.description && (
@@ -650,6 +687,7 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
   const [insights, setInsights] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
 
   const INSIGHT_DOT_COLORS: Record<string, string> = {
     win: c.success,
@@ -665,15 +703,18 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
     tip: Zap,
   };
 
-  useEffect(() => {
+  function loadInsights() {
     if (!workspaceId) return;
     setLoading(true);
+    setFetchError(false);
     fetch(`/api/insights?workspace_id=${workspaceId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(data => setInsights(data.insights || []))
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
-  }, [workspaceId]);
+  }
+
+  useEffect(() => { loadInsights(); }, [workspaceId]);
 
   async function generate() {
     if (!workspaceId) return;
@@ -695,6 +736,14 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
   const top3 = [...insights].sort((a, b) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1)).slice(0, 3);
 
   if (loading) return null;
+
+  if (fetchError) return (
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', textAlign: 'center' }}>
+      <Sparkles size={20} color={c.textMuted} style={{ margin: '0 auto 8px' }} />
+      <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 12 }}>Failed to load insights</p>
+      <button onClick={loadInsights} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+    </div>
+  );
 
   return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>

@@ -13,13 +13,13 @@ const buttonVariants = cva(
         gradient:
           "bg-[#7C3AED] text-white shadow-[0_2px_12px_rgba(124,58,237,0.3)] hover:bg-[#6D28D9] hover:shadow-[0_6px_24px_rgba(124,58,237,0.4)] hover:-translate-y-px active:translate-y-0 transition-all duration-200",
         outline:
-          "border-[#E2E8F0] bg-white text-[#374151] hover:border-[#7C3AED] hover:text-[#7C3AED] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)]",
+          "border-[#E2E8F0] bg-white text-[#374151] hover:border-[#7C3AED] hover:text-[#7C3AED] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.1)] dark:bg-[#1E293B] dark:text-[#CBD5E1] dark:hover:border-[#7C3AED] dark:hover:text-[#A78BFA]",
         secondary:
-          "bg-white text-[#374151] border border-[#E2E8F0] hover:border-[#7C3AED] hover:text-[#7C3AED] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)]",
+          "bg-white text-[#374151] border border-[#E2E8F0] hover:border-[#7C3AED] hover:text-[#7C3AED] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)] dark:bg-[#1E293B] dark:text-[#CBD5E1] dark:border-[rgba(255,255,255,0.1)] dark:hover:border-[#7C3AED] dark:hover:text-[#A78BFA]",
         ghost:
-          "hover:bg-[#F1F5F9] hover:text-foreground aria-expanded:bg-[#F1F5F9] aria-expanded:text-foreground",
+          "hover:bg-[#F1F5F9] hover:text-foreground aria-expanded:bg-[#F1F5F9] aria-expanded:text-foreground dark:hover:bg-[rgba(255,255,255,0.06)] dark:aria-expanded:bg-[rgba(255,255,255,0.06)]",
         destructive:
-          "bg-transparent text-[#EF4444] border border-[#FCA5A5] hover:bg-[#FEF2F2] hover:border-[#EF4444]",
+          "bg-transparent text-[#EF4444] border border-[#FCA5A5] hover:bg-[#FEF2F2] hover:border-[#EF4444] dark:border-[rgba(239,68,68,0.3)] dark:hover:bg-[rgba(239,68,68,0.1)]",
         link: "text-[#7C3AED] underline-offset-4 hover:underline",
       },
       size: {
