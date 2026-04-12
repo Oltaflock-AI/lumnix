@@ -807,7 +807,7 @@ export default function LumnixOnboarding() {
       }
 
       // For users who existed before onboarding_completed flag was added:
-      // check if they already have a workspace. If so, mark onboarding done and redirect.
+      // check if they already have a workspace with integrations or a custom name.
       try {
         const res = await fetch("/api/workspace", {
           headers: { Authorization: `Bearer ${s.access_token}` },
@@ -816,11 +816,23 @@ export default function LumnixOnboarding() {
           const data = await res.json();
           const ws = data.workspace;
           if (ws?.id) {
-            // User already has a workspace — check if it looks set up
-            // (has a custom name, not the auto-generated default)
+            // Check if user has any connected integrations — if so, skip onboarding
+            let hasIntegrations = false;
+            try {
+              const intRes = await fetch(`/api/integrations/list?workspace_id=${ws.id}`, {
+                headers: { Authorization: `Bearer ${s.access_token}` },
+              });
+              if (intRes.ok) {
+                const intData = await intRes.json();
+                hasIntegrations = (intData.integrations || []).some(
+                  (i) => i.status === "connected"
+                );
+              }
+            } catch {}
+
             const isDefault = ws.name?.endsWith("'s Workspace");
-            if (!isDefault) {
-              // Existing user with a configured workspace — skip onboarding
+            if (!isDefault || hasIntegrations) {
+              // Existing user with a configured workspace or connected integrations — skip onboarding
               await supabase.auth.updateUser({ data: { onboarding_completed: true } });
               router.replace("/dashboard");
               return;
@@ -1007,23 +1019,42 @@ export default function LumnixOnboarding() {
         <div
           style={{
             display: "flex",
-            gap: "6px",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "16px",
             marginTop: "28px",
             position: "relative",
           }}
         >
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              style={{
-                width: i === step ? "20px" : "6px",
-                height: "6px",
-                borderRadius: "3px",
-                background: i === step ? T.purple : i < step ? T.purpleMid : T.border,
-                transition: "width 300ms ease, background 300ms",
-              }}
-            />
-          ))}
+          <div style={{ display: "flex", gap: "6px" }}>
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                style={{
+                  width: i === step ? "20px" : "6px",
+                  height: "6px",
+                  borderRadius: "3px",
+                  background: i === step ? T.purple : i < step ? T.purpleMid : T.border,
+                  transition: "width 300ms ease, background 300ms",
+                }}
+              />
+            ))}
+          </div>
+          <button
+            onClick={handleFinish}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "12px",
+              color: T.textMuted,
+              fontFamily: "'DM Sans', sans-serif",
+              textDecoration: "underline",
+              textUnderlineOffset: "3px",
+            }}
+          >
+            Already set up? Skip to dashboard →
+          </button>
         </div>
       )}
     </div>
