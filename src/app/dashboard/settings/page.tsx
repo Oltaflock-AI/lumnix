@@ -7,6 +7,10 @@ import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import type { CSSProperties } from "react";
 
 /* ─── Shared Styles Hook (theme-aware) ─── */
@@ -1777,6 +1781,7 @@ export default function SettingsPage() {
   const { integrations, loading: intLoading, refetch } = useIntegrations(workspace?.id);
   const [syncing, setSyncing] = useState<string | null>(null);
   const [syncResults, setSyncResults] = useState<Record<string, { rows?: number; error?: string; timestamp?: string }>>({});
+  const [disconnectTarget, setDisconnectTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Team invite state
   const [inviteEmail, setInviteEmail] = useState("");
@@ -2200,17 +2205,9 @@ export default function SettingsPage() {
                             {isSyncing ? 'Syncing...' : 'Sync Now'}
                           </button>
                           <button
-                            onClick={async () => {
-                              if (!int || !confirm(`Disconnect ${p.name}? You can reconnect anytime.`)) return;
-                              try {
-                                await fetch('/api/integrations/disconnect', {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ integration_id: int.id }),
-                                });
-                                setSyncResults(prev => { const next = { ...prev }; delete next[p.id]; return next; });
-                                refetch();
-                              } catch {}
+                            onClick={() => {
+                              if (!int) return;
+                              setDisconnectTarget({ id: int.id, name: p.name });
                             }}
                             style={{
                               height: 40, padding: '0 16px', borderRadius: 8,
@@ -2237,6 +2234,39 @@ export default function SettingsPage() {
             </div>
 
           </div>
+
+          {/* Disconnect Confirmation Modal */}
+          <AlertDialog open={!!disconnectTarget} onOpenChange={(open) => { if (!open) setDisconnectTarget(null); }}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Disconnect {disconnectTarget?.name}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will remove the connection and stop syncing data from {disconnectTarget?.name}. Your existing data will be preserved. You can reconnect anytime.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={async () => {
+                    if (!disconnectTarget) return;
+                    try {
+                      await fetch('/api/integrations/disconnect', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ integration_id: disconnectTarget.id }),
+                      });
+                      setSyncResults(prev => { const next = { ...prev }; delete next[disconnectTarget.id]; return next; });
+                      refetch();
+                    } catch {}
+                    setDisconnectTarget(null);
+                  }}
+                >
+                  Disconnect
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </TabsContent>
 
         {/* ─── Team Tab ─── */}

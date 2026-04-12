@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { KpiGridSkeleton } from '@/components/PageShell';
+import { formatNumber, formatINRCompact, formatROAS } from '@/lib/format';
 
 const PlatformLogo = ({ name, size = 18 }: { name: string; size?: number }) => (
   <img src={`https://cdn.simpleicons.org/${name}`} width={size} height={size} alt={name} style={{ flexShrink: 0 }} />
@@ -128,7 +129,7 @@ export default function DashboardPage() {
   const quickWins = gscKeywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < 3).slice(0, 3);
   const topKeywords = [...gscKeywords].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
 
-  const fmtCurrency = (v: number) => v >= 1000 ? `₹${(v / 1000).toFixed(1)}k` : `₹${v.toFixed(0)}`;
+  const fmtCurrency = formatINRCompact;
 
   return (
     <div style={{ fontFamily: 'var(--font-body)' }}>
@@ -150,10 +151,10 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       <div className="kpi-grid stagger-in" style={{ marginBottom: 20 }}>
-        <StatCard label="Sessions" value={hasGA4 ? totalSessions.toLocaleString() : '—'} sub={hasGA4 ? `${totalUsers.toLocaleString()} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
-        <StatCard label="Organic Clicks" value={hasGSC ? totalClicks.toLocaleString() : '—'} sub={hasGSC ? `${totalImpressions.toLocaleString()} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
-        <StatCard label="Ad Spend" value={hasAds ? fmtCurrency(totalAdSpend) : '—'} sub={hasAds ? `${totalConversions.toLocaleString()} conversions` : 'Connect Ads'} color="#F97316" icon={Zap} loading={loading} />
-        <StatCard label="ROAS" value={hasAds && totalAdRevenue > 0 ? `${Number(totalROAS).toFixed(2)}x` : '—'} sub={hasAds && totalAdRevenue > 0 ? `${fmtCurrency(totalAdRevenue)} revenue` : hasAds ? 'No revenue data yet' : 'Connect Ads'} color={totalROAS >= 2 ? '#22C55E' : '#F59E0B'} icon={Target} loading={loading} />
+        <StatCard label="Sessions" value={hasGA4 ? formatNumber(totalSessions) : '—'} sub={hasGA4 ? `${formatNumber(totalUsers)} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
+        <StatCard label="Organic Clicks" value={hasGSC ? formatNumber(totalClicks) : '—'} sub={hasGSC ? `${formatNumber(totalImpressions)} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
+        <StatCard label="Ad Spend" value={hasAds ? fmtCurrency(totalAdSpend) : '—'} sub={hasAds ? `${formatNumber(totalConversions)} conversions` : 'Connect Ads'} color="#F97316" icon={Zap} loading={loading} />
+        <StatCard label="ROAS" value={formatROAS(totalROAS, hasAds && totalAdRevenue > 0)} sub={hasAds && totalAdRevenue > 0 ? `${fmtCurrency(totalAdRevenue)} revenue` : hasAds ? 'No revenue data yet' : 'Connect Ads'} color={totalROAS >= 2 ? '#22C55E' : '#F59E0B'} icon={Target} loading={loading} />
       </div>
 
       {/* Anomalies — full width */}
@@ -257,7 +258,7 @@ export default function DashboardPage() {
                     </span>
                     <span style={{ flex: 1, fontSize: 13, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: 4 }}>{kw.query}</span>
                     <span style={{ fontWeight: (kw.clicks || 0) > 50 ? 700 : 600, color: (kw.clicks || 0) > 50 ? c.text : '#7C3AED', fontSize: 13, width: 56, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.clicks}</span>
-                    <span style={{ fontSize: 12, color: c.textSecondary, width: 64, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.impressions?.toLocaleString()}</span>
+                    <span style={{ fontSize: 12, color: c.textSecondary, width: 64, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.impressions ? formatNumber(kw.impressions) : '0'}</span>
                     <span style={{ fontSize: 12, color: c.textSecondary, width: 48, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.ctr?.toFixed(1)}%</span>
                   </div>
                 );
@@ -290,7 +291,7 @@ export default function DashboardPage() {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: c.warning, fontVariantNumeric: 'tabular-nums', width: 32 }}>#{Math.round(kw.position)}</span>
                   <span style={{ flex: 1, fontSize: 13, color: c.textSecondary }}>{kw.query}</span>
-                  <span style={{ fontSize: 12, color: c.textMuted }}>{kw.impressions?.toLocaleString()} impr.</span>
+                  <span style={{ fontSize: 12, color: c.textMuted }}>{kw.impressions ? formatNumber(kw.impressions) : '0'} impr.</span>
                   <span style={{ fontSize: 12, fontWeight: 600, color: c.danger, fontVariantNumeric: 'tabular-nums' }}>{kw.ctr?.toFixed(1)}%</span>
                 </div>
               ))}
@@ -387,14 +388,14 @@ export default function DashboardPage() {
               )}
               {hasAds && totalROAS > 0 && (
                 <div style={{ padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontSize: 13, color: c.textSecondary, lineHeight: 1.6 }}>
-                  <span style={{ fontWeight: 600, color: totalROAS >= 2 ? c.success : c.warning }}>ROAS {totalROAS}x: </span>
+                  <span style={{ fontWeight: 600, color: totalROAS >= 2 ? c.success : c.warning }}>ROAS {formatROAS(totalROAS, true)}: </span>
                   {totalROAS >= 3 ? 'Strong returns — consider scaling spend.' : totalROAS >= 1.5 ? 'Healthy returns. Monitor for fatigue.' : 'Below target. Review underperforming campaigns.'}
                 </div>
               )}
               {hasGA4 && totalSessions > 0 && (
                 <div style={{ padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontSize: 13, color: c.textSecondary, lineHeight: 1.6 }}>
                   <span style={{ fontWeight: 600, color: c.text }}>Traffic: </span>
-                  {`${totalSessions.toLocaleString()} sessions from ${totalUsers.toLocaleString()} users in the last ${days} days.`}
+                  {`${formatNumber(totalSessions)} sessions from ${formatNumber(totalUsers)} users in the last ${days} days.`}
                 </div>
               )}
               {connectedProviders.length < 4 && (
@@ -515,7 +516,7 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
       ) : (
         <div>
           <div style={{ fontSize: 32, fontWeight: 700, color: c.text, fontFamily: 'var(--font-display)', letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums', marginBottom: 4 }}>
-            ~{avgForecast.toLocaleString()}
+            ~{formatNumber(avgForecast)}
           </div>
           <p style={{ fontSize: 11, color: c.textSecondary, marginBottom: 12 }}>avg daily sessions forecast (next 14 days)</p>
           {narrative && (

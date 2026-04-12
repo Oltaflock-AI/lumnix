@@ -373,7 +373,7 @@ export default function CompetitorsPage() {
                     </div>
                     {/* Status indicator */}
                     {isScraping ? (
-                      <Loader2 size={14} color="#3B82F6" style={{ animation: 'spin 1s linear infinite' }} />
+                      <Loader2 size={14} color="#7C3AED" style={{ animation: 'spin 1s linear infinite' }} />
                     ) : comp.scrape_status === 'error' ? (
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444' }} title="Scrape error" />
                     ) : comp.winning_ads_count > 0 ? (

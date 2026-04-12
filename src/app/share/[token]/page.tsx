@@ -47,8 +47,8 @@ export default function SharedDashboardPage({ params }: { params: Promise<{ toke
         {/* KPIs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 28 }}>
           {[
-            { label: 'Sessions', value: totals.sessions?.toLocaleString() || '—', icon: BarChart3 },
-            { label: 'Organic Clicks', value: totals.organic_clicks?.toLocaleString() || '—', icon: Search },
+            { label: 'Sessions', value: totals.sessions?.toLocaleString('en-IN') || '—', icon: BarChart3 },
+            { label: 'Organic Clicks', value: totals.organic_clicks?.toLocaleString('en-IN') || '—', icon: Search },
             { label: 'Ad Spend', value: totals.ad_spend ? `₹${totals.ad_spend.toFixed(0)}` : '—', icon: DollarSign },
             { label: 'ROAS', value: totals.roas ? `${totals.roas}x` : '—', icon: TrendingUp },
           ].map(kpi => (

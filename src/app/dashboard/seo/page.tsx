@@ -11,6 +11,7 @@ import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { formatNumber } from '@/lib/format';
 
 function exportCSV(keywords: any[]) {
   const headers = ['Keyword', 'Position', 'Impressions', 'Clicks', 'CTR', 'Signal'];
@@ -164,8 +165,8 @@ export default function SEOPage() {
             const posNum = parseFloat(avgPosition);
             const posLabel = posNum < 10 ? { text: 'Page 1', color: '#059669' } : posNum < 20 ? { text: 'Page 2', color: '#F59E0B' } : { text: `Page ${Math.ceil(posNum / 10)}`, color: '#94A3B8' };
             const items = [
-              { key: 'clicks', label: 'Total Clicks', value: totalClicks.toLocaleString(), sub: `${days}d period`, icon: TrendingUp, iconColor: '#7C3AED' },
-              { key: 'impr', label: 'Impressions', value: totalImpressions.toLocaleString(), sub: 'Search appearances', icon: Eye, iconColor: '#0891B2' },
+              { key: 'clicks', label: 'Total Clicks', value: formatNumber(totalClicks), sub: `${days}d period`, icon: TrendingUp, iconColor: '#7C3AED' },
+              { key: 'impr', label: 'Impressions', value: formatNumber(totalImpressions), sub: 'Search appearances', icon: Eye, iconColor: '#0891B2' },
               { key: 'ctr', label: 'Avg CTR', value: `${avgCTR}%`, sub: top3 > 0 ? `${top3} keywords in top 3` : 'Improve titles', icon: Target, iconColor: ctrNum > 10 ? '#059669' : ctrNum < 2 ? '#DC2626' : '#7C3AED', accent: ctrNum > 10 ? 'green' : ctrNum < 2 ? 'red' : null },
               { key: 'pos', label: 'Avg Position', value: avgPosition, sub: `${keywords.length} keywords tracked`, icon: Search, iconColor: '#F59E0B', extraLabel: posLabel },
             ];
@@ -251,7 +252,7 @@ export default function SEOPage() {
                         <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, color: '#DC2626' }}>{kw.ctr.toFixed(1)}% CTR</span>
                       </div>
                       <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginLeft: 38 }}>
-                        {kw.impressions.toLocaleString()} impressions, {kw.clicks} click{kw.clicks === 1 ? '' : 's'}
+                        {formatNumber(kw.impressions)} impressions, {kw.clicks} click{kw.clicks === 1 ? '' : 's'}
                       </div>
                       <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: '#7C3AED', fontStyle: 'italic', marginTop: 6, marginLeft: 38 }}>
                         ▶ Optimize title to capture this traffic
@@ -346,8 +347,8 @@ export default function SEOPage() {
                           #{Math.round(pos)}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 8px', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(kw.impressions || 0).toLocaleString()}</td>
-                      <td style={{ padding: '10px 8px', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: (kw.clicks || 0) > 10 ? 700 : 500, color: c.text, fontVariantNumeric: 'tabular-nums' }}>{(kw.clicks || 0).toLocaleString()}</td>
+                      <td style={{ padding: '10px 8px', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{formatNumber(kw.impressions || 0)}</td>
+                      <td style={{ padding: '10px 8px', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: (kw.clicks || 0) > 10 ? 700 : 500, color: c.text, fontVariantNumeric: 'tabular-nums' }}>{formatNumber(kw.clicks || 0)}</td>
                       <td style={{ padding: '10px 8px', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontVariantNumeric: 'tabular-nums', color: kw.ctr < 1 && kw.impressions > 500 ? '#DC2626' : c.textSecondary }}>{(kw.ctr || 0).toFixed(1)}%</td>
                       <td style={{ padding: '10px 0' }}>
                         {kw.signal === 'top3' && (

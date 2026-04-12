@@ -29,7 +29,7 @@ const reportTypes = [
     id: 'analytics',
     label: 'Traffic & Analytics Report',
     icon: BarChart3,
-    color: '#3b82f6',
+    color: '#7C3AED',
     desc: 'Sessions, users, traffic sources, top pages, engagement',
     sections: ['Executive Summary', 'Traffic Overview', 'Traffic Sources', 'Top Pages', 'Trend Analysis', 'AI Recommendations'],
   },
@@ -68,7 +68,7 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
 
   const posRanges = [
     { label: '1–3 (Top 3)', count: top3.length, color: '#22c55e' },
-    { label: '4–10 (Page 1)', count: gscKeywords.filter((k: any) => k.position > 3 && k.position <= 10).length, color: '#3b82f6' },
+    { label: '4–10 (Page 1)', count: gscKeywords.filter((k: any) => k.position > 3 && k.position <= 10).length, color: '#7C3AED' },
     { label: '11–20 (Page 2)', count: page2.length, color: '#f59e0b' },
     { label: '21+ (Page 3+)', count: gscKeywords.filter((k: any) => k.position > 20).length, color: '#ef4444' },
   ];
@@ -139,7 +139,7 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
     <div class="cover-meta">
       <div class="cover-meta-item"><div class="cover-meta-label">Reporting Period</div><div class="cover-meta-val">${period}</div></div>
       <div class="cover-meta-item"><div class="cover-meta-label">Generated</div><div class="cover-meta-val">${generated}</div></div>
-      <div class="cover-meta-item"><div class="cover-meta-label">Keywords Tracked</div><div class="cover-meta-val">${gscKeywords.length.toLocaleString()}</div></div>
+      <div class="cover-meta-item"><div class="cover-meta-label">Keywords Tracked</div><div class="cover-meta-val">${gscKeywords.length.toLocaleString('en-IN')}</div></div>
     </div>
   </div>
 </div>
@@ -148,13 +148,13 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
 
   <h2>Executive Summary</h2>
   <div class="highlight-box">
-    <p><strong>${name}</strong> generated <strong>${totalClicks.toLocaleString()} organic clicks</strong> from <strong>${totalImpressions.toLocaleString()} impressions</strong> during the reporting period, achieving an average click-through rate of <strong>${avgCTR}%</strong> and an average ranking position of <strong>#${avgPos}</strong>. The site currently ranks for <strong>${gscKeywords.length} keywords</strong>, with <strong>${top3.length} keywords in the top 3 positions</strong> and <strong>${page1.length} keywords on page 1</strong> of Google search results. ${quickWins.length > 0 ? `There are <strong>${quickWins.length} high-priority quick win keywords</strong> (positions 4–10 with low CTR) that present immediate optimisation opportunities.` : ''}</p>
+    <p><strong>${name}</strong> generated <strong>${totalClicks.toLocaleString('en-IN')} organic clicks</strong> from <strong>${totalImpressions.toLocaleString('en-IN')} impressions</strong> during the reporting period, achieving an average click-through rate of <strong>${avgCTR}%</strong> and an average ranking position of <strong>#${avgPos}</strong>. The site currently ranks for <strong>${gscKeywords.length} keywords</strong>, with <strong>${top3.length} keywords in the top 3 positions</strong> and <strong>${page1.length} keywords on page 1</strong> of Google search results. ${quickWins.length > 0 ? `There are <strong>${quickWins.length} high-priority quick win keywords</strong> (positions 4–10 with low CTR) that present immediate optimisation opportunities.` : ''}</p>
   </div>
 
   <h2>Performance KPIs</h2>
   <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-val">${totalClicks.toLocaleString()}</div><div class="kpi-label">Organic Clicks</div></div>
-    <div class="kpi"><div class="kpi-val">${totalImpressions.toLocaleString()}</div><div class="kpi-label">Total Impressions</div></div>
+    <div class="kpi"><div class="kpi-val">${totalClicks.toLocaleString('en-IN')}</div><div class="kpi-label">Organic Clicks</div></div>
+    <div class="kpi"><div class="kpi-val">${totalImpressions.toLocaleString('en-IN')}</div><div class="kpi-label">Total Impressions</div></div>
     <div class="kpi"><div class="kpi-val">${avgCTR}%</div><div class="kpi-label">Avg Click-Through Rate</div></div>
     <div class="kpi"><div class="kpi-val">#${avgPos}</div><div class="kpi-label">Avg Ranking Position</div></div>
   </div>
@@ -178,7 +178,7 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
         const sig = k.position <= 3 ? '<span class="tag tag-top3">Top 3</span>'
           : (k.position >= 4 && k.position <= 10 && (k.ctr || 0) < 3) ? '<span class="tag tag-win">Quick Win</span>'
           : ((k.impressions || 0) > 200 && (k.ctr || 0) < 1) ? '<span class="tag tag-ctr">Low CTR</span>' : '';
-        return `<tr><td style="color:#9ca3af;font-size:12px">${i + 1}</td><td><strong>${k.query}</strong></td><td>#${Math.round(k.position || 0)}</td><td>${(k.impressions || 0).toLocaleString()}</td><td><strong>${k.clicks || 0}</strong></td><td>${(k.ctr || 0).toFixed(1)}%</td><td>${sig}</td></tr>`;
+        return `<tr><td style="color:#9ca3af;font-size:12px">${i + 1}</td><td><strong>${k.query}</strong></td><td>#${Math.round(k.position || 0)}</td><td>${(k.impressions || 0).toLocaleString('en-IN')}</td><td><strong>${k.clicks || 0}</strong></td><td>${(k.ctr || 0).toFixed(1)}%</td><td>${sig}</td></tr>`;
       }).join('')}
     </tbody>
   </table>
@@ -191,7 +191,7 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
     <tbody>
       ${quickWins.map((k: any) => {
         const potential = Math.round((k.impressions || 0) * 0.05 - (k.clicks || 0));
-        return `<tr><td><strong>${k.query}</strong></td><td>#${Math.round(k.position || 0)}</td><td>${(k.impressions || 0).toLocaleString()}</td><td>${k.clicks || 0}</td><td style="color:#f59e0b;font-weight:700">${(k.ctr || 0).toFixed(1)}%</td><td style="color:#22c55e;font-weight:700">+${Math.max(0, potential)} clicks</td></tr>`;
+        return `<tr><td><strong>${k.query}</strong></td><td>#${Math.round(k.position || 0)}</td><td>${(k.impressions || 0).toLocaleString('en-IN')}</td><td>${k.clicks || 0}</td><td style="color:#f59e0b;font-weight:700">${(k.ctr || 0).toFixed(1)}%</td><td style="color:#22c55e;font-weight:700">+${Math.max(0, potential)} clicks</td></tr>`;
       }).join('')}
     </tbody>
   </table>
@@ -203,14 +203,14 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
   <table>
     <thead><tr><th>Keyword</th><th>Impressions</th><th>Position</th><th>Clicks</th><th>CTR</th></tr></thead>
     <tbody>
-      ${topByImpressions.map((k: any) => `<tr><td><strong>${k.query}</strong></td><td><strong>${(k.impressions || 0).toLocaleString()}</strong></td><td>#${Math.round(k.position || 0)}</td><td>${k.clicks || 0}</td><td>${(k.ctr || 0).toFixed(2)}%</td></tr>`).join('')}
+      ${topByImpressions.map((k: any) => `<tr><td><strong>${k.query}</strong></td><td><strong>${(k.impressions || 0).toLocaleString('en-IN')}</strong></td><td>#${Math.round(k.position || 0)}</td><td>${k.clicks || 0}</td><td>${(k.ctr || 0).toFixed(2)}%</td></tr>`).join('')}
     </tbody>
   </table>
   ` : ''}
 
   <h2>Strategic Recommendations</h2>
   ${[
-    quickWins.length > 0 ? { n: 1, title: `Optimise ${quickWins.length} Quick Win Keywords`, body: `Keywords like "${quickWins[0]?.query}"${quickWins[1] ? ` and "${quickWins[1]?.query}"` : ''} are ranking on page 1 but have low CTR (below 3%). Rewrite the meta titles and descriptions for these pages to be more compelling and click-worthy. A 2–3x CTR improvement is realistic and could add ${quickWins.reduce((s: number, k: any) => s + Math.max(0, Math.round((k.impressions || 0) * 0.05 - (k.clicks || 0))), 0).toLocaleString()} additional clicks per month.` } : null,
+    quickWins.length > 0 ? { n: 1, title: `Optimise ${quickWins.length} Quick Win Keywords`, body: `Keywords like "${quickWins[0]?.query}"${quickWins[1] ? ` and "${quickWins[1]?.query}"` : ''} are ranking on page 1 but have low CTR (below 3%). Rewrite the meta titles and descriptions for these pages to be more compelling and click-worthy. A 2–3x CTR improvement is realistic and could add ${quickWins.reduce((s: number, k: any) => s + Math.max(0, Math.round((k.impressions || 0) * 0.05 - (k.clicks || 0))), 0).toLocaleString('en-IN')} additional clicks per month.` } : null,
     top3.length > 0 ? { n: 2, title: `Protect Top 3 Rankings`, body: `${name} currently holds ${top3.length} keywords in positions 1–3. These rankings drive the highest click-through rates (typically 25–40%). Maintain these with regular content freshness updates, internal linking, and ensuring page speed remains optimal.` } : null,
     lowCTR.length > 0 ? { n: 3, title: `Fix Low CTR High-Impression Pages`, body: `${lowCTR.length} keywords have high impressions but under 1% CTR. These pages are visible but not compelling users to click. Review and rewrite title tags to include power words, numbers, or emotional hooks relevant to the searcher's intent.` } : null,
     page2.length > 0 ? { n: 4, title: `Push ${page2.length} Page 2 Keywords to Page 1`, body: `${page2.length} keywords are ranking on page 2 (positions 11–20). These are the highest-leverage SEO opportunities — a small ranking improvement moves them to page 1 where 90%+ of clicks happen. Add more depth, examples, and semantic keywords to these pages.` } : null,
@@ -277,7 +277,7 @@ function buildAnalyticsReport(
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
   .cover { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 260px; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; }
   .cover-brand { display: flex; align-items: center; gap: 12px; }
-  .cover-dot { width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; }
+  .cover-dot { width: 10px; height: 10px; border-radius: 50%; background: #7C3AED; }
   .cover-lumnix { font-size: 15px; font-weight: 700; color: #93c5fd; letter-spacing: 1px; text-transform: uppercase; }
   .cover-title { font-size: 36px; font-weight: 900; color: #fff; line-height: 1.15; letter-spacing: -1px; margin-top: 24px; }
   .cover-sub { font-size: 16px; color: #94a3b8; margin-top: 8px; }
@@ -285,7 +285,7 @@ function buildAnalyticsReport(
   .cover-meta-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
   .cover-meta-val { font-size: 14px; color: #e2e8f0; font-weight: 600; }
   .body { padding: 40px 48px; }
-  h2 { font-size: 13px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 1.5px; margin: 36px 0 16px; display: flex; align-items: center; gap: 8px; }
+  h2 { font-size: 13px; font-weight: 700; color: #7C3AED; text-transform: uppercase; letter-spacing: 1.5px; margin: 36px 0 16px; display: flex; align-items: center; gap: 8px; }
   h2::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
   p { font-size: 14px; color: #374151; line-height: 1.7; margin-bottom: 10px; }
   .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
@@ -299,12 +299,12 @@ function buildAnalyticsReport(
   .bar-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
   .bar-label { font-size: 13px; color: #374151; width: 140px; flex-shrink: 0; font-weight: 500; text-transform: capitalize; }
   .bar-track { flex: 1; background: #f1f5f9; border-radius: 4px; height: 8px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; background: #3b82f6; }
+  .bar-fill { height: 100%; border-radius: 4px; background: #7C3AED; }
   .bar-val { font-size: 13px; font-weight: 700; color: #111827; width: 60px; text-align: right; }
   .bar-pct { font-size: 12px; color: #9ca3af; width: 40px; text-align: right; }
   .spark { display: flex; align-items: flex-end; gap: 3px; height: 60px; padding: 8px 0; }
   .spark-bar { flex: 1; background: #dbeafe; border-radius: 3px 3px 0 0; position: relative; min-width: 12px; }
-  .spark-bar.above { background: #3b82f6; }
+  .spark-bar.above { background: #7C3AED; }
   .rec { display: flex; gap: 14px; padding: 16px; border-radius: 10px; border: 1px solid #e5e7eb; margin-bottom: 10px; background: #fafafa; }
   .rec-num { width: 28px; height: 28px; border-radius: 8px; background: #dbeafe; color: #1d4ed8; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .rec-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px; }
@@ -312,7 +312,7 @@ function buildAnalyticsReport(
   .highlight-box { background: linear-gradient(135deg, #eff6ff, #f0fdf4); border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px 24px; margin: 16px 0; }
   .highlight-box p { color: #374151; font-size: 14px; line-height: 1.75; }
   .footer { background: #f8fafc; border-top: 2px solid #e2e8f0; padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; margin-top: 48px; }
-  .footer-brand { font-size: 13px; font-weight: 700; color: #3b82f6; }
+  .footer-brand { font-size: 13px; font-weight: 700; color: #7C3AED; }
   .footer-note { font-size: 12px; color: #9ca3af; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
@@ -327,7 +327,7 @@ function buildAnalyticsReport(
     <div class="cover-meta">
       <div class="cover-meta-item"><div class="cover-meta-label">Reporting Period</div><div class="cover-meta-val">${period}</div></div>
       <div class="cover-meta-item"><div class="cover-meta-label">Generated</div><div class="cover-meta-val">${generated}</div></div>
-      <div class="cover-meta-item"><div class="cover-meta-label">Avg Daily Sessions</div><div class="cover-meta-val">${avgDaily.toLocaleString()}</div></div>
+      <div class="cover-meta-item"><div class="cover-meta-label">Avg Daily Sessions</div><div class="cover-meta-val">${avgDaily.toLocaleString('en-IN')}</div></div>
     </div>
   </div>
 </div>
@@ -336,20 +336,20 @@ function buildAnalyticsReport(
 
   <h2>Executive Summary</h2>
   <div class="highlight-box">
-    <p><strong>${name}</strong> recorded <strong>${totalSessions.toLocaleString()} sessions</strong> and <strong>${totalUsers.toLocaleString()} users</strong> during the 30-day reporting period, averaging <strong>${avgDaily.toLocaleString()} sessions per day</strong>. ${totalNewUsers > 0 ? `The site attracted <strong>${totalNewUsers.toLocaleString()} new users</strong>, with <strong>${returningUsers > 0 ? returningUsers.toLocaleString() : 'several'} returning users</strong> — indicating ${returningUsers / Math.max(totalUsers, 1) > 0.3 ? 'a healthy level of audience retention' : 'room to grow audience loyalty and return visit rates'}.` : ''} ${topSources.length > 0 ? `The primary traffic source is <strong>${topSource}</strong>, contributing ${topSourcePct}% of total sessions.` : ''}</p>
+    <p><strong>${name}</strong> recorded <strong>${totalSessions.toLocaleString('en-IN')} sessions</strong> and <strong>${totalUsers.toLocaleString('en-IN')} users</strong> during the 30-day reporting period, averaging <strong>${avgDaily.toLocaleString('en-IN')} sessions per day</strong>. ${totalNewUsers > 0 ? `The site attracted <strong>${totalNewUsers.toLocaleString('en-IN')} new users</strong>, with <strong>${returningUsers > 0 ? returningUsers.toLocaleString('en-IN') : 'several'} returning users</strong> — indicating ${returningUsers / Math.max(totalUsers, 1) > 0.3 ? 'a healthy level of audience retention' : 'room to grow audience loyalty and return visit rates'}.` : ''} ${topSources.length > 0 ? `The primary traffic source is <strong>${topSource}</strong>, contributing ${topSourcePct}% of total sessions.` : ''}</p>
   </div>
 
   <h2>Traffic Overview</h2>
   <div class="kpi-grid">
-    <div class="kpi"><div class="kpi-val">${totalSessions.toLocaleString()}</div><div class="kpi-label">Total Sessions</div></div>
-    <div class="kpi"><div class="kpi-val">${totalUsers.toLocaleString()}</div><div class="kpi-label">Total Users</div></div>
-    <div class="kpi"><div class="kpi-val">${totalNewUsers.toLocaleString()}</div><div class="kpi-label">New Users</div></div>
-    <div class="kpi"><div class="kpi-val">${avgDaily.toLocaleString()}</div><div class="kpi-label">Avg Daily Sessions</div></div>
+    <div class="kpi"><div class="kpi-val">${totalSessions.toLocaleString('en-IN')}</div><div class="kpi-label">Total Sessions</div></div>
+    <div class="kpi"><div class="kpi-val">${totalUsers.toLocaleString('en-IN')}</div><div class="kpi-label">Total Users</div></div>
+    <div class="kpi"><div class="kpi-val">${totalNewUsers.toLocaleString('en-IN')}</div><div class="kpi-label">New Users</div></div>
+    <div class="kpi"><div class="kpi-val">${avgDaily.toLocaleString('en-IN')}</div><div class="kpi-label">Avg Daily Sessions</div></div>
   </div>
 
   ${dailyData.length > 0 ? `
   <h2>14-Day Traffic Trend</h2>
-  <p>Daily session volume over the last 14 days. The average line represents the 30-day daily average of ${avgDaily.toLocaleString()} sessions.</p>
+  <p>Daily session volume over the last 14 days. The average line represents the 30-day daily average of ${avgDaily.toLocaleString('en-IN')} sessions.</p>
   <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-top:8px">
     <div class="spark">
       ${dailyData.map(([date, val]) => {
@@ -359,7 +359,7 @@ function buildAnalyticsReport(
         const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="flex:1;width:100%;display:flex;align-items:flex-end">
-            <div style="width:100%;height:${h}%;background:${isAbove ? '#3b82f6' : '#bfdbfe'};border-radius:3px 3px 0 0;min-height:4px"></div>
+            <div style="width:100%;height:${h}%;background:${isAbove ? '#7C3AED' : '#bfdbfe'};border-radius:3px 3px 0 0;min-height:4px"></div>
           </div>
           <div style="font-size:9px;color:#9ca3af;white-space:nowrap">${label}</div>
           <div style="font-size:10px;font-weight:700;color:#374151">${val}</div>
@@ -378,7 +378,7 @@ function buildAnalyticsReport(
       return `<div class="bar-row">
         <div class="bar-label">${src || 'direct'}</div>
         <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-        <div class="bar-val">${val.toLocaleString()}</div>
+        <div class="bar-val">${val.toLocaleString('en-IN')}</div>
         <div class="bar-pct">${pct}%</div>
       </div>`;
     }).join('')}
@@ -393,7 +393,7 @@ function buildAnalyticsReport(
     <tbody>
       ${topPages.map(([page, val], i) => {
         const pct = totalSessions > 0 ? ((val / totalSessions) * 100).toFixed(1) : '0';
-        return `<tr><td style="color:#9ca3af;font-size:12px">${i + 1}</td><td><strong>${page}</strong></td><td><strong>${val.toLocaleString()}</strong></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:${Math.round((val/topPages[0][1])*80)}px;height:6px;background:#bfdbfe;border-radius:3px"></div><span style="color:#6b7280;font-size:12px">${pct}%</span></div></td></tr>`;
+        return `<tr><td style="color:#9ca3af;font-size:12px">${i + 1}</td><td><strong>${page}</strong></td><td><strong>${val.toLocaleString('en-IN')}</strong></td><td><div style="display:flex;align-items:center;gap:8px"><div style="width:${Math.round((val/topPages[0][1])*80)}px;height:6px;background:#bfdbfe;border-radius:3px"></div><span style="color:#6b7280;font-size:12px">${pct}%</span></div></td></tr>`;
       }).join('')}
     </tbody>
   </table>
@@ -402,7 +402,7 @@ function buildAnalyticsReport(
   <h2>Strategic Recommendations</h2>
   ${[
     topSources.length > 0 ? { n: 1, title: `Diversify Beyond ${topSource}`, body: `${topSourcePct}% of traffic comes from ${topSource}. Over-reliance on a single source creates risk. Invest in building 2–3 complementary channels — ${topSource === 'google' ? 'email marketing and social media' : 'organic search and email marketing'} — to create a more resilient traffic mix.` } : null,
-    avgDaily > 0 ? { n: 2, title: `Improve Session-to-Lead Conversion`, body: `With ${avgDaily.toLocaleString()} daily sessions, even a 1% conversion rate improvement means measurably more leads. Review top-traffic pages for clear CTAs, lead magnets, and friction-free contact options.` } : null,
+    avgDaily > 0 ? { n: 2, title: `Improve Session-to-Lead Conversion`, body: `With ${avgDaily.toLocaleString('en-IN')} daily sessions, even a 1% conversion rate improvement means measurably more leads. Review top-traffic pages for clear CTAs, lead magnets, and friction-free contact options.` } : null,
     totalNewUsers > 0 && returningUsers / Math.max(totalUsers, 1) < 0.3 ? { n: 3, title: `Increase Return Visit Rate`, body: `Currently ${((returningUsers / Math.max(totalUsers, 1)) * 100).toFixed(0)}% of users return. Industry benchmarks suggest 30–40%+ is achievable. Email newsletters, retargeting, and push notifications can bring visitors back consistently.` } : null,
     topPages.length > 3 ? { n: 4, title: `Optimise Top 3 Pages for Conversions`, body: `Pages "${topPages[0]?.[0]}", "${topPages[1]?.[0]}", and "${topPages[2]?.[0]}" drive the most traffic. A/B test headlines, CTAs, and page layouts on these pages — small improvements here have outsized impact on overall performance.` } : null,
   ].filter(Boolean).map((r: any) => `<div class="rec"><div class="rec-num">${r.n}</div><div><div class="rec-title">${r.title}</div><div class="rec-body">${r.body}</div></div></div>`).join('')}
@@ -548,7 +548,7 @@ function buildFullReport(
   <h2>Executive Summary</h2>
   <div class="highlight-box">
     <p>This report provides a comprehensive analysis of <strong>${name}</strong>'s digital marketing performance for the period <strong>${period}</strong>. Data was sourced directly from Google Search Console and Google Analytics 4.</p>
-    <p style="margin-top:8px">During this period, <strong>${name}</strong> generated <strong>${totalClicks.toLocaleString()} organic clicks</strong> from <strong>${totalImpressions.toLocaleString()} search impressions</strong>, with an average CTR of <strong>${avgCTR}%</strong>. Simultaneously, the website recorded <strong>${totalSessions.toLocaleString()} sessions</strong> and <strong>${totalUsers.toLocaleString()} users</strong>, averaging <strong>${avgDaily.toLocaleString()} sessions per day</strong>.</p>
+    <p style="margin-top:8px">During this period, <strong>${name}</strong> generated <strong>${totalClicks.toLocaleString('en-IN')} organic clicks</strong> from <strong>${totalImpressions.toLocaleString('en-IN')} search impressions</strong>, with an average CTR of <strong>${avgCTR}%</strong>. Simultaneously, the website recorded <strong>${totalSessions.toLocaleString('en-IN')} sessions</strong> and <strong>${totalUsers.toLocaleString('en-IN')} users</strong>, averaging <strong>${avgDaily.toLocaleString('en-IN')} sessions per day</strong>.</p>
     <p style="margin-top:8px">Key strengths: <strong>${top3.length} keywords in top 3 positions</strong> and <strong>${page1.length} keywords ranking on page 1</strong>. Key opportunity: <strong>${quickWins.length} quick-win keywords</strong> that could deliver additional clicks with title/description optimisation alone.</p>
   </div>
 
@@ -558,15 +558,15 @@ function buildFullReport(
   <div class="two-col">
     <div class="metric-block">
       <div class="metric-block-title">Search Visibility</div>
-      <div class="metric-row"><span class="metric-key">Organic Clicks</span><span class="metric-val">${totalClicks.toLocaleString()}</span></div>
-      <div class="metric-row"><span class="metric-key">Impressions</span><span class="metric-val">${totalImpressions.toLocaleString()}</span></div>
+      <div class="metric-row"><span class="metric-key">Organic Clicks</span><span class="metric-val">${totalClicks.toLocaleString('en-IN')}</span></div>
+      <div class="metric-row"><span class="metric-key">Impressions</span><span class="metric-val">${totalImpressions.toLocaleString('en-IN')}</span></div>
       <div class="metric-row"><span class="metric-key">Avg CTR</span><span class="metric-val">${avgCTR}%</span></div>
       <div class="metric-row"><span class="metric-key">Avg Position</span><span class="metric-val">#${avgPos}</span></div>
     </div>
     <div class="metric-block">
       <div class="metric-block-title">Ranking Distribution</div>
       <div class="metric-row"><span class="metric-key">Top 3 positions</span><span class="metric-val" style="color:#22c55e">${top3.length} keywords</span></div>
-      <div class="metric-row"><span class="metric-key">Page 1 (top 10)</span><span class="metric-val" style="color:#3b82f6">${page1.length} keywords</span></div>
+      <div class="metric-row"><span class="metric-key">Page 1 (top 10)</span><span class="metric-val" style="color:#7C3AED">${page1.length} keywords</span></div>
       <div class="metric-row"><span class="metric-key">Page 2 (11–20)</span><span class="metric-val" style="color:#f59e0b">${gscKeywords.filter((k: any) => k.position > 10 && k.position <= 20).length} keywords</span></div>
       <div class="metric-row"><span class="metric-key">Total tracked</span><span class="metric-val">${gscKeywords.length} keywords</span></div>
     </div>
@@ -580,7 +580,7 @@ function buildFullReport(
         const sig = k.position <= 3 ? '<span class="tag tag-top3">Top 3</span>'
           : (k.position >= 4 && k.position <= 10 && (k.ctr || 0) < 3) ? '<span class="tag tag-win">Quick Win</span>'
           : ((k.impressions || 0) > 200 && (k.ctr || 0) < 1) ? '<span class="tag tag-ctr">Low CTR</span>' : '';
-        return `<tr><td style="color:#9ca3af;font-size:11px">${i + 1}</td><td><strong>${k.query}</strong></td><td>#${Math.round(k.position || 0)}</td><td><strong>${k.clicks || 0}</strong></td><td>${(k.impressions || 0).toLocaleString()}</td><td>${(k.ctr || 0).toFixed(1)}%</td><td>${sig}</td></tr>`;
+        return `<tr><td style="color:#9ca3af;font-size:11px">${i + 1}</td><td><strong>${k.query}</strong></td><td>#${Math.round(k.position || 0)}</td><td><strong>${k.clicks || 0}</strong></td><td>${(k.impressions || 0).toLocaleString('en-IN')}</td><td>${(k.ctr || 0).toFixed(1)}%</td><td>${sig}</td></tr>`;
       }).join('')}
     </tbody>
   </table>
@@ -591,14 +591,14 @@ function buildFullReport(
   <div class="two-col">
     <div class="metric-block">
       <div class="metric-block-title">Audience Overview</div>
-      <div class="metric-row"><span class="metric-key">Total Sessions</span><span class="metric-val">${totalSessions.toLocaleString()}</span></div>
-      <div class="metric-row"><span class="metric-key">Total Users</span><span class="metric-val">${totalUsers.toLocaleString()}</span></div>
-      <div class="metric-row"><span class="metric-key">Avg Daily Sessions</span><span class="metric-val">${avgDaily.toLocaleString()}</span></div>
+      <div class="metric-row"><span class="metric-key">Total Sessions</span><span class="metric-val">${totalSessions.toLocaleString('en-IN')}</span></div>
+      <div class="metric-row"><span class="metric-key">Total Users</span><span class="metric-val">${totalUsers.toLocaleString('en-IN')}</span></div>
+      <div class="metric-row"><span class="metric-key">Avg Daily Sessions</span><span class="metric-val">${avgDaily.toLocaleString('en-IN')}</span></div>
     </div>
     ${topSources.length > 0 ? `
     <div class="metric-block">
       <div class="metric-block-title">Top Traffic Sources</div>
-      ${topSources.slice(0, 5).map(([src, val]) => `<div class="metric-row"><span class="metric-key" style="text-transform:capitalize">${src || 'direct'}</span><span class="metric-val">${val.toLocaleString()} <span style="color:#9ca3af;font-weight:400;font-size:12px">(${totalSessions > 0 ? ((val / totalSessions) * 100).toFixed(0) : 0}%)</span></span></div>`).join('')}
+      ${topSources.slice(0, 5).map(([src, val]) => `<div class="metric-row"><span class="metric-key" style="text-transform:capitalize">${src || 'direct'}</span><span class="metric-val">${val.toLocaleString('en-IN')} <span style="color:#9ca3af;font-weight:400;font-size:12px">(${totalSessions > 0 ? ((val / totalSessions) * 100).toFixed(0) : 0}%)</span></span></div>`).join('')}
     </div>` : '<div></div>'}
   </div>
 
@@ -606,7 +606,7 @@ function buildFullReport(
   <h3>Traffic Source Breakdown</h3>
   ${topSources.map(([src, val]) => {
     const pct = totalSessions > 0 ? ((val / totalSessions) * 100).toFixed(1) : '0';
-    return `<div class="bar-row"><div class="bar-label">${src || 'direct'}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-val">${val.toLocaleString()}</div><div class="bar-pct">${pct}%</div></div>`;
+    return `<div class="bar-row"><div class="bar-label">${src || 'direct'}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="bar-val">${val.toLocaleString('en-IN')}</div><div class="bar-pct">${pct}%</div></div>`;
   }).join('')}
   ` : ''}
 
@@ -617,7 +617,7 @@ function buildFullReport(
     <tbody>
       ${topPages.map(([page, val], i) => {
         const pct = totalSessions > 0 ? ((val / totalSessions) * 100).toFixed(1) : '0';
-        return `<tr><td style="color:#9ca3af;font-size:11px">${i + 1}</td><td><strong>${page}</strong></td><td><strong>${val.toLocaleString()}</strong></td><td>${pct}%</td></tr>`;
+        return `<tr><td style="color:#9ca3af;font-size:11px">${i + 1}</td><td><strong>${page}</strong></td><td><strong>${val.toLocaleString('en-IN')}</strong></td><td>${pct}%</td></tr>`;
       }).join('')}
     </tbody>
   </table>
@@ -631,14 +631,14 @@ function buildFullReport(
   <div class="opp">
     <div class="opp-meta">High Priority · SEO</div>
     <div class="opp-title">⚡ ${quickWins.length} Keywords Ready for CTR Improvement</div>
-    <div class="opp-body">The following keywords rank on page 1 (positions 4–10) but have below-average CTR. Rewriting meta titles and descriptions could add an estimated ${quickWins.reduce((s: number, k: any) => s + Math.max(0, Math.round((k.impressions || 0) * 0.05 - (k.clicks || 0))), 0).toLocaleString()}+ additional clicks per month without any ranking improvement needed.</div>
+    <div class="opp-body">The following keywords rank on page 1 (positions 4–10) but have below-average CTR. Rewriting meta titles and descriptions could add an estimated ${quickWins.reduce((s: number, k: any) => s + Math.max(0, Math.round((k.impressions || 0) * 0.05 - (k.clicks || 0))), 0).toLocaleString('en-IN')}+ additional clicks per month without any ranking improvement needed.</div>
   </div>
   <table style="margin-bottom:24px">
     <thead><tr><th>Keyword</th><th>Position</th><th>Current CTR</th><th>Impressions</th><th>Estimated Gain</th></tr></thead>
     <tbody>
       ${quickWins.slice(0, 8).map((k: any) => {
         const gain = Math.max(0, Math.round((k.impressions || 0) * 0.05 - (k.clicks || 0)));
-        return `<tr><td><strong>${k.query}</strong></td><td>#${Math.round(k.position)}</td><td style="color:#f59e0b;font-weight:700">${(k.ctr || 0).toFixed(1)}%</td><td>${(k.impressions || 0).toLocaleString()}</td><td style="color:#22c55e;font-weight:700">+${gain} clicks/mo</td></tr>`;
+        return `<tr><td><strong>${k.query}</strong></td><td>#${Math.round(k.position)}</td><td style="color:#f59e0b;font-weight:700">${(k.ctr || 0).toFixed(1)}%</td><td>${(k.impressions || 0).toLocaleString('en-IN')}</td><td style="color:#22c55e;font-weight:700">+${gain} clicks/mo</td></tr>`;
       }).join('')}
     </tbody>
   </table>
@@ -654,7 +654,7 @@ function buildFullReport(
       n: 1,
       title: `Optimise ${quickWins.length} Quick Win Keywords`,
       body: `Keywords ranking positions 4–10 with low CTR are your highest-leverage opportunity. Rewrite title tags and meta descriptions for these pages to be more compelling and match searcher intent. Focus especially on: ${quickWins.slice(0, 3).map((k: any) => `"${k.query}"`).join(', ')}.`,
-      impact: 'Expected Impact: +' + quickWins.reduce((s: number, k: any) => s + Math.max(0, Math.round((k.impressions || 0) * 0.05 - (k.clicks || 0))), 0).toLocaleString() + ' clicks/month',
+      impact: 'Expected Impact: +' + quickWins.reduce((s: number, k: any) => s + Math.max(0, Math.round((k.impressions || 0) * 0.05 - (k.clicks || 0))), 0).toLocaleString('en-IN') + ' clicks/month',
     } : null,
     top3.length > 0 ? {
       n: 2,
@@ -665,7 +665,7 @@ function buildFullReport(
     totalSessions > 0 ? {
       n: 3,
       title: `Convert Traffic into Leads`,
-      body: `With ${totalSessions.toLocaleString()} monthly sessions and ${avgDaily.toLocaleString()} daily visitors, the traffic foundation is in place. The next lever is conversion rate optimisation — clear CTAs on high-traffic pages, lead magnets, and streamlined contact/booking flows.`,
+      body: `With ${totalSessions.toLocaleString('en-IN')} monthly sessions and ${avgDaily.toLocaleString('en-IN')} daily visitors, the traffic foundation is in place. The next lever is conversion rate optimisation — clear CTAs on high-traffic pages, lead magnets, and streamlined contact/booking flows.`,
       impact: 'Expected Impact: 1–3% CRO improvement = meaningful lead volume increase',
     } : null,
     gscKeywords.filter((k: any) => k.position > 10 && k.position <= 20).length > 0 ? {

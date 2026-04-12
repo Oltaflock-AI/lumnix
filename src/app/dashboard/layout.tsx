@@ -530,9 +530,9 @@ My feedback:
     avatarBorder: 'rgba(255,255,255,0.08)',
     mutedIcon: '#94A3B8',
   } : {
-    sectionLabel: '#9CA3AF',
+    sectionLabel: '#6B7280',
     navText: '#374151',
-    navIcon: '#6B7280',
+    navIcon: '#4B5563',
     navTextHover: '#111827',
     navIconHover: '#7C3AED',
     navHoverBg: 'rgba(124, 58, 237, 0.06)',

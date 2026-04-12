@@ -11,8 +11,9 @@ import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { formatNumber } from '@/lib/format';
 
-const COLORS = ['#7C3AED','#0891B2','#10B981','#F59E0B','#ec4899','#3b82f6'];
+const COLORS = ['#7C3AED','#0891B2','#10B981','#F59E0B','#ec4899','#8B5CF6'];
 
 
 function InsightCard({ icon: Icon, color, title, value, sub }: { icon: any; color: string; title: string; value: string; sub: string }) {
@@ -151,9 +152,9 @@ export default function AnalyticsPage() {
           {/* KPIs */}
           {(() => {
             const kpis = [
-              { key: 'sessions', label: 'Sessions', value: totalSessions.toLocaleString(), sub: `${days}d period`, trend: wowChange, big: true },
-              { key: 'users', label: 'Users', value: totalUsers.toLocaleString(), sub: 'Unique visitors', trend: null },
-              { key: 'pageviews', label: 'Pageviews', value: totalPageviews.toLocaleString(), sub: `${pagesPerSession} pages/session`, trend: null },
+              { key: 'sessions', label: 'Sessions', value: totalSessions.toLocaleString('en-IN'), sub: `${days}d period`, trend: wowChange, big: true },
+              { key: 'users', label: 'Users', value: totalUsers.toLocaleString('en-IN'), sub: 'Unique visitors', trend: null },
+              { key: 'pageviews', label: 'Pageviews', value: totalPageviews.toLocaleString('en-IN'), sub: `${pagesPerSession} pages/session`, trend: null },
               { key: 'wow', label: 'WoW Change', value: `${wowChange > 0 ? '+' : ''}${wowChange}%`, sub: 'vs previous period', wowCard: true, wowNegative: wowChange < 0 },
             ];
             return (
@@ -240,7 +241,7 @@ export default function AnalyticsPage() {
                     {(topSources[0].source || 'direct')}
                   </div>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: isDark ? '#34D399' : '#059669', marginTop: 2, fontWeight: 600 }}>
-                    {(topSources[0].sessions || 0).toLocaleString()} sessions
+                    {(topSources[0].sessions || 0).toLocaleString('en-IN')} sessions
                   </div>
                 </div>
               )}
@@ -268,7 +269,7 @@ export default function AnalyticsPage() {
                   }}
                   formatter={(value: any) => {
                     const pct = avgSessions > 0 ? Math.round(((value - avgSessions) / avgSessions) * 100) : 0;
-                    return [`${Number(value).toLocaleString()} (${pct >= 0 ? '+' : ''}${pct}% vs avg)`, 'Sessions'];
+                    return [`${Number(value).toLocaleString('en-IN')} (${pct >= 0 ? '+' : ''}${pct}% vs avg)`, 'Sessions'];
                   }}
                 />
                 <ReferenceLine y={Math.round(avgSessions)} stroke="rgba(124,58,237,0.3)" strokeDasharray="4 4" />
@@ -312,7 +313,7 @@ export default function AnalyticsPage() {
                         <Tooltip
                           cursor={{ fill: 'rgba(124,58,237,0.06)' }}
                           contentStyle={{ backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, fontFamily: 'DM Sans', fontSize: 12 }}
-                          formatter={(value: any) => [`${Number(value).toLocaleString()} sessions`, 'Traffic']}
+                          formatter={(value: any) => [`${Number(value).toLocaleString('en-IN')} sessions`, 'Traffic']}
                         />
                         <Bar dataKey="sessions" radius={[0, 6, 6, 0]} barSize={28}
                           label={{ position: 'right', formatter: (v: any) => {
@@ -325,7 +326,7 @@ export default function AnalyticsPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, borderLeft: `1px solid ${c.border}`, paddingLeft: 16 }}>
                       <div>
                         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Total</div>
-                        <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: c.text }}>{totalSessions.toLocaleString()}</div>
+                        <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: c.text }}>{totalSessions.toLocaleString('en-IN')}</div>
                       </div>
                       <div>
                         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Top source</div>
@@ -336,9 +337,9 @@ export default function AnalyticsPage() {
                         <div>
                           <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Organic / Paid</div>
                           <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text }}>
-                            <span style={{ color: '#7C3AED', fontWeight: 600 }}>{organic.toLocaleString()}</span>
+                            <span style={{ color: '#7C3AED', fontWeight: 600 }}>{organic.toLocaleString('en-IN')}</span>
                             {' / '}
-                            <span style={{ color: '#0891B2', fontWeight: 600 }}>{paid.toLocaleString()}</span>
+                            <span style={{ color: '#0891B2', fontWeight: 600 }}>{paid.toLocaleString('en-IN')}</span>
                           </div>
                         </div>
                       )}
@@ -379,7 +380,7 @@ export default function AnalyticsPage() {
                             <div style={{ height: '100%', borderRadius: 2, background: '#7C3AED', width: `${pct}%` }} />
                           </div>
                         </div>
-                        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: c.text, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{views.toLocaleString()}</span>
+                        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: c.text, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{views.toLocaleString('en-IN')}</span>
                       </div>
                     );
                   })}

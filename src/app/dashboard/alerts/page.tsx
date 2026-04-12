@@ -54,7 +54,7 @@ function generateAlerts(gscKeywords: any[], ga4Data: any[]): Alert[] {
       alerts.push({
         id: 'zc-1',
         title: `${zeroClick.length} high-impression keyword${zeroClick.length > 1 ? 's' : ''} with zero clicks`,
-        detail: `"${zeroClick[0]?.query}" has ${zeroClick[0]?.impressions?.toLocaleString()} impressions but 0 clicks. Title/meta needs work.`,
+        detail: `"${zeroClick[0]?.query}" has ${zeroClick[0]?.impressions?.toLocaleString('en-IN')} impressions but 0 clicks. Title/meta needs work.`,
         severity: 'critical',
         source: 'GSC',
         dismissed: false,
@@ -88,7 +88,7 @@ function generateAlerts(gscKeywords: any[], ga4Data: any[]): Alert[] {
         alerts.push({
           id: 'traffic-drop',
           title: `Traffic dropped ${Math.abs(Math.round(change))}% vs previous period`,
-          detail: `Sessions fell from ${previous.toLocaleString()} to ${recent.toLocaleString()}. Check for algorithm updates or technical issues.`,
+          detail: `Sessions fell from ${previous.toLocaleString('en-IN')} to ${recent.toLocaleString('en-IN')}. Check for algorithm updates or technical issues.`,
           severity: 'critical',
           source: 'GA4',
           dismissed: false,
@@ -97,7 +97,7 @@ function generateAlerts(gscKeywords: any[], ga4Data: any[]): Alert[] {
         alerts.push({
           id: 'traffic-spike',
           title: `Traffic spiked +${Math.round(change)}% vs previous period`,
-          detail: `Sessions grew from ${previous.toLocaleString()} to ${recent.toLocaleString()}. Investigate what's driving this growth.`,
+          detail: `Sessions grew from ${previous.toLocaleString('en-IN')} to ${recent.toLocaleString('en-IN')}. Investigate what's driving this growth.`,
           severity: 'success',
           source: 'GA4',
           dismissed: false,

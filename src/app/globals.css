@@ -201,6 +201,27 @@
   }
 }
 
+/* ── Focus Visible — A5 accessibility fix ── */
+:focus-visible {
+  outline: 2px solid #7C3AED;
+  outline-offset: 3px;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #7C3AED;
+  outline-offset: 3px;
+}
+
+/* Remove default outline only when NOT focus-visible */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* ── Skip Link ── */
 .skip-link {
   position: absolute;

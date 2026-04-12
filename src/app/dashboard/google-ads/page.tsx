@@ -11,6 +11,8 @@ import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { formatNumber, formatINR, formatROAS } from '@/lib/format';
 
 function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: string; label: string; value: string; sub?: string }) {
   const { c } = useTheme();
@@ -26,32 +28,7 @@ function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: 
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const label = status === 'ENABLED' ? 'Active' : status === 'PAUSED' ? 'Paused' : status === 'REMOVED' ? 'Removed' : status;
-  let bg = '', color = '';
-  if (status === 'ENABLED') {
-    bg = isDark ? 'rgba(5,150,105,0.2)' : '#DCFCE7';
-    color = isDark ? '#6EE7B7' : '#166534';
-  } else if (status === 'PAUSED') {
-    bg = isDark ? 'rgba(148,163,184,0.15)' : '#F1F5F9';
-    color = isDark ? '#CBD5E1' : '#475569';
-  } else {
-    bg = 'rgba(220,38,38,0.15)';
-    color = isDark ? '#FCA5A5' : '#DC2626';
-  }
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center',
-      padding: '3px 10px', borderRadius: 20,
-      background: bg, color,
-      fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
-    }}>
-      {label}
-    </span>
-  );
-}
+/* StatusBadge now imported from @/components/ui/status-badge */
 
 export default function GoogleAdsPage() {
   const { c, theme } = useTheme();
@@ -176,7 +153,7 @@ export default function GoogleAdsPage() {
                 <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Spend</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    ₹{totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {formatINR(totalSpend, 2)}
                   </div>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>Last {days} days</div>
                 </div>
@@ -184,17 +161,17 @@ export default function GoogleAdsPage() {
                 <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Clicks</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    {totalClicks.toLocaleString()}
+                    {formatNumber(totalClicks)}
                   </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{totalImpressions.toLocaleString()} impressions</div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{formatNumber(totalImpressions)} impressions</div>
                 </div>
                 {/* Conversions */}
                 <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Conversions</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    {Math.round(totalConversions).toLocaleString()}
+                    {formatNumber(Math.round(totalConversions))}
                   </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>₹{totalConvValue.toLocaleString(undefined, { maximumFractionDigits: 0 })} value</div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{formatINR(totalConvValue)} value</div>
                 </div>
                 {/* ROAS — hero */}
                 <div style={{
@@ -204,7 +181,7 @@ export default function GoogleAdsPage() {
                 }}>
                   <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, color: isDark ? '#6EE7B7' : '#065F46', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>ROAS</div>
                   <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 32, fontWeight: 700, color: isDark ? '#34D399' : '#065F46', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    {roas.toFixed(2)}x
+                    {formatROAS(roas, totalConvValue > 0)}
                   </div>
                   <span style={{
                     display: 'inline-block', marginTop: 6,
@@ -251,8 +228,8 @@ export default function GoogleAdsPage() {
                       <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 700, color: isDark ? '#6EE7B7' : '#065F46', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Best ROAS</div>
                       <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{best.campaign_name}</div>
                       <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 2 }}>
-                        <span style={{ color: isDark ? '#34D399' : '#059669', fontWeight: 700 }}>{best.roas.toFixed(2)}x ROAS</span>
-                        {' · '}₹{(best.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} spend · {(best.clicks || 0).toLocaleString()} clicks · {Math.round(best.conversions || 0)} conversions
+                        <span style={{ color: isDark ? '#34D399' : '#059669', fontWeight: 700 }}>{formatROAS(best.roas, true)}</span>
+                        {' · '}{formatINR(best.cost || 0, 2)} spend · {formatNumber(best.clicks || 0)} clicks · {formatNumber(Math.round(best.conversions || 0))} conversions
                       </div>
                     </div>
                   </div>
@@ -297,10 +274,10 @@ export default function GoogleAdsPage() {
                                   </div>
                                 </td>
                                 <td style={{ padding: '12px 12px 12px 0' }}><StatusBadge status={camp.status} /></td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>₹{(camp.cost || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.clicks || 0).toLocaleString()}</td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{(camp.impressions || 0).toLocaleString()}</td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{Math.round(camp.conversions || 0).toLocaleString()}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{formatINR(camp.cost || 0, 2)}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{formatNumber(camp.clicks || 0)}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{formatNumber(camp.impressions || 0)}</td>
+                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{formatNumber(Math.round(camp.conversions || 0))}</td>
                                 <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontVariantNumeric: 'tabular-nums', color: cCpc !== '—' && parseFloat(cCpc) < 5 ? (isDark ? '#34D399' : '#059669') : c.textSecondary, fontWeight: cCpc !== '—' && parseFloat(cCpc) < 5 ? 600 : 400 }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
                                 <td style={{ padding: '12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: roasColor }}>
                                   {cRoas !== '—' ? `${cRoas}x` : '—'}
