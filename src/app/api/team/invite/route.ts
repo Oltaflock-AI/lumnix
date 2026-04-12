@@ -78,14 +78,15 @@ export async function POST(req: NextRequest) {
     let emailSent = false;
     const resendKey = process.env.RESEND_API_KEY;
     if (!resendKey) {
-      emailSent = false;
+      console.warn('RESEND_API_KEY not set — skipping invite email');
     } else {
-    try {
-      const { error: emailError } = await getResend(resendKey).emails.send({
-        from: 'Lumnix <noreply@oltaflock.ai>',
-        to: email,
-        subject: `${inviterName} invited you to join ${workspace.name} on Lumnix`,
-        html: `<!DOCTYPE html>
+      const senderEmail = process.env.RESEND_FROM_EMAIL || 'noreply@oltaflock.ai';
+      try {
+        const { data: emailData, error: emailError } = await getResend(resendKey).emails.send({
+          from: `Lumnix <${senderEmail}>`,
+          to: email,
+          subject: `${inviterName} invited you to join ${workspace.name} on Lumnix`,
+          html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><style>
 body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 0; }
@@ -101,20 +102,25 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px; }
 <body>
 <div class="container">
   <div class="logo"><span class="l">L</span>umnix</div>
-  <h1>You've been invited! 🎉</h1>
+  <h1>You've been invited!</h1>
   <p><strong style="color:#f8fafc">${inviterName}</strong> has invited you to join the <strong style="color:#f8fafc">${workspace.name}</strong> workspace on Lumnix.</p>
   <p>Click the button below to create your free account:</p>
-  <a href="${inviteUrl}" class="btn">Accept Invitation →</a>
+  <a href="${inviteUrl}" class="btn">Accept Invitation</a>
   <hr class="divider">
-  <p class="footer">Expires in 7 days · © 2026 Oltaflock AI</p>
+  <p class="footer">Expires in 7 days</p>
 </div>
 </body>
 </html>`,
-      });
-      if (!emailError) emailSent = true;
-    } catch (e) {
-      console.error('Email send failed:', e);
-    }
+        });
+        if (emailError) {
+          console.error('Resend API error:', emailError);
+        } else {
+          emailSent = true;
+          console.log('Invite email sent:', emailData?.id);
+        }
+      } catch (e) {
+        console.error('Email send failed:', e);
+      }
     }
 
     // Always return success with the invite link (so it works even if email fails)
