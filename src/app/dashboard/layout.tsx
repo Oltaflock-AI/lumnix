@@ -764,6 +764,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session) {
           router.replace('/auth/signin?redirect=' + encodeURIComponent(window.location.pathname));
+        } else if (!session.user?.user_metadata?.onboarding_completed) {
+          router.replace('/onboarding');
         } else {
           setAuthed(true);
         }
