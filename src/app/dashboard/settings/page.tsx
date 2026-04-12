@@ -1394,17 +1394,21 @@ function SecurityTab() {
     setResetSending(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const email = session?.user?.email;
-      if (!email) {
-        setResetError('Unable to find your email address.');
+      if (!session) {
+        setResetError('Not signed in.');
         setResetSending(false);
         return;
       }
-      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/settings`,
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
-      if (resetErr) {
-        setResetError(resetErr.message);
+      const data = await res.json();
+      if (!res.ok) {
+        setResetError(data.error || 'Failed to send reset email.');
       } else {
         setResetSent(true);
         setTimeout(() => setResetSent(false), 5000);
