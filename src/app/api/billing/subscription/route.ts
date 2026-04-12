@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     const db = getSupabaseAdmin();
 
-    // Check for coupon redemption
+    // Check for coupon redemption on this workspace
     const { data: redemptions, error: redemptionErr } = await db
       .from('coupon_redemptions')
       .select('plan_granted, expires_at, redeemed_at')
@@ -36,7 +36,18 @@ export async function GET(req: NextRequest) {
       console.error('Coupon redemption query error:', redemptionErr);
     }
 
-    const redemption = redemptions?.[0];
+    let redemption = redemptions?.[0];
+
+    // If no redemption for this workspace, check by user_id (cross-workspace coupon)
+    if (!redemption) {
+      const { data: userRedemptions } = await db
+        .from('coupon_redemptions')
+        .select('plan_granted, expires_at, redeemed_at')
+        .eq('user_id', user.id)
+        .order('redeemed_at', { ascending: false })
+        .limit(1);
+      redemption = userRedemptions?.[0];
+    }
 
     if (redemption) {
       const expiresAt = new Date(redemption.expires_at);

@@ -707,11 +707,13 @@ export function BillingTab() {
         const res = await fetch(`/api/billing/subscription?workspace_id=${workspace.id}`, {
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
-        if (res.ok) {
-          const data = await res.json();
+        const data = await res.json();
+        if (res.ok && data) {
           setSubInfo(data);
         }
-      } catch {}
+      } catch (e) {
+        console.error('Failed to fetch subscription info:', e);
+      }
     }
     fetchSubInfo();
   }, [workspace?.id]);
@@ -814,27 +816,14 @@ export function BillingTab() {
             <Receipt size={18} color={c.accent} />
             <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Subscription</h3>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              padding: '4px 10px', borderRadius: 6,
-              backgroundColor: 'rgba(124,58,237,0.1)',
-              color: '#7C3AED',
-              fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-              fontFamily: "'DM Sans', sans-serif",
-            }}>
-              {currentPlan} plan
-            </div>
-            {currentPlan === 'agency' && (
-              <div style={{
-                padding: '4px 10px', borderRadius: 6,
-                backgroundColor: 'rgba(16,185,129,0.1)',
-                color: '#10B981',
-                fontSize: 11, fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
-              }}>
-                Max Plan
-              </div>
-            )}
+          <div style={{
+            padding: '4px 10px', borderRadius: 6,
+            backgroundColor: 'rgba(124,58,237,0.1)',
+            color: '#7C3AED',
+            fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+            fontFamily: "'DM Sans', sans-serif",
+          }}>
+            {currentPlan} plan
           </div>
         </div>
 
@@ -850,10 +839,10 @@ export function BillingTab() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{
                 width: 7, height: 7, borderRadius: '50%',
-                backgroundColor: (subInfo?.type === 'coupon' && subInfo?.is_expired) ? '#EF4444' : currentPlan === 'free' ? 'var(--text-muted)' : '#10B981',
+                backgroundColor: !subInfo ? 'var(--text-muted)' : (subInfo.type === 'coupon' && subInfo.is_expired) ? '#EF4444' : currentPlan === 'free' ? 'var(--text-muted)' : '#10B981',
               }} />
               <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>
-                {(subInfo?.type === 'coupon' && subInfo?.is_expired) ? 'Expired' : currentPlan === 'free' ? 'Free Tier' : 'Active'}
+                {!subInfo ? 'Loading...' : (subInfo.type === 'coupon' && subInfo.is_expired) ? 'Expired' : currentPlan === 'free' ? 'Free Tier' : 'Active'}
               </p>
             </div>
           </div>
@@ -868,13 +857,14 @@ export function BillingTab() {
               {subInfo?.type === 'coupon' ? 'Active Until' : subInfo?.type === 'stripe' ? 'Next Billing' : 'Active Until'}
             </p>
             <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>
-              {subInfo?.type === 'coupon' && subInfo.expires_at
-                ? new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : subInfo?.type === 'stripe'
-                  ? 'Auto-renews monthly'
-                  : (subInfo?.type === 'active')
-                    ? 'Active'
-                    : currentPlan === 'free' ? 'N/A' : 'Active'}
+              {!subInfo ? 'Loading...'
+                : subInfo.type === 'coupon' && subInfo.expires_at
+                  ? new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                  : subInfo.type === 'stripe'
+                    ? 'Auto-renews monthly'
+                    : subInfo.type === 'active'
+                      ? 'No expiry'
+                      : currentPlan === 'free' ? 'N/A' : 'Active'}
             </p>
           </div>
 
@@ -889,15 +879,16 @@ export function BillingTab() {
             </p>
             <p style={{
               fontSize: 14, margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
-              color: subInfo?.type === 'coupon' && subInfo.days_left <= 7 ? '#EF4444' : 'var(--text-primary)',
+              color: (subInfo?.type === 'coupon' && !subInfo.is_expired && subInfo.days_left <= 7) ? '#EF4444' : 'var(--text-primary)',
             }}>
-              {subInfo?.type === 'coupon'
-                ? subInfo.is_expired ? 'Expired' : `${subInfo.days_left} day${subInfo.days_left !== 1 ? 's' : ''}`
-                : subInfo?.type === 'stripe'
-                  ? 'Monthly'
-                  : (subInfo?.type === 'active')
-                    ? 'Coupon'
-                    : currentPlan === 'free' ? 'N/A' : 'N/A'}
+              {!subInfo ? 'Loading...'
+                : subInfo.type === 'coupon'
+                  ? subInfo.is_expired ? 'Expired' : `${subInfo.days_left} day${subInfo.days_left !== 1 ? 's' : ''}`
+                  : subInfo.type === 'stripe'
+                    ? 'Monthly'
+                    : subInfo.type === 'active'
+                      ? 'Unlimited'
+                      : currentPlan === 'free' ? 'N/A' : '-'}
             </p>
           </div>
         </div>
