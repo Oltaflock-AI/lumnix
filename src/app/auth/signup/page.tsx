@@ -52,9 +52,14 @@ function SignUpInner() {
     const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name } } });
     if (error) { setError(error.message); setLoading(false); return; }
     if (data.session) {
-      try { await fetch('/api/workspace', { headers: { Authorization: `Bearer ${data.session.access_token}` } }); } catch {}
-      // Send welcome email (fire and forget)
-      try { fetch('/api/onboarding/welcome', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name }) }); } catch {}
+      let workspaceId: string | undefined
+      try {
+        const wsRes = await fetch('/api/workspace', { headers: { Authorization: `Bearer ${data.session.access_token}` } })
+        const wsData = await wsRes.json()
+        workspaceId = wsData?.workspaces?.[0]?.id || wsData?.id
+      } catch {}
+      // Send welcome email + schedule onboarding sequence (fire and forget)
+      try { fetch('/api/email/welcome', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: data.session.user.id, email, name, workspace_id: workspaceId }) }); } catch {}
       // Redeem beta invite code (fire and forget)
       if (code) {
         try { fetch('/api/beta/redeem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, email }) }); } catch {}
@@ -69,7 +74,7 @@ function SignUpInner() {
     if (couponFromUrl) localStorage.setItem('lumnix-coupon', couponFromUrl);
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` }
+      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent('/onboarding')}` }
     });
   }
 
