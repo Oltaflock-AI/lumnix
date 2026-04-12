@@ -692,8 +692,29 @@ export function BillingTab() {
   const [couponCode, setCouponCode] = useState('');
   const [redeeming, setRedeeming] = useState(false);
   const [redeemResult, setRedeemResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [subInfo, setSubInfo] = useState<any>(null);
 
   const currentPlan = workspace?.plan || 'free';
+  const planOrder = ['free', 'starter', 'growth', 'agency'];
+  const currentPlanIndex = planOrder.indexOf(currentPlan);
+
+  useEffect(() => {
+    async function fetchSubInfo() {
+      if (!workspace?.id) return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const res = await fetch(`/api/billing/subscription?workspace_id=${workspace.id}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSubInfo(data);
+        }
+      } catch {}
+    }
+    fetchSubInfo();
+  }, [workspace?.id]);
 
   const plans = [
     {
@@ -797,10 +818,77 @@ export function BillingTab() {
           }}>
             {currentPlan} plan
           </div>
+          {currentPlan === 'agency' && (
+            <div style={{
+              padding: '4px 10px', borderRadius: 6,
+              backgroundColor: 'rgba(16,185,129,0.1)',
+              color: '#10B981',
+              fontSize: 11, fontWeight: 600,
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              Max Plan
+            </div>
+          )}
         </div>
-        <p style={{ fontSize: 13, color: c.textSecondary }}>
+        <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 0 }}>
           {currentPlan === 'free' ? 'Upgrade to unlock more integrations, longer data retention, and AI features.' : `You're on the ${currentPlan} plan.`}
         </p>
+
+        {/* Subscription info */}
+        {subInfo && subInfo.type === 'coupon' && !subInfo.is_expired && (
+          <div style={{
+            marginTop: 12, padding: '12px 16px', borderRadius: 8,
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-default)',
+            display: 'flex', alignItems: 'center', gap: 12,
+          }}>
+            <Clock size={16} color={c.accent} style={{ flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: 0, fontWeight: 500, fontFamily: "'DM Sans', sans-serif" }}>
+                {subInfo.days_left} day{subInfo.days_left !== 1 ? 's' : ''} remaining
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0', fontFamily: "'DM Sans', sans-serif" }}>
+                Your plan expires on {new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
+        )}
+        {subInfo && subInfo.type === 'stripe' && (
+          <div style={{
+            marginTop: 12, padding: '12px 16px', borderRadius: 8,
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-default)',
+            display: 'flex', alignItems: 'center', gap: 12,
+          }}>
+            <Clock size={16} color={c.accent} style={{ flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: 0, fontWeight: 500, fontFamily: "'DM Sans', sans-serif" }}>
+                Active subscription
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0', fontFamily: "'DM Sans', sans-serif" }}>
+                Billed monthly. Manage your subscription from your Stripe dashboard.
+              </p>
+            </div>
+          </div>
+        )}
+        {subInfo && subInfo.type === 'coupon' && subInfo.is_expired && (
+          <div style={{
+            marginTop: 12, padding: '12px 16px', borderRadius: 8,
+            backgroundColor: 'rgba(239,68,68,0.04)',
+            border: '1px solid rgba(239,68,68,0.15)',
+            display: 'flex', alignItems: 'center', gap: 12,
+          }}>
+            <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0 }} />
+            <div>
+              <p style={{ fontSize: 13, color: '#EF4444', margin: 0, fontWeight: 500, fontFamily: "'DM Sans', sans-serif" }}>
+                Plan expired
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0', fontFamily: "'DM Sans', sans-serif" }}>
+                Your plan expired on {new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Upgrade to continue.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -839,28 +927,38 @@ export function BillingTab() {
                 </li>
               ))}
             </ul>
-            <button
-              onClick={() => handleUpgrade(plan.id)}
-              disabled={plan.current || plan.id === 'free' || loading === plan.id}
-              style={{
-                width: '100%',
-                height: 40,
-                borderRadius: 8,
-                border: plan.current ? 'none' : plan.id === 'free' ? '1px solid var(--border-default)' : 'none',
-                backgroundColor: plan.current ? 'var(--bg-card-secondary)' : (plan.id === 'free' ? 'transparent' : '#7C3AED'),
-                color: plan.current ? 'var(--text-muted)' : (plan.id === 'free' ? 'var(--text-muted)' : '#FFFFFF'),
-                fontSize: 13,
-                fontWeight: 600,
-                fontFamily: "'DM Sans', sans-serif",
-                cursor: plan.current || plan.id === 'free' ? 'not-allowed' : 'pointer',
-                opacity: loading === plan.id ? 0.7 : 1,
-                transition: 'background-color 150ms',
-              }}
-              onMouseEnter={e => { if (!plan.current && plan.id !== 'free') e.currentTarget.style.backgroundColor = '#6D28D9'; }}
-              onMouseLeave={e => { if (!plan.current && plan.id !== 'free') e.currentTarget.style.backgroundColor = '#7C3AED'; }}
-            >
-              {plan.current ? 'Current Plan' : plan.id === 'free' ? 'Free' : loading === plan.id ? 'Loading...' : 'Upgrade'}
-            </button>
+            {(() => {
+              const thisPlanIndex = planOrder.indexOf(plan.id);
+              const isLower = thisPlanIndex < currentPlanIndex;
+              const isCurrent = plan.current;
+              const isDisabled = isCurrent || isLower || plan.id === 'free' || loading === plan.id;
+              const label = isCurrent ? 'Current Plan' : isLower ? 'Included' : plan.id === 'free' ? 'Free' : loading === plan.id ? 'Loading...' : 'Upgrade';
+              const showPurple = !isCurrent && !isLower && plan.id !== 'free';
+              return (
+                <button
+                  onClick={() => handleUpgrade(plan.id)}
+                  disabled={isDisabled}
+                  style={{
+                    width: '100%',
+                    height: 40,
+                    borderRadius: 8,
+                    border: isCurrent ? 'none' : showPurple ? 'none' : '1px solid var(--border-default)',
+                    backgroundColor: isCurrent ? 'var(--bg-card-secondary)' : showPurple ? '#7C3AED' : 'transparent',
+                    color: isCurrent ? 'var(--text-muted)' : showPurple ? '#FFFFFF' : 'var(--text-muted)',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    fontFamily: "'DM Sans', sans-serif",
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                    opacity: loading === plan.id ? 0.7 : isLower ? 0.5 : 1,
+                    transition: 'background-color 150ms',
+                  }}
+                  onMouseEnter={e => { if (showPurple && !isDisabled) e.currentTarget.style.backgroundColor = '#6D28D9'; }}
+                  onMouseLeave={e => { if (showPurple && !isDisabled) e.currentTarget.style.backgroundColor = '#7C3AED'; }}
+                >
+                  {label}
+                </button>
+              );
+            })()}
           </div>
         ))}
       </div>
