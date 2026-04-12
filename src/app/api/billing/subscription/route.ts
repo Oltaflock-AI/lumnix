@@ -24,14 +24,19 @@ export async function GET(req: NextRequest) {
 
     const db = getSupabaseAdmin();
 
-    // Check for active coupon redemption
-    const { data: redemption } = await db
+    // Check for coupon redemption
+    const { data: redemptions, error: redemptionErr } = await db
       .from('coupon_redemptions')
-      .select('plan_granted, expires_at, created_at')
+      .select('plan_granted, expires_at, redeemed_at')
       .eq('workspace_id', workspaceId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .order('redeemed_at', { ascending: false })
+      .limit(1);
+
+    if (redemptionErr) {
+      console.error('Coupon redemption query error:', redemptionErr);
+    }
+
+    const redemption = redemptions?.[0];
 
     if (redemption) {
       const expiresAt = new Date(redemption.expires_at);
@@ -41,31 +46,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         type: 'coupon',
         plan: redemption.plan_granted,
-        started_at: redemption.created_at,
+        started_at: redemption.redeemed_at,
         expires_at: redemption.expires_at,
         days_left: daysLeft,
         is_expired: daysLeft <= 0,
       });
     }
 
-    // Check for Stripe subscription
+    // Fallback: check workspace plan
     const { data: workspace } = await db
       .from('workspaces')
-      .select('plan, stripe_subscription_id, stripe_customer_id')
+      .select('plan')
       .eq('id', workspaceId)
       .single();
 
-    if (workspace?.stripe_subscription_id) {
-      return NextResponse.json({
-        type: 'stripe',
-        plan: workspace.plan,
-        stripe_subscription_id: workspace.stripe_subscription_id,
-      });
-    }
-
-    // Free plan
     return NextResponse.json({
-      type: 'free',
+      type: workspace?.plan && workspace.plan !== 'free' ? 'active' : 'free',
       plan: workspace?.plan || 'free',
     });
   } catch (error: any) {

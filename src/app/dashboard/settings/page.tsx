@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link, Database, AlertCircle, Shield, Eye, EyeOff } from "lucide-react";
+import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link, Database, AlertCircle, Shield, Eye, EyeOff, CreditCard, Calendar, Receipt } from "lucide-react";
 import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
@@ -807,86 +807,124 @@ export function BillingTab() {
 
   return (
     <div>
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <div style={{
-            padding: '4px 10px', borderRadius: 6,
-            backgroundColor: 'rgba(124,58,237,0.1)',
-            color: '#7C3AED',
-            fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-            fontFamily: "'DM Sans', sans-serif",
-          }}>
-            {currentPlan} plan
+      {/* ── Subscription Status Card ── */}
+      <div style={{ ...card, marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Receipt size={18} color={c.accent} />
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Subscription</h3>
           </div>
-          {currentPlan === 'agency' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
               padding: '4px 10px', borderRadius: 6,
-              backgroundColor: 'rgba(16,185,129,0.1)',
-              color: '#10B981',
-              fontSize: 11, fontWeight: 600,
+              backgroundColor: 'rgba(124,58,237,0.1)',
+              color: '#7C3AED',
+              fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
               fontFamily: "'DM Sans', sans-serif",
             }}>
-              Max Plan
+              {currentPlan} plan
             </div>
-          )}
+            {currentPlan === 'agency' && (
+              <div style={{
+                padding: '4px 10px', borderRadius: 6,
+                backgroundColor: 'rgba(16,185,129,0.1)',
+                color: '#10B981',
+                fontSize: 11, fontWeight: 600,
+                fontFamily: "'DM Sans', sans-serif",
+              }}>
+                Max Plan
+              </div>
+            )}
+          </div>
         </div>
-        <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 0 }}>
-          {currentPlan === 'free' ? 'Upgrade to unlock more integrations, longer data retention, and AI features.' : `You're on the ${currentPlan} plan.`}
-        </p>
 
-        {/* Subscription info */}
-        {subInfo && subInfo.type === 'coupon' && !subInfo.is_expired && (
+        {/* Status info grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+          {/* Status */}
           <div style={{
-            marginTop: 12, padding: '12px 16px', borderRadius: 8,
-            backgroundColor: 'var(--bg-card)',
+            padding: '14px 16px', borderRadius: 10,
+            backgroundColor: 'var(--bg-page)',
             border: '1px solid var(--border-default)',
-            display: 'flex', alignItems: 'center', gap: 12,
           }}>
-            <Clock size={16} color={c.accent} style={{ flexShrink: 0 }} />
-            <div>
-              <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: 0, fontWeight: 500, fontFamily: "'DM Sans', sans-serif" }}>
-                {subInfo.days_left} day{subInfo.days_left !== 1 ? 's' : ''} remaining
-              </p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0', fontFamily: "'DM Sans', sans-serif" }}>
-                Your plan expires on {new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em' }}>Status</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{
+                width: 7, height: 7, borderRadius: '50%',
+                backgroundColor: (subInfo?.type === 'coupon' && subInfo?.is_expired) ? '#EF4444' : currentPlan === 'free' ? 'var(--text-muted)' : '#10B981',
+              }} />
+              <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>
+                {(subInfo?.type === 'coupon' && subInfo?.is_expired) ? 'Expired' : currentPlan === 'free' ? 'Free Tier' : 'Active'}
               </p>
             </div>
           </div>
-        )}
-        {subInfo && subInfo.type === 'stripe' && (
+
+          {/* Plan active until / Next billing */}
           <div style={{
-            marginTop: 12, padding: '12px 16px', borderRadius: 8,
-            backgroundColor: 'var(--bg-card)',
+            padding: '14px 16px', borderRadius: 10,
+            backgroundColor: 'var(--bg-page)',
             border: '1px solid var(--border-default)',
-            display: 'flex', alignItems: 'center', gap: 12,
           }}>
-            <Clock size={16} color={c.accent} style={{ flexShrink: 0 }} />
-            <div>
-              <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: 0, fontWeight: 500, fontFamily: "'DM Sans', sans-serif" }}>
-                Active subscription
-              </p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0', fontFamily: "'DM Sans', sans-serif" }}>
-                Billed monthly. Manage your subscription from your Stripe dashboard.
-              </p>
-            </div>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em' }}>
+              {subInfo?.type === 'coupon' ? 'Active Until' : subInfo?.type === 'stripe' ? 'Next Billing' : 'Active Until'}
+            </p>
+            <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>
+              {subInfo?.type === 'coupon' && subInfo.expires_at
+                ? new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : subInfo?.type === 'stripe'
+                  ? 'Auto-renews monthly'
+                  : (subInfo?.type === 'active')
+                    ? 'Active'
+                    : currentPlan === 'free' ? 'N/A' : 'Active'}
+            </p>
+          </div>
+
+          {/* Days remaining / Billing cycle */}
+          <div style={{
+            padding: '14px 16px', borderRadius: 10,
+            backgroundColor: 'var(--bg-page)',
+            border: '1px solid var(--border-default)',
+          }}>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em' }}>
+              {subInfo?.type === 'coupon' ? 'Days Left' : 'Billing Cycle'}
+            </p>
+            <p style={{
+              fontSize: 14, margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
+              color: subInfo?.type === 'coupon' && subInfo.days_left <= 7 ? '#EF4444' : 'var(--text-primary)',
+            }}>
+              {subInfo?.type === 'coupon'
+                ? subInfo.is_expired ? 'Expired' : `${subInfo.days_left} day${subInfo.days_left !== 1 ? 's' : ''}`
+                : subInfo?.type === 'stripe'
+                  ? 'Monthly'
+                  : (subInfo?.type === 'active')
+                    ? 'Coupon'
+                    : currentPlan === 'free' ? 'N/A' : 'N/A'}
+            </p>
+          </div>
+        </div>
+
+        {/* Expiry warning */}
+        {subInfo?.type === 'coupon' && !subInfo.is_expired && subInfo.days_left <= 7 && (
+          <div style={{
+            marginTop: 14, padding: '10px 14px', borderRadius: 8,
+            backgroundColor: 'rgba(245,158,11,0.06)',
+            border: '1px solid rgba(245,158,11,0.15)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontSize: 13, color: '#F59E0B', fontFamily: "'DM Sans', sans-serif",
+          }}>
+            <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+            Your plan expires in {subInfo.days_left} day{subInfo.days_left !== 1 ? 's' : ''}. Add a payment method to continue uninterrupted.
           </div>
         )}
-        {subInfo && subInfo.type === 'coupon' && subInfo.is_expired && (
+        {subInfo?.type === 'coupon' && subInfo.is_expired && (
           <div style={{
-            marginTop: 12, padding: '12px 16px', borderRadius: 8,
-            backgroundColor: 'rgba(239,68,68,0.04)',
+            marginTop: 14, padding: '10px 14px', borderRadius: 8,
+            backgroundColor: 'rgba(239,68,68,0.06)',
             border: '1px solid rgba(239,68,68,0.15)',
-            display: 'flex', alignItems: 'center', gap: 12,
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontSize: 13, color: '#EF4444', fontFamily: "'DM Sans', sans-serif",
           }}>
-            <AlertCircle size={16} color="#EF4444" style={{ flexShrink: 0 }} />
-            <div>
-              <p style={{ fontSize: 13, color: '#EF4444', margin: 0, fontWeight: 500, fontFamily: "'DM Sans', sans-serif" }}>
-                Plan expired
-              </p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0 0', fontFamily: "'DM Sans', sans-serif" }}>
-                Your plan expired on {new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Upgrade to continue.
-              </p>
-            </div>
+            <AlertCircle size={14} style={{ flexShrink: 0 }} />
+            Your plan expired on {new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Upgrade or add a payment method to reactivate.
           </div>
         )}
       </div>
@@ -963,7 +1001,86 @@ export function BillingTab() {
         ))}
       </div>
 
-      {/* Coupon Redemption */}
+      {/* ── Payment Methods ── */}
+      <div style={{ ...card, marginTop: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <CreditCard size={18} color={c.accent} />
+            <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Payment Methods</h3>
+          </div>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>
+          Add a card or UPI for automatic renewals and upgrades.
+        </p>
+
+        {/* Empty state — no cards yet */}
+        <div style={{
+          padding: '28px 20px', borderRadius: 10,
+          backgroundColor: 'var(--bg-page)',
+          border: '1px dashed var(--border-default)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+          textAlign: 'center',
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 12,
+            backgroundColor: 'rgba(124,58,237,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <CreditCard size={20} color="#7C3AED" />
+          </div>
+          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', margin: 0, fontFamily: "'DM Sans', sans-serif" }}>
+            No payment method added
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0, fontFamily: "'DM Sans', sans-serif", maxWidth: 320 }}>
+            Add a debit card, credit card, or UPI to enable automatic renewals when your plan expires.
+          </p>
+          <button
+            onClick={() => {
+              // TODO: Phase 2 — integrate Razorpay checkout
+              setError('Payment gateway coming soon. Use a coupon code to activate your plan for now.');
+              setTimeout(() => setError(''), 4000);
+            }}
+            style={{
+              ...primaryBtn,
+              marginTop: 6,
+              padding: '10px 22px',
+              fontSize: 13,
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+            }}
+          >
+            <Plus size={14} />
+            Add Payment Method
+          </button>
+        </div>
+
+        {/* Billing history link placeholder */}
+        <div style={{
+          marginTop: 16, paddingTop: 16,
+          borderTop: '1px solid var(--border-default)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Calendar size={14} color="var(--text-muted)" />
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: "'DM Sans', sans-serif" }}>Billing History</span>
+          </div>
+          <button
+            onClick={() => {
+              setError('Billing history will be available once the payment gateway is connected.');
+              setTimeout(() => setError(''), 4000);
+            }}
+            style={{
+              background: 'none', border: 'none', padding: 0,
+              fontSize: 13, color: c.accent, fontWeight: 500,
+              fontFamily: "'DM Sans', sans-serif",
+              cursor: 'pointer',
+            }}
+          >
+            View Invoices
+          </button>
+        </div>
+      </div>
+
+      {/* ── Coupon Redemption ── */}
       <div style={{ ...card, marginTop: 24 }}>
         <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Have a coupon code?</h3>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 16 }}>Enter your early access or promo code to unlock a plan.</p>
