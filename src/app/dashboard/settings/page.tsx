@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link, Database, AlertCircle } from "lucide-react";
+import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link, Database, AlertCircle, Shield, Eye, EyeOff } from "lucide-react";
 import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
@@ -1262,6 +1262,213 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
   );
 }
 
+/* ─── Security Tab ─── */
+function SecurityTab() {
+  const { c, card, label, inputBase, primaryBtn } = useStyles();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isOAuthUser, setIsOAuthUser] = useState(false);
+
+  useEffect(() => {
+    async function checkProvider() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const provider = session.user.app_metadata?.provider;
+      if (provider && provider !== 'email') {
+        setIsOAuthUser(true);
+      }
+    }
+    checkProvider();
+  }, []);
+
+  async function handleUpdatePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+
+    if (newPassword.length < 8) {
+      setError('New password must be at least 8 characters');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
+        setError(updateError.message);
+      } else {
+        setSaved(true);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setSaved(false), 3000);
+      }
+    } catch {
+      setError('Failed to update password. Please try again.');
+    }
+    setSaving(false);
+  }
+
+  const passwordInputWrapper: React.CSSProperties = {
+    position: 'relative',
+    width: '100%',
+  };
+
+  const eyeBtn: React.CSSProperties = {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    color: 'var(--text-muted)',
+    display: 'flex',
+    alignItems: 'center',
+  };
+
+  if (isOAuthUser) {
+    return (
+      <div style={{ ...card }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+          <Shield size={18} color={c.accent} />
+          <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Security</h3>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Manage your account security.</p>
+        <div style={{
+          padding: '16px 20px', borderRadius: 8,
+          backgroundColor: 'var(--bg-page)',
+          border: '1px solid var(--border-default)',
+        }}>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
+            Your account uses Google sign-in. Password management is handled through your Google account.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ ...card }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+        <Shield size={18} color={c.accent} />
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Change Password</h3>
+      </div>
+      <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Update your password to keep your account secure.</p>
+
+      <form onSubmit={handleUpdatePassword}>
+        <div style={{ marginBottom: 16 }}>
+          <label style={label}>Current Password</label>
+          <div style={passwordInputWrapper}>
+            <input
+              type={showCurrent ? 'text' : 'password'}
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              placeholder="Enter current password"
+              autoComplete="current-password"
+              required
+              style={{ ...inputBase, padding: '12px 40px 12px 14px', fontSize: 14 }}
+              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
+            />
+            <button type="button" onClick={() => setShowCurrent(!showCurrent)} style={eyeBtn} tabIndex={-1}>
+              {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label style={label}>New Password</label>
+          <div style={passwordInputWrapper}>
+            <input
+              type={showNew ? 'text' : 'password'}
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              placeholder="At least 8 characters"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              style={{ ...inputBase, padding: '12px 40px 12px 14px', fontSize: 14 }}
+              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
+            />
+            <button type="button" onClick={() => setShowNew(!showNew)} style={eyeBtn} tabIndex={-1}>
+              {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          {newPassword.length > 0 && newPassword.length < 8 && (
+            <p style={{ fontSize: 12, color: c.danger, marginTop: 4 }}>Must be at least 8 characters</p>
+          )}
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={label}>Confirm New Password</label>
+          <div style={passwordInputWrapper}>
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              placeholder="Re-enter new password"
+              autoComplete="new-password"
+              required
+              style={{ ...inputBase, padding: '12px 40px 12px 14px', fontSize: 14 }}
+              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
+              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
+            />
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={eyeBtn} tabIndex={-1}>
+              {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
+          {confirmPassword.length > 0 && newPassword !== confirmPassword && (
+            <p style={{ fontSize: 12, color: c.danger, marginTop: 4 }}>Passwords do not match</p>
+          )}
+        </div>
+
+        {error && (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8, marginBottom: 16,
+            backgroundColor: 'rgba(239,68,68,0.06)',
+            border: '1px solid rgba(239,68,68,0.15)',
+            color: '#EF4444', fontSize: 13,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            <AlertCircle size={14} />
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={saving || !currentPassword || !newPassword || !confirmPassword}
+          style={{
+            ...primaryBtn,
+            backgroundColor: saved ? '#22C55E' : '#7C3AED',
+            opacity: (saving || !currentPassword || !newPassword || !confirmPassword) ? 0.5 : 1,
+            cursor: (saving || !currentPassword || !newPassword || !confirmPassword) ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : saved ? <Check size={16} /> : <Shield size={16} />}
+          {saving ? 'Updating...' : saved ? 'Password Updated!' : 'Update Password'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { c, card, inputBase, primaryBtn, ghostBtn, destructiveBtn } = useStyles();
   const { toggle, theme } = useTheme();
@@ -1430,7 +1637,7 @@ export default function SettingsPage() {
           gap: 2,
           marginBottom: 28,
         }}>
-          {(['general', 'brand', 'integrations', 'team', 'alerts'] as const).map((tab) => (
+          {(['general', 'security', 'brand', 'integrations', 'team', 'alerts'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1477,6 +1684,11 @@ export default function SettingsPage() {
             {/* Danger Zone — Delete Account */}
             <DeleteAccountSection />
           </div>
+        </TabsContent>
+
+        {/* ─── Security Tab ─── */}
+        <TabsContent value="security">
+          <SecurityTab />
         </TabsContent>
 
         {/* ─── Brand Tab ─── */}
