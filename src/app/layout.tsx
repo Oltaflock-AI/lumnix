@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </TooltipProvider>
         <Toaster position="bottom-right" richColors />
+        <SpeedInsights />
       </body>
     </html>
   );
