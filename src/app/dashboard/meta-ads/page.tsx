@@ -416,8 +416,11 @@ export default function MetaAdsPage() {
     );
   }
 
-  /* ─── Not connected ─── */
-  if (!isConnected) {
+  /* ─── Check if we have data regardless of integration status ─── */
+  const hasAnyData = allCampaigns.length > 0 || adsData?.source === 'analytics_data';
+
+  /* ─── Not connected AND no data ─── */
+  if (!isConnected && !hasAnyData) {
     return (
       <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
         <EmptyState
@@ -431,8 +434,7 @@ export default function MetaAdsPage() {
     );
   }
 
-  /* ─── Never synced ─── */
-  const hasAnyData = allCampaigns.length > 0 || adsData?.source === 'analytics_data';
+  /* ─── Never synced and no data ─── */
   if (!hasAnyData && !integration?.last_sync_at) {
     return (
       <PageShell
