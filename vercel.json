@@ -1,40 +1,12 @@
 {
   "crons": [
     {
-      "path": "/api/cron/sync",
+      "path": "/api/cron/sync-and-process",
       "schedule": "0 2 * * *"
     },
     {
-      "path": "/api/cron/sync-all",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/check-alerts",
-      "schedule": "0 4 * * *"
-    },
-    {
-      "path": "/api/cron/detect-anomalies",
+      "path": "/api/cron/notifications",
       "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/send-reports",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/spy-agent",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/generate-recommendations",
-      "schedule": "0 6 * * 1"
-    },
-    {
-      "path": "/api/cron/emails",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/daily-briefing",
-      "schedule": "0 7 * * *"
     }
   ]
 }
