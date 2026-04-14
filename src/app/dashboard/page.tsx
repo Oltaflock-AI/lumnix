@@ -23,43 +23,66 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
   const { c } = useTheme();
   return (
     <div style={{
-      backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12,
-      padding: '20px 24px', boxShadow: c.shadow,
-      transition: 'box-shadow 200ms, border-color 200ms', position: 'relative', overflow: 'hidden',
+      backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 14,
+      padding: '22px 24px', boxShadow: c.shadow,
+      transition: 'all 0.2s cubic-bezier(0.23,1,0.32,1)', position: 'relative', overflow: 'hidden',
+      cursor: 'default',
     }}
-    onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = '#C4B5FD'; }}
-    onMouseLeave={e => { e.currentTarget.style.boxShadow = c.shadow; e.currentTarget.style.borderColor = c.border; }}
+    onMouseEnter={e => {
+      e.currentTarget.style.boxShadow = '0 8px 24px rgba(124,58,237,0.08)';
+      e.currentTarget.style.borderColor = 'rgba(124,58,237,0.2)';
+      e.currentTarget.style.transform = 'translateY(-2px)';
+    }}
+    onMouseLeave={e => {
+      e.currentTarget.style.boxShadow = c.shadow;
+      e.currentTarget.style.borderColor = c.border;
+      e.currentTarget.style.transform = 'translateY(0)';
+    }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.textMuted }}>{label}</span>
+      {/* Gradient top accent */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+        background: `linear-gradient(90deg, ${color}, ${color}80)`,
+        borderRadius: '14px 14px 0 0',
+      }} />
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{
-          width: 36, height: 36, borderRadius: 8,
-          backgroundColor: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 38, height: 38, borderRadius: 10,
+          background: `linear-gradient(135deg, ${color}15, ${color}08)`,
+          border: `1px solid ${color}20`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           {platformLogo ? <PlatformLogo name={platformLogo} size={16} /> : <Icon size={16} color={color} />}
         </div>
+        {change && !loading && (
+          <span style={{
+            fontSize: 11, fontWeight: 600,
+            color: change.startsWith('+') ? '#059669' : change.startsWith('-') ? '#DC2626' : c.textSecondary,
+            backgroundColor: change.startsWith('+') ? 'rgba(5,150,105,0.08)' : change.startsWith('-') ? 'rgba(220,38,38,0.08)' : 'transparent',
+            padding: '3px 8px', borderRadius: 6,
+            fontFamily: "'DM Sans', sans-serif",
+          }}>
+            {change.startsWith('+') ? '▲ ' : change.startsWith('-') ? '▼ ' : ''}{change}
+          </span>
+        )}
       </div>
+
+      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: c.textMuted, fontFamily: "'DM Sans', sans-serif" }}>{label}</span>
+
       {loading ? (
-        <div>
-          <Skeleton className="h-8 w-[55%] mb-2" />
+        <div style={{ marginTop: 8 }}>
+          <Skeleton className="h-9 w-[55%] mb-2" />
           <Skeleton className="h-3 w-[35%]" />
         </div>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-          <div style={{ fontSize: 32, fontWeight: 700, color: c.text, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontVariantNumeric: 'tabular-nums', marginBottom: 6 }}>
+        <div style={{ marginTop: 6 }}>
+          <div style={{ fontSize: 36, fontWeight: 700, color: c.text, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
             {value}
           </div>
-          {change && (
-            <span style={{
-              fontSize: 12, fontWeight: 600,
-              color: change.startsWith('+') ? c.success : change.startsWith('-') ? c.danger : c.textSecondary,
-            }}>
-              {change}
-            </span>
-          )}
         </div>
       )}
-      {sub && <div style={{ fontSize: 12, color: c.textMuted }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 12, color: c.textMuted, marginTop: 6, fontFamily: "'DM Sans', sans-serif" }}>{sub}</div>}
     </div>
   );
 }

@@ -479,7 +479,14 @@ function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (
 }
 
 /* ── Sidebar ── */
-function SidebarInner({ onClose }: { onClose?: () => void }) {
+/* ── Section group colors for nav dots ── */
+const GROUP_DOT_COLORS: Record<string, string> = {
+  'Analytics': '#7C3AED',
+  'Advertising': '#0891B2',
+  'Intelligence': '#059669',
+};
+
+function SidebarInner({ onClose, collapsed = false, onToggleCollapse }: { onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { workspace } = useWorkspaceCtx();
@@ -511,41 +518,44 @@ My feedback:
     window.open(`mailto:khush@oltaflock.ai?subject=${subject}&body=${body}`, '_blank');
   }
 
-  // Sidebar color tokens per spec
   const sc = isDark ? {
-    sectionLabel: '#6B7280',
-    navText: '#CBD5E1',
-    navIcon: '#CBD5E1',
-    navTextHover: '#FFFFFF',
+    bg: '#0B0F1A',
+    sectionLabel: '#8B88B8',
+    navText: '#C4C0E8',
+    navIcon: '#8B88B8',
+    navTextHover: '#F0EDFF',
     navIconHover: '#A78BFA',
-    navHoverBg: 'rgba(124, 58, 237, 0.10)',
-    navActiveText: '#FFFFFF',
+    navHoverBg: 'rgba(124,58,237,0.10)',
+    navActiveText: '#F0EDFF',
     navActiveIcon: '#A78BFA',
-    navActiveBg: 'rgba(124, 58, 237, 0.18)',
-    wsName: '#F1F5F9',
-    userName: '#E2E8F0',
-    userSub: '#94A3B8',
-    separator: 'rgba(255,255,255,0.06)',
-    avatarBg: 'rgba(255,255,255,0.1)',
-    avatarBorder: 'rgba(255,255,255,0.08)',
-    mutedIcon: '#94A3B8',
+    navActiveBg: 'rgba(124,58,237,0.12)',
+    wsName: '#F0EDFF',
+    userName: '#C4C0E8',
+    userSub: '#8B88B8',
+    separator: 'rgba(139,92,246,0.08)',
+    avatarBg: 'rgba(139,92,246,0.1)',
+    avatarBorder: 'rgba(139,92,246,0.15)',
+    mutedIcon: '#8B88B8',
+    border: 'rgba(139,92,246,0.08)',
   } : {
-    sectionLabel: '#6B7280',
-    navText: '#374151',
-    navIcon: '#4B5563',
-    navTextHover: '#111827',
+    bg: '#FFFFFF',
+    sectionLabel: '#7C7AAA',
+    navText: '#4A4770',
+    navIcon: '#7C7AAA',
+    navTextHover: '#18163A',
     navIconHover: '#7C3AED',
-    navHoverBg: 'rgba(124, 58, 237, 0.06)',
+    navHoverBg: 'rgba(124,58,237,0.06)',
     navActiveText: '#7C3AED',
     navActiveIcon: '#7C3AED',
-    navActiveBg: 'rgba(124, 58, 237, 0.08)',
-    wsName: '#111827',
-    userName: '#374151',
-    userSub: '#6B7280',
-    separator: '#E2E8F0',
-    avatarBg: '#F1F5F9',
-    avatarBorder: '#E2E8F0',
-    mutedIcon: '#6B7280',
+    navActiveBg: 'rgba(124,58,237,0.08)',
+    wsName: '#18163A',
+    userName: '#4A4770',
+    userSub: '#7C7AAA',
+    separator: '#E4E2F4',
+    avatarBg: '#F0EEF9',
+    avatarBorder: '#E4E2F4',
+    mutedIcon: '#7C7AAA',
+    border: '#E4E2F4',
   };
 
   useEffect(() => {
@@ -561,34 +571,49 @@ My feedback:
 
   const isActive = (href: string) => href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
 
+  const sidebarWidth = collapsed ? 56 : 220;
+
   return (
-    <div className="sidebar-glass" style={{
-      width: 220, minHeight: '100vh',
-      display: 'flex', flexDirection: 'column', padding: '20px 12px',
-      flexShrink: 0,
-      overflow: 'hidden', position: 'relative',
+    <div style={{
+      width: sidebarWidth, minHeight: '100vh',
+      display: 'flex', flexDirection: 'column', padding: collapsed ? '16px 6px' : '16px 10px',
+      flexShrink: 0, overflow: 'hidden', position: 'relative',
+      backgroundColor: sc.bg,
+      borderRight: `1px solid ${sc.border}`,
+      transition: 'width 0.25s cubic-bezier(0.23,1,0.32,1), padding 0.25s cubic-bezier(0.23,1,0.32,1)',
     }}>
-      {/* Logo */}
-      <div style={{ padding: '2px 10px 18px', display: 'flex', alignItems: 'center', gap: 9 }}>
-        <img src="/favicon.png" alt="Lumnix" style={{ width: 26, height: 26, borderRadius: 7, objectFit: 'contain', flexShrink: 0 }} />
-        <span className="gradient-text" style={{
-          fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)',
-          overflow: 'hidden', whiteSpace: 'nowrap',
-        }}>
-          Lumnix
-        </span>
+      {/* Logo + collapse toggle */}
+      <div style={{ padding: collapsed ? '4px 0 14px' : '4px 6px 14px', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', gap: 10, cursor: 'pointer' }}
+        onClick={onToggleCollapse}
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        <img src="/favicon.png" alt="Lumnix" style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
+        {!collapsed && (
+          <img src="/lumnix-logo.png" alt="Lumnix" style={{ height: 20, objectFit: 'contain', flexShrink: 0 }} />
+        )}
       </div>
 
-      <WorkspaceSwitcher />
+      {!collapsed && <WorkspaceSwitcher />}
 
-      <Separator className="my-3" style={{ backgroundColor: sc.separator }} />
+      <div style={{ height: 1, backgroundColor: sc.separator, margin: collapsed ? '8px 4px' : '10px 6px' }} />
 
       {/* Nav */}
-      <nav aria-label="Main navigation" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <nav aria-label="Main navigation" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {navGroups.map((group, gi) => (
-          <div key={gi} style={{ marginBottom: 8 }}>
-            {group.label && (
-              <div style={{ fontSize: 10, fontWeight: 700, color: sc.sectionLabel, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '16px 16px 6px 16px', fontFamily: "'DM Sans', sans-serif" }}>
+          <div key={gi} style={{ marginBottom: 4 }}>
+            {group.label && !collapsed && (
+              <div style={{
+                fontSize: 11, fontWeight: 600, color: sc.sectionLabel,
+                textTransform: 'uppercase', letterSpacing: '0.06em',
+                padding: '14px 12px 5px 12px',
+                fontFamily: "'DM Sans', sans-serif",
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <span style={{
+                  width: 4, height: 4, borderRadius: '50%',
+                  backgroundColor: GROUP_DOT_COLORS[group.label] || '#7C3AED',
+                  flexShrink: 0,
+                }} />
                 {group.label}
               </div>
             )}
@@ -596,63 +621,93 @@ My feedback:
             {group.items.map(item => {
               const active = isActive(item.href);
 
-              return (
-                <div key={item.href}>
-                  <a
-                    href={item.href}
-                    onClick={(e) => { e.preventDefault(); router.push(item.href); onClose?.(); }}
-                    className={active ? 'nav-active-pill' : ''}
-                    style={{
-                      display: 'flex', alignItems: 'center',
-                      gap: 10,
-                      padding: '8px 10px',
-                      paddingLeft: active ? 7 : 10,
-                      borderRadius: '0 8px 8px 0',
-                      color: active ? sc.navActiveText : sc.navText,
-                      fontSize: 13, fontWeight: 500,
-                      fontFamily: "'DM Sans', sans-serif",
-                      letterSpacing: '0.01em',
-                      textDecoration: 'none', cursor: 'pointer',
-                      background: active ? sc.navActiveBg : 'transparent',
-                      transition: 'background-color 0.15s, color 0.15s',
-                      position: 'relative',
-                    }}
-                    onMouseEnter={e => {
-                      if (!active) {
-                        e.currentTarget.style.backgroundColor = sc.navHoverBg;
-                        e.currentTarget.style.color = sc.navTextHover;
-                        const icon = e.currentTarget.querySelector('svg');
-                        if (icon) (icon as SVGElement).style.color = sc.navIconHover;
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!active) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = sc.navText;
-                        const icon = e.currentTarget.querySelector('svg');
-                        if (icon) (icon as SVGElement).style.color = sc.navIcon;
-                      }
-                    }}
-                  >
-                    <item.icon size={16} color={active ? sc.navActiveIcon : sc.navIcon} strokeWidth={1.5} style={{ transition: 'color 0.15s' }} />
-                    <span style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.label}</span>
-                    {'badge' in item && item.badge && unreadAlerts > 0 && (
-                      <span style={{ background: '#7C3AED', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px', marginLeft: 'auto' }}>{unreadAlerts}</span>
-                    )}
-                  </a>
-                </div>
+              const navItem = (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  onClick={(e) => { e.preventDefault(); router.push(item.href); onClose?.(); }}
+                  style={{
+                    display: 'flex', alignItems: 'center',
+                    gap: collapsed ? 0 : 10,
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    padding: collapsed ? '10px 0' : '9px 12px',
+                    borderRadius: 8,
+                    color: active ? sc.navActiveText : sc.navText,
+                    fontSize: 13, fontWeight: active ? 600 : 500,
+                    fontFamily: "'DM Sans', sans-serif",
+                    textDecoration: 'none', cursor: 'pointer',
+                    background: active ? sc.navActiveBg : 'transparent',
+                    transition: 'all 0.15s cubic-bezier(0.23,1,0.32,1)',
+                    position: 'relative',
+                    minHeight: 40,
+                  }}
+                  onMouseEnter={e => {
+                    if (!active) {
+                      e.currentTarget.style.backgroundColor = sc.navHoverBg;
+                      e.currentTarget.style.color = sc.navTextHover;
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = sc.navText;
+                    }
+                  }}
+                >
+                  {/* Active indicator pill */}
+                  {active && (
+                    <span style={{
+                      position: 'absolute',
+                      left: collapsed ? 2 : 0,
+                      top: '50%', transform: 'translateY(-50%)',
+                      width: 3, height: 20, borderRadius: '0 4px 4px 0',
+                      backgroundColor: '#7C3AED',
+                      boxShadow: '0 0 8px rgba(124,58,237,0.4)',
+                    }} />
+                  )}
+                  <item.icon size={16} color={active ? sc.navActiveIcon : sc.navIcon} strokeWidth={1.5} style={{ transition: 'color 0.15s', flexShrink: 0 }} />
+                  {!collapsed && (
+                    <>
+                      <span style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.label}</span>
+                      {'shortcut' in item && item.shortcut && (
+                        <kbd style={{
+                          fontSize: 10, padding: '1px 5px', borderRadius: 4,
+                          backgroundColor: isDark ? 'rgba(139,92,246,0.06)' : '#F0EEF9',
+                          border: `1px solid ${sc.separator}`,
+                          fontFamily: 'var(--font-mono)',
+                          color: sc.sectionLabel, opacity: 0.6,
+                        }}>
+                          {item.shortcut}
+                        </kbd>
+                      )}
+                      {'badge' in item && item.badge && unreadAlerts > 0 && (
+                        <span style={{ background: '#7C3AED', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px' }}>{unreadAlerts}</span>
+                      )}
+                    </>
+                  )}
+                </a>
               );
+
+              if (collapsed) {
+                return (
+                  <Tooltip key={item.href}>
+                    <TooltipTrigger asChild>{navItem}</TooltipTrigger>
+                    <TooltipContent side="right" className="sidebar-tooltip">{item.label}</TooltipContent>
+                  </Tooltip>
+                );
+              }
+              return <div key={item.href}>{navItem}</div>;
             })}
           </div>
         ))}
       </nav>
 
       {/* Bottom Controls */}
-      <div style={{ marginTop: 'auto', borderTop: `1px solid ${sc.separator}` }}>
-        {/* User row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
+      <div style={{ marginTop: 'auto', borderTop: `1px solid ${sc.separator}`, paddingTop: 8 }}>
+        {/* User + sign out */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10, justifyContent: collapsed ? 'center' : 'flex-start', padding: collapsed ? '8px 0' : '8px 8px' }}>
           <div style={{
-            width: 30, height: 30, borderRadius: 8,
+            width: 32, height: 32, borderRadius: 8,
             backgroundColor: sc.avatarBg, border: `1px solid ${sc.avatarBorder}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0, color: sc.userName, fontSize: 13, fontWeight: 600,
@@ -660,28 +715,32 @@ My feedback:
           }}>
             {workspace?.name ? workspace.name.charAt(0).toUpperCase() : <User size={14} color={sc.mutedIcon} />}
           </div>
-          <div style={{
-            flex: 1, minWidth: 0,
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 14, fontWeight: 500, color: sc.userName,
-            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {workspace?.name || 'Workspace'}
-          </div>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                aria-label="Sign out"
-                onClick={() => setShowSignOutConfirm(true)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: sc.mutedIcon, padding: 2 }}
-                onMouseEnter={e => (e.currentTarget.style.color = sc.userName)}
-                onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
-              >
-                <LogOut size={14} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Sign out</TooltipContent>
-          </Tooltip>
+          {!collapsed && (
+            <>
+              <div style={{
+                flex: 1, minWidth: 0,
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 13, fontWeight: 500, color: sc.userName,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {workspace?.name || 'Workspace'}
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    aria-label="Sign out"
+                    onClick={() => setShowSignOutConfirm(true)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: sc.mutedIcon, padding: 4, borderRadius: 6, transition: 'color 0.15s' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = sc.userName)}
+                    onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
+                  >
+                    <LogOut size={14} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Sign out</TooltipContent>
+              </Tooltip>
+            </>
+          )}
           {showSignOutConfirm && (
             <SignOutConfirmDialog
               isDark={isDark}
@@ -696,9 +755,9 @@ My feedback:
 
         {/* Utility row */}
         <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '8px 14px',
-          borderTop: `1px solid ${sc.separator}`,
+          display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between',
+          padding: collapsed ? '4px 0' : '6px 8px',
+          gap: 4,
         }}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -707,12 +766,12 @@ My feedback:
                 onClick={toggle}
                 style={{
                   width: 32, height: 32, borderRadius: 8,
-                  background: isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9',
-                  border: isDark ? '1px solid rgba(255,255,255,0.14)' : '1px solid #E2E8F0',
+                  background: isDark ? 'rgba(139,92,246,0.08)' : '#F0EEF9',
+                  border: `1px solid ${sc.separator}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
-                  color: isDark ? '#F1F5F9' : '#475569',
-                  transition: 'background-color 0.15s, color 0.15s, border-color 0.15s',
+                  color: sc.mutedIcon,
+                  transition: 'all 0.15s',
                   flexShrink: 0,
                 }}
                 onMouseEnter={e => {
@@ -721,32 +780,34 @@ My feedback:
                   e.currentTarget.style.color = isDark ? '#C4B5FD' : '#7C3AED';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.06)' : '#F1F5F9';
-                  e.currentTarget.style.borderColor = isDark ? 'rgba(255,255,255,0.14)' : '#E2E8F0';
-                  e.currentTarget.style.color = isDark ? '#F1F5F9' : '#475569';
+                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(139,92,246,0.08)' : '#F0EEF9';
+                  e.currentTarget.style.borderColor = sc.separator;
+                  e.currentTarget.style.color = sc.mutedIcon;
                 }}
               >
-                {isDark ? <Moon size={16} /> : <Sun size={16} />}
+                {isDark ? <Moon size={15} /> : <Sun size={15} />}
               </button>
             </TooltipTrigger>
             <TooltipContent side="right">{isDark ? 'Light mode' : 'Dark mode'}</TooltipContent>
           </Tooltip>
 
-          <button
-            onClick={handleFeedback}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'transparent', border: 'none', cursor: 'pointer',
-              padding: '4px 6px',
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 13, fontWeight: 400, color: sc.mutedIcon,
-              transition: 'color 0.15s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = sc.userName)}
-            onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
-          >
-            <MessageCircle size={14} /> Give feedback
-          </button>
+          {!collapsed && (
+            <button
+              onClick={handleFeedback}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                padding: '4px 6px', borderRadius: 6,
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 12, fontWeight: 500, color: sc.mutedIcon,
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = sc.userName)}
+              onMouseLeave={e => (e.currentTarget.style.color = sc.mutedIcon)}
+            >
+              <MessageCircle size={13} /> Feedback
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -777,7 +838,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!checked) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-page, #F8FAFC)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <img src="/favicon.png" alt="Lumnix" style={{ width: 32, height: 32, borderRadius: 8, opacity: 0.6 }} className="animate-pulse" />
+        <img src="/favicon.png" alt="Lumnix" style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'contain', opacity: 0.6 }} className="animate-pulse" />
       </div>
     </div>
   );
@@ -789,14 +850,20 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 function DashboardInner({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { c } = useTheme();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setCmdOpen(prev => !prev);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        setSidebarCollapsed(prev => !prev);
       }
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
@@ -811,10 +878,10 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: c.bgPage }}>
+    <div className="dashboard-scope" style={{ display: 'flex', minHeight: '100vh', backgroundColor: c.bgPage }}>
       {/* Desktop sidebar */}
       <div className="desktop-sidebar" style={{ display: 'none' }}>
-        <SidebarInner />
+        <SidebarInner collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(prev => !prev)} />
       </div>
       <style>{`.desktop-sidebar { display: flex !important; } @media (max-width: 768px) { .desktop-sidebar { display: none !important; } }`}</style>
 
@@ -822,10 +889,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: c.bgCard, borderBottom: `1px solid ${c.border}`, padding: '10px 16px', display: 'none' }} className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="/favicon.png" alt="Lumnix" style={{ width: 24, height: 24, borderRadius: 6, objectFit: 'contain' }} />
-            <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.05em', fontFamily: 'var(--font-display)', color: c.text }}>
-              Lumnix
-            </span>
+            <img src="/favicon.png" alt="Lumnix" style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'contain' }} />
+            <img src="/lumnix-logo.png" alt="Lumnix" style={{ height: 18, objectFit: 'contain' }} />
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             <Button variant="ghost" size="icon-sm" onClick={() => setCmdOpen(true)} aria-label="Search">
@@ -861,18 +926,18 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
               onClick={() => setCmdOpen(true)}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '8px 12px', borderRadius: 8,
-                border: `1px solid ${c.border}`, backgroundColor: c.bgCardHover,
-                color: c.textSecondary, fontSize: 13, cursor: 'pointer',
+                padding: '8px 14px', borderRadius: 10,
+                border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
+                color: c.textMuted, fontSize: 13, cursor: 'pointer',
                 width: 240,
                 transition: 'border-color 150ms, box-shadow 150ms',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.1)'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.08)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <Search size={13} />
-              <span style={{ flex: 1, textAlign: 'left' }}>Search anything...</span>
-              <kbd style={{ fontSize: 10, padding: '2px 6px', borderRadius: 5, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, fontFamily: 'var(--font-mono)', color: c.textMuted, letterSpacing: '0.02em' }}>
+              <span style={{ flex: 1, textAlign: 'left', fontFamily: "'DM Sans', sans-serif" }}>Search...</span>
+              <kbd style={{ fontSize: 10, padding: '2px 6px', borderRadius: 5, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontFamily: 'var(--font-mono)', color: c.textMuted, letterSpacing: '0.02em' }}>
                 ⌘K
               </kbd>
             </button>

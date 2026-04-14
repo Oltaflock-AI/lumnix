@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${plusJakarta.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-      <body style={{ margin: 0, backgroundColor: '#F8FAFC', color: '#0F172A' }}>
+      <body style={{ margin: 0 }}>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <TooltipProvider>
           {children}
