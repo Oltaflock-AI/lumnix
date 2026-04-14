@@ -25,11 +25,11 @@ export function AdSpySection() {
           </ScrollReveal>
 
           <ScrollReveal delay={0.15}>
-            <p className="wr-body-large" style={{ marginBottom: 36 }}>
-              Meta&apos;s Ad Library is public. But who has time to manually check <span style={{ color: '#fff', fontWeight: 600 }}>500 ads per competitor</span> and figure out which ones are actually winning?
-              <br /><br />
-              Any ad running <span style={{ color: '#34D399', fontWeight: 700 }}>90+ days</span> = Meta kept serving it = <strong style={{ color: '#fff' }}>it works.</strong>
-              <br />Our AI tells you <em>exactly why</em> — and what to make next.
+            <p className="wr-body-large" style={{ marginBottom: 20 }}>
+              Who has time to check <span style={{ color: '#fff', fontWeight: 600 }}>500 ads per competitor</span>? Nobody.
+            </p>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.55)', marginBottom: 28, lineHeight: 1.6 }}>
+              Ad running <span style={{ color: '#34D399', fontWeight: 700 }}>90+ days</span> = Meta kept serving it = <strong style={{ color: '#fff' }}>it works.</strong> Our AI tells you exactly why.
             </p>
           </ScrollReveal>
 

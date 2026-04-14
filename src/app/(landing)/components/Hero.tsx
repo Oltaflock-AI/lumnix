@@ -26,7 +26,7 @@ function Sparkline({ color = '#7C3AED', data = [3,5,4,7,6,8,7,9,8,11,10,14,12,15
 
 export function Hero() {
   return (
-    <section className="wr-section" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', paddingTop: 100 }}>
+    <section className="wr-section" style={{ minHeight: '90vh', display: 'flex', alignItems: 'center', paddingTop: 96, paddingBottom: 48 }}>
       {/* Orbs */}
       <div style={{ position: 'absolute', top: '15%', left: '10%', width: 700, height: 700, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 65%)', animation: 'wr-orb 6s ease-in-out infinite', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', bottom: '5%', right: '5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(8,145,178,0.15) 0%, transparent 65%)', animation: 'wr-orb 8s ease-in-out infinite 2s', pointerEvents: 'none' }} />
@@ -54,12 +54,11 @@ export function Hero() {
               While you&apos;re switching between 5 dashboards,
               they&apos;re making decisions in <strong style={{ color: '#fff' }}>one.</strong>
             </p>
-            <p className="wr-body-large" style={{ marginBottom: 44, maxWidth: 500 }}>
-              The average D2C marketing team wastes{' '}
-              <span style={{ color: '#F87171', fontWeight: 700 }}>14 hours every week</span>{' '}
-              copy-pasting data between tools that were never designed to talk to each other.
-              <br /><br />
-              <span style={{ color: '#fff', fontWeight: 600 }}>Lumnix ends that. Today.</span>
+            <p className="wr-body-large" style={{ marginBottom: 36, maxWidth: 480 }}>
+              Your team wastes <span style={{ color: '#F87171', fontWeight: 700 }}>14 hours/week</span> stitching data across tools that don&apos;t talk to each other.
+            </p>
+            <p style={{ fontSize: 18, color: '#fff', fontWeight: 600, marginBottom: 36 }}>
+              Lumnix ends that. Today.
             </p>
           </ScrollReveal>
 

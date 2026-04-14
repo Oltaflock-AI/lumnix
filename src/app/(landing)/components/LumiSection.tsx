@@ -27,10 +27,8 @@ export function LumiSection() {
           </ScrollReveal>
 
           <ScrollReveal delay={0.15}>
-            <p className="wr-body-large" style={{ marginBottom: 36 }}>
-              This isn&apos;t a chatbot that&apos;s read marketing articles.
-              <br /><br />
-              Lumi has read <strong style={{ color: '#fff' }}>your data</strong>. It knows your top keyword, your worst campaign, your competitor&apos;s winning hook, and your <span style={{ color: '#F87171' }}>biggest missed opportunity</span>.
+            <p className="wr-body-large" style={{ marginBottom: 28 }}>
+              Not a chatbot. Lumi reads <strong style={{ color: '#fff' }}>your actual data</strong> — keywords, campaigns, competitors — and tells you what to do next.
             </p>
           </ScrollReveal>
 

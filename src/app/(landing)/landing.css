@@ -174,13 +174,13 @@
 
 /* ── Section utility ── */
 .wr-section {
-  padding: 80px 24px;
+  padding: 56px 24px;
   position: relative;
 }
 
 @media (min-width: 768px) {
   .wr-section {
-    padding: 120px 48px;
+    padding: 80px 48px;
   }
 }
 

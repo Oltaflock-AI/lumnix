@@ -4,7 +4,7 @@ import { ScrollReveal } from './ScrollReveal';
 
 export function FinalCTA() {
   return (
-    <section className="wr-section" style={{ textAlign: 'center', overflow: 'hidden', paddingTop: 140, paddingBottom: 120 }}>
+    <section className="wr-section" style={{ textAlign: 'center', overflow: 'hidden', paddingTop: 80, paddingBottom: 80 }}>
       {/* Top divider for visual separation from pricing */}
       <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '60%', height: 1, background: 'linear-gradient(to right, transparent, rgba(124,58,237,0.4), transparent)' }} />
 
@@ -14,7 +14,7 @@ export function FinalCTA() {
       <div className="wr-container" style={{ position: 'relative', maxWidth: 800 }}>
         <ScrollReveal>
           <span className="wr-label" style={{ display: 'inline-block', marginBottom: 28, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', padding: '8px 16px', borderRadius: 24 }}>STOP GUESSING</span>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(44px, 6vw, 80px)', fontWeight: 800, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: 28 }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 800, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 20 }}>
             Marketing that guesses
             <br />is <span style={{ color: '#F87171' }}>expensive.</span>
             <br />Marketing that knows
@@ -23,7 +23,7 @@ export function FinalCTA() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.15}>
-          <p style={{ fontSize: 20, color: 'rgba(255,255,255,0.55)', marginBottom: 48, lineHeight: 1.65 }}>
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.55)', marginBottom: 32, lineHeight: 1.6 }}>
             Join <strong style={{ color: 'rgba(255,255,255,0.85)' }}>200+ brands and agencies</strong> who stopped
             exporting CSVs and started making decisions.
           </p>

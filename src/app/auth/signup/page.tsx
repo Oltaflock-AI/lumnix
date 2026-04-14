@@ -88,7 +88,7 @@ function SignUpInner() {
         borderRight: `1px solid ${c.border}`, position: 'relative', overflow: 'hidden',
       }} className="auth-left-panel">
         {/* Glow */}
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 50% at 20% 20%, rgba(255,97,84,0.10) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 80% 80%, rgba(34,211,238,0.08) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 50% 50%, rgba(255,97,84,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 50% 50% at 20% 20%, rgba(124,58,237,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 80% 80%, rgba(34,211,238,0.08) 0%, transparent 70%), radial-gradient(ellipse 60% 40% at 50% 50%, rgba(124,58,237,0.04) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
         {/* Logo */}
         <div>
@@ -99,7 +99,7 @@ function SignUpInner() {
 
         {/* Headline */}
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '20px', background: c.accentSubtle, border: '1px solid rgba(255,97,84,0.2)', marginBottom: '20px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px', borderRadius: '20px', background: c.accentSubtle, border: '1px solid rgba(124,58,237,0.2)', marginBottom: '20px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: c.accent, display: 'inline-block' }} />
             <span style={{ fontSize: '12px', color: c.accent, fontWeight: 600, letterSpacing: '0.5px' }}>MARKETING INTELLIGENCE</span>
           </div>
@@ -234,14 +234,14 @@ function SignUpInner() {
               disabled={loading}
               style={{
                 width: '100%', padding: '12px 16px', borderRadius: '8px', border: 'none',
-                background: 'linear-gradient(135deg, #FF6154, #FF7A5C)', boxShadow: '0 2px 16px rgba(255,97,84,0.25), inset 0 1px 0 rgba(255,255,255,0.15)',
+                background: '#7C3AED', boxShadow: '0 2px 16px rgba(124,58,237,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
                 color: 'white', fontSize: '14px', fontWeight: 600,
                 cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.7 : 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                 transition: 'box-shadow 0.15s, transform 0.16s cubic-bezier(0.23,1,0.32,1)', marginTop: '4px',
               }}
-              onMouseEnter={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgba(255,97,84,0.35), inset 0 1px 0 rgba(255,255,255,0.2)'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; } }}
-              onMouseLeave={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 16px rgba(255,97,84,0.25), inset 0 1px 0 rgba(255,255,255,0.15)'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; } }}
+              onMouseEnter={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 32px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.2)'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; } }}
+              onMouseLeave={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 2px 16px rgba(124,58,237,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'; (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; } }}
             >
               {loading ? 'Creating account...' : (<>Create account <ArrowRight size={15} /></>)}
             </button>

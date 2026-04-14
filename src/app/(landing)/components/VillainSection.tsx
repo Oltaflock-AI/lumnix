@@ -35,7 +35,7 @@ export function VillainSection() {
       <div className="wr-container">
         {/* Pain headline */}
         <ScrollReveal>
-          <div style={{ textAlign: 'center', marginBottom: 80 }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <span className="wr-label" style={{ display: 'inline-block', marginBottom: 20 }}>THE PROBLEM</span>
             <h2 className="wr-section-headline" style={{ marginBottom: 24 }}>
               You&apos;re paying for{' '}
