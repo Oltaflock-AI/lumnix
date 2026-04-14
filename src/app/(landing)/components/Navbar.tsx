@@ -15,8 +15,9 @@ export function Navbar() {
 
   return (
     <nav className={`wr-nav ${scrolled ? 'wr-nav--scrolled' : 'wr-nav--top'}`}>
-      <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', padding: '8px 0', minHeight: 44 }}>
-        <Image src="/lumnix-logo.png" alt="Lumnix" width={130} height={30} style={{ objectFit: 'contain' }} priority />
+      <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', padding: '8px 0', minHeight: 44 }}>
+        <Image src="/favicon.png" alt="Lumnix" width={32} height={32} style={{ borderRadius: 8 }} priority />
+        <span style={{ fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: '-0.04em', fontFamily: 'var(--font-display)' }}>Lumnix</span>
       </Link>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} className="hidden md:flex">

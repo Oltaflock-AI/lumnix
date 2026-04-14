@@ -9,7 +9,7 @@ export function Footer() {
       <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', padding: '10px 0', minHeight: 44 }}>
           <Image src="/favicon.png" alt="Lumnix" width={24} height={24} style={{ borderRadius: 6 }} />
-          <Image src="/lumnix-logo.png" alt="Lumnix" width={90} height={20} style={{ objectFit: 'contain', opacity: 0.6 }} />
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>Lumnix by Oltaflock AI</span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {[{ label: 'Privacy', href: '/privacy' }, { label: 'Terms', href: '/terms' }].map(link => (

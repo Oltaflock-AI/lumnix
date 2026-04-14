@@ -589,7 +589,7 @@ My feedback:
       >
         <img src="/favicon.png" alt="Lumnix" style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
         {!collapsed && (
-          <img src="/lumnix-logo.png" alt="Lumnix" style={{ height: 20, objectFit: 'contain', flexShrink: 0 }} />
+          <span className="gradient-text" style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)', overflow: 'hidden', whiteSpace: 'nowrap' }}>Lumnix</span>
         )}
       </div>
 
@@ -890,7 +890,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src="/favicon.png" alt="Lumnix" style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'contain' }} />
-            <img src="/lumnix-logo.png" alt="Lumnix" style={{ height: 18, objectFit: 'contain' }} />
+            <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)', color: c.text }}>Lumnix</span>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             <Button variant="ghost" size="icon-sm" onClick={() => setCmdOpen(true)} aria-label="Search">
