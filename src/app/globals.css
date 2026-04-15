@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+/* Fonts loaded via next/font in src/app/layout.tsx — do NOT also @import from Google here. */
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -26,8 +26,10 @@
 
   --accent:         #7C3AED;
   --accent-hover:   #6D28D9;
-  --accent-subtle:  rgba(124,58,237,0.08);
+  --accent-rgb:     124 58 237;
+  --accent-subtle:  rgb(var(--accent-rgb) / 0.08);
   --accent-secondary: #0891B2;
+  --accent-secondary-rgb: 8 145 178;
 
   --success:        #22C55E;
   --warning:        #F59E0B;
@@ -928,36 +930,21 @@ table td {
 }
 
 /* ══════════════════════════════════════
-   Accessibility
+   Reusable card-hover with focus parity
+   (replaces inline JS hover handlers) — added by audit pass
    ══════════════════════════════════════ */
-
-:focus-visible {
-  outline: 2px solid #7C3AED;
-  outline-offset: 2px;
+.lx-card-interactive {
+  transition: border-color 0.2s var(--ease-out-strong), transform 0.2s var(--ease-out-strong), box-shadow 0.2s var(--ease-out-strong);
 }
-
-.skip-link {
-  position: absolute;
-  top: -100%;
-  left: 16px;
-  z-index: 10000;
-  padding: 8px 16px;
-  background: #7C3AED;
-  color: white;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-}
-.skip-link:focus {
-  top: 16px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+@media (hover: hover) and (pointer: fine) {
+  .lx-card-interactive:hover,
+  .lx-card-interactive:focus-visible {
+    border-color: rgb(var(--accent-rgb) / 0.2);
+    box-shadow: 0 8px 24px rgb(var(--accent-rgb) / 0.08);
+    transform: translateY(-2px);
   }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx-card-interactive:hover,
+  .lx-card-interactive:focus-visible { transform: none !important; }
 }

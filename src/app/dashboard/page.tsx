@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, Bell, CheckCircle, FileText, Users, Search, X } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { KpiGridSkeleton } from '@/components/PageShell';
 import { formatNumber, formatINRCompact, formatROAS } from '@/lib/format';
+import { apiFetch } from '@/lib/api-fetch';
+import { supabase } from '@/lib/supabase';
 
 const PlatformLogo = ({ name, size = 18 }: { name: string; size?: number }) => (
   <img src={`https://cdn.simpleicons.org/${name}`} width={size} height={size} alt={name} style={{ flexShrink: 0 }} />
@@ -101,16 +103,17 @@ export default function DashboardPage() {
   const { data: gscOverviewResp } = useGSCData(workspace?.id, 'overview', days);
   const { data: unifiedResp, loading: unifiedLoading } = useUnifiedData(workspace?.id, days);
 
-  // Get user's first name for greeting
+  // Get user's first name for greeting — single call on mount, session already cached
   const [userName, setUserName] = useState('');
   useEffect(() => {
-    import('@/lib/supabase').then(({ supabase }) => {
-      supabase.auth.getUser().then(({ data }) => {
-        const meta = data?.user?.user_metadata;
-        const name = meta?.full_name || meta?.name || data?.user?.email?.split('@')[0] || '';
-        setUserName(name.split(' ')[0]);
-      });
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (cancelled) return;
+      const meta = data?.user?.user_metadata;
+      const name = meta?.full_name || meta?.name || data?.user?.email?.split('@')[0] || '';
+      setUserName(name.split(' ')[0]);
     });
+    return () => { cancelled = true; };
   }, []);
 
   const loading = wsLoading || ga4Loading || gscLoading || unifiedLoading;
@@ -118,42 +121,56 @@ export default function DashboardPage() {
   const ga4Data: any[] = ga4Resp?.data || [];
   const gscKeywords: any[] = gscResp?.keywords || [];
   const gscOverview: any[] = gscOverviewResp?.overview || [];
-
-  const totalSessions = ga4Data.reduce((s, r) => s + (r.sessions || 0), 0);
-  const totalUsers = ga4Data.reduce((s, r) => s + (r.users || 0), 0);
-  const totalClicks = gscKeywords.reduce((s, k) => s + (k.clicks || 0), 0);
-  const totalImpressions = gscKeywords.reduce((s, k) => s + (k.impressions || 0), 0);
-  const avgPosition = gscKeywords.length > 0
-    ? (gscKeywords.reduce((s, k) => s + (k.position || 0), 0) / gscKeywords.length).toFixed(1) : '—';
-
-  // Unified ad metrics
+  const unifiedDaily: any[] = unifiedResp?.daily || [];
   const uTotals = unifiedResp?.totals || {};
+
+  // Memoized aggregations — avoid reducing large arrays on every render
+  const { totalSessions, totalUsers } = useMemo(() => ({
+    totalSessions: ga4Data.reduce((s, r) => s + (r.sessions || 0), 0),
+    totalUsers: ga4Data.reduce((s, r) => s + (r.users || 0), 0),
+  }), [ga4Data]);
+
+  const { totalClicks, totalImpressions } = useMemo(() => ({
+    totalClicks: gscKeywords.reduce((s, k) => s + (k.clicks || 0), 0),
+    totalImpressions: gscKeywords.reduce((s, k) => s + (k.impressions || 0), 0),
+  }), [gscKeywords]);
+
+  // Unified ad metrics (primitives — safe without memo)
   const totalAdSpend = uTotals.ad_spend || 0;
   const totalAdRevenue = uTotals.ad_revenue || 0;
   const totalROAS = uTotals.roas || 0;
   const totalConversions = Math.round(uTotals.conversions || 0);
 
-  // Combined chart: organic clicks vs paid clicks
-  const unifiedDaily: any[] = unifiedResp?.daily || [];
-  const chartData = (unifiedDaily.length > 0
-    ? unifiedDaily.slice(-30).map(r => ({
-        day: r.date?.slice(5) ?? '',
-        clicks: r.organic_clicks || 0,
-        paid: r.paid_clicks || 0,
-      }))
-    : gscOverview.slice(-30).map(r => ({
-        day: r.date?.slice(5) ?? '',
-        clicks: r.clicks || 0,
-        paid: 0,
-      }))
-  );
+  // Combined chart: organic clicks vs paid clicks — stable ref so Recharts doesn't churn
+  const chartData = useMemo(() => (
+    unifiedDaily.length > 0
+      ? unifiedDaily.slice(-30).map(r => ({
+          day: r.date?.slice(5) ?? '',
+          clicks: r.organic_clicks || 0,
+          paid: r.paid_clicks || 0,
+        }))
+      : gscOverview.slice(-30).map(r => ({
+          day: r.date?.slice(5) ?? '',
+          clicks: r.clicks || 0,
+          paid: 0,
+        }))
+  ), [unifiedDaily, gscOverview]);
 
-  const connectedProviders = integrations.filter(i => i.status === 'connected').map(i => i.provider);
+  const connectedProviders = useMemo(
+    () => integrations.filter(i => i.status === 'connected').map(i => i.provider),
+    [integrations]
+  );
   const hasGA4 = connectedProviders.includes('ga4');
   const hasGSC = connectedProviders.includes('gsc');
   const hasAds = connectedProviders.includes('google_ads') || connectedProviders.includes('meta_ads');
-  const quickWins = gscKeywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < 3).slice(0, 3);
-  const topKeywords = [...gscKeywords].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
+  const quickWins = useMemo(
+    () => gscKeywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < 3).slice(0, 3),
+    [gscKeywords]
+  );
+  const topKeywords = useMemo(
+    () => [...gscKeywords].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5),
+    [gscKeywords]
+  );
 
   const fmtCurrency = formatINRCompact;
 
@@ -464,7 +481,7 @@ function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefine
     if (!workspaceId) { setLoading(false); return; }
     setLoading(true);
     setFetchError(false);
-    fetch(`/api/recommendations/generate?workspace_id=${workspaceId}`)
+    apiFetch(`/api/recommendations/generate?workspace_id=${workspaceId}`)
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(d => { setRecs(d.recommendations || []); setLoading(false); })
       .catch(() => { setFetchError(true); setLoading(false); });
@@ -518,7 +535,7 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
     if (!workspaceId) { setLoading(false); return; }
     setLoading(true);
     setFetchError(false);
-    fetch(`/api/predictions?workspace_id=${workspaceId}&metric=sessions&days=14`)
+    apiFetch(`/api/predictions?workspace_id=${workspaceId}&metric=sessions&days=14`)
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(d => { setPrediction(d); setLoading(false); })
       .catch(() => { setFetchError(true); setLoading(false); });
@@ -583,7 +600,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
     if (!workspaceId) return;
     setLoading(true);
     setFetchError(false);
-    fetch(`/api/anomalies?workspace_id=${workspaceId}`)
+    apiFetch(`/api/anomalies?workspace_id=${workspaceId}`)
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(data => setAnomalies(data.anomalies || []))
       .catch(() => setFetchError(true))
@@ -593,7 +610,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   useEffect(() => { loadAnomalies(); }, [workspaceId]);
 
   async function markAsRead(id: string) {
-    await fetch(`/api/anomalies/${id}/read`, { method: 'POST' });
+    await apiFetch(`/api/anomalies/${id}/read`, { method: 'POST' });
     setAnomalies(prev => prev.map(a => a.id === id ? { ...a, is_read: true } : a));
   }
 
@@ -773,7 +790,7 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
     if (!workspaceId) return;
     setLoading(true);
     setFetchError(false);
-    fetch(`/api/insights?workspace_id=${workspaceId}`)
+    apiFetch(`/api/insights?workspace_id=${workspaceId}`)
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(data => setInsights(data.insights || []))
       .catch(() => setFetchError(true))
@@ -786,7 +803,7 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
     if (!workspaceId) return;
     setGenerating(true);
     try {
-      const res = await fetch('/api/insights/generate', {
+      const res = await apiFetch('/api/insights/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspace_id: workspaceId }),

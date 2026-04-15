@@ -9,6 +9,7 @@ import { PageShell } from '@/components/PageShell';
 import { useTheme } from '@/lib/theme';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useCompetitors } from '@/lib/hooks';
+import { apiFetch } from '@/lib/api-fetch';
 
 /* ── Helpers ── */
 function timeAgo(s: string | null): string {
@@ -79,7 +80,7 @@ export default function CompetitorsPage() {
     if (!workspaceId) return;
     setLoadingAds(true);
     const filterParam = filter === 'all' ? '' : `&filter=${filter}`;
-    fetch(`/api/competitors/ads?workspace_id=${workspaceId}&competitor_id=${compId}${filterParam}`)
+    apiFetch(`/api/competitors/ads?workspace_id=${workspaceId}&competitor_id=${compId}${filterParam}`)
       .then(r => r.json())
       .then(d => { setAds(d.ads ?? []); setAdsTotal(d.total ?? 0); setLoadingAds(false); })
       .catch(() => setLoadingAds(false));
@@ -94,7 +95,7 @@ export default function CompetitorsPage() {
   useEffect(() => {
     if (!selectedId || !workspaceId || activeTab !== 'brief') return;
     setLoadingBrief(true);
-    fetch(`/api/competitors/brief?workspace_id=${workspaceId}&competitor_id=${selectedId}`)
+    apiFetch(`/api/competitors/brief?workspace_id=${workspaceId}&competitor_id=${selectedId}`)
       .then(r => r.json())
       .then(d => { setBrief(d.brief); setLoadingBrief(false); })
       .catch(() => setLoadingBrief(false));
@@ -115,7 +116,7 @@ export default function CompetitorsPage() {
     setSearchError('');
     setSearchResults([]);
     try {
-      const res = await fetch('/api/competitors/search', {
+      const res = await apiFetch('/api/competitors/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: searchQuery.trim(), workspace_id: workspaceId }),
@@ -140,7 +141,7 @@ export default function CompetitorsPage() {
     const result = searchResults[selectedResult];
     setAdding(true);
     try {
-      const res = await fetch('/api/competitors/add', {
+      const res = await apiFetch('/api/competitors/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -191,7 +192,7 @@ export default function CompetitorsPage() {
   /* ── Delete Competitor ── */
   async function handleDelete(id: string) {
     if (!confirm('Remove this competitor and all its data?')) return;
-    await fetch(`/api/competitors/${id}`, { method: 'DELETE' });
+    await apiFetch(`/api/competitors/${id}`, { method: 'DELETE' });
     if (selectedId === id) setSelectedId(null);
     refetchCompetitors();
   }
@@ -201,7 +202,7 @@ export default function CompetitorsPage() {
     if (!workspaceId) return;
     setScrapingIds(prev => new Set(prev).add(competitorId));
     try {
-      await fetch('/api/competitors/scrape', {
+      await apiFetch('/api/competitors/scrape', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ competitor_id: competitorId, workspace_id: workspaceId }),
@@ -217,13 +218,13 @@ export default function CompetitorsPage() {
     if (!selectedId || !workspaceId) return;
     setRegenerating(true);
     try {
-      await fetch('/api/competitors/analyze', {
+      await apiFetch('/api/competitors/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ competitor_id: selectedId, workspace_id: workspaceId }),
       });
       // Refetch brief
-      const res = await fetch(`/api/competitors/brief?workspace_id=${workspaceId}&competitor_id=${selectedId}`);
+      const res = await apiFetch(`/api/competitors/brief?workspace_id=${workspaceId}&competitor_id=${selectedId}`);
       const data = await res.json();
       setBrief(data.brief);
     } catch {}

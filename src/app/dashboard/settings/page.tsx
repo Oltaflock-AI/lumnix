@@ -5,6 +5,7 @@ import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hook
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
+import { apiFetch } from "@/lib/api-fetch";
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -211,7 +212,7 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch('/api/upload/logo', {
+      const res = await apiFetch('/api/upload/logo', {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
         body: formData,
@@ -236,7 +237,7 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch('/api/workspace', {
+      const res = await apiFetch('/api/workspace', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -413,7 +414,7 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
   async function loadAlerts() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    const res = await fetch(`/api/alerts?workspace_id=${workspaceId}`, {
+    const res = await apiFetch(`/api/alerts?workspace_id=${workspaceId}`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
     });
     const data = await res.json();
@@ -431,7 +432,7 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
     setError('');
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { setSaving(false); return; }
-    const res = await fetch('/api/alerts', {
+    const res = await apiFetch('/api/alerts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({ workspace_id: workspaceId, metric, threshold: Number(threshold), comparison, recipient_email: email }),
@@ -450,7 +451,7 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
   async function handleToggle(ruleId: string, isActive: boolean) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    await fetch('/api/alerts', {
+    await apiFetch('/api/alerts', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({ rule_id: ruleId, is_active: !isActive }),
@@ -461,7 +462,7 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
   async function handleDelete(ruleId: string) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    await fetch(`/api/alerts?rule_id=${ruleId}`, {
+    await apiFetch(`/api/alerts?rule_id=${ruleId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${session.access_token}` },
     });
@@ -612,7 +613,7 @@ function ProfileTab() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       setEmail(session.user.email || '');
-      const res = await fetch('/api/profile', {
+      const res = await apiFetch('/api/profile', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (res.ok) {
@@ -630,7 +631,7 @@ function ProfileTab() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch('/api/profile', {
+      const res = await apiFetch('/api/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ full_name: fullName, company }),
@@ -708,7 +709,7 @@ export function BillingTab() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        const res = await fetch(`/api/billing/subscription?workspace_id=${workspace.id}`, {
+        const res = await apiFetch(`/api/billing/subscription?workspace_id=${workspace.id}`, {
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
         const data = await res.json();
@@ -766,7 +767,7 @@ export function BillingTab() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setRedeemResult({ ok: false, text: 'Not signed in' }); setRedeeming(false); return; }
-      const res = await fetch('/api/billing/redeem', {
+      const res = await apiFetch('/api/billing/redeem', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ code: couponCode.trim(), workspace_id: workspace.id }),
@@ -792,7 +793,7 @@ export function BillingTab() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setError('Not signed in'); setLoading(null); return; }
-      const res = await fetch('/api/billing/checkout', {
+      const res = await apiFetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ plan: planId, workspace_id: workspace?.id }),
@@ -1166,7 +1167,7 @@ function DeleteAccountSection() {
     setError('');
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch('/api/account/delete', {
+      const res = await apiFetch('/api/account/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
         body: JSON.stringify({ confirmation: confirmText }),
@@ -1276,7 +1277,7 @@ function DeleteWorkspaceSection({ workspace, workspaceCount }: {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setError('Not signed in'); setDeleting(false); return; }
-      const res = await fetch(`/api/workspace/${workspace.id}`, {
+      const res = await apiFetch(`/api/workspace/${workspace.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -1400,7 +1401,7 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch('/api/workspace', {
+      const res = await apiFetch('/api/workspace', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ name: name.trim() }),
@@ -1540,7 +1541,7 @@ function SecurityTab() {
         setResetSending(false);
         return;
       }
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await apiFetch('/api/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1825,7 +1826,7 @@ export default function SettingsPage() {
     if (!workspace?.id) return;
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    const d = await fetch(`/api/team/invite?workspace_id=${workspace.id}`, {
+    const d = await apiFetch(`/api/team/invite?workspace_id=${workspace.id}`, {
       headers: { Authorization: `Bearer ${session.access_token}` }
     }).then(r => r.json()).catch(() => null);
     if (d && !d.error) setTeamData(d);
@@ -1845,7 +1846,7 @@ export default function SettingsPage() {
     setInviteMsg(null);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-    const res = await fetch('/api/team/invite', {
+    const res = await apiFetch('/api/team/invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify({ email: inviteEmail, workspace_id: workspace.id, role: inviteRole }),
@@ -1873,7 +1874,7 @@ export default function SettingsPage() {
     setRevokingId(inviteId);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { setRevokingId(null); return; }
-    const res = await fetch(`/api/team/invite?invite_id=${inviteId}&workspace_id=${workspace.id}`, {
+    const res = await apiFetch(`/api/team/invite?invite_id=${inviteId}&workspace_id=${workspace.id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${session.access_token}` },
     });
@@ -1892,7 +1893,7 @@ export default function SettingsPage() {
     // Refetch integrations then auto-sync the newly connected provider
     (async () => {
       try {
-        const res = await fetch(`/api/integrations/list?workspace_id=${workspace.id}`);
+        const res = await apiFetch(`/api/integrations/list?workspace_id=${workspace.id}`);
         const d = await res.json();
         const fresh = d.integrations || [];
         const int = fresh.find((i: any) => i.provider === connectedProvider && i.status === 'connected');
@@ -1952,19 +1953,29 @@ export default function SettingsPage() {
   async function handleSyncAll() {
     if (!workspace?.id) return;
     setSyncing('all');
-    try {
-      const res = await fetch(`/api/cron/sync?workspace_id=${workspace.id}`);
-      const result = await res.json();
-      if (result.success) {
-        const synced = result.results.filter((r: any) => r.status === 'synced');
-        alert(`Auto-sync complete: ${synced.length} source${synced.length !== 1 ? 's' : ''} updated`);
-      } else {
-        alert(`Sync failed: ${result.error}`);
+    const connected = integrations.filter(i => i.status === 'connected' && ['gsc','ga4','google_ads','meta_ads'].includes(i.provider));
+    const outcomes = await Promise.all(connected.map(async (int) => {
+      try {
+        const result = await syncIntegration(int.id, workspace.id, int.provider);
+        return { provider: int.provider, ok: !result?.error, error: result?.error };
+      } catch (e: any) {
+        return { provider: int.provider, ok: false, error: e?.message || 'Sync error' };
       }
-      refetch();
-    } catch (err) {
-      alert(`Sync error: ${err}`);
+    }));
+    const ok = outcomes.filter(o => o.ok).length;
+    const failed = outcomes.filter(o => !o.ok);
+    if (failed.length === 0) {
+      alert(`Sync complete: ${ok} source${ok !== 1 ? 's' : ''} updated`);
+    } else {
+      alert(`Synced ${ok}/${outcomes.length}. Failed: ${failed.map(f => `${f.provider} (${f.error})`).join(', ')}`);
     }
+    setSyncResults(prev => {
+      const next = { ...prev };
+      const ts = new Date().toISOString();
+      for (const o of outcomes) next[o.provider] = { error: o.ok ? undefined : o.error, timestamp: ts };
+      return next;
+    });
+    refetch();
     setSyncing(null);
   }
 
@@ -2296,7 +2307,7 @@ export default function SettingsPage() {
                   onClick={async () => {
                     if (!disconnectTarget) return;
                     try {
-                      await fetch('/api/integrations/disconnect', {
+                      await apiFetch('/api/integrations/disconnect', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ integration_id: disconnectTarget.id }),
@@ -2479,7 +2490,7 @@ export default function SettingsPage() {
                                   const session = (await supabase.auth.getSession()).data.session;
                                   if (!session) return;
                                   try {
-                                    const res = await fetch('/api/team/member', {
+                                    const res = await apiFetch('/api/team/member', {
                                       method: 'PATCH',
                                       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
                                       body: JSON.stringify({ workspace_id: workspace.id, member_id: m.id, role: newRole }),
@@ -2505,7 +2516,7 @@ export default function SettingsPage() {
                                   const session = (await supabase.auth.getSession()).data.session;
                                   if (!session) return;
                                   try {
-                                    const res = await fetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
+                                    const res = await apiFetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
                                       method: 'DELETE',
                                       headers: { Authorization: `Bearer ${session.access_token}` },
                                     });

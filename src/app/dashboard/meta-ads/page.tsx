@@ -11,6 +11,7 @@ import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatNumber, formatINR } from '@/lib/format';
+import { apiFetch } from '@/lib/api-fetch';
 
 const COLORS = ['#1877F2', '#7C3AED', '#0891B2', '#10B981', '#F59E0B', '#ec4899'];
 
@@ -52,7 +53,7 @@ export default function MetaAdsPage() {
   // Load ad accounts when integration exists
   useEffect(() => {
     if (!metaIntegration?.id) return;
-    fetch(`/api/meta/accounts?integration_id=${metaIntegration.id}`)
+    apiFetch(`/api/meta/accounts?integration_id=${metaIntegration.id}`)
       .then(r => r.json())
       .then(d => {
         const accts = d.accounts || [];
@@ -89,7 +90,7 @@ export default function MetaAdsPage() {
     if (!workspaceId || !metaIntegration) return;
     setSyncing(true);
     try {
-      const res = await fetch('/api/sync/meta-ads', {
+      const res = await apiFetch('/api/sync/meta-ads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

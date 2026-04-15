@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase";
+import { apiFetch as authFetch } from "./api-fetch";
 
 // Get current user's workspace
 export function useWorkspace() {
@@ -41,7 +42,7 @@ export function useIntegrations(workspaceId: string | undefined) {
     if (!workspaceId) { setLoading(false); return; }
     async function load() {
       try {
-        const res = await fetch(`/api/integrations/list?workspace_id=${workspaceId}`);
+        const res = await authFetch(`/api/integrations/list?workspace_id=${workspaceId}`);
         if (res.ok) {
           const data = await res.json();
           setIntegrations(data.integrations || []);
@@ -54,7 +55,7 @@ export function useIntegrations(workspaceId: string | undefined) {
 
   return { integrations, loading, refetch: () => {
     if (!workspaceId) return;
-    fetch(`/api/integrations/list?workspace_id=${workspaceId}`)
+    authFetch(`/api/integrations/list?workspace_id=${workspaceId}`)
       .then(r => r.json())
       .then(d => setIntegrations(d.integrations || []))
       .catch(() => {});
@@ -96,7 +97,7 @@ export async function syncIntegration(integrationId: string, workspaceId: string
   const endpoint = endpointMap[provider];
   if (!endpoint) return null;
 
-  const res = await fetch(endpoint, {
+  const res = await authFetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ integration_id: integrationId, workspace_id: workspaceId, ...extra }),
@@ -124,7 +125,7 @@ export function useGSCData(workspaceId: string | undefined, type = "keywords", d
   useEffect(() => {
     if (!workspaceId) { setLoading(false); return; }
     setLoading(true);
-    fetch(`/api/data/gsc?workspace_id=${workspaceId}&type=${type}&${rangeKey}`)
+    authFetch(`/api/data/gsc?workspace_id=${workspaceId}&type=${type}&${rangeKey}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -147,7 +148,7 @@ export function useGA4Data(workspaceId: string | undefined, type = "overview", d
   useEffect(() => {
     if (!workspaceId) { setLoading(false); return; }
     setLoading(true);
-    fetch(`/api/data/ga4?workspace_id=${workspaceId}&type=${type}&${rangeKey}`)
+    authFetch(`/api/data/ga4?workspace_id=${workspaceId}&type=${type}&${rangeKey}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -164,7 +165,7 @@ export function useGoogleAdsData(workspaceId: string | undefined, days = 30) {
   useEffect(() => {
     if (!workspaceId) { setLoading(false); return; }
     setLoading(true);
-    fetch(`/api/data/google-ads?workspace_id=${workspaceId}&days=${days}`)
+    authFetch(`/api/data/google-ads?workspace_id=${workspaceId}&days=${days}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -173,7 +174,7 @@ export function useGoogleAdsData(workspaceId: string | undefined, days = 30) {
   return { data, loading, refetch: () => {
     if (!workspaceId) return;
     setLoading(true);
-    fetch(`/api/data/google-ads?workspace_id=${workspaceId}&days=${days}`)
+    authFetch(`/api/data/google-ads?workspace_id=${workspaceId}&days=${days}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -188,7 +189,7 @@ export function useMetaAdsData(workspaceId: string | undefined, days = 30) {
   useEffect(() => {
     if (!workspaceId) { setLoading(false); return; }
     setLoading(true);
-    fetch(`/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}`)
+    authFetch(`/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -197,7 +198,7 @@ export function useMetaAdsData(workspaceId: string | undefined, days = 30) {
   return { data, loading, refetch: () => {
     if (!workspaceId) return;
     setLoading(true);
-    fetch(`/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}`)
+    authFetch(`/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -212,7 +213,7 @@ export function useUnifiedData(workspaceId: string | undefined, days = 30) {
   useEffect(() => {
     if (!workspaceId) { setLoading(false); return; }
     setLoading(true);
-    fetch(`/api/data/unified?workspace_id=${workspaceId}&days=${days}`)
+    authFetch(`/api/data/unified?workspace_id=${workspaceId}&days=${days}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -230,7 +231,7 @@ export function useCompetitors(workspaceId: string | undefined) {
   useEffect(() => {
     if (!workspaceId) { setLoading(false); return; }
     setLoading(true);
-    fetch(`/api/competitors/list?workspace_id=${workspaceId}`)
+    authFetch(`/api/competitors/list?workspace_id=${workspaceId}`)
       .then(r => r.json())
       .then(d => { setCompetitors(d.competitors || []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -248,7 +249,7 @@ export function useCompetitorAds(workspaceId: string | undefined, competitorId: 
   useEffect(() => {
     if (!workspaceId || !competitorId) { setAds([]); return; }
     setLoading(true);
-    fetch(`/api/competitors/ads?workspace_id=${workspaceId}&competitor_id=${competitorId}`)
+    authFetch(`/api/competitors/ads?workspace_id=${workspaceId}&competitor_id=${competitorId}`)
       .then(r => r.json())
       .then(d => { setAds(d.ads || []); setLoading(false); })
       .catch(() => setLoading(false));

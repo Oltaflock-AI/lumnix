@@ -5,6 +5,7 @@ import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useIntegrations } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
+import { apiFetch } from '@/lib/api-fetch';
 
 /* ─── Insight types & colors ─── */
 
@@ -133,7 +134,7 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
     if (!workspaceId) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/insights?workspace_id=${workspaceId}`);
+      const res = await apiFetch(`/api/insights?workspace_id=${workspaceId}`);
       const data = await res.json();
       setInsights(data.insights || []);
       setLastGenerated(data.last_generated || null);
@@ -146,7 +147,7 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
     if (!workspaceId) return;
     setGenerating(true);
     try {
-      const res = await fetch('/api/insights/generate', {
+      const res = await apiFetch('/api/insights/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspace_id: workspaceId }),
@@ -405,7 +406,7 @@ export default function AIPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await apiFetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages.map(m => ({ role: m.role, content: m.content })), workspace_id: workspace?.id }),

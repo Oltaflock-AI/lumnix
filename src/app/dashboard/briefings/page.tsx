@@ -4,6 +4,7 @@ import { Mail, Calendar, Lightbulb, CheckCircle, AlertTriangle } from 'lucide-re
 import { PageShell } from '@/components/PageShell';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
+import { apiFetch } from '@/lib/api-fetch';
 
 export default function BriefingsPage() {
   const { c } = useTheme();
@@ -13,7 +14,7 @@ export default function BriefingsPage() {
 
   useEffect(() => {
     if (!workspace?.id) return;
-    fetch(`/api/briefings?workspace_id=${workspace.id}`)
+    apiFetch(`/api/briefings?workspace_id=${workspace.id}`)
       .then(r => r.json())
       .then(d => { setBriefings(d.briefings || []); setLoading(false); })
       .catch(() => setLoading(false));

@@ -19,6 +19,7 @@ import {
   CommandEmpty, CommandGroup, CommandItem, CommandShortcut
 } from '@/components/ui/command';
 import { Separator } from '@/components/ui/separator';
+import { apiFetch } from '@/lib/api-fetch';
 
 /* ── Navigation Config ── */
 type NavItem = { href: string; label: string; icon: any; shortcut?: string; badge?: boolean };
@@ -560,7 +561,7 @@ My feedback:
 
   useEffect(() => {
     if (!workspace?.id) return;
-    fetch(`/api/anomalies?workspace_id=${workspace.id}`)
+    apiFetch(`/api/anomalies?workspace_id=${workspace.id}`)
       .then(r => r.json())
       .then(data => {
         const anomalies = data.anomalies || [];

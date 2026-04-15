@@ -5,6 +5,7 @@ import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useGSCData, useGA4Data, DateRangeParams } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
+import { apiFetch } from '@/lib/api-fetch';
 
 const DATE_PRESETS = [
   { label: 'Last 7 days', days: 7 },
@@ -969,7 +970,7 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
       if (!session) { setGenerating(false); return; }
 
       // Fetch report data from API
-      const res = await fetch('/api/reports/generate', {
+      const res = await apiFetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ workspace_id: workspace.id, sections: Array.from(selected), days }),
@@ -1082,7 +1083,7 @@ function ScheduledReports({ workspaceId }: { workspaceId: string }) {
     try {
       const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
+      const res = await apiFetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (res.ok) {
@@ -1100,7 +1101,7 @@ function ScheduledReports({ workspaceId }: { workspaceId: string }) {
     try {
       const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
       if (!session) return;
-      const res = await fetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
+      const res = await apiFetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ name: formName, frequency: formFreq, recipients: formEmail.split(',').map(e => e.trim()).filter(Boolean) }),
@@ -1117,7 +1118,7 @@ function ScheduledReports({ workspaceId }: { workspaceId: string }) {
     try {
       const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
       if (!session) return;
-      await fetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
+      await apiFetch(`/api/reports/schedule?workspace_id=${workspaceId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({ id, enabled }),
@@ -1130,7 +1131,7 @@ function ScheduledReports({ workspaceId }: { workspaceId: string }) {
     try {
       const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
       if (!session) return;
-      await fetch(`/api/reports/schedule?workspace_id=${workspaceId}&id=${id}`, {
+      await apiFetch(`/api/reports/schedule?workspace_id=${workspaceId}&id=${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${session.access_token}` },
       });

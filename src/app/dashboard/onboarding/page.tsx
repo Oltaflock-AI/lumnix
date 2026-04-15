@@ -5,6 +5,7 @@ import { Check, Loader2, ArrowRight, ExternalLink } from 'lucide-react';
 import { useIntegrations, connectIntegration, syncIntegration } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
+import { apiFetch } from '@/lib/api-fetch';
 
 /* ─── Provider Config ─── */
 interface ProviderItem {
@@ -110,7 +111,7 @@ export default function OnboardingPage() {
   async function fetchIntegrations(workspaceId: string | undefined) {
     if (!workspaceId) return null;
     try {
-      const res = await fetch(`/api/integrations/list?workspace_id=${workspaceId}`);
+      const res = await apiFetch(`/api/integrations/list?workspace_id=${workspaceId}`);
       if (res.ok) {
         const data = await res.json();
         return data.integrations || [];

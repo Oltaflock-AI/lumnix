@@ -4,6 +4,7 @@ import { Zap, Check, X, Clock, AlertTriangle, Loader2 } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
+import { apiFetch } from '@/lib/api-fetch';
 
 type Action = {
   id: string; action_type: string; title: string; description: string;
@@ -24,7 +25,7 @@ export default function ActionsPage() {
   useEffect(() => {
     if (!workspace?.id) return;
     setLoading(true);
-    fetch(`/api/agent/actions?workspace_id=${workspace.id}`)
+    apiFetch(`/api/agent/actions?workspace_id=${workspace.id}`)
       .then(r => r.json())
       .then(d => { setActions(d.actions || []); setLoading(false); })
       .catch(() => setLoading(false));
@@ -32,7 +33,7 @@ export default function ActionsPage() {
 
   async function updateStatus(actionId: string, status: 'approved' | 'rejected') {
     setUpdating(actionId);
-    const res = await fetch('/api/agent/actions', {
+    const res = await apiFetch('/api/agent/actions', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action_id: actionId, status }),
