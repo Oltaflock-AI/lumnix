@@ -173,6 +173,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, rows_synced: totalRows, property: properties[0].name });
   } catch (error: any) {
     console.error('GA4 sync error:', error);
-    return NextResponse.json({ error: error.message || 'Sync failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Sync failed' }, { status: 500 });
   }
 }

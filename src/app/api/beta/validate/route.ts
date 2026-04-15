@@ -37,6 +37,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ valid: true, plan: invite.plan || 'beta' });
   } catch (error: any) {
-    return NextResponse.json({ valid: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ valid: false, error: "Internal server error" }, { status: 500 });
   }
 }

@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       .eq('status', 'connected')
       .in('provider', ['gsc', 'ga4', 'google_ads', 'meta_ads']);
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
     for (const integration of integrations || []) {
       const tokenRow = (integration.oauth_tokens as any)?.[0] || (integration as any).oauth_tokens;
@@ -209,6 +209,6 @@ export async function GET(req: NextRequest) {
     const synced = results.filter(r => r.status === 'synced').length;
     return NextResponse.json({ success: true, synced, total: results.length, errors: errors.length, results, timestamp: new Date().toISOString() });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

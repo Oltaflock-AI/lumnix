@@ -7,10 +7,16 @@ import { featuresEmail, powerTipsEmail } from '@/lib/emails/onboarding';
 // Email 3: Day 5 after signup (power tips)
 export async function POST(req: NextRequest) {
   try {
-    // Verify cron secret
+    // STRICT cron-only gate. Prior version returned Unauthorized only when the
+    // env was set — meaning a deploy with a missing CRON_SECRET let any authed
+    // user POST this endpoint and blast every Supabase user with onboarding mail.
+    // Fail closed: require the secret to be configured AND to match.
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret) {
+      return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 });
+    }
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -72,6 +78,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, sent });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

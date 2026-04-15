@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { data: integrations, error } = await query;
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
     for (const integration of integrations || []) {
       const tokenRow = (integration.oauth_tokens as any)?.[0] || (integration as any).oauth_tokens;
@@ -335,6 +335,6 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

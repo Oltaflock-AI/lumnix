@@ -1,14 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
 import { WelcomeEmail } from '@/emails/welcome'
+import { rateLimit } from '@/lib/rate-limit'
 
-// POST /api/email/welcome — trigger full onboarding sequence on signup
+// POST /api/email/welcome — schedule onboarding email sequence for the caller.
+// Client-supplied user_id / email / workspace_id are NOT trusted — previously
+// any authed user could schedule a sequence for another user_id and poison
+// their email_sequences rows, or blast welcome mail to arbitrary addresses.
 export async function POST(req: NextRequest) {
   try {
-    const { user_id, email, name, workspace_id } = await req.json()
-    if (!user_id || !email) {
-      return NextResponse.json({ error: 'user_id and email required' }, { status: 400 })
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const userClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { global: { headers: { Authorization: authHeader } } }
+    )
+    const { data: { user } } = await userClient.auth.getUser()
+    if (!user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const limited = rateLimit(`email-welcome:${user.id}`, 1, 24 * 60 * 60 * 1000)
+    if (limited) return limited
+
+    const user_id = user.id
+    const email = user.email
+    const { workspace_id: bodyWorkspaceId } = await req.json().catch(() => ({}))
+    const name = (user.user_metadata?.full_name || user.user_metadata?.name || '') as string
+
+    // Only accept a workspace_id that this user actually belongs to.
+    let workspace_id: string | null = null
+    if (typeof bodyWorkspaceId === 'string' && /^[0-9a-f-]{36}$/i.test(bodyWorkspaceId)) {
+      const adminDb = getSupabaseAdmin()
+      const { data: member } = await adminDb
+        .from('workspace_members')
+        .select('workspace_id')
+        .eq('workspace_id', bodyWorkspaceId)
+        .eq('user_id', user_id)
+        .maybeSingle()
+      if (member) workspace_id = bodyWorkspaceId
     }
 
     const resendKey = process.env.RESEND_API_KEY
@@ -59,6 +91,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   } catch (error: any) {
     console.error('[email/welcome] Error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

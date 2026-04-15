@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
   // Trigger first scrape asynchronously
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

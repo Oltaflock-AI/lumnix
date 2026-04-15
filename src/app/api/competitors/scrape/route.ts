@@ -173,6 +173,6 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('Scrape error:', err);
     await supabase.from('competitor_brands').update({ scrape_status: 'error' }).eq('id', competitor_id);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

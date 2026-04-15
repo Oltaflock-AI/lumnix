@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   query = query.range(from, from + limit - 1);
 
   const { data: ads, count, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
   return NextResponse.json({
     ads: ads || [],

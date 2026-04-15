@@ -155,6 +155,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, campaigns_synced: campaigns.length, customer_id: customerId });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Sync failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Sync failed' }, { status: 500 });
   }
 }

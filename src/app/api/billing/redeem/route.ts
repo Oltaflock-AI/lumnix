@@ -100,6 +100,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error('Redeem error:', error);
-    return NextResponse.json({ error: error.message || 'Redemption failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Redemption failed' }, { status: 500 });
   }
 }

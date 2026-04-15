@@ -229,6 +229,6 @@ export async function GET(req: NextRequest) {
       period: { start: startDateStr, end: endDateStr, days },
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   }
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
   return NextResponse.json({ trends: data || [] });
 }
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
       top_platforms: topPlatforms,
     }, { onConflict: 'competitor_id,snapshot_date' });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
   return NextResponse.json({
     snapshot_date: today,

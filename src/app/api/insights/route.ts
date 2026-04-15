@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     .limit(10);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
   const lastGenerated = data && data.length > 0 ? data[0].created_at : null;

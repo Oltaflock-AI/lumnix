@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { safeFetchUrl } from '@/lib/url-guard';
 
 function getMetaToken(): string | null {
   if (process.env.META_ACCESS_TOKEN) return process.env.META_ACCESS_TOKEN;
@@ -32,11 +33,18 @@ async function resolveFromFacebookUrl(slug: string, token: string) {
 
 async function resolveFromWebsite(url: string, token: string) {
   try {
-    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
-    const res = await fetch(normalizedUrl, {
+    // SSRF guard: reject non-http(s), loopback, private IPs, cloud metadata, etc.
+    // Without this, a crafted query lets us fetch 169.254.169.254 / 127.0.0.1 / intranet hosts.
+    const safeUrl = safeFetchUrl(url);
+    if (!safeUrl) return null;
+    const res = await fetch(safeUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Lumnix/1.0)' },
       signal: AbortSignal.timeout(8000),
+      redirect: 'manual',
     });
+    // Only treat successful direct responses as HTML. Manual-redirect responses
+    // return a 3xx with no body here, avoiding redirect chains into private space.
+    if (!res.ok) return null;
     const html = await res.text();
 
     // Search for facebook.com links in HTML
@@ -180,6 +188,6 @@ export async function POST(req: NextRequest) {
     const results = await searchAdLibrary(trimmed, token);
     return NextResponse.json({ results });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

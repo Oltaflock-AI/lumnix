@@ -201,7 +201,7 @@ export async function PATCH(req: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: "Internal server error" }, { status: 400 });
     }
 
     return NextResponse.json({ workspace });

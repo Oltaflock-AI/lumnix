@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
       .select('*')
       .eq('is_active', true);
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     if (!rules || rules.length === 0) {
       return NextResponse.json({ success: true, checked: 0, triggered: 0, message: 'No active alert rules' });
     }
@@ -203,6 +203,6 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 16px; }
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

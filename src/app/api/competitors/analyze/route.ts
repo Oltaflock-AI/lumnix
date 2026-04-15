@@ -180,6 +180,6 @@ IMPORTANT: Structure your response with these exact section headers:
     return NextResponse.json({ success: true, ads_analyzed: winningAds.length });
   } catch (err: any) {
     console.error('AI analysis error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
