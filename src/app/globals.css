@@ -460,6 +460,10 @@ code, pre, kbd, samp {
    Grid Helpers
    ══════════════════════════════════════ */
 
+.dash-content-pad {
+  padding: 28px 32px;
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -505,6 +509,7 @@ code, pre, kbd, samp {
 
 @media (max-width: 768px) {
   .main-content { padding: 16px !important; padding-top: 64px !important; overflow-x: hidden !important; }
+  .dash-content-pad { padding: 16px 12px !important; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
   .kpi-grid-3 { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
   .integration-grid { grid-template-columns: 1fr !important; }

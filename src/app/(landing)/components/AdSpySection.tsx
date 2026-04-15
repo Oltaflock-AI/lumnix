@@ -50,12 +50,12 @@ export function AdSpySection() {
         {/* Rich ad card stack */}
         <ScrollReveal delay={0.2}>
           <div style={{ position: 'relative' }}>
-            {/* Background stacked cards */}
-            <div style={{ position: 'absolute', top: 30, left: -10, width: '100%', maxWidth: 380, height: 300, background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 18, transform: 'rotate(-4deg)', zIndex: 0 }} />
-            <div style={{ position: 'absolute', top: 15, left: -5, width: '100%', maxWidth: 380, height: 300, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 18, transform: 'rotate(-2deg)', zIndex: 0 }} />
+            {/* Background stacked cards — hidden on mobile */}
+            <div className="wr-hide-mobile" style={{ position: 'absolute', top: 30, left: -10, width: '100%', maxWidth: 380, height: 300, background: 'rgba(255,255,255,0.015)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: 18, transform: 'rotate(-4deg)', zIndex: 0 }} />
+            <div className="wr-hide-mobile" style={{ position: 'absolute', top: 15, left: -5, width: '100%', maxWidth: 380, height: 300, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 18, transform: 'rotate(-2deg)', zIndex: 0 }} />
 
-            <IntelCard maxTilt={5} style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ width: '100%', maxWidth: 380, background: 'rgba(20,25,36,0.9)', backdropFilter: 'blur(20px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 18, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
+            <IntelCard maxTilt={5} style={{ position: 'relative', zIndex: 1, width: '100%' }}>
+              <div style={{ width: '100%', maxWidth: 400, background: 'rgba(20,25,36,0.9)', backdropFilter: 'blur(20px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 18, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
                 {/* Ad creative area */}
                 <div style={{ height: 180, background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(8,145,178,0.1) 50%, rgba(52,211,153,0.05) 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {/* Badges */}

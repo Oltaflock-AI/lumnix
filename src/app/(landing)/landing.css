@@ -174,8 +174,14 @@
 
 /* ── Section utility ── */
 .wr-section {
-  padding: 56px 24px;
+  padding: 48px 16px;
   position: relative;
+}
+
+@media (min-width: 640px) {
+  .wr-section {
+    padding: 56px 24px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -276,6 +282,18 @@
   .wr-grid-4 { grid-template-columns: repeat(4, 1fr); gap: 24px; }
 }
 
+.wr-pricing-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 640px) {
+  .wr-pricing-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .wr-pricing-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
 /* ── Navbar ── */
 .wr-nav {
   position: fixed;
@@ -306,6 +324,54 @@
 .wr-nav--top {
   background: rgba(7,5,26,0.4);
   border-bottom: 1px solid transparent;
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 639px) {
+  .wr-nav-link {
+    display: none !important;
+  }
+  .wr-hide-mobile {
+    display: none !important;
+  }
+  .wr-hero-headline {
+    font-size: clamp(36px, 10vw, 52px) !important;
+  }
+  .wr-section-headline {
+    font-size: clamp(26px, 7vw, 36px) !important;
+  }
+  .wr-sub-headline {
+    font-size: 16px !important;
+  }
+  .wr-body-large {
+    font-size: 15px !important;
+  }
+  .wr-stat-number {
+    font-size: clamp(32px, 9vw, 48px) !important;
+  }
+  .wr-grid-2,
+  .wr-grid-2-equal {
+    gap: 24px !important;
+  }
+  .wr-grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  .wr-pain-card {
+    transform: none !important;
+  }
+  .wr-label {
+    font-size: 11px !important;
+  }
+  .wr-light-section {
+    padding: 48px 16px !important;
+  }
+}
+
+@media (min-width: 640px) {
+  .wr-nav-link {
+    display: flex !important;
+  }
 }
 
 /* ── Reduced motion ── */

@@ -919,7 +919,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
       {/* Main content */}
       <main id="main-content" style={{ flex: 1, overflow: 'auto', maxHeight: '100vh', backgroundColor: c.bgPage }} className="main-content">
-        <div style={{ padding: '28px 32px', maxWidth: 1400 }}>
+        <div className="dash-content-pad" style={{ maxWidth: 1400 }}>
           {/* Cmd+K hint bar */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
             <button

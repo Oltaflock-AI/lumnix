@@ -29,7 +29,7 @@ export function PricingSection() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.2}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginTop: 48 }}>
+          <div className="wr-pricing-grid" style={{ marginTop: 32 }}>
             {plans.map(plan => (
               <div key={plan.name} style={{
                 background: '#fff', borderRadius: 18, padding: '24px 22px', position: 'relative',

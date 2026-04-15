@@ -105,11 +105,11 @@ export function Hero() {
                   { label: 'Clicks', value: '214', change: '+8%', color: '#7C3AED', data: [2,3,2,4,3,5,4,5,4,6,5,6,5,7] },
                   { label: 'ROAS', value: '4.2x', change: '+23%', color: '#0891B2', data: [2,2,3,3,3,4,3,4,4,4,5,4,5,5] },
                 ].map((kpi, i) => (
-                  <div key={kpi.label} style={{ flex: 1, padding: '16px 14px', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>{kpi.label}</div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
-                      <span style={{ fontSize: 18, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>{kpi.value}</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: kpi.color }}>{kpi.change}</span>
+                  <div key={kpi.label} style={{ flex: 1, padding: '12px 10px', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 4 }}>{kpi.label}</div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>{kpi.value}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: kpi.color }}>{kpi.change}</span>
                     </div>
                     <Sparkline color={kpi.color} data={kpi.data} />
                   </div>
@@ -151,7 +151,7 @@ export function Hero() {
                     <div key={s.label} style={{ flex: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 6px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
                       <s.Icon size={13} color="#A78BFA" style={{ margin: '0 auto 4px' }} />
                       <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)' }}>{s.val}</div>
-                      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>{s.label}</div>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
