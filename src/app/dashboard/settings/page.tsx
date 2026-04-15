@@ -1857,11 +1857,27 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("connected")) {
+    const connectedProvider = params.get("connected");
+    if (!connectedProvider || !workspace?.id) return;
+    window.history.replaceState({}, "", "/dashboard/settings");
+    // Refetch integrations then auto-sync the newly connected provider
+    (async () => {
+      try {
+        const res = await fetch(`/api/integrations/list?workspace_id=${workspace.id}`);
+        const d = await res.json();
+        const fresh = d.integrations || [];
+        const int = fresh.find((i: any) => i.provider === connectedProvider && i.status === 'connected');
+        if (int) {
+          setSyncing(connectedProvider);
+          try {
+            await syncIntegration(int.id, workspace.id, connectedProvider);
+          } catch {}
+          setSyncing(null);
+        }
+      } catch {}
       refetch();
-      window.history.replaceState({}, "", "/dashboard/settings");
-    }
-  }, []);
+    })();
+  }, [workspace?.id]);
 
   const isConnected = (providerId: string) => integrations.some(i => i.provider === providerId && i.status === "connected");
   const isSynced = (providerId: string) => {

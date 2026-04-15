@@ -161,7 +161,10 @@ export async function GET(req: NextRequest) {
         if (integration.provider === 'meta_ads') {
           const accounts = await fetchMetaAdAccounts(accessToken);
           if (accounts.length > 0) {
-            const adAccountId = accounts[0].id;
+            // Use saved ad_account_id if available, otherwise first account
+            const { data: intMeta } = await db.from('integrations').select('oauth_meta').eq('id', integration.id).single();
+            const savedAccountId = intMeta?.oauth_meta?.ad_account_id;
+            const adAccountId = (savedAccountId && accounts.some((a: any) => a.id === savedAccountId)) ? savedAccountId : accounts[0].id;
             const insights = await fetchMetaInsights(accessToken, adAccountId);
             await db.from('meta_ads_data').delete()
               .eq('workspace_id', integration.workspace_id)
