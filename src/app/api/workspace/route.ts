@@ -40,26 +40,8 @@ export async function GET(req: NextRequest) {
       .select('id, name, plan, logo_url, brand_color, slug, owner_id')
       .eq('owner_id', user.id);
 
-    // Auto-accept any pending invites for this user's email
-    const userEmail = user.email?.toLowerCase();
-    if (userEmail) {
-      const { data: pendingInvites } = await admin
-        .from('team_invites')
-        .select('id, workspace_id, role')
-        .eq('email', userEmail)
-        .eq('status', 'pending');
-
-      for (const invite of pendingInvites || []) {
-        // Add as workspace member
-        await admin.from('workspace_members').upsert({
-          workspace_id: invite.workspace_id, user_id: user.id, role: invite.role || 'member',
-        }, { onConflict: 'workspace_id,user_id' });
-        // Mark invite accepted
-        await admin.from('team_invites').update({
-          status: 'accepted', accepted_at: new Date().toISOString(),
-        }).eq('id', invite.id);
-      }
-    }
+    // Note: pending invites are NOT auto-accepted here. Users must explicitly accept
+    // via /api/team/accept?token=... to prevent unwanted workspace membership.
 
     // Build complete list of workspaces
     const wsMap = new Map<string, { workspace: any; role: string }>();
@@ -184,15 +166,21 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const admin = getSupabaseAdmin();
 
+    // Require explicit workspace_id — don't pick a random membership
+    const workspaceId = body.workspace_id || req.nextUrl.searchParams.get('workspace_id');
+    if (!workspaceId) {
+      return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
+    }
+
     const { data: membership } = await admin
       .from('workspace_members')
       .select('workspace_id, role')
       .eq('user_id', user.id)
-      .limit(1)
+      .eq('workspace_id', workspaceId)
       .single();
 
     if (!membership) {
-      return NextResponse.json({ error: 'No workspace found' }, { status: 404 });
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
     if (!['owner', 'admin'].includes(membership.role)) {

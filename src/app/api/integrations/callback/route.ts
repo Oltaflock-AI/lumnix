@@ -1,28 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForTokens } from '@/lib/google-oauth';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { verifyState } from '@/lib/oauth-state';
 
 // GET /api/integrations/callback?code=...&state=...
 export async function GET(req: NextRequest) {
   try {
     const code = req.nextUrl.searchParams.get('code');
-    const stateB64 = req.nextUrl.searchParams.get('state');
+    const signedState = req.nextUrl.searchParams.get('state');
 
-    if (!code || !stateB64) {
+    if (!code || !signedState) {
       return NextResponse.redirect(new URL('/dashboard/settings?error=missing_params', req.url));
     }
 
-    let state: any;
-    try {
-      state = JSON.parse(Buffer.from(stateB64, 'base64').toString());
-    } catch {
+    // Verify HMAC-signed state — prevents CSRF / state forgery
+    const state = verifyState(signedState);
+    if (!state) {
       return NextResponse.redirect(new URL('/dashboard/settings?error=invalid_state', req.url));
     }
-    const { provider, workspace_id } = state;
+    const { provider, workspace_id, user_id } = state;
 
-    // Validate required state fields
-    if (!provider || !workspace_id) {
-      return NextResponse.redirect(new URL('/dashboard/settings?error=invalid_state', req.url));
+    // Defense-in-depth: re-verify the user who initiated OAuth is still a workspace member
+    const { data: membership } = await getSupabaseAdmin()
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', workspace_id)
+      .eq('user_id', user_id)
+      .single();
+    if (!membership) {
+      return NextResponse.redirect(new URL('/dashboard/settings?error=access_denied', req.url));
     }
 
     const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/integrations/callback`;
@@ -155,12 +161,10 @@ export async function GET(req: NextRequest) {
     console.error('OAuth callback error:', error);
     const stateStr = req.nextUrl.searchParams.get('state');
     let returnTo = '/dashboard/settings';
-    try {
-      if (stateStr) {
-        const s = JSON.parse(Buffer.from(stateStr, 'base64').toString());
-        if (s.return_to) returnTo = s.return_to;
-      }
-    } catch {}
+    if (stateStr) {
+      const s = verifyState(stateStr);
+      if (s?.return_to) returnTo = s.return_to;
+    }
     return NextResponse.redirect(new URL(`${returnTo}?error=unknown`, req.url));
   }
 }

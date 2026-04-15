@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { rateLimit } from '@/lib/rate-limit';
 
 // GET /api/team/accept?token=xxx — accept an invite
 export async function GET(req: NextRequest) {
+  // Rate limit by IP to prevent token brute-forcing (10 attempts / minute per IP)
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim()
+    || req.headers.get('x-real-ip')
+    || 'unknown';
+  const rateLimited = rateLimit(`team-accept:${ip}`, 10, 60 * 1000);
+  if (rateLimited) return rateLimited;
+
   const token = req.nextUrl.searchParams.get('token');
-  if (!token) {
-    return NextResponse.json({ error: 'Missing token' }, { status: 400 });
+  if (!token || token.length < 20 || !/^inv_[a-f0-9]+$/.test(token)) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
   }
 
   const db = getSupabaseAdmin();
@@ -36,9 +44,19 @@ export async function GET(req: NextRequest) {
     // Mark invite as accepted
     await db.from('team_invites').update({ status: 'accepted' }).eq('id', invite.id);
 
-    // Check if user already exists with this email
-    const { data: existingUsers } = await db.auth.admin.listUsers() as { data: { users: any[] } };
-    const existingUser = existingUsers?.users?.find((u: any) => u.email?.toLowerCase() === invite.email?.toLowerCase());
+    // Look up user by email. Supabase admin API doesn't expose email filter directly,
+    // so we use listUsers here (accepted trade-off — this runs at most once per invite claim
+    // and is rate limited by IP).
+    const email = invite.email?.toLowerCase();
+    let existingUser: any = null;
+    if (email) {
+      try {
+        const { data: { users } } = await db.auth.admin.listUsers();
+        existingUser = users?.find((u: any) => u.email?.toLowerCase() === email) || null;
+      } catch {
+        existingUser = null;
+      }
+    }
 
     if (existingUser) {
       // User exists — add them as a workspace member if not already
@@ -66,7 +84,8 @@ export async function GET(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lumnix-ai.vercel.app';
     return NextResponse.redirect(`${appUrl}/auth/signup?invite=${token}&email=${encodeURIComponent(invite.email)}`);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Team accept error:', error);
+    return NextResponse.json({ error: 'Failed to accept invite' }, { status: 500 });
   }
 }
 

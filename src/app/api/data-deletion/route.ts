@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit per IP to prevent admin email flooding (3 requests / hour)
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim()
+      || req.headers.get('x-real-ip')
+      || 'unknown';
+    const rateLimited = rateLimit(`data-deletion:${ip}`, 3, 60 * 60 * 1000);
+    if (rateLimited) return rateLimited;
+
     const { email } = await req.json();
 
     if (!email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {

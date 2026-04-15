@@ -26,29 +26,48 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File;
     if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 });
 
-    // Validate file type and size
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'Only image files allowed' }, { status: 400 });
-    }
     if (file.size > 2 * 1024 * 1024) {
       return NextResponse.json({ error: 'File too large (max 2MB)' }, { status: 400 });
     }
+    if (file.size < 8) {
+      return NextResponse.json({ error: 'Invalid file' }, { status: 400 });
+    }
 
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-    const path = `${user.id}/logo.${ext}`;
     const bytes = await file.arrayBuffer();
+    const header = new Uint8Array(bytes.slice(0, 12));
+
+    // Verify magic bytes — don't trust client-reported MIME type
+    const isPng = header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e && header[3] === 0x47;
+    const isJpeg = header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
+    const isGif = header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46;
+    const isWebp = header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46
+      && header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50;
+    const isSvg = false; // Reject SVG — stored XSS risk
+
+    let ext: string;
+    let contentType: string;
+    if (isPng) { ext = 'png'; contentType = 'image/png'; }
+    else if (isJpeg) { ext = 'jpg'; contentType = 'image/jpeg'; }
+    else if (isGif) { ext = 'gif'; contentType = 'image/gif'; }
+    else if (isWebp) { ext = 'webp'; contentType = 'image/webp'; }
+    else {
+      return NextResponse.json({ error: 'Only PNG, JPEG, GIF, or WebP allowed' }, { status: 400 });
+    }
+
+    const path = `${user.id}/logo.${ext}`;
 
     // Upload using service role key — bypasses RLS
     const admin = getSupabaseAdmin();
     const { error: uploadError } = await admin.storage
       .from('brand-assets')
       .upload(path, bytes, {
-        contentType: file.type,
+        contentType,
         upsert: true,
       });
 
     if (uploadError) {
-      return NextResponse.json({ error: uploadError.message }, { status: 500 });
+      console.error('Logo upload error:', uploadError);
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
     }
 
     const { data: { publicUrl } } = admin.storage
@@ -57,6 +76,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: publicUrl });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Upload failed' }, { status: 500 });
+    console.error('Logo upload error:', err);
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

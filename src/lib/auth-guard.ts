@@ -69,3 +69,31 @@ export async function authenticateRequest(
 export function isAuthError(result: AuthContext | NextResponse): result is NextResponse {
   return result instanceof NextResponse;
 }
+
+/**
+ * Verify a user (from middleware x-user-id header) has membership in a workspace.
+ * Use this in POST/PATCH routes that get workspace_id from request body.
+ * Returns null if allowed, or a NextResponse error if denied.
+ */
+export async function verifyWorkspaceAccess(
+  req: NextRequest,
+  workspaceId: string | null | undefined
+): Promise<NextResponse | { userId: string; role: string }> {
+  const userId = req.headers.get('x-user-id');
+  if (!userId) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+  }
+  if (!workspaceId) {
+    return NextResponse.json({ error: 'Missing workspace_id' }, { status: 400 });
+  }
+  const { data: member } = await getSupabaseAdmin()
+    .from('workspace_members')
+    .select('role')
+    .eq('workspace_id', workspaceId)
+    .eq('user_id', userId)
+    .single();
+  if (!member) {
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+  }
+  return { userId, role: member.role };
+}

@@ -7,9 +7,11 @@ const PUBLIC_ROUTES = new Set([
   '/api/billing/webhook',     // Stripe webhook (validates its own signature)
   '/api/health',              // Health check (sanitized — no secrets)
   '/api/share',               // Public share links
-  '/api/data-deletion',       // Meta data deletion callback
-  '/api/integrations/callback', // OAuth callback (no session yet)
+  '/api/data-deletion',       // Meta data deletion callback (has own confirmation flow)
+  '/api/integrations/callback', // OAuth callback (HMAC-verified state)
   '/api/email/unsubscribe',   // Email unsubscribe link
+  '/api/team/accept',         // Invite acceptance (rate-limited per IP)
+  '/api/waitlist',            // Public waitlist signup
 ]);
 
 // Routes that use CRON_SECRET instead of user auth
@@ -69,7 +71,44 @@ export async function middleware(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
     }
 
-    // Pass user ID downstream via header so routes don't need to re-validate
+    // Extract workspace_id from query params (GET) or JSON body (POST/PATCH/PUT)
+    let workspaceId = req.nextUrl.searchParams.get('workspace_id');
+    let clonedBody: string | null = null;
+
+    if (!workspaceId && ['POST', 'PATCH', 'PUT'].includes(req.method)) {
+      const contentType = req.headers.get('content-type') || '';
+      const contentLength = parseInt(req.headers.get('content-length') || '0', 10);
+      // Only attempt body parse for JSON payloads under 1MB (skip file uploads)
+      if (contentType.includes('application/json') && contentLength > 0 && contentLength < 1024 * 1024) {
+        try {
+          clonedBody = await req.clone().text();
+          const parsed = JSON.parse(clonedBody);
+          if (parsed && typeof parsed.workspace_id === 'string') {
+            workspaceId = parsed.workspace_id;
+          }
+        } catch {
+          // Invalid JSON — let route handle it
+        }
+      }
+    }
+
+    if (workspaceId) {
+      const admin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      );
+      const { data: member } = await admin
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+      if (!member) {
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+      }
+    }
+
+    // Pass user ID downstream so routes don't need to re-validate
     const response = NextResponse.next();
     response.headers.set('x-user-id', user.id);
     return response;
