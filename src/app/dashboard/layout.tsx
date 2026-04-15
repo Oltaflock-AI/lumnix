@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Search, BarChart3, DollarSign,
@@ -440,7 +440,7 @@ function SignOutConfirmDialog({ isDark, onCancel, onConfirm }: { isDark: boolean
 }
 
 /* ── Command Palette ── */
-function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+const CommandPalette = memo(function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const router = useRouter();
 
   function navigate(href: string) {
@@ -479,7 +479,7 @@ function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (
       </CommandList>
     </CommandDialog>
   );
-}
+});
 
 /* ── Sidebar ── */
 /* ── Section group colors for nav dots ── */
@@ -489,7 +489,7 @@ const GROUP_DOT_COLORS: Record<string, string> = {
   'Intelligence': '#059669',
 };
 
-function SidebarInner({ onClose, collapsed = false, onToggleCollapse }: { onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
+const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, onToggleCollapse }: { onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const { workspace } = useWorkspaceCtx();
@@ -552,13 +552,16 @@ function SidebarInner({ onClose, collapsed = false, onToggleCollapse }: { onClos
 
   useEffect(() => {
     if (!workspace?.id) return;
-    apiFetch(`/api/anomalies?workspace_id=${workspace.id}`)
+    const ctrl = new AbortController();
+    apiFetch(`/api/anomalies?workspace_id=${workspace.id}`, { signal: ctrl.signal })
       .then(r => r.json())
       .then(data => {
+        if (ctrl.signal.aborted) return;
         const anomalies = data.anomalies || [];
         setUnreadAlerts(anomalies.filter((a: any) => !a.is_read).length);
       })
       .catch(() => {});
+    return () => ctrl.abort();
   }, [workspace?.id]);
 
   const isActive = (href: string) => href === '/dashboard' ? pathname === '/dashboard' : pathname.startsWith(href);
@@ -824,7 +827,7 @@ function SidebarInner({ onClose, collapsed = false, onToggleCollapse }: { onClos
       </div>
     </div>
   );
-}
+});
 
 /* ── Auth Guard ── */
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -867,6 +870,9 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const toggleSidebar = useCallback(() => setSidebarCollapsed(prev => !prev), []);
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -893,7 +899,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     <div className="dashboard-scope" style={{ display: 'flex', minHeight: '100vh', backgroundColor: c.bgPage }}>
       {/* Desktop sidebar */}
       <div className="desktop-sidebar" style={{ display: 'none' }}>
-        <SidebarInner collapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(prev => !prev)} />
+        <SidebarInner collapsed={sidebarCollapsed} onToggleCollapse={toggleSidebar} />
       </div>
       <style>{`.desktop-sidebar { display: flex !important; } @media (max-width: 768px) { .desktop-sidebar { display: none !important; } }`}</style>
 
@@ -922,7 +928,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           <SheetHeader className="sr-only">
             <SheetTitle>Navigation</SheetTitle>
           </SheetHeader>
-          <SidebarInner onClose={() => setMobileOpen(false)} />
+          <SidebarInner onClose={closeMobile} />
         </SheetContent>
       </Sheet>
 

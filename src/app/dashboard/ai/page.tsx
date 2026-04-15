@@ -44,7 +44,7 @@ type Message = { role: 'user' | 'assistant'; content: string; timestamp?: Date }
 
 /* ─── Markdown renderer ─── */
 
-function MarkdownRenderer({ content }: { content: string }) {
+const MarkdownRenderer = memo(function MarkdownRenderer({ content }: { content: string }) {
   const { c } = useTheme();
   const lines = content.split('\n');
   const elements: ReactElement[] = [];
@@ -104,7 +104,7 @@ function MarkdownRenderer({ content }: { content: string }) {
     i++;
   }
   return <div>{elements}</div>;
-}
+});
 
 function CopyButton({ text }: { text: string }) {
   const { c } = useTheme();
@@ -421,21 +421,30 @@ export default function AIPage() {
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let content = '';
+      let rafId: number | null = null;
 
       setMessages(prev => [...prev, { role: 'assistant', content: '', timestamp: new Date() }]);
       setLoading(false);
       setStreaming(true);
 
+      const flush = () => {
+        rafId = null;
+        const snapshot = content;
+        setMessages(prev => {
+          const updated = prev.slice();
+          updated[updated.length - 1] = { ...updated[updated.length - 1], content: snapshot };
+          return updated;
+        });
+      };
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        content += decoder.decode(value);
-        setMessages(prev => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { ...updated[updated.length - 1], content };
-          return updated;
-        });
+        content += decoder.decode(value, { stream: true });
+        if (rafId === null) rafId = requestAnimationFrame(flush);
       }
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      flush(); // final
       setStreaming(false);
     } catch {
       setError('Connection error. Please try again.');

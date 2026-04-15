@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, TrendingUp, TrendingDown, AlertTriangle, Download, Zap, Star, Target, Eye } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
@@ -55,54 +55,69 @@ export default function SEOPage() {
   const { data: anyDataCheck } = useGSCData(workspaceId, 'keywords', 90);
   const hasSyncedBefore = (anyDataCheck?.keywords?.length || 0) > 0;
 
-  const avgCTRValue = allKeywords.length > 0
-    ? allKeywords.reduce((s, k) => s + k.ctr, 0) / allKeywords.length : 0;
+  const avgCTRValue = useMemo(
+    () => allKeywords.length > 0 ? allKeywords.reduce((s, k) => s + k.ctr, 0) / allKeywords.length : 0,
+    [allKeywords]
+  );
 
-  const keywords = allKeywords.map(kw => ({
+  const keywords = useMemo(() => allKeywords.map(kw => ({
     ...kw,
     signal: kw.position <= 3 ? 'top3'
       : (kw.position >= 4 && kw.position <= 10 && kw.ctr < avgCTRValue * 0.7) ? 'quick-win'
       : (kw.impressions > 500 && kw.ctr < 1) ? 'low-ctr'
       : '',
-  }));
+  })), [allKeywords, avgCTRValue]);
 
-  const totalClicks = keywords.reduce((s, r) => s + (r.clicks || 0), 0);
-  const totalImpressions = keywords.reduce((s, r) => s + (r.impressions || 0), 0);
-  const avgCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : '0';
-  const avgPosition = keywords.length > 0
-    ? (keywords.reduce((s, r) => s + (r.position || 0), 0) / keywords.length).toFixed(1) : '0';
+  const { totalClicks, totalImpressions, avgCTR, avgPosition, top3, top10, top20, beyond } = useMemo(() => {
+    const clicks = keywords.reduce((s, r) => s + (r.clicks || 0), 0);
+    const impressions = keywords.reduce((s, r) => s + (r.impressions || 0), 0);
+    return {
+      totalClicks: clicks,
+      totalImpressions: impressions,
+      avgCTR: impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : '0',
+      avgPosition: keywords.length > 0 ? (keywords.reduce((s, r) => s + (r.position || 0), 0) / keywords.length).toFixed(1) : '0',
+      top3: keywords.filter(k => k.position <= 3).length,
+      top10: keywords.filter(k => k.position > 3 && k.position <= 10).length,
+      top20: keywords.filter(k => k.position > 10 && k.position <= 20).length,
+      beyond: keywords.filter(k => k.position > 20).length,
+    };
+  }, [keywords]);
 
-  const top3 = keywords.filter(k => k.position <= 3).length;
-  const top10 = keywords.filter(k => k.position > 3 && k.position <= 10).length;
-  const top20 = keywords.filter(k => k.position > 10 && k.position <= 20).length;
-  const beyond = keywords.filter(k => k.position > 20).length;
-
-  const bucketData = [
+  const bucketData = useMemo(() => [
     { label: '#1-3', count: top3, color: '#059669' },
     { label: '#4-10', count: top10, color: '#7C3AED' },
     { label: '#11-20', count: top20, color: '#F59E0B' },
     { label: '20+', count: beyond, color: '#94A3B8' },
-  ];
+  ], [top3, top10, top20, beyond]);
 
-  const quickWins = keywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < avgCTRValue * 0.7).slice(0, 5);
+  const quickWins = useMemo(
+    () => keywords.filter(k => k.position >= 4 && k.position <= 10 && k.ctr < avgCTRValue * 0.7).slice(0, 5),
+    [keywords, avgCTRValue]
+  );
 
-  const filteredKeywords = keywords
-    .filter(k => {
-      if (filter === 'quick-wins') return k.position >= 4 && k.position <= 10 && k.ctr < avgCTRValue * 0.7;
-      if (filter === 'top3') return k.position <= 3;
-      if (filter === 'low-ctr') return k.impressions > 500 && k.ctr < 1;
-      return true;
-    })
-    .filter(k => !search || k.query.toLowerCase().includes(search.toLowerCase()))
-    .slice(0, 50);
+  const filteredKeywords = useMemo(() => {
+    const q = search.toLowerCase();
+    return keywords
+      .filter(k => {
+        if (filter === 'quick-wins') return k.position >= 4 && k.position <= 10 && k.ctr < avgCTRValue * 0.7;
+        if (filter === 'top3') return k.position <= 3;
+        if (filter === 'low-ctr') return k.impressions > 500 && k.ctr < 1;
+        return true;
+      })
+      .filter(k => !q || k.query.toLowerCase().includes(q))
+      .slice(0, 50);
+  }, [keywords, filter, search, avgCTRValue]);
 
-  const trendData = overviewData.slice(-14).map(r => ({
+  const trendData = useMemo(() => overviewData.slice(-14).map(r => ({
     day: r.date?.slice(5) ?? '',
     clicks: r.clicks || 0,
     impressions: (r.impressions || 0) / 10,
-  }));
+  })), [overviewData]);
 
-  const tooltipStyle = { backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, color: c.text, fontSize: 12 };
+  const tooltipStyle = useMemo(
+    () => ({ backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, color: c.text, fontSize: 12 }),
+    [c.bgCard, c.borderStrong, c.text]
+  );
 
   return (
     <PageShell title="SEO Intelligence" description="Google Search Console data — insights beyond native GSC" icon={Search}>

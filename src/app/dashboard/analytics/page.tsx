@@ -67,36 +67,45 @@ export default function AnalyticsPage() {
   const { data: anyDataCheck } = useGA4Data(workspaceId, 'overview', 90);
   const hasSyncedBefore = (anyDataCheck?.data?.length || 0) > 0;
 
-  // KPI totals
-  const totalSessions = overviewData.reduce((s: number, r: any) => s + (r.sessions || 0), 0);
-  const totalUsers = overviewData.reduce((s: number, r: any) => s + (r.users || 0), 0);
-  const totalPageviews = overviewData.reduce((s: number, r: any) => s + (r.pageviews || 0), 0);
-  const pagesPerSession = totalSessions > 0 ? (totalPageviews / totalSessions).toFixed(1) : '0';
+  // KPI totals + week-over-week + anomalies, memoized
+  const { totalSessions, totalUsers, totalPageviews, pagesPerSession, wowChange, anomalies, avgSessions } = useMemo(() => {
+    const sessions = overviewData.reduce((s: number, r: any) => s + (r.sessions || 0), 0);
+    const users = overviewData.reduce((s: number, r: any) => s + (r.users || 0), 0);
+    const pageviews = overviewData.reduce((s: number, r: any) => s + (r.pageviews || 0), 0);
+    const half = Math.floor(overviewData.length / 2);
+    const thisWeek = overviewData.slice(half).reduce((s: number, r: any) => s + (r.sessions || 0), 0);
+    const lastWeek = overviewData.slice(0, half).reduce((s: number, r: any) => s + (r.sessions || 0), 0);
+    const avg = sessions / (overviewData.length || 1);
+    return {
+      totalSessions: sessions,
+      totalUsers: users,
+      totalPageviews: pageviews,
+      pagesPerSession: sessions > 0 ? (pageviews / sessions).toFixed(1) : '0',
+      wowChange: lastWeek > 0 ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : 0,
+      anomalies: overviewData.filter((r: any) => r.sessions > avg * 1.5 || r.sessions < avg * 0.5),
+      avgSessions: avg,
+    };
+  }, [overviewData]);
 
-  // Week-over-week comparison
-  const half = Math.floor(overviewData.length / 2);
-  const thisWeekSessions = overviewData.slice(half).reduce((s: number, r: any) => s + (r.sessions || 0), 0);
-  const lastWeekSessions = overviewData.slice(0, half).reduce((s: number, r: any) => s + (r.sessions || 0), 0);
-  const wowChange = lastWeekSessions > 0 ? Math.round(((thisWeekSessions - lastWeekSessions) / lastWeekSessions) * 100) : 0;
-
-  // Anomaly detection — days with sessions > 1.5x average or < 0.5x average
-  const avgSessions = totalSessions / (overviewData.length || 1);
-  const anomalies = overviewData.filter((r: any) => r.sessions > avgSessions * 1.5 || r.sessions < avgSessions * 0.5);
-
-  // Chart data
-  const trendData = overviewData.slice(-14).map((r: any) => ({
+  const trendData = useMemo(() => overviewData.slice(-14).map((r: any) => ({
     day: r.date?.slice(5) ?? '',
     sessions: r.sessions || 0,
     users: r.users || 0,
-  }));
+  })), [overviewData]);
 
-  // Sources
-  const topSources = [...sourcesData].sort((a, b) => (b.sessions || 0) - (a.sessions || 0)).slice(0, 8);
+  const topSources = useMemo(
+    () => [...sourcesData].sort((a, b) => (b.sessions || 0) - (a.sessions || 0)).slice(0, 8),
+    [sourcesData]
+  );
+  const topPages = useMemo(
+    () => [...pagesData].sort((a, b) => (b.pageviews || 0) - (a.pageviews || 0)).slice(0, 15),
+    [pagesData]
+  );
 
-  // Pages
-  const topPages = [...pagesData].sort((a, b) => (b.pageviews || 0) - (a.pageviews || 0)).slice(0, 15);
-
-  const tooltipStyle = { backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, color: c.text, fontSize: 12 };
+  const tooltipStyle = useMemo(
+    () => ({ backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, color: c.text, fontSize: 12 }),
+    [c.bgCard, c.borderStrong, c.text]
+  );
 
   return (
     <PageShell title="Web Analytics" description="GA4 traffic data — sessions, users, sources, and top pages" icon={BarChart3}>
