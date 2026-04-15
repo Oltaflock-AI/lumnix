@@ -1,10 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { ScrollReveal } from './ScrollReveal';
 
 export function FinalCTA() {
   return (
-    <section className="wr-section" style={{ textAlign: 'center', overflow: 'hidden', paddingTop: 80, paddingBottom: 80 }}>
+    <section id="cta" className="wr-section" style={{ textAlign: 'center', overflow: 'hidden', paddingTop: 80, paddingBottom: 80 }}>
       {/* Top divider for visual separation from pricing */}
       <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '60%', height: 1, background: 'linear-gradient(to right, transparent, rgba(124,58,237,0.4), transparent)' }} />
 
@@ -30,9 +31,9 @@ export function FinalCTA() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.25}>
-          <a href="/auth/signup" className="wr-cta" style={{ padding: '20px 52px', fontSize: 18, minHeight: 56 }}>
+          <Link href="/auth/signup" className="wr-cta" style={{ padding: '20px 52px', fontSize: 18, minHeight: 56 }}>
             Get early access — it&apos;s free
-          </a>
+          </Link>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.3)', marginTop: 24 }}>
             No credit card · 3 minutes to set up · Cancel anytime
           </p>

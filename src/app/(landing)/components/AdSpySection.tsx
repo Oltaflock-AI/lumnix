@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Check, Clock, Eye, TrendingUp, Heart, MessageCircle, Share2 } from 'lucide-react';
 import { IntelCard } from './IntelCard';
 import { ScrollReveal } from './ScrollReveal';
@@ -12,7 +13,7 @@ const points = [
 
 export function AdSpySection() {
   return (
-    <section className="wr-section">
+    <section id="adspy" className="wr-section">
       <div className="wr-container wr-grid-2" style={{ alignItems: 'center' }}>
         <div>
           <ScrollReveal>

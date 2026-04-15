@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Send } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ScrollReveal } from './ScrollReveal';
 
 const convos = [
@@ -15,7 +16,7 @@ export function LumiSection() {
   const [activeQ, setActiveQ] = useState(0);
 
   return (
-    <section className="wr-section" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+    <section id="lumi" className="wr-section" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
       <div className="wr-container wr-grid-2-equal" style={{ alignItems: 'center' }}>
         <div>
           <ScrollReveal>
@@ -35,11 +36,11 @@ export function LumiSection() {
           <ScrollReveal delay={0.25}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {convos.map((c, i) => (
-                <button key={i} onClick={() => setActiveQ(i)} style={{
+                <button key={i} onClick={() => setActiveQ(i)} aria-label={`Show answer to: ${c.q}`} aria-pressed={activeQ === i} style={{
                   textAlign: 'left', padding: '14px 16px', borderRadius: 10, fontSize: 14, cursor: 'pointer', transition: 'all 150ms', minHeight: 48,
                   border: activeQ === i ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.07)',
                   background: activeQ === i ? 'rgba(124,58,237,0.12)' : 'transparent',
-                  color: activeQ === i ? '#fff' : 'rgba(255,255,255,0.5)',
+                  color: activeQ === i ? '#fff' : 'rgba(255,255,255,0.65)',
                 }}>
                   &ldquo;{c.q}&rdquo;
                 </button>

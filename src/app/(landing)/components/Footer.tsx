@@ -3,28 +3,64 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+const cols = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Features', href: '#features' },
+      { label: 'Pricing', href: '#pricing' },
+      { label: 'AI Assistant', href: '#lumi' },
+      { label: 'Competitor Spy', href: '#adspy' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: 'mailto:hello@oltaflock.ai' },
+      { label: 'Blog', href: '/blog' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms', href: '/terms' },
+    ],
+  },
+];
+
 export function Footer() {
   return (
-    <footer style={{ borderTop: '1px solid rgba(255,255,255,0.05)', padding: '24px 24px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', padding: '10px 0', minHeight: 44 }}>
-          <Image src="/favicon.png" alt="Lumnix" width={24} height={24} style={{ borderRadius: 6 }} />
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>Lumnix by Oltaflock AI</span>
-        </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {[{ label: 'Privacy', href: '/privacy' }, { label: 'Terms', href: '/terms' }].map(link => (
-            <Link key={link.label} href={link.href} style={{
-              fontSize: 13, color: 'rgba(255,255,255,0.35)', textDecoration: 'none', transition: 'color 150ms',
-              padding: '12px 14px', minHeight: 44, display: 'flex', alignItems: 'center',
-            }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}>
-              {link.label}
+    <footer className="wr-footer">
+      <div className="wr-footer-inner">
+        <div className="wr-footer-grid">
+          <div className="wr-footer-brand">
+            <Link href="/" className="wr-nav-brand">
+              <Image src="/favicon.png" alt="" width={32} height={32} style={{ borderRadius: 8 }} />
+              <span className="wr-nav-brand-text">Lumnix</span>
             </Link>
+            <p className="wr-footer-tagline">
+              Marketing intelligence for D2C brands and agencies.
+            </p>
+            <p className="wr-footer-by">by Oltaflock AI</p>
+          </div>
+
+          {cols.map(col => (
+            <div key={col.title} className="wr-footer-col">
+              <div className="wr-footer-col-title">{col.title}</div>
+              {col.links.map(l => (
+                <Link key={l.label} href={l.href} className="wr-footer-link">
+                  {l.label}
+                </Link>
+              ))}
+            </div>
           ))}
-          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.2)', padding: '0 8px' }}>
-            © 2026 Oltaflock AI
-          </span>
+        </div>
+
+        <div className="wr-footer-bottom">
+          <span>© 2026 Oltaflock AI. All rights reserved.</span>
+          <span>Made in India 🇮🇳</span>
         </div>
       </div>
     </footer>

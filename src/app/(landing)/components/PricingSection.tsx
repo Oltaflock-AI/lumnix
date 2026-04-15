@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
@@ -64,7 +65,7 @@ export function PricingSection() {
                     </div>
                   ))}
                 </div>
-                <a
+                <Link
                   href="/auth/signup"
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -73,7 +74,7 @@ export function PricingSection() {
                     color: plan.primary ? '#fff' : '#7C3AED',
                     border: plan.primary ? 'none' : '1px solid #7C3AED',
                   }}
-                >{plan.cta}</a>
+                >{plan.cta}</Link>
               </div>
             ))}
           </div>
