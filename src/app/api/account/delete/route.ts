@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
+import { escapeHtml } from '@/lib/html-escape';
 
 export async function POST(req: NextRequest) {
   try {
@@ -103,8 +104,8 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({
             from: 'Lumnix <notifications@oltaflock.ai>',
             to: ['admin@oltaflock.ai'],
-            subject: `🗑️ Account Deleted: ${user.email}`,
-            html: `<p>User <strong>${user.email}</strong> deleted their account and all associated data on ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>`,
+            subject: `🗑️ Account Deleted: ${(user.email || '').slice(0, 80)}`,
+            html: `<p>User <strong>${escapeHtml(user.email || '')}</strong> deleted their account and all associated data on ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>`,
           }),
         });
       }

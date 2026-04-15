@@ -49,6 +49,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'frequency must be daily, weekly, or monthly' }, { status: 400 });
   }
 
+  // Validate + cap recipients to block free-tier spam / sender-reputation harm.
+  if (!Array.isArray(recipients) || recipients.length > 50) {
+    return NextResponse.json({ error: 'recipients must be an array of at most 50 emails' }, { status: 400 });
+  }
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const cleanedRecipients = recipients
+    .filter((e: unknown) => typeof e === 'string')
+    .map((e: string) => e.trim().toLowerCase())
+    .filter((e) => emailRe.test(e));
+  if (cleanedRecipients.length === 0 || cleanedRecipients.length !== recipients.length) {
+    return NextResponse.json({ error: 'one or more recipient emails are invalid' }, { status: 400 });
+  }
+
   const db = getSupabaseAdmin();
   const { data, error } = await db
     .from('report_schedules')
@@ -56,7 +69,7 @@ export async function POST(req: NextRequest) {
       workspace_id: auth.workspaceId,
       name,
       frequency,
-      recipients,
+      recipients: cleanedRecipients,
       report_config: report_config || {},
       next_send_at: getNextSendDate(frequency),
     })
@@ -83,7 +96,20 @@ export async function PATCH(req: NextRequest) {
     update.frequency = frequency;
     update.next_send_at = getNextSendDate(frequency);
   }
-  if (recipients) update.recipients = recipients;
+  if (recipients !== undefined) {
+    if (!Array.isArray(recipients) || recipients.length === 0 || recipients.length > 50) {
+      return NextResponse.json({ error: 'recipients must be an array of 1-50 emails' }, { status: 400 });
+    }
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const cleaned = recipients
+      .filter((e: unknown) => typeof e === 'string')
+      .map((e: string) => e.trim().toLowerCase())
+      .filter((e) => emailRe.test(e));
+    if (cleaned.length !== recipients.length) {
+      return NextResponse.json({ error: 'one or more recipient emails are invalid' }, { status: 400 });
+    }
+    update.recipients = cleaned;
+  }
 
   const { data, error } = await db
     .from('report_schedules')

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForTokens } from '@/lib/google-oauth';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { verifyState } from '@/lib/oauth-state';
+import { safeRelativeRedirect } from '@/lib/url-guard';
 
 // GET /api/integrations/callback?code=...&state=...
 export async function GET(req: NextRequest) {
@@ -154,8 +155,9 @@ export async function GET(req: NextRequest) {
       scopes: tokens.scope ? tokens.scope.split(' ') : [],
     });
 
-    // Redirect back to onboarding if that's where the user came from, otherwise settings
-    const returnTo = state.return_to || '/dashboard/settings';
+    // Redirect back to the safe relative target captured at /connect time.
+    // Defense in depth: re-normalise even though /connect already validated.
+    const returnTo = safeRelativeRedirect(state.return_to, '/dashboard/settings');
     return NextResponse.redirect(new URL(`${returnTo}?connected=${provider}`, req.url));
   } catch (error) {
     console.error('OAuth callback error:', error);
@@ -163,7 +165,7 @@ export async function GET(req: NextRequest) {
     let returnTo = '/dashboard/settings';
     if (stateStr) {
       const s = verifyState(stateStr);
-      if (s?.return_to) returnTo = s.return_to;
+      if (s?.return_to) returnTo = safeRelativeRedirect(s.return_to, '/dashboard/settings');
     }
     return NextResponse.redirect(new URL(`${returnTo}?error=unknown`, req.url));
   }

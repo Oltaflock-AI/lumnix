@@ -63,11 +63,13 @@ export async function POST(req: NextRequest) {
 
   const db = getSupabaseAdmin();
 
-  // Get competitor info
+  // IDOR fix: scope competitor to caller's workspace so users can't run
+  // paid Claude analysis / Jina scrapes against another workspace's domain.
   const { data: competitor, error: compError } = await db
     .from('competitors')
     .select('*')
     .eq('id', competitor_id)
+    .eq('workspace_id', workspace_id)
     .single();
 
   if (compError || !competitor) {

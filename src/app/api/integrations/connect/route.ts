@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { checkPlanLimit } from '@/lib/plan-limits';
 import { signState } from '@/lib/oauth-state';
+import { safeRelativeRedirect } from '@/lib/url-guard';
 
 // POST /api/integrations/connect
 // Body: { provider: 'gsc' | 'ga4' | 'google_ads', workspace_id: string }
@@ -47,7 +48,10 @@ export async function POST(req: NextRequest) {
 
     const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/integrations/callback`;
     // HMAC-signed state includes user_id so callback can verify the same user is completing the flow
-    const state = signState({ provider, workspace_id, user_id: user.id, return_to });
+    // Normalise return_to to a same-origin relative path so the callback can't
+    // be used to bounce the user to "//attacker.example" post-OAuth.
+    const safeReturnTo = safeRelativeRedirect(return_to, '/dashboard/settings');
+    const state = signState({ provider, workspace_id, user_id: user.id, return_to: safeReturnTo });
 
     let authUrl: string;
 

@@ -73,6 +73,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid comparison. Use above, below, or equals' }, { status: 400 });
     }
 
+    // Basic email validation so the alert-trigger cron can't be weaponised to
+    // mail arbitrary recipients every evaluation tick.
+    if (typeof recipient_email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient_email.trim())) {
+      return NextResponse.json({ error: 'recipient_email is invalid' }, { status: 400 });
+    }
+
     const db = getSupabaseAdmin();
 
     const { data, error } = await db.from('alert_rules').insert({

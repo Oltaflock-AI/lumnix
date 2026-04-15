@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { checkPlanLimit } from '@/lib/plan-limits';
+import { safeFetchUrl } from '@/lib/url-guard';
+
+function sanitizeHttpsUrl(input: unknown): string | null {
+  if (typeof input !== 'string' || !input.trim()) return null;
+  const safe = safeFetchUrl(input.trim());
+  if (!safe || (safe.protocol !== 'https:' && safe.protocol !== 'http:')) return null;
+  return safe.href.slice(0, 500);
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -37,16 +45,22 @@ export async function POST(req: NextRequest) {
       name: facebook_page_name,
       facebook_page_id,
       facebook_page_name_resolved: facebook_page_name,
-      facebook_page_url: facebook_page_url || null,
-      logo_url: logo_url || null,
-      website_url: website_url || null,
+      facebook_page_url: sanitizeHttpsUrl(facebook_page_url),
+      logo_url: sanitizeHttpsUrl(logo_url),
+      website_url: sanitizeHttpsUrl(website_url),
       fb_page_id: facebook_page_id,
       scrape_status: 'pending',
     })
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  if (error) {
+    // DB trigger raises plan_limit_exceeded to close the check-then-insert race.
+    if (typeof error.message === 'string' && error.message.includes('plan_limit_exceeded')) {
+      return NextResponse.json({ error: 'Plan limit reached', resource: 'competitors' }, { status: 403 });
+    }
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 
   // Trigger first scrape asynchronously
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';

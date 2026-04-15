@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { verifyWorkspaceAccess } from '@/lib/auth-guard';
+import { safeFetchUrl } from '@/lib/url-guard';
+
+function sanitizeLogoUrl(input: unknown): string | null {
+  if (typeof input !== 'string' || !input.trim()) return null;
+  // Accept only https URLs pointing to non-private hosts. Prior version stored
+  // the raw string and embedded it into the public share page, giving any
+  // share-creator a tracking-pixel / SSRF / exfil-image primitive.
+  const safe = safeFetchUrl(input.trim());
+  if (!safe || safe.protocol !== 'https:') return null;
+  return safe.href.slice(0, 500);
+}
+
+function sanitizeBrandColor(input: unknown): string | null {
+  if (typeof input !== 'string') return null;
+  const v = input.trim();
+  // Allow only #rgb / #rrggbb — rejects url(...) / quoted CSS injection.
+  if (!/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/.test(v)) return null;
+  return v;
+}
 
 // GET /api/shared?workspace_id=... — list shared dashboards
 export async function GET(req: NextRequest) {
@@ -38,8 +57,8 @@ export async function POST(req: NextRequest) {
         workspace_id,
         title: typeof title === 'string' ? title.slice(0, 200) : 'Client Dashboard',
         sections: safeSections,
-        custom_logo_url: typeof custom_logo_url === 'string' ? custom_logo_url.slice(0, 500) : null,
-        custom_brand_color: typeof custom_brand_color === 'string' ? custom_brand_color.slice(0, 32) : null,
+        custom_logo_url: sanitizeLogoUrl(custom_logo_url),
+        custom_brand_color: sanitizeBrandColor(custom_brand_color),
         expires_at: expires_at || null,
       })
       .select()

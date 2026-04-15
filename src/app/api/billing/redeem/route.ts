@@ -78,18 +78,35 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + coupon.duration_days);
 
-    // Redeem: update workspace plan + create redemption record + increment usage
-    const [updateRes] = await Promise.all([
-      db.from('workspaces').update({ plan: coupon.plan }).eq('id', workspace_id),
-      db.from('coupon_redemptions').insert({
-        coupon_id: coupon.id,
-        workspace_id,
-        user_id: user.id,
-        plan_granted: coupon.plan,
-        expires_at: expiresAt.toISOString(),
-      }),
-      db.from('coupon_codes').update({ times_used: coupon.times_used + 1 }).eq('id', coupon.id),
-    ]);
+    // Optimistic concurrency on times_used: only the first parallel request
+    // matches the exact snapshot value, blocking two-way max_uses bypass.
+    const { data: incremented, error: incErr } = await db
+      .from('coupon_codes')
+      .update({ times_used: coupon.times_used + 1 })
+      .eq('id', coupon.id)
+      .eq('times_used', coupon.times_used)
+      .select('id');
+
+    if (incErr || !incremented || incremented.length === 0) {
+      return NextResponse.json({ error: 'This coupon has reached its usage limit' }, { status: 409 });
+    }
+
+    const { error: redemptionErr } = await db.from('coupon_redemptions').insert({
+      coupon_id: coupon.id,
+      workspace_id,
+      user_id: user.id,
+      plan_granted: coupon.plan,
+      expires_at: expiresAt.toISOString(),
+    });
+    if (redemptionErr) {
+      await db.from('coupon_codes')
+        .update({ times_used: coupon.times_used })
+        .eq('id', coupon.id)
+        .eq('times_used', coupon.times_used + 1);
+      return NextResponse.json({ error: 'This coupon has already been redeemed for this workspace' }, { status: 409 });
+    }
+
+    await db.from('workspaces').update({ plan: coupon.plan }).eq('id', workspace_id);
 
     return NextResponse.json({
       success: true,

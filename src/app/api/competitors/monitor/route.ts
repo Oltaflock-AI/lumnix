@@ -24,15 +24,18 @@ export async function POST(req: NextRequest) {
 
   const db = getSupabaseAdmin();
 
-  // Get competitor domain
+  // IDOR fix: scope competitor lookup to the caller's workspace. Without
+  // this, any authed user could pair their workspace_id with another
+  // workspace's competitor_id and trigger a Jina scrape of that domain.
   const { data: competitor } = await db
     .from('competitors')
     .select('domain, name')
     .eq('id', competitor_id)
+    .eq('workspace_id', workspace_id)
     .single();
 
   if (!competitor?.domain) {
-    return NextResponse.json({ error: 'Competitor has no domain set' }, { status: 400 });
+    return NextResponse.json({ error: 'Competitor not found or has no domain set' }, { status: 404 });
   }
 
   const domain = competitor.domain.replace(/^https?:\/\//, '');

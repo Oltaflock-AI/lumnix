@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { rateLimit } from '@/lib/rate-limit';
+import { escapeHtml } from '@/lib/html-escape';
 
 function getResend(key: string) {
   return new Resend(key);
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
         const { data: emailData, error: emailError } = await getResend(resendKey).emails.send({
           from: `Lumnix <${senderEmail}>`,
           to: email,
-          subject: `${inviterName} invited you to join ${workspace.name} on Lumnix`,
+          subject: `${inviterName.slice(0, 80)} invited you to join ${(workspace.name || '').slice(0, 80)} on Lumnix`,
           html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><style>
@@ -108,9 +109,9 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px; }
 <div class="container">
   <div class="logo"><span class="l">L</span>umnix</div>
   <h1>You've been invited!</h1>
-  <p><strong style="color:#f8fafc">${inviterName}</strong> has invited you to join the <strong style="color:#f8fafc">${workspace.name}</strong> workspace on Lumnix.</p>
+  <p><strong style="color:#f8fafc">${escapeHtml(inviterName)}</strong> has invited you to join the <strong style="color:#f8fafc">${escapeHtml(workspace.name)}</strong> workspace on Lumnix.</p>
   <p>Click the button below to create your free account:</p>
-  <a href="${inviteUrl}" class="btn">Accept Invitation</a>
+  <a href="${encodeURI(inviteUrl)}" class="btn">Accept Invitation</a>
   <hr class="divider">
   <p class="footer">Expires in 7 days</p>
 </div>

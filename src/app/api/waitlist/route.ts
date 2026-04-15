@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { rateLimit } from '@/lib/rate-limit';
+import { escapeHtml } from '@/lib/html-escape';
 
 // NOTE: the waitlist table is provisioned via supabase migrations
 // (see migrations/waitlist.sql). We used to auto-create it here via a
@@ -70,16 +71,16 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({
             from: 'Lumnix <notifications@oltaflock.ai>',
             to: ['admin@oltaflock.ai'],
-            subject: `🚀 New Waitlist Signup: ${name.trim()}`,
+            subject: `🚀 New Waitlist Signup: ${name.trim().slice(0, 80)}`,
             html: `
               <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 32px;">
                 <h2 style="color: #6366F1; margin-bottom: 24px;">New Waitlist Signup</h2>
                 <table style="width: 100%; border-collapse: collapse;">
-                  <tr><td style="padding: 8px 0; color: #888; width: 120px;">Name</td><td style="padding: 8px 0; font-weight: 600;">${name.trim()}</td></tr>
-                  <tr><td style="padding: 8px 0; color: #888;">Email</td><td style="padding: 8px 0;"><a href="mailto:${email.trim()}" style="color: #6366F1;">${email.trim()}</a></td></tr>
-                  ${company ? `<tr><td style="padding: 8px 0; color: #888;">Company</td><td style="padding: 8px 0;">${company.trim()}</td></tr>` : ''}
-                  ${role ? `<tr><td style="padding: 8px 0; color: #888;">Role</td><td style="padding: 8px 0;">${role.trim()}</td></tr>` : ''}
-                  ${team_size ? `<tr><td style="padding: 8px 0; color: #888;">Team Size</td><td style="padding: 8px 0;">${team_size}</td></tr>` : ''}
+                  <tr><td style="padding: 8px 0; color: #888; width: 120px;">Name</td><td style="padding: 8px 0; font-weight: 600;">${escapeHtml(name.trim())}</td></tr>
+                  <tr><td style="padding: 8px 0; color: #888;">Email</td><td style="padding: 8px 0;"><a href="mailto:${escapeHtml(email.trim())}" style="color: #6366F1;">${escapeHtml(email.trim())}</a></td></tr>
+                  ${company ? `<tr><td style="padding: 8px 0; color: #888;">Company</td><td style="padding: 8px 0;">${escapeHtml(company.trim())}</td></tr>` : ''}
+                  ${role ? `<tr><td style="padding: 8px 0; color: #888;">Role</td><td style="padding: 8px 0;">${escapeHtml(role.trim())}</td></tr>` : ''}
+                  ${team_size ? `<tr><td style="padding: 8px 0; color: #888;">Team Size</td><td style="padding: 8px 0;">${escapeHtml(team_size)}</td></tr>` : ''}
                 </table>
                 <hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;" />
                 <p style="color: #888; font-size: 13px;">Lumnix Waitlist · ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
