@@ -32,12 +32,15 @@ function ResetInner() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
+    if (password.length < 12) { setError('Password must be at least 12 characters.'); return; }
     if (password !== confirm) { setError("Passwords don't match."); return; }
     setLoading(true); setError('');
     const { error } = await supabase.auth.updateUser({ password });
+    if (error) { setLoading(false); setError('Could not update password. Request a new reset link.'); return; }
+    // Invalidate other sessions so a leaked recovery token can't be replayed
+    // on an existing device after the password has been rotated.
+    try { await supabase.auth.signOut({ scope: 'others' as any }); } catch {}
     setLoading(false);
-    if (error) { setError(error.message); return; }
     setDone(true);
     setTimeout(() => router.push('/dashboard'), 1500);
   }
@@ -49,7 +52,7 @@ function ResetInner() {
           Set a new password
         </h1>
         <p style={{ fontSize: 14, color: c.textSecondary, marginBottom: 28 }}>
-          Choose something you'll remember — at least 8 characters.
+          Choose something you'll remember — at least 12 characters.
         </p>
 
         {hasRecoverySession === false ? (
@@ -67,7 +70,7 @@ function ResetInner() {
               <label htmlFor="reset-pwd" className="sr-only">New password</label>
               <Lock size={15} aria-hidden="true" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
               <input
-                id="reset-pwd" name="new-password" type={showPwd ? 'text' : 'password'} required autoComplete="new-password" autoFocus minLength={8}
+                id="reset-pwd" name="new-password" type={showPwd ? 'text' : 'password'} required autoComplete="new-password" autoFocus minLength={12}
                 placeholder="New password…" value={password} onChange={e => setPassword(e.target.value)}
                 style={{ width: '100%', padding: '11px 40px 11px 40px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: 14, boxSizing: 'border-box', fontFamily: 'var(--font-body)', outline: 'none' }}
               />
@@ -80,7 +83,7 @@ function ResetInner() {
               <label htmlFor="reset-confirm" className="sr-only">Confirm new password</label>
               <Lock size={15} aria-hidden="true" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: c.textMuted, pointerEvents: 'none' }} />
               <input
-                id="reset-confirm" name="confirm-password" type={showPwd ? 'text' : 'password'} required autoComplete="new-password" minLength={8}
+                id="reset-confirm" name="confirm-password" type={showPwd ? 'text' : 'password'} required autoComplete="new-password" minLength={12}
                 placeholder="Confirm password…" value={confirm} onChange={e => setConfirm(e.target.value)}
                 style={{ width: '100%', padding: '11px 14px 11px 40px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgCard, color: c.text, fontSize: 14, boxSizing: 'border-box', fontFamily: 'var(--font-body)', outline: 'none' }}
               />

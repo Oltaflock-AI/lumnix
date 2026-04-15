@@ -48,13 +48,18 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const admin = getSupabaseAdmin();
 
+  // Bound untrusted strings so a malicious client cannot stuff megabytes
+  // into the profile table (DoS / storage abuse).
+  const fullName = typeof body.full_name === 'string' ? body.full_name.slice(0, 100) : '';
+  const company = typeof body.company === 'string' ? body.company.slice(0, 200) : '';
+
   // Upsert into profiles table
   const { data: profile, error } = await admin
     .from('profiles')
     .upsert({
       id: user.id,
-      full_name: body.full_name || '',
-      company: body.company || '',
+      full_name: fullName,
+      company,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'id' })
     .select()
@@ -63,7 +68,7 @@ export async function PATCH(req: NextRequest) {
   if (error) {
     // Profiles table might not exist — fall back to updating auth metadata
     await supabase.auth.updateUser({
-      data: { full_name: body.full_name, company: body.company }
+      data: { full_name: fullName, company }
     });
     return NextResponse.json({ ok: true });
   }

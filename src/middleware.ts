@@ -108,11 +108,14 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    // Pass user ID + email downstream so routes don't need to re-validate
-    const response = NextResponse.next();
-    response.headers.set('x-user-id', user.id);
-    if (user.email) response.headers.set('x-user-email', user.email);
-    return response;
+    // Pass user ID + email to the route handler as REQUEST headers.
+    // Strip any client-supplied values first to prevent spoofing.
+    const forwardedHeaders = new Headers(req.headers);
+    forwardedHeaders.delete('x-user-id');
+    forwardedHeaders.delete('x-user-email');
+    forwardedHeaders.set('x-user-id', user.id);
+    if (user.email) forwardedHeaders.set('x-user-email', user.email);
+    return NextResponse.next({ request: { headers: forwardedHeaders } });
   } catch {
     return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
   }

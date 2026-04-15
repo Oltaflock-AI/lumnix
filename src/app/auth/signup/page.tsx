@@ -30,6 +30,7 @@ function SignUpInner() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (password.length < 12) { setError('Password must be at least 12 characters.'); return; }
     setLoading(true);
     setError('');
 

@@ -19,11 +19,17 @@ function ForgotInner() {
       return;
     }
     setLoading(true); setError('');
-    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+    const startedAt = Date.now();
+    // Fire reset — but we intentionally never surface success/failure
+    // to the UI. Errors are logged to the browser console only so that
+    // the response does not reveal whether the email exists.
+    supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo: `${window.location.origin}/auth/reset`,
-    });
+    }).catch((e) => { if (process.env.NODE_ENV !== 'production') console.debug('reset error', e); });
+    // Pad to a constant 1.5s to mask timing differences.
+    const padMs = Math.max(0, 1500 - (Date.now() - startedAt));
+    await new Promise((r) => setTimeout(r, padMs));
     setLoading(false);
-    if (error) { setError(error.message); return; }
     setSent(true);
   }
 
@@ -49,7 +55,7 @@ function ForgotInner() {
             <div>
               <p style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4 }}>Check your inbox</p>
               <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.5 }}>
-                If an account exists for <strong>{email.trim().toLowerCase()}</strong>, we sent a reset link. It expires in 1 hour.
+                If an account exists for that address, a reset link is on its way. It expires in 1 hour.
               </p>
             </div>
           </div>

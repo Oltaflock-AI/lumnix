@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 // GET /api/shared?workspace_id=... — list shared dashboards
 export async function GET(req: NextRequest) {
@@ -22,13 +23,23 @@ export async function POST(req: NextRequest) {
     const { workspace_id, title, sections, custom_logo_url, custom_brand_color, expires_at } = await req.json();
     if (!workspace_id) return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
 
+    // Middleware already verified membership when workspace_id is in body,
+    // but re-check defensively to guarantee ownership.
+    const access = await verifyWorkspaceAccess(req, workspace_id);
+    if (access instanceof NextResponse) return access;
+
+    const safeSections = Array.isArray(sections)
+      ? sections.filter((s) => typeof s === 'string').slice(0, 20)
+      : ['overview', 'seo', 'analytics', 'ads'];
+
     const { data, error } = await getSupabaseAdmin()
       .from('shared_dashboards')
       .insert({
         workspace_id,
-        title: title || 'Client Dashboard',
-        sections: sections || ['overview', 'seo', 'analytics', 'ads'],
-        custom_logo_url, custom_brand_color,
+        title: typeof title === 'string' ? title.slice(0, 200) : 'Client Dashboard',
+        sections: safeSections,
+        custom_logo_url: typeof custom_logo_url === 'string' ? custom_logo_url.slice(0, 500) : null,
+        custom_brand_color: typeof custom_brand_color === 'string' ? custom_brand_color.slice(0, 32) : null,
         expires_at: expires_at || null,
       })
       .select()
@@ -48,7 +59,22 @@ export async function DELETE(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 });
 
-  const { error } = await getSupabaseAdmin().from('shared_dashboards').delete().eq('id', id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const db = getSupabaseAdmin();
+
+  // Resolve the dashboard's workspace, then check the caller belongs to it
+  const { data: dashboard } = await db
+    .from('shared_dashboards')
+    .select('id, workspace_id')
+    .eq('id', id)
+    .single();
+  if (!dashboard) {
+    return NextResponse.json({ error: 'Dashboard not found' }, { status: 404 });
+  }
+
+  const access = await verifyWorkspaceAccess(req, dashboard.workspace_id);
+  if (access instanceof NextResponse) return access;
+
+  const { error } = await db.from('shared_dashboards').delete().eq('id', id);
+  if (error) return NextResponse.json({ error: 'Failed to delete dashboard' }, { status: 500 });
   return NextResponse.json({ success: true });
 }

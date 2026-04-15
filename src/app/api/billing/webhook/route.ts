@@ -35,18 +35,24 @@ export async function POST(req: NextRequest) {
 
     const db = getSupabaseAdmin();
 
+    // Allow-list of plans a webhook may write. Blocks metadata injection
+    // of arbitrary values (e.g. "admin") if Stripe metadata is ever forged.
+    const VALID_PLANS = new Set(['free', 'starter', 'growth', 'agency']);
+
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
         const workspaceId = session.metadata?.workspace_id;
         const plan = session.metadata?.plan;
 
-        if (workspaceId && plan) {
+        if (workspaceId && plan && VALID_PLANS.has(plan)) {
           await db.from('workspaces').update({
             plan,
             stripe_customer_id: session.customer,
             stripe_subscription_id: session.subscription,
           }).eq('id', workspaceId);
+        } else if (workspaceId && plan) {
+          console.error('Webhook: rejected unknown plan', plan);
         }
         break;
       }
@@ -80,8 +86,10 @@ export async function POST(req: NextRequest) {
             .single();
 
           if (workspace) {
+            const incomingPlan = subscription.metadata?.plan;
+            const safePlan = incomingPlan && VALID_PLANS.has(incomingPlan) ? incomingPlan : 'free';
             await db.from('workspaces').update({
-              plan: subscription.metadata?.plan || 'free',
+              plan: safePlan,
             }).eq('id', workspace.id);
           }
         }

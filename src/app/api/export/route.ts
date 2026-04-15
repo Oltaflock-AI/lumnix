@@ -58,6 +58,17 @@ export async function GET(req: NextRequest) {
       return new Response('No data to export', { status: 200, headers: { 'Content-Type': 'text/plain' } });
     }
 
+    // Block CSV formula injection (CWE-1236). Prefixing any cell that begins
+    // with =, +, -, @, tab, or CR with a leading single quote forces Excel /
+    // Sheets to treat the value as plain text instead of evaluating a formula.
+    const escapeCsvCell = (raw: string): string => {
+      const safe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+      if (safe.includes(',') || safe.includes('"') || safe.includes('\n') || safe.includes('\r')) {
+        return `"${safe.replace(/"/g, '""')}"`;
+      }
+      return safe;
+    };
+
     const headers = Object.keys(mainData[0]);
     const csvRows = [
       headers.join(','),
@@ -65,9 +76,8 @@ export async function GET(req: NextRequest) {
         headers.map(h => {
           const val = row[h];
           if (val === null || val === undefined) return '';
-          if (typeof val === 'object') return `"${JSON.stringify(val).replace(/"/g, '""')}"`;
-          if (typeof val === 'string' && (val.includes(',') || val.includes('"'))) return `"${val.replace(/"/g, '""')}"`;
-          return String(val);
+          if (typeof val === 'object') return escapeCsvCell(JSON.stringify(val));
+          return escapeCsvCell(String(val));
         }).join(',')
       ),
     ];

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { rateLimit } from '@/lib/rate-limit';
 
 function getResend(key: string) {
   return new Resend(key);
@@ -30,6 +31,10 @@ export async function POST(req: NextRequest) {
     const supabase = getUserClient(authHeader);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // Cap invite sends per owner: 20 / hour. Prevents email-send DoS.
+    const limited = rateLimit(`team-invite:${user.id}`, 20, 60 * 60 * 1000);
+    if (limited) return limited;
 
     const { email, workspace_id, role } = await req.json();
     if (!email || !workspace_id) return NextResponse.json({ error: 'Missing email or workspace_id' }, { status: 400 });

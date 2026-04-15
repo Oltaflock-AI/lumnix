@@ -38,7 +38,12 @@ function SignInInner() {
     setLoading(true);
     setError('');
     const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-    if (error) { setError(error.message); setLoading(false); return; }
+    if (error) {
+      // Generic message — don't reveal which field is wrong.
+      setError('Invalid email or password.');
+      setLoading(false);
+      return;
+    }
     router.push('/dashboard');
   }
 

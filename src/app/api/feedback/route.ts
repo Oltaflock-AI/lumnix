@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/rate-limit';
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim()
-      || req.headers.get('x-real-ip')
-      || 'unknown';
-    const limited = rateLimit(`feedback:${ip}`, 10, 60 * 60 * 1000);
+    // Middleware already validated the session and sets these headers
+    // on the forwarded request (and strips any client-supplied copies).
+    const userId = req.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    // Rate-limit by the authenticated user, not by a spoofable IP header.
+    const limited = rateLimit(`feedback:${userId}`, 10, 60 * 60 * 1000);
     if (limited) return limited;
 
-    const userId = req.headers.get('x-user-id') || 'unknown';
-    const userEmail = req.headers.get('x-user-email') || 'unknown';
+    const rawEmail = req.headers.get('x-user-email') || '';
+    const userEmail = EMAIL_RE.test(rawEmail) ? rawEmail : 'unknown';
     const { message, workspace_id, workspace_name } = await req.json();
 
     const trimmed = (message || '').toString().trim();
