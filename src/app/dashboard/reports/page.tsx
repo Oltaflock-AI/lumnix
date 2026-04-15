@@ -1480,30 +1480,20 @@ export default function ReportsPage() {
                   <div style={{ fontSize: 14, fontWeight: 700, color: c.text, marginBottom: 4 }}>{rt.label}</div>
                   <div style={{ fontSize: 12, color: c.textSecondary, lineHeight: 1.5, marginBottom: 10 }}>{rt.desc}</div>
 
-                  {/* Section list with custom checkboxes */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
+                  {/* Section tags */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6, marginTop: 4 }}>
                     {rt.sections.map(s => (
-                      <div key={s} style={{
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        fontSize: 11, color: c.textSecondary,
-                        padding: '3px 8px',
-                        borderRadius: 4,
-                        backgroundColor: isSelected ? 'rgba(124,58,237,0.06)' : c.bgPage,
-                        border: `1px solid ${isSelected ? 'rgba(124,58,237,0.15)' : c.surfaceElevated}`,
+                      <span key={s} style={{
+                        fontSize: 11, fontWeight: 600,
+                        color: isSelected ? '#5B21B6' : c.textSecondary,
+                        background: isSelected ? '#EDE9FF' : c.surfaceElevated,
+                        padding: '4px 10px',
+                        borderRadius: 6,
+                        fontFamily: "'DM Sans', sans-serif",
+                        letterSpacing: '0.01em',
                       }}>
-                        <div style={{
-                          width: 10, height: 10, borderRadius: 3,
-                          backgroundColor: isSelected ? c.accent : c.borderStrong,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                          {isSelected && (
-                            <svg width="7" height="7" viewBox="0 0 12 12" fill="none">
-                              <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          )}
-                        </div>
                         {s}
-                      </div>
+                      </span>
                     ))}
                   </div>
 

@@ -75,14 +75,17 @@ function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo,
           <Skeleton className="h-9 w-[55%] mb-2" />
           <Skeleton className="h-3 w-[35%]" />
         </div>
-      ) : (
-        <div style={{ marginTop: 6 }}>
-          <div style={{ fontSize: 36, fontWeight: 700, color: c.text, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
-            {value}
+      ) : (() => {
+        const isEmpty = value === '—' || value === '0' || value === '₹0';
+        return (
+          <div style={{ marginTop: 6 }}>
+            <div style={{ fontSize: 36, fontWeight: 700, color: isEmpty ? '#A09CC0' : c.text, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
+              {isEmpty ? '—' : value}
+            </div>
           </div>
-        </div>
-      )}
-      {sub && <div style={{ fontSize: 12, color: c.textMuted, marginTop: 6, fontFamily: "'DM Sans', sans-serif" }}>{sub}</div>}
+        );
+      })()}
+      {sub && <div style={{ fontSize: 12, color: c.textMuted, marginTop: 6, fontFamily: "'DM Sans', sans-serif" }}>{(() => { const isEmpty = value === '—' || value === '0' || value === '₹0'; return isEmpty && !sub.includes('Connect') ? 'No data yet' : sub; })()}</div>}
     </div>
   );
 }
@@ -321,8 +324,14 @@ export default function DashboardPage() {
             </div>
           </div>
         ) : (
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p style={{ fontSize: 13, color: c.textMuted }}>Quick win opportunities will appear here when data is available.</p>
+          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 24px', textAlign: 'center', minHeight: 160 }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#EDE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 14 }}>⚡</div>
+              <h4 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 6 }}>No quick wins yet</h4>
+              <p style={{ fontSize: 13, color: c.textMuted, maxWidth: 300, lineHeight: 1.6, margin: 0 }}>
+                Quick wins appear when a keyword ranks 4-10 but has low CTR. Connect GSC and sync data to see them.
+              </p>
+            </div>
           </div>
         )}
 
@@ -561,6 +570,7 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const [anomalies, setAnomalies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const router = useRouter();
 
   const SEVERITY_COLORS: Record<string, string> = {
@@ -598,7 +608,13 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   );
 
   const unread = anomalies.filter(a => !a.is_read);
-  const display = anomalies.slice(0, 5);
+  // Sort: high severity first, then medium, then low
+  const sorted = [...anomalies].sort((a, b) => {
+    const order: Record<string, number> = { high: 0, medium: 1, low: 2 };
+    return (order[a.severity] ?? 2) - (order[b.severity] ?? 2);
+  });
+  const display = expanded ? sorted : sorted.slice(0, 3);
+  const hiddenCount = sorted.length - 3;
 
   return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px' }}>
@@ -697,6 +713,32 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
               </div>
             );
           })}
+          {!expanded && hiddenCount > 0 && (
+            <button
+              onClick={() => setExpanded(true)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                width: '100%', padding: '10px 0',
+                fontSize: 12, fontWeight: 600, color: c.accent,
+                background: 'none', border: 'none', cursor: 'pointer',
+              }}
+            >
+              Show {hiddenCount} more →
+            </button>
+          )}
+          {expanded && hiddenCount > 0 && (
+            <button
+              onClick={() => setExpanded(false)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                width: '100%', padding: '10px 0',
+                fontSize: 12, fontWeight: 600, color: c.textMuted,
+                background: 'none', border: 'none', cursor: 'pointer',
+              }}
+            >
+              ↑ Show less
+            </button>
+          )}
         </div>
       )}
     </div>

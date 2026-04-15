@@ -333,17 +333,23 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
                 )}
 
                 {/* Action link */}
-                {insight.action && (
-                  <button style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 13, fontWeight: 400, color: '#7C3AED',
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    padding: 0, marginTop: 'auto', paddingTop: 10,
-                  }}>
-                    {insight.action} <ArrowRight size={13} />
-                  </button>
-                )}
+                {insight.action && (() => {
+                  const cfg = INSIGHT_CONFIG[insight.type];
+                  return (
+                    <button style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: 13, fontWeight: 600, color: cfg.color,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      padding: '10px 0 0', marginTop: 'auto',
+                      borderTop: `1px solid ${c.border}`,
+                      width: '100%', textAlign: 'left',
+                    }}>
+                      <ArrowRight size={14} />
+                      <span style={{ lineHeight: 1.5 }}>{insight.action}</span>
+                    </button>
+                  );
+                })()}
               </div>
             );
           })}
@@ -356,7 +362,8 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
 /* ─── Main Page ─── */
 
 export default function AIPage() {
-  const { c } = useTheme();
+  const { c, theme } = useTheme();
+  const isDark = theme === 'dark';
   const { workspace } = useWorkspaceCtx();
   const { integrations } = useIntegrations(workspace?.id);
   const [activeTab, setActiveTab] = useState<'insights' | 'chat'>('insights');
@@ -474,13 +481,41 @@ export default function AIPage() {
       {activeTab === 'chat' && (
         <>
           {/* Data context bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '10px 16px', borderRadius: 10, backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '10px 16px', borderRadius: 10, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, flexWrap: 'wrap' }}>
             {hasData ? <Wifi size={14} color="#10B981" /> : <WifiOff size={14} color={c.textMuted} />}
-            <span style={{ fontSize: 12, color: c.textSecondary }}>
-              {hasData
-                ? `AI has access to: ${connectedSources.map(s => s.replace('_', ' ').toUpperCase()).join(' · ')}`
-                : 'No data connected yet — connect integrations in Settings for data-aware answers'}
-            </span>
+            {hasData ? (
+              <>
+                <span style={{ fontSize: 12, color: c.textSecondary }}>AI has access to:</span>
+                {connectedSources.map(s => {
+                  const key = s.toLowerCase();
+                  const pill = key.includes('meta')
+                    ? { label: 'Meta Ads', color: '#1877F2', bg: isDark ? 'rgba(24,119,242,0.15)' : '#EFF6FF' }
+                    : key.includes('ga4') || key.includes('analytics')
+                    ? { label: 'GA4', color: '#E37400', bg: isDark ? 'rgba(227,116,0,0.15)' : '#FFF7ED' }
+                    : key.includes('gsc') || key.includes('search')
+                    ? { label: 'GSC', color: '#34A853', bg: isDark ? 'rgba(52,168,83,0.15)' : '#F0FDF4' }
+                    : key.includes('google_ads') || key.includes('google ads')
+                    ? { label: 'Google Ads', color: '#4285F4', bg: isDark ? 'rgba(66,133,244,0.15)' : '#EFF6FF' }
+                    : { label: s.replace('_', ' ').toUpperCase(), color: c.accent, bg: c.accentSubtle };
+                  return (
+                    <span key={s} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: 11, fontWeight: 600,
+                      padding: '3px 9px', borderRadius: 20,
+                      background: pill.bg, color: pill.color,
+                    }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: pill.color }} />
+                      {pill.label}
+                    </span>
+                  );
+                })}
+              </>
+            ) : (
+              <span style={{ fontSize: 12, color: c.textSecondary }}>
+                No data connected yet — connect integrations in Settings for data-aware answers
+              </span>
+            )}
             <Database size={12} color={c.textMuted} style={{ marginLeft: 'auto' }} />
             <span style={{ fontSize: 11, color: c.textMuted }}>Live data context</span>
           </div>
@@ -495,25 +530,34 @@ export default function AIPage() {
                   </div>
                   <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>What can I help you with?</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, maxWidth: 560, width: '100%' }}>
-                    {SUGGESTIONS.slice(0, 4).map(s => (
-                      <button
-                        key={s.text}
-                        onClick={() => { setInput(s.text); inputRef.current?.focus(); }}
-                        style={{
-                          padding: '12px 16px', borderRadius: 10,
-                          border: '1px solid var(--border-default)',
-                          backgroundColor: 'var(--bg-card)',
-                          color: 'var(--text-secondary)',
-                          fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.4,
-                          fontFamily: "'DM Sans', sans-serif",
-                          transition: 'border-color 150ms, background 150ms, color 150ms',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.backgroundColor = 'rgba(124,58,237,0.04)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
-                      >
-                        {s.text}
-                      </button>
-                    ))}
+                    {SUGGESTIONS.slice(0, 4).map(s => {
+                      const Icon = s.icon;
+                      return (
+                        <button
+                          key={s.text}
+                          onClick={() => { setInput(s.text); inputRef.current?.focus(); }}
+                          style={{
+                            minHeight: 48,
+                            padding: '12px 16px', borderRadius: 12,
+                            border: '1px solid var(--border-default)',
+                            backgroundColor: 'var(--bg-card)',
+                            color: 'var(--text-primary)',
+                            fontSize: 13, fontWeight: 500,
+                            cursor: 'pointer', textAlign: 'left', lineHeight: 1.4,
+                            fontFamily: "'DM Sans', sans-serif",
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            transition: 'border-color 150ms, background 150ms, transform 150ms',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.backgroundColor = 'rgba(124,58,237,0.04)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}
+                        >
+                          <span style={{ width: 28, height: 28, borderRadius: 8, background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <Icon size={15} color={c.accent} />
+                          </span>
+                          <span>{s.text}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ) : (

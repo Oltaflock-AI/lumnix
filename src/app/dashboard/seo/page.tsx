@@ -206,9 +206,9 @@ export default function SEOPage() {
                   <XAxis dataKey="label" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
                   <YAxis stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, fontFamily: 'DM Sans', fontSize: 12 }} />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={48}
+                  <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={48} minPointSize={4}
                     label={{ position: 'top', fill: c.textSecondary, fontSize: 12, fontFamily: 'DM Sans', fontWeight: 600 }}>
-                    {bucketData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    {bucketData.map((entry, i) => <Cell key={i} fill={entry.count === 0 ? '#E4E2F4' : entry.color} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -230,8 +230,15 @@ export default function SEOPage() {
               </div>
               <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginBottom: 16 }}>Positions 4-10 with low CTR — improve titles to jump to page 1</p>
               {quickWins.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px 0', color: c.textMuted, fontSize: 13 }}>
-                  No quick wins found — your CTRs look healthy!
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', textAlign: 'center' }}>
+                  <div style={{
+                    width: 48, height: 48, background: '#ECFDF5', borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px',
+                  }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                  </div>
+                  <h4 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: '#065F46', marginBottom: 6 }}>CTRs look healthy!</h4>
+                  <p style={{ fontSize: 13, color: c.textMuted, lineHeight: 1.5, maxWidth: 280, margin: 0 }}>No keywords in positions 4-10 with below-average CTR. Keep it up.</p>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

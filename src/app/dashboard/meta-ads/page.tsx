@@ -72,6 +72,18 @@ export default function MetaAdsPage() {
   const totals = metaData?.totals;
   const daily = metaData?.daily || [];
   const hasData = campaigns.length > 0;
+  const [showInactive, setShowInactive] = useState(false);
+
+  // Split campaigns: active (spend > 0) vs inactive (spend === 0)
+  const activeCampaigns = campaigns.filter((c: any) => (c.spend || 0) > 0);
+  const inactiveCampaigns = campaigns.filter((c: any) => (c.spend || 0) === 0);
+
+  // Top performer detection
+  const totalSpend = campaigns.reduce((s: number, c: any) => s + (c.spend || 0), 0);
+  const topPerformer = activeCampaigns.length > 0
+    ? activeCampaigns.reduce((best: any, c: any) => (c.spend || 0) > (best.spend || 0) ? c : best, activeCampaigns[0])
+    : null;
+  const topPerformerDominant = topPerformer && totalSpend > 0 && ((topPerformer.spend || 0) / totalSpend) > 0.5;
 
   async function handleSync(accountId?: string) {
     if (!workspaceId || !metaIntegration) return;
@@ -308,11 +320,31 @@ export default function MetaAdsPage() {
             </div>
           )}
 
+          {/* Top Performer Callout */}
+          {topPerformerDominant && topPerformer && (
+            <div style={{
+              background: isDark ? 'rgba(5,150,105,0.08)' : 'rgba(5,150,105,0.04)',
+              border: '1px solid #A7F3D0',
+              borderLeft: '3px solid #059669',
+              borderRadius: '0 10px 10px 0',
+              padding: '12px 16px',
+              marginBottom: 14,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+            }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#065F46' }}>
+                ⭐ Top performer: &ldquo;{topPerformer.campaign_name || topPerformer.name}&rdquo;
+              </span>
+              <span style={{ fontSize: 12, color: isDark ? '#6EE7B7' : '#6B7280' }}>
+                {formatINR(topPerformer.spend)} spend · {formatNumber(topPerformer.impressions || 0)} impressions · {typeof topPerformer.ctr === 'number' ? topPerformer.ctr.toFixed(2) : '0'}% CTR
+              </span>
+            </div>
+          )}
+
           {/* Campaigns Table */}
           <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${c.border}` }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: c.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Campaigns ({campaigns.length})
+                Campaigns ({activeCampaigns.length} active{inactiveCampaigns.length > 0 ? ` · ${inactiveCampaigns.length} inactive` : ''})
               </div>
               <Button variant="ghost" size="sm" onClick={() => exportCampaignsCSV(campaigns)} style={{ gap: 4 }}>
                 <Download size={13} /> Export
@@ -330,8 +362,8 @@ export default function MetaAdsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {campaigns.map((camp: any, i: number) => (
-                    <tr key={i} style={{ borderBottom: `1px solid ${c.border}` }}>
+                  {activeCampaigns.map((camp: any, i: number) => (
+                    <tr key={`active-${i}`} style={{ borderBottom: `1px solid ${c.border}` }}>
                       <td style={{ padding: '12px 16px', color: c.text, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {camp.campaign_name || camp.name || 'Unknown'}
                       </td>
@@ -356,6 +388,43 @@ export default function MetaAdsPage() {
                       <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: camp.roas > 1 ? (isDark ? '#34D399' : '#059669') : c.textSecondary }}>
                         {typeof camp.roas === 'number' ? (camp.roas > 0 ? camp.roas.toFixed(2) + 'x' : '—') : camp.roas}
                       </td>
+                    </tr>
+                  ))}
+                  {inactiveCampaigns.length > 0 && (
+                    <tr>
+                      <td colSpan={8} style={{ padding: 0 }}>
+                        <button
+                          onClick={() => setShowInactive(!showInactive)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 8,
+                            width: '100%', padding: '10px 16px',
+                            fontSize: 12, color: '#A09CC0',
+                            background: 'none', border: 'none', cursor: 'pointer',
+                          }}
+                        >
+                          <div style={{ flex: 1, height: 1, background: c.border }} />
+                          <span>{showInactive ? '↑ Hide' : '↓ Show'} {inactiveCampaigns.length} inactive campaign{inactiveCampaigns.length > 1 ? 's' : ''} (₹0 spend)</span>
+                          <div style={{ flex: 1, height: 1, background: c.border }} />
+                        </button>
+                      </td>
+                    </tr>
+                  )}
+                  {showInactive && inactiveCampaigns.map((camp: any, i: number) => (
+                    <tr key={`inactive-${i}`} style={{ borderBottom: `1px solid ${c.border}`, opacity: 0.5 }}>
+                      <td style={{ padding: '12px 16px', color: c.textMuted, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {camp.campaign_name || camp.name || 'Unknown'}
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted, fontVariantNumeric: 'tabular-nums' }}>—</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted, fontVariantNumeric: 'tabular-nums' }}>
+                        {typeof camp.impressions === 'number' ? formatNumber(camp.impressions) : '0'}
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted, fontVariantNumeric: 'tabular-nums' }}>
+                        {typeof camp.clicks === 'number' ? formatNumber(camp.clicks) : '0'}
+                      </td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted }}>—</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted }}>—</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted }}>—</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted }}>—</td>
                     </tr>
                   ))}
                 </tbody>

@@ -175,10 +175,19 @@ export default function AlertsPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {activeAlerts.length === 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', textAlign: 'center' }}>
+              <div style={{ width: 56, height: 56, background: '#ECFDF5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>🏆</div>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 17, fontWeight: 700, color: c.text, marginBottom: 8 }}>All clear!</h3>
+              <p style={{ fontSize: 14, color: c.textMuted, maxWidth: 320, margin: '0 auto', lineHeight: 1.6 }}>
+                No active alerts right now. Wins appear when Lumi detects positive signals — ranking improvements, traffic spikes, or campaigns beating benchmarks.
+              </p>
+            </div>
+          )}
           {activeAlerts.map(alert => {
             const cfg = severityConfig[alert.severity];
             return (
-              <div key={alert.id} style={{ padding: '16px 20px', borderRadius: 12, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}`, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <div key={alert.id} style={{ padding: '16px 20px', borderRadius: '0 12px 12px 0', backgroundColor: cfg.bg, border: `1px solid ${cfg.border}`, borderLeft: `3px solid ${cfg.color}`, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <cfg.icon size={20} color={cfg.color} style={{ flexShrink: 0, marginTop: 1 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4 }}>{alert.title}</div>

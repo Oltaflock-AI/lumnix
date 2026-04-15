@@ -965,9 +965,38 @@ export function BillingTab() {
               const isLower = thisPlanIndex < currentPlanIndex;
               const isCurrent = plan.current;
               const isDisabled = isCurrent || isLower || plan.id === 'free' || loading === plan.id;
-              const label = isCurrent ? 'Current Plan' : isLower ? 'Included' : plan.id === 'free' ? 'Free' : loading === plan.id ? 'Loading...' : 'Upgrade';
+              const label = isCurrent ? '✓ Current Plan' : isLower ? '✓ Included' : plan.id === 'free' ? 'Free' : loading === plan.id ? 'Loading...' : 'Upgrade';
               const showPurple = !isCurrent && !isLower && plan.id !== 'free';
-              return (
+              return isCurrent ? (
+                <div style={{
+                  width: '100%',
+                  textAlign: 'center',
+                  padding: '11px 0',
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#065F46',
+                  background: '#ECFDF5',
+                  border: '1px solid #A7F3D0',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>
+                  ✓ Current Plan
+                </div>
+              ) : isLower ? (
+                <div style={{
+                  width: '100%',
+                  textAlign: 'center',
+                  padding: '10px 0',
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: 'var(--text-muted)',
+                  borderTop: '1px solid var(--border-default)',
+                  marginTop: 12,
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>
+                  ✓ Included in your plan
+                </div>
+              ) : (
                 <button
                   onClick={() => handleUpgrade(plan.id)}
                   disabled={isDisabled}
@@ -975,14 +1004,14 @@ export function BillingTab() {
                     width: '100%',
                     height: 40,
                     borderRadius: 8,
-                    border: isCurrent ? 'none' : showPurple ? 'none' : '1px solid var(--border-default)',
-                    backgroundColor: isCurrent ? 'var(--bg-card-secondary)' : showPurple ? '#7C3AED' : 'transparent',
-                    color: isCurrent ? 'var(--text-muted)' : showPurple ? '#FFFFFF' : 'var(--text-muted)',
+                    border: showPurple ? 'none' : '1px solid var(--border-default)',
+                    backgroundColor: showPurple ? '#7C3AED' : 'transparent',
+                    color: showPurple ? '#FFFFFF' : 'var(--text-muted)',
                     fontSize: 13,
                     fontWeight: 600,
                     fontFamily: "'DM Sans', sans-serif",
                     cursor: isDisabled ? 'not-allowed' : 'pointer',
-                    opacity: loading === plan.id ? 0.7 : isLower ? 0.5 : 1,
+                    opacity: loading === plan.id ? 0.7 : 1,
                     transition: 'background-color 150ms',
                   }}
                   onMouseEnter={e => { if (showPurple && !isDisabled) e.currentTarget.style.backgroundColor = '#6D28D9'; }}
