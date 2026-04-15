@@ -86,7 +86,7 @@ export async function connectIntegration(provider: string, workspaceId: string) 
 }
 
 // Sync data for an integration
-export async function syncIntegration(integrationId: string, workspaceId: string, provider: string) {
+export async function syncIntegration(integrationId: string, workspaceId: string, provider: string, extra?: { ad_account_id?: string }) {
   const endpointMap: Record<string, string> = {
     gsc: "/api/sync/gsc",
     ga4: "/api/sync/ga4",
@@ -99,7 +99,7 @@ export async function syncIntegration(integrationId: string, workspaceId: string
   const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ integration_id: integrationId, workspace_id: workspaceId }),
+    body: JSON.stringify({ integration_id: integrationId, workspace_id: workspaceId, ...extra }),
   });
   return res.json();
 }
