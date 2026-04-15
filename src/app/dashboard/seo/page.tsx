@@ -5,7 +5,7 @@ import { Search, TrendingUp, TrendingDown, AlertTriangle, Download, Zap, Star, T
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, Cell } from 'recharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
-import { useWorkspace, useGSCData } from '@/lib/hooks';
+import { useGSCData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';

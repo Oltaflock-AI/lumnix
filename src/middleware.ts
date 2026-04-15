@@ -108,9 +108,10 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    // Pass user ID downstream so routes don't need to re-validate
+    // Pass user ID + email downstream so routes don't need to re-validate
     const response = NextResponse.next();
     response.headers.set('x-user-id', user.id);
+    if (user.email) response.headers.set('x-user-email', user.email);
     return response;
   } catch {
     return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });

@@ -20,6 +20,8 @@ import {
 } from '@/components/ui/command';
 import { Separator } from '@/components/ui/separator';
 import { apiFetch } from '@/lib/api-fetch';
+import Image from 'next/image';
+import { FeedbackDialog } from '@/components/FeedbackDialog';
 
 /* ── Navigation Config ── */
 type NavItem = { href: string; label: string; icon: any; shortcut?: string; badge?: boolean };
@@ -495,6 +497,7 @@ function SidebarInner({ onClose, collapsed = false, onToggleCollapse }: { onClos
   const [unreadAlerts, setUnreadAlerts] = useState(0);
   const [userEmail, setUserEmail] = useState<string>('');
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const isDark = theme === 'dark';
 
   useEffect(() => {
@@ -504,19 +507,7 @@ function SidebarInner({ onClose, collapsed = false, onToggleCollapse }: { onClos
   }, []);
 
   function handleFeedback() {
-    const subject = encodeURIComponent(`Lumnix Feedback — Workspace: ${workspace?.name || ''}`);
-    const body = encodeURIComponent(
-`Hi Lumnix team,
-
-Workspace: ${workspace?.name || ''}
-Workspace ID: ${workspace?.id || ''}
-User: ${userEmail}
-
-My feedback:
-
-[Please write your feedback here]
-`);
-    window.open(`mailto:khush@oltaflock.ai?subject=${subject}&body=${body}`, '_blank');
+    setShowFeedback(true);
   }
 
   const sc = isDark ? {
@@ -588,7 +579,7 @@ My feedback:
         onClick={onToggleCollapse}
         title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
-        <img src="/favicon.png" alt="Lumnix" style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
+        <Image src="/favicon.png" alt="Lumnix" width={30} height={30} priority style={{ borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
         {!collapsed && (
           <span className="gradient-text" style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)', overflow: 'hidden', whiteSpace: 'nowrap' }}>Lumnix</span>
         )}
@@ -601,22 +592,34 @@ My feedback:
       {/* Nav */}
       <nav aria-label="Main navigation" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {navGroups.map((group, gi) => (
-          <div key={gi} style={{ marginBottom: 4 }}>
+          <div
+            key={gi}
+            role={group.label ? 'group' : undefined}
+            aria-labelledby={group.label ? `nav-group-${gi}` : undefined}
+            style={{ marginBottom: 4 }}
+          >
             {group.label && !collapsed && (
-              <div style={{
-                fontSize: 11, fontWeight: 600, color: sc.sectionLabel,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-                padding: '14px 12px 5px 12px',
-                fontFamily: "'DM Sans', sans-serif",
-                display: 'flex', alignItems: 'center', gap: 6,
-              }}>
-                <span style={{
+              <h3
+                id={`nav-group-${gi}`}
+                style={{
+                  fontSize: 11, fontWeight: 600, color: sc.sectionLabel,
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                  padding: '14px 12px 5px 12px',
+                  fontFamily: "'DM Sans', sans-serif",
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  margin: 0,
+                }}
+              >
+                <span aria-hidden="true" style={{
                   width: 4, height: 4, borderRadius: '50%',
-                  backgroundColor: GROUP_DOT_COLORS[group.label] || '#7C3AED',
+                  backgroundColor: GROUP_DOT_COLORS[group.label] || 'var(--accent)',
                   flexShrink: 0,
                 }} />
                 {group.label}
-              </div>
+              </h3>
+            )}
+            {group.label && collapsed && (
+              <h3 id={`nav-group-${gi}`} className="sr-only">{group.label}</h3>
             )}
 
             {group.items.map(item => {
@@ -626,6 +629,7 @@ My feedback:
                 <a
                   key={item.href}
                   href={item.href}
+                  aria-current={active ? 'page' : undefined}
                   onClick={(e) => { e.preventDefault(); router.push(item.href); onClose?.(); }}
                   style={{
                     display: 'flex', alignItems: 'center',
@@ -752,6 +756,13 @@ My feedback:
               }}
             />
           )}
+          <FeedbackDialog
+            open={showFeedback}
+            onClose={() => setShowFeedback(false)}
+            workspaceId={workspace?.id}
+            workspaceName={workspace?.name}
+            userEmail={userEmail}
+          />
         </div>
 
         {/* Utility row */}
@@ -839,7 +850,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!checked) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-page, #F8FAFC)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <img src="/favicon.png" alt="Lumnix" style={{ width: 32, height: 32, borderRadius: 8, objectFit: 'contain', opacity: 0.6 }} className="animate-pulse" />
+        <Image src="/favicon.png" alt="Lumnix" width={32} height={32} className="animate-pulse" style={{ borderRadius: 8, objectFit: 'contain', opacity: 0.6 }} />
       </div>
     </div>
   );
@@ -890,7 +901,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: c.bgCard, borderBottom: `1px solid ${c.border}`, padding: '10px 16px', display: 'none' }} className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="/favicon.png" alt="Lumnix" style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'contain' }} />
+            <Image src="/favicon.png" alt="Lumnix" width={28} height={28} style={{ borderRadius: 7, objectFit: 'contain' }} />
             <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)', color: c.text }}>Lumnix</span>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>

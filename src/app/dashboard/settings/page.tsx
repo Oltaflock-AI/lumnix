@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link, Database, AlertCircle, Shield, Eye, EyeOff, CreditCard, Calendar, Receipt } from "lucide-react";
 import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
@@ -1821,6 +1822,9 @@ export default function SettingsPage() {
   const [copied, setCopied] = useState(false);
   const [teamData, setTeamData] = useState<{ members: any[]; invites: any[]; canInviteMore: boolean; slotsUsed: number; maxSlots: number } | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [confirmState, setConfirmState] = useState<{
+    title: string; description?: string; confirmLabel?: string; danger?: boolean; onConfirm: () => void;
+  } | null>(null);
 
   async function refreshTeamData() {
     if (!workspace?.id) return;
@@ -1868,21 +1872,27 @@ export default function SettingsPage() {
     setInviting(false);
   }
 
-  async function handleRevokeInvite(inviteId: string) {
-    if (!window.confirm('Revoke this invitation?')) return;
-    if (!workspace?.id) return;
-    setRevokingId(inviteId);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { setRevokingId(null); return; }
-    const res = await apiFetch(`/api/team/invite?invite_id=${inviteId}&workspace_id=${workspace.id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${session.access_token}` },
+  function handleRevokeInvite(inviteId: string) {
+    setConfirmState({
+      title: 'Revoke this invitation?',
+      description: "The person will no longer be able to use this invite link to join. You can send a new invite anytime.",
+      confirmLabel: 'Revoke invite',
+      danger: true,
+      onConfirm: async () => {
+        setConfirmState(null);
+        if (!workspace?.id) return;
+        setRevokingId(inviteId);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { setRevokingId(null); return; }
+        const res = await apiFetch(`/api/team/invite?invite_id=${inviteId}&workspace_id=${workspace.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const data = await res.json();
+        if (data.success) await refreshTeamData();
+        setRevokingId(null);
+      },
     });
-    const data = await res.json();
-    if (data.success) {
-      await refreshTeamData();
-    }
-    setRevokingId(null);
   }
 
   useEffect(() => {
@@ -2511,17 +2521,25 @@ export default function SettingsPage() {
                                 <option value="viewer">Viewer</option>
                               </select>
                               <button
-                                onClick={async () => {
-                                  if (!confirm(`Remove ${m.name || m.email} from this workspace?`)) return;
-                                  const session = (await supabase.auth.getSession()).data.session;
-                                  if (!session) return;
-                                  try {
-                                    const res = await apiFetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
-                                      method: 'DELETE',
-                                      headers: { Authorization: `Bearer ${session.access_token}` },
-                                    });
-                                    if (res.ok) refreshTeamData();
-                                  } catch {}
+                                onClick={() => {
+                                  setConfirmState({
+                                    title: `Remove ${m.name || m.email}?`,
+                                    description: "They'll immediately lose access to this workspace, including integrations, data, and shared reports. You can re-invite them later.",
+                                    confirmLabel: 'Remove',
+                                    danger: true,
+                                    onConfirm: async () => {
+                                      setConfirmState(null);
+                                      const session = (await supabase.auth.getSession()).data.session;
+                                      if (!session) return;
+                                      try {
+                                        const res = await apiFetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
+                                          method: 'DELETE',
+                                          headers: { Authorization: `Bearer ${session.access_token}` },
+                                        });
+                                        if (res.ok) refreshTeamData();
+                                      } catch {}
+                                    },
+                                  });
                                 }}
                                 style={{
                                   height: 32, padding: '0 12px', borderRadius: 8,
@@ -2650,6 +2668,15 @@ export default function SettingsPage() {
 
       </Tabs>
       </div>
+      <ConfirmDialog
+        open={confirmState !== null}
+        title={confirmState?.title || ''}
+        description={confirmState?.description}
+        confirmLabel={confirmState?.confirmLabel}
+        danger={confirmState?.danger}
+        onCancel={() => setConfirmState(null)}
+        onConfirm={() => confirmState?.onConfirm()}
+      />
     </div>
   );
 }

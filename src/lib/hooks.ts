@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./supabase";
 import { apiFetch as authFetch } from "./api-fetch";
 
@@ -10,56 +10,57 @@ export function useWorkspace() {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
+    const ctrl = new AbortController();
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setLoading(false); return; }
-
       try {
         const res = await fetch("/api/workspace", {
           headers: { Authorization: `Bearer ${session.access_token}` },
+          signal: ctrl.signal,
         });
         if (res.ok) {
           const data = await res.json();
-          setWorkspace(data.workspace);
+          if (!ctrl.signal.aborted) setWorkspace(data.workspace);
         }
       } catch {}
-      setLoading(false);
+      if (!ctrl.signal.aborted) setLoading(false);
     }
     load();
+    return () => ctrl.abort();
   }, [tick]);
 
-  const refetch = () => setTick(t => t + 1);
-
+  const refetch = useCallback(() => setTick(t => t + 1), []);
   return { workspace, loading, refetch };
+}
+
+// Generic hook: fetch a URL whenever `enabled` toggles true or deps change.
+// Cancels inflight requests on unmount/dep change to prevent stale setState.
+function useJsonFetch<T = any>(url: string | null): { data: T | null; loading: boolean; refetch: () => void } {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    if (!url) { setLoading(false); return; }
+    const ctrl = new AbortController();
+    setLoading(true);
+    authFetch(url, { signal: ctrl.signal })
+      .then(r => r.json())
+      .then(d => { if (!ctrl.signal.aborted) { setData(d); setLoading(false); } })
+      .catch(() => { if (!ctrl.signal.aborted) setLoading(false); });
+    return () => ctrl.abort();
+  }, [url, tick]);
+
+  const refetch = useCallback(() => setTick(t => t + 1), []);
+  return { data, loading, refetch };
 }
 
 // Get integrations for workspace
 export function useIntegrations(workspaceId: string | undefined) {
-  const [integrations, setIntegrations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!workspaceId) { setLoading(false); return; }
-    async function load() {
-      try {
-        const res = await authFetch(`/api/integrations/list?workspace_id=${workspaceId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setIntegrations(data.integrations || []);
-        }
-      } catch {}
-      setLoading(false);
-    }
-    load();
-  }, [workspaceId]);
-
-  return { integrations, loading, refetch: () => {
-    if (!workspaceId) return;
-    authFetch(`/api/integrations/list?workspace_id=${workspaceId}`)
-      .then(r => r.json())
-      .then(d => setIntegrations(d.integrations || []))
-      .catch(() => {});
-  }};
+  const url = workspaceId ? `/api/integrations/list?workspace_id=${workspaceId}` : null;
+  const { data, loading, refetch } = useJsonFetch<{ integrations: any[] }>(url);
+  return { integrations: data?.integrations || [], loading, refetch };
 }
 
 // Connect an integration
@@ -111,149 +112,59 @@ export interface DateRangeParams {
   endDate?: string;   // YYYY-MM-DD
 }
 
+function rangeQuery(daysOrRange: number | DateRangeParams, fallbackDays: number): string {
+  if (typeof daysOrRange === 'number') return `days=${daysOrRange}`;
+  if (daysOrRange.startDate) return `start_date=${daysOrRange.startDate}&end_date=${daysOrRange.endDate}`;
+  return `days=${daysOrRange.days || fallbackDays}`;
+}
+
 // Fetch GSC data
 export function useGSCData(workspaceId: string | undefined, type = "keywords", daysOrRange: number | DateRangeParams = 28) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  const rangeKey = typeof daysOrRange === 'number'
-    ? `days=${daysOrRange}`
-    : daysOrRange.startDate
-      ? `start_date=${daysOrRange.startDate}&end_date=${daysOrRange.endDate}`
-      : `days=${daysOrRange.days || 28}`;
-
-  useEffect(() => {
-    if (!workspaceId) { setLoading(false); return; }
-    setLoading(true);
-    authFetch(`/api/data/gsc?workspace_id=${workspaceId}&type=${type}&${rangeKey}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId, type, rangeKey]);
-
+  const url = workspaceId ? `/api/data/gsc?workspace_id=${workspaceId}&type=${type}&${rangeQuery(daysOrRange, 28)}` : null;
+  const { data, loading } = useJsonFetch<any>(url);
   return { data, loading };
 }
 
 // Fetch GA4 data
 export function useGA4Data(workspaceId: string | undefined, type = "overview", daysOrRange: number | DateRangeParams = 30) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  const rangeKey = typeof daysOrRange === 'number'
-    ? `days=${daysOrRange}`
-    : daysOrRange.startDate
-      ? `start_date=${daysOrRange.startDate}&end_date=${daysOrRange.endDate}`
-      : `days=${daysOrRange.days || 30}`;
-
-  useEffect(() => {
-    if (!workspaceId) { setLoading(false); return; }
-    setLoading(true);
-    authFetch(`/api/data/ga4?workspace_id=${workspaceId}&type=${type}&${rangeKey}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId, type, rangeKey]);
-
+  const url = workspaceId ? `/api/data/ga4?workspace_id=${workspaceId}&type=${type}&${rangeQuery(daysOrRange, 30)}` : null;
+  const { data, loading } = useJsonFetch<any>(url);
   return { data, loading };
 }
 
 // Fetch Google Ads data
 export function useGoogleAdsData(workspaceId: string | undefined, days = 30) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!workspaceId) { setLoading(false); return; }
-    setLoading(true);
-    authFetch(`/api/data/google-ads?workspace_id=${workspaceId}&days=${days}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId, days]);
-
-  return { data, loading, refetch: () => {
-    if (!workspaceId) return;
-    setLoading(true);
-    authFetch(`/api/data/google-ads?workspace_id=${workspaceId}&days=${days}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }};
+  const url = workspaceId ? `/api/data/google-ads?workspace_id=${workspaceId}&days=${days}` : null;
+  const { data, loading, refetch } = useJsonFetch<any>(url);
+  return { data, loading, refetch };
 }
 
 // Fetch Meta Ads data
 export function useMetaAdsData(workspaceId: string | undefined, days = 30) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!workspaceId) { setLoading(false); return; }
-    setLoading(true);
-    authFetch(`/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId, days]);
-
-  return { data, loading, refetch: () => {
-    if (!workspaceId) return;
-    setLoading(true);
-    authFetch(`/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }};
+  const url = workspaceId ? `/api/data/meta-ads?workspace_id=${workspaceId}&days=${days}` : null;
+  const { data, loading, refetch } = useJsonFetch<any>(url);
+  return { data, loading, refetch };
 }
 
 // Fetch unified data across all 4 sources
 export function useUnifiedData(workspaceId: string | undefined, days = 30) {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!workspaceId) { setLoading(false); return; }
-    setLoading(true);
-    authFetch(`/api/data/unified?workspace_id=${workspaceId}&days=${days}`)
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId, days]);
-
+  const url = workspaceId ? `/api/data/unified?workspace_id=${workspaceId}&days=${days}` : null;
+  const { data, loading } = useJsonFetch<any>(url);
   return { data, loading };
 }
 
 // Fetch competitors list for a workspace
 export function useCompetitors(workspaceId: string | undefined) {
-  const [competitors, setCompetitors] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    if (!workspaceId) { setLoading(false); return; }
-    setLoading(true);
-    authFetch(`/api/competitors/list?workspace_id=${workspaceId}`)
-      .then(r => r.json())
-      .then(d => { setCompetitors(d.competitors || []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId, tick]);
-
-  return { competitors, loading, refetch: () => setTick(t => t + 1) };
+  const url = workspaceId ? `/api/competitors/list?workspace_id=${workspaceId}` : null;
+  const { data, loading, refetch } = useJsonFetch<{ competitors: any[] }>(url);
+  return { competitors: data?.competitors || [], loading, refetch };
 }
 
 // Fetch ads for a competitor
 export function useCompetitorAds(workspaceId: string | undefined, competitorId: string | null) {
-  const [ads, setAds] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    if (!workspaceId || !competitorId) { setAds([]); return; }
-    setLoading(true);
-    authFetch(`/api/competitors/ads?workspace_id=${workspaceId}&competitor_id=${competitorId}`)
-      .then(r => r.json())
-      .then(d => { setAds(d.ads || []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [workspaceId, competitorId, tick]);
-
-  return { ads, loading, refetch: () => setTick(t => t + 1) };
+  const url = workspaceId && competitorId
+    ? `/api/competitors/ads?workspace_id=${workspaceId}&competitor_id=${competitorId}`
+    : null;
+  const { data, loading, refetch } = useJsonFetch<{ ads: any[] }>(url);
+  return { ads: data?.ads || [], loading, refetch };
 }

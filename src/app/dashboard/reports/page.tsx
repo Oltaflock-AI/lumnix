@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle2, FileDown, Sparkles, Calendar, ChevronDown, FileOutput, Eye, Layout } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
-import { useWorkspace, useGSCData, useGA4Data, DateRangeParams } from '@/lib/hooks';
+import { useGSCData, useGA4Data, DateRangeParams } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 import { apiFetch } from '@/lib/api-fetch';

@@ -10,6 +10,7 @@ import { useTheme } from '@/lib/theme';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useCompetitors } from '@/lib/hooks';
 import { apiFetch } from '@/lib/api-fetch';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 /* ── Helpers ── */
 function timeAgo(s: string | null): string {
@@ -34,6 +35,7 @@ export default function CompetitorsPage() {
   const { competitors, loading: loadingCompetitors, refetch: refetchCompetitors } = useCompetitors(workspaceId);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('ads');
 
   // Add competitor modal
@@ -189,9 +191,14 @@ export default function CompetitorsPage() {
     setAdding(false);
   }
 
-  /* ── Delete Competitor ── */
-  async function handleDelete(id: string) {
-    if (!confirm('Remove this competitor and all its data?')) return;
+  /* ── Delete Competitor (confirmation handled by ConfirmDialog) ── */
+  function handleDelete(id: string) {
+    setPendingDeleteId(id);
+  }
+  async function confirmDelete() {
+    const id = pendingDeleteId;
+    if (!id) return;
+    setPendingDeleteId(null);
     await apiFetch(`/api/competitors/${id}`, { method: 'DELETE' });
     if (selectedId === id) setSelectedId(null);
     refetchCompetitors();
@@ -685,6 +692,20 @@ export default function CompetitorsPage() {
 
       {/* Keyframe for spinner */}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        title="Remove competitor?"
+        description={(() => {
+          const comp = competitors.find((c: any) => c.id === pendingDeleteId);
+          return `This will delete ${comp?.name || 'this competitor'} along with all scraped ads, briefs, and history. This action can't be undone.`;
+        })()}
+        confirmLabel="Remove competitor"
+        cancelLabel="Keep"
+        danger
+        onCancel={() => setPendingDeleteId(null)}
+        onConfirm={confirmDelete}
+      />
     </PageShell>
   );
 }

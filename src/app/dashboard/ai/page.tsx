@@ -1,8 +1,8 @@
 'use client';
-import { useState, useRef, useEffect, type ReactElement } from 'react';
+import { useState, useRef, useEffect, useMemo, memo, type ReactElement } from 'react';
 import { Brain, Send, BarChart3, TrendingUp, Zap, Search, Target, Copy, Check, Trash2, Database, Wifi, WifiOff, AlertTriangle, Lightbulb, RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
-import { useWorkspace, useIntegrations } from '@/lib/hooks';
+import { useIntegrations } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 import { apiFetch } from '@/lib/api-fetch';

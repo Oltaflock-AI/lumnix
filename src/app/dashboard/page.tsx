@@ -1,16 +1,14 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, Bell, CheckCircle, FileText, Users, Search, X } from 'lucide-react';
+import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, CheckCircle, FileText, Users, Search, X } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
-import { useWorkspace, useGA4Data, useGSCData, useIntegrations, useUnifiedData } from '@/lib/hooks';
+import { useGA4Data, useGSCData, useIntegrations, useUnifiedData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { KpiGridSkeleton } from '@/components/PageShell';
 import { formatNumber, formatINRCompact, formatROAS } from '@/lib/format';
 import { apiFetch } from '@/lib/api-fetch';
 import { supabase } from '@/lib/supabase';
@@ -193,6 +191,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
+      <h2 className="sr-only">Performance overview</h2>
       <div className="kpi-grid stagger-in" style={{ marginBottom: 20 }}>
         <StatCard label="Sessions" value={hasGA4 ? formatNumber(totalSessions) : '—'} sub={hasGA4 ? `${formatNumber(totalUsers)} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
         <StatCard label="Organic Clicks" value={hasGSC ? formatNumber(totalClicks) : '—'} sub={hasGSC ? `${formatNumber(totalImpressions)} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
@@ -201,6 +200,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Anomalies — full width */}
+      <h2 className="sr-only">Insights and anomalies</h2>
       <AnomaliesWidget workspaceId={workspace?.id} />
 
       {/* Traffic chart + Top pages */}
@@ -289,7 +289,7 @@ export default function DashboardPage() {
                 const pos = kw.position || 0;
                 const rankColor = pos <= 1 ? '#059669' : pos <= 3 ? '#059669' : pos <= 10 ? '#7C3AED' : pos <= 20 ? '#F59E0B' : '#94A3B8';
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: i < topKeywords.length - 1 ? `1px solid ${c.borderSubtle}` : 'none', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary }}>
+                  <div key={kw.query || i} style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: i < topKeywords.length - 1 ? `1px solid ${c.borderSubtle}` : 'none', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary }}>
                     <span style={{ width: 32, flexShrink: 0 }}>
                       <span style={{
                         display: 'inline-flex', alignItems: 'center',
@@ -331,7 +331,7 @@ export default function DashboardPage() {
             <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 14, lineHeight: 1.6 }}>Keywords ranking 4-10 with low CTR — optimize title tags to push to page 1.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {quickWins.map((kw: any, i: number) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
+                <div key={kw.query || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: c.warning, fontVariantNumeric: 'tabular-nums', width: 32 }}>#{Math.round(kw.position)}</span>
                   <span style={{ flex: 1, fontSize: 13, color: c.textSecondary }}>{kw.query}</span>
                   <span style={{ fontSize: 12, color: c.textMuted }}>{kw.impressions ? formatNumber(kw.impressions) : '0'} impr.</span>
@@ -458,6 +458,7 @@ export default function DashboardPage() {
       )}
 
       {/* AI Insights widget */}
+      <h2 className="sr-only">AI insights and forecasts</h2>
       <AIInsightsWidget workspaceId={workspace?.id} />
 
       {/* Recommendations + Predictions */}
@@ -471,7 +472,7 @@ export default function DashboardPage() {
 
 /* ─── Recommendations Widget ─── */
 
-function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefined }) {
+const RecommendationsWidget = memo(function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const { c } = useTheme();
   const [recs, setRecs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -521,11 +522,11 @@ function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefine
       )}
     </div>
   );
-}
+});
 
 /* ─── Predictions Widget ─── */
 
-function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined }) {
+const PredictionsWidget = memo(function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const { c } = useTheme();
   const [prediction, setPrediction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -545,7 +546,10 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
 
   const forecast = prediction?.forecast || [];
   const narrative = prediction?.narrative || '';
-  const avgForecast = forecast.length > 0 ? Math.round(forecast.reduce((s: number, f: any) => s + f.predicted, 0) / forecast.length) : 0;
+  const avgForecast = useMemo(
+    () => forecast.length > 0 ? Math.round(forecast.reduce((s: number, f: any) => s + f.predicted, 0) / forecast.length) : 0,
+    [forecast]
+  );
 
   return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
@@ -577,11 +581,11 @@ function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined })
       )}
     </div>
   );
-}
+});
 
 /* ─── Anomalies Dashboard Widget ─── */
 
-function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
+const AnomaliesWidget = memo(function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const { c, theme } = useTheme();
   const isDark = theme === 'dark';
   const [anomalies, setAnomalies] = useState<any[]>([]);
@@ -589,12 +593,6 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const [fetchError, setFetchError] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const router = useRouter();
-
-  const SEVERITY_COLORS: Record<string, string> = {
-    high: c.danger,
-    medium: c.warning,
-    low: c.textSecondary,
-  };
 
   function loadAnomalies() {
     if (!workspaceId) return;
@@ -614,7 +612,13 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
     setAnomalies(prev => prev.map(a => a.id === id ? { ...a, is_read: true } : a));
   }
 
-  if (loading) return null;
+  if (loading) return (
+    <div
+      aria-busy="true" aria-label="Loading anomalies"
+      style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', minHeight: 88 }}
+      className="animate-pulse"
+    />
+  );
 
   if (fetchError) return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', textAlign: 'center' }}>
@@ -624,13 +628,13 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
     </div>
   );
 
-  const unread = anomalies.filter(a => !a.is_read);
+  const unread = useMemo(() => anomalies.filter(a => !a.is_read), [anomalies]);
   // Sort: high severity first, then medium, then low
-  const sorted = [...anomalies].sort((a, b) => {
+  const sorted = useMemo(() => {
     const order: Record<string, number> = { high: 0, medium: 1, low: 2 };
-    return (order[a.severity] ?? 2) - (order[b.severity] ?? 2);
-  });
-  const display = expanded ? sorted : sorted.slice(0, 3);
+    return [...anomalies].sort((a, b) => (order[a.severity] ?? 2) - (order[b.severity] ?? 2));
+  }, [anomalies]);
+  const display = useMemo(() => (expanded ? sorted : sorted.slice(0, 3)), [sorted, expanded]);
   const hiddenCount = sorted.length - 3;
 
   return (
@@ -760,11 +764,11 @@ function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
       )}
     </div>
   );
-}
+});
 
 /* ─── AI Insights Dashboard Widget ─── */
 
-function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) {
+const AIInsightsWidget = memo(function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const { c } = useTheme();
   const router = useRouter();
   const [insights, setInsights] = useState<any[]>([]);
@@ -815,10 +819,18 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
     }
   }
 
-  const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
-  const top3 = [...insights].sort((a, b) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1)).slice(0, 3);
+  const top3 = useMemo(() => {
+    const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+    return [...insights].sort((a, b) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1)).slice(0, 3);
+  }, [insights]);
 
-  if (loading) return null;
+  if (loading) return (
+    <div
+      aria-busy="true" aria-label="Loading AI insights"
+      style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', minHeight: 88 }}
+      className="animate-pulse"
+    />
+  );
 
   if (fetchError) return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', textAlign: 'center' }}>
@@ -881,4 +893,4 @@ function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) 
       )}
     </div>
   );
-}
+});

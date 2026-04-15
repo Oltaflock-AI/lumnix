@@ -5,10 +5,10 @@ import { Check } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const plans = [
-  { name: 'Free', price: '₹0', period: '/mo', features: ['2 integrations', '30-day data retention', '2 team members', 'Basic insights'], cta: 'Start free', primary: false },
-  { name: 'Starter', price: '₹2,499', period: '/mo', features: ['4 integrations', '90-day retention', '5 team members', 'AI insights', 'PDF reports'], cta: 'Start 7-day free trial', primary: false },
-  { name: 'Growth', price: '₹6,499', period: '/mo', features: ['All integrations', '1-year retention', '15 team members', 'AI chat + insights', 'White-label reports', 'Competitor tracking'], cta: 'Start 7-day free trial', primary: true, popular: true },
-  { name: 'Agency', price: '₹16,499', period: '/mo', features: ['Unlimited everything', 'Unlimited retention', 'Unlimited team', 'Everything in Growth', 'Multi-workspace', 'Priority support', 'API access'], cta: 'Start 7-day free trial', primary: false },
+  { name: 'Free', tagline: 'Get your bearings', price: '₹0', period: '/mo', features: ['2 integrations', '30-day data retention', '2 team members', 'Basic insights'], cta: 'Get started', primary: false },
+  { name: 'Starter', tagline: 'For early-stage brands', price: '₹2,499', period: '/mo', features: ['4 integrations', '90-day retention', '5 team members', 'AI insights', 'PDF reports'], cta: 'Try Starter free', primary: false },
+  { name: 'Growth', tagline: 'For scaling brands', price: '₹6,499', period: '/mo', features: ['All integrations', '1-year retention', '15 team members', 'AI chat + insights', 'White-label reports', 'Competitor tracking'], cta: 'Try Growth free →', primary: true, popular: true },
+  { name: 'Agency', tagline: 'For multi-brand agencies', price: '₹16,499', period: '/mo', features: ['Unlimited everything', 'Unlimited retention', 'Unlimited team', 'Everything in Growth', 'Multi-workspace', 'Priority support', 'API access'], cta: 'Try Agency free', primary: false },
 ];
 
 export function PricingSection() {
@@ -44,7 +44,8 @@ export function PricingSection() {
                 {plan.popular && (
                   <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: '#7C3AED', color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 20, whiteSpace: 'nowrap', letterSpacing: '0.04em' }}>Most Popular</div>
                 )}
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: '#18163A', marginBottom: 6 }}>{plan.name}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: '#18163A', marginBottom: 2 }}>{plan.name}</div>
+                <div style={{ fontSize: 12, color: '#7C7AAA', marginBottom: 10, fontWeight: 500 }}>{plan.tagline}</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 4 }}>
                   <span style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 800, color: '#18163A', letterSpacing: '-0.02em' }}>{plan.price}</span>
                   <span style={{ fontSize: 13, color: '#7C7AAA' }}>{plan.period}</span>

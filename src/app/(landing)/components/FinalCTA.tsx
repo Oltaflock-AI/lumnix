@@ -25,7 +25,7 @@ export function FinalCTA() {
 
         <ScrollReveal delay={0.15}>
           <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.55)', marginBottom: 32, lineHeight: 1.6 }}>
-            Join <strong style={{ color: 'rgba(255,255,255,0.85)' }}>200+ brands and agencies</strong> who stopped
+            Join the <strong style={{ color: 'rgba(255,255,255,0.85)' }}>early-access waitlist</strong> of marketers who stopped
             exporting CSVs and started making decisions.
           </p>
         </ScrollReveal>

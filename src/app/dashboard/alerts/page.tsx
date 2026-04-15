@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Bell, AlertCircle, AlertTriangle, Info, CheckCircle2, TrendingDown, TrendingUp, Search, BarChart3, X, RefreshCw } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
-import { useWorkspace, useGSCData, useGA4Data } from '@/lib/hooks';
+import { useGSCData, useGA4Data } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 
@@ -138,14 +138,14 @@ export default function AlertsPage() {
   const gscKeywords = gscResp?.keywords || [];
   const ga4Data = ga4Resp?.data || [];
 
-  const allAlerts = generateAlerts(gscKeywords, ga4Data);
-  const activeAlerts = allAlerts.filter(a => !dismissed.has(a.id));
+  const allAlerts = useMemo(() => generateAlerts(gscKeywords, ga4Data), [gscKeywords, ga4Data]);
+  const activeAlerts = useMemo(() => allAlerts.filter(a => !dismissed.has(a.id)), [allAlerts, dismissed]);
 
-  const counts = {
+  const counts = useMemo(() => ({
     critical: activeAlerts.filter(a => a.severity === 'critical').length,
     warning: activeAlerts.filter(a => a.severity === 'warning').length,
     success: activeAlerts.filter(a => a.severity === 'success').length,
-  };
+  }), [activeAlerts]);
 
   return (
     <PageShell title="Alerts" description="AI-detected anomalies and opportunities from your live data" icon={Bell}>
@@ -201,10 +201,11 @@ export default function AlertsPage() {
                 </div>
                 <button
                   onClick={() => setDismissed(prev => new Set([...prev, alert.id]))}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: 4, flexShrink: 0 }}
+                  aria-label={`Dismiss alert: ${alert.title}`}
                   title="Dismiss"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: 4, flexShrink: 0 }}
                 >
-                  <X size={16} />
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
             );

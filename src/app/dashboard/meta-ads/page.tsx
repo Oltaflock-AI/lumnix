@@ -1,11 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Share2, TrendingUp, TrendingDown, DollarSign, MousePointer, Eye, Users, RefreshCw, ChevronDown, Download } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, Cell } from 'recharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
-import { useWorkspace, useIntegrations, useMetaAdsData } from '@/lib/hooks';
+import { useIntegrations, useMetaAdsData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
@@ -69,24 +69,25 @@ export default function MetaAdsPage() {
       .catch(() => {});
   }, [metaIntegration?.id]);
 
-  const campaigns = metaData?.campaigns || [];
+  const campaigns: any[] = metaData?.campaigns || [];
   const totals = metaData?.totals;
   const daily = metaData?.daily || [];
   const hasData = campaigns.length > 0;
   const [showInactive, setShowInactive] = useState(false);
 
-  // Split campaigns: active (spend > 0) vs inactive (spend === 0)
-  const activeCampaigns = campaigns.filter((c: any) => (c.spend || 0) > 0);
-  const inactiveCampaigns = campaigns.filter((c: any) => (c.spend || 0) === 0);
-
-  // Top performer detection
-  const totalSpend = campaigns.reduce((s: number, c: any) => s + (c.spend || 0), 0);
-  const topPerformer = activeCampaigns.length > 0
-    ? activeCampaigns.reduce((best: any, c: any) => (c.spend || 0) > (best.spend || 0) ? c : best, activeCampaigns[0])
-    : null;
+  // Split campaigns: active (spend > 0) vs inactive (spend === 0) — memoized
+  const { activeCampaigns, inactiveCampaigns, totalSpend, topPerformer } = useMemo(() => {
+    const active = campaigns.filter((c: any) => (c.spend || 0) > 0);
+    const inactive = campaigns.filter((c: any) => (c.spend || 0) === 0);
+    const spend = campaigns.reduce((s: number, c: any) => s + (c.spend || 0), 0);
+    const top = active.length > 0
+      ? active.reduce((best: any, c: any) => (c.spend || 0) > (best.spend || 0) ? c : best, active[0])
+      : null;
+    return { activeCampaigns: active, inactiveCampaigns: inactive, totalSpend: spend, topPerformer: top };
+  }, [campaigns]);
   const topPerformerDominant = topPerformer && totalSpend > 0 && ((topPerformer.spend || 0) / totalSpend) > 0.5;
 
-  async function handleSync(accountId?: string) {
+  const handleSync = useCallback(async (accountId?: string) => {
     if (!workspaceId || !metaIntegration) return;
     setSyncing(true);
     try {
@@ -110,15 +111,18 @@ export default function MetaAdsPage() {
     } finally {
       setSyncing(false);
     }
-  }
+  }, [workspaceId, metaIntegration, selectedAccountId, refetch]);
 
-  async function handleAccountSwitch(accountId: string) {
+  const handleAccountSwitch = useCallback(async (accountId: string) => {
     setSelectedAccountId(accountId);
     setAccountDropdownOpen(false);
     await handleSync(accountId);
-  }
+  }, [handleSync]);
 
-  const tooltipStyle = { backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, color: c.text, fontSize: 12 };
+  const tooltipStyle = useMemo(
+    () => ({ backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, color: c.text, fontSize: 12 }),
+    [c.bgCard, c.borderStrong, c.text]
+  );
 
   // Not connected state
   if (!loading && !metaIntegration) {

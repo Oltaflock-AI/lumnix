@@ -100,3 +100,9 @@ Stay pragmatic. Stay reliable. Keep learning.
 **Tech stack:** Next.js 16 (App Router), TypeScript, Tailwind, Supabase (Auth + Postgres + RLS), Vercel, OpenAI GPT-4o-mini, Recharts
 
 **Brand system:** Primary #7C3AED, Accent #0891B2, Sidebar #0F172A, Cards #1E293B, Fonts: Plus Jakarta Sans + DM Sans
+
+---
+
+## Figma → Code
+
+When implementing Figma designs (any figma.com URL or MCP request), follow [.claude/rules/figma-design-system.md](.claude/rules/figma-design-system.md). Covers the required MCP flow (`get_design_context` → `get_screenshot` → implement), token mapping (never hardcode `#7C3AED` — use `var(--color-accent)`), component reuse from `src/components/ui/`, asset handling, and the pre-PR validation checklist.

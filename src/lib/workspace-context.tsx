@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { supabase } from './supabase';
 import { useTheme } from './theme';
 
@@ -30,15 +30,15 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [tick, setTick] = useState(0);
   const { setAccentColor } = useTheme();
 
-  function setWorkspace(w: any) {
+  const setWorkspace = useCallback((w: any) => {
     setWorkspaceState(w);
     if (w?.brand_color) setAccentColor(w.brand_color);
     if (w?.id) {
       try { localStorage.setItem(WS_KEY, w.id); } catch {}
     }
-  }
+  }, [setAccentColor]);
 
-  async function switchWorkspace(id: string) {
+  const switchWorkspace = useCallback(async (id: string) => {
     setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { setLoading(false); return; }
@@ -53,7 +53,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
     } catch {}
     setLoading(false);
-  }
+  }, [setWorkspace]);
 
   useEffect(() => {
     async function load() {
@@ -82,8 +82,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   const refetch = useCallback(() => setTick(t => t + 1), []);
 
+  const value = useMemo(
+    () => ({ workspace, workspaces, loading, refetch, setWorkspace, switchWorkspace }),
+    [workspace, workspaces, loading, refetch, setWorkspace, switchWorkspace]
+  );
+
   return (
-    <Ctx.Provider value={{ workspace, workspaces, loading, refetch, setWorkspace, switchWorkspace }}>
+    <Ctx.Provider value={value}>
       {children}
     </Ctx.Provider>
   );

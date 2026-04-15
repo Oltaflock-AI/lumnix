@@ -5,7 +5,7 @@ import { BarChart3, Users, Clock, MousePointer, Download, TrendingUp, TrendingDo
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, Cell, PieChart, Pie, ReferenceLine } from 'recharts';
 import { DateRangePicker } from '@/components/DateRangePicker';
-import { useWorkspace, useGA4Data } from '@/lib/hooks';
+import { useGA4Data } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
