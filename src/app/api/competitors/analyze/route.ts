@@ -14,11 +14,15 @@ export async function POST(req: NextRequest) {
 
   const supabase = getSupabaseAdmin();
 
-  // Get competitor info
+  // Scope the competitor lookup to the caller's workspace. Middleware has
+  // already validated workspace_id membership; adding `.eq('workspace_id', …)`
+  // here prevents an attacker from pairing their own workspace_id with
+  // another workspace's competitor_id and running AI analysis on their brand.
   const { data: competitor } = await supabase
     .from('competitor_brands')
     .select('name, facebook_page_name_resolved')
     .eq('id', competitor_id)
+    .eq('workspace_id', workspace_id)
     .single();
 
   if (!competitor) {

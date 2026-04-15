@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchGSCData, fetchGSCSites } from '@/lib/connectors/gsc';
 import { refreshAccessToken } from '@/lib/google-oauth';
 import { rateLimit } from '@/lib/rate-limit';
+import { verifyIntegrationInWorkspace } from '@/lib/auth-guard';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000]; // delays between attempts
@@ -31,6 +32,13 @@ export async function POST(req: NextRequest) {
     // Rate limit: 5 syncs per minute per workspace
     const rateLimited = rateLimit(`sync:gsc:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;
+
+    // Middleware only validates workspace membership, not that the supplied
+    // integration_id belongs to this workspace. Without this check an attacker
+    // could pair their own workspace_id with another workspace's integration
+    // and exfiltrate that workspace's Google Search Console data.
+    const integrationCheck = await verifyIntegrationInWorkspace(integration_id, workspace_id);
+    if (integrationCheck) return integrationCheck;
 
     // Get tokens
     const { data: tokenRow } = await getSupabaseAdmin()

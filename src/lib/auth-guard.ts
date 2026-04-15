@@ -71,6 +71,32 @@ export function isAuthError(result: AuthContext | NextResponse): result is NextR
 }
 
 /**
+ * Verify an integration belongs to the workspace the caller claims. Use this
+ * in sync + provider-account routes where the caller supplies both
+ * `integration_id` AND `workspace_id`. Without this check, an attacker can
+ * pair their own workspace_id with another workspace's integration_id and
+ * exfiltrate tokens / data via the route.
+ */
+export async function verifyIntegrationInWorkspace(
+  integrationId: string,
+  workspaceId: string
+): Promise<NextResponse | null> {
+  if (!integrationId || !workspaceId) {
+    return NextResponse.json({ error: 'integration_id and workspace_id required' }, { status: 400 });
+  }
+  const { data } = await getSupabaseAdmin()
+    .from('integrations')
+    .select('id')
+    .eq('id', integrationId)
+    .eq('workspace_id', workspaceId)
+    .single();
+  if (!data) {
+    return NextResponse.json({ error: 'Integration not found' }, { status: 404 });
+  }
+  return null;
+}
+
+/**
  * Verify a user (from middleware x-user-id header) has membership in a workspace.
  * Use this in POST/PATCH routes that get workspace_id from request body.
  * Returns null if allowed, or a NextResponse error if denied.

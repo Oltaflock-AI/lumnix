@@ -52,8 +52,8 @@ export default function MetaAdsPage() {
 
   // Load ad accounts when integration exists
   useEffect(() => {
-    if (!metaIntegration?.id) return;
-    apiFetch(`/api/meta/accounts?integration_id=${metaIntegration.id}`)
+    if (!metaIntegration?.id || !workspaceId) return;
+    apiFetch(`/api/meta/accounts?integration_id=${metaIntegration.id}&workspace_id=${workspaceId}`)
       .then(r => r.json())
       .then(d => {
         const accts = d.accounts || [];

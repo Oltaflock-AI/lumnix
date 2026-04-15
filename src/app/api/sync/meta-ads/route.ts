@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchMetaAdAccounts, fetchMetaCampaigns, fetchMetaInsights } from '@/lib/connectors/meta-ads';
 import { rateLimit } from '@/lib/rate-limit';
+import { verifyIntegrationInWorkspace } from '@/lib/auth-guard';
 
 // Lumnix is India-first — all money is persisted and displayed in INR,
 // regardless of the raw account currency returned by Meta.
@@ -46,6 +47,10 @@ export async function POST(req: NextRequest) {
 
     const rateLimited = rateLimit(`sync:meta:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;
+
+    // Block cross-workspace exfil via a stolen integration_id.
+    const integrationCheck = await verifyIntegrationInWorkspace(integration_id, workspace_id);
+    if (integrationCheck) return integrationCheck;
 
     const db = getSupabaseAdmin();
 

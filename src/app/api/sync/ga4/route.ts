@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchGA4Data, fetchGA4Properties, GA4_REPORTS } from '@/lib/connectors/ga4';
 import { refreshAccessToken } from '@/lib/google-oauth';
 import { rateLimit } from '@/lib/rate-limit';
+import { verifyIntegrationInWorkspace } from '@/lib/auth-guard';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000];
@@ -30,6 +31,12 @@ export async function POST(req: NextRequest) {
 
     const rateLimited = rateLimit(`sync:ga4:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;
+
+    // Block cross-workspace integration exfil. Without this, a caller could
+    // pair their workspace_id with another workspace's integration_id and
+    // sync the other workspace's GA4 data via their token.
+    const integrationCheck = await verifyIntegrationInWorkspace(integration_id, workspace_id);
+    if (integrationCheck) return integrationCheck;
 
     // Get tokens
     const { data: tokenRow } = await getSupabaseAdmin()

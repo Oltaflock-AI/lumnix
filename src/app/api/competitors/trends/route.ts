@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 // GET /api/competitors/trends?workspace_id=xxx&competitor_id=yyy&days=30
 export async function GET(req: NextRequest) {
@@ -45,6 +46,21 @@ export async function POST(req: NextRequest) {
   if (!competitor_id) return NextResponse.json({ error: 'competitor_id required' }, { status: 400 });
 
   const db = getSupabaseAdmin();
+
+  // Resolve the competitor's workspace and verify membership. Without this
+  // any authed user could upsert trend snapshots on another workspace's
+  // competitor_id, poisoning their reporting.
+  const { data: competitor } = await db
+    .from('competitor_brands')
+    .select('id, workspace_id')
+    .eq('id', competitor_id)
+    .single();
+  if (!competitor) {
+    return NextResponse.json({ error: 'Competitor not found' }, { status: 404 });
+  }
+  const access = await verifyWorkspaceAccess(req, competitor.workspace_id);
+  if (access instanceof NextResponse) return access;
+
   const today = new Date().toISOString().slice(0, 10);
 
   // Get current ad stats

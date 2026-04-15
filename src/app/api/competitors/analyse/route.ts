@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 import { callClaude } from '@/lib/anthropic';
 
@@ -34,6 +35,20 @@ export async function POST(req: NextRequest) {
   if (!competitor_id) return NextResponse.json({ error: 'competitor_id required' }, { status: 400 });
 
   const supabase = getSupabaseAdmin();
+
+  // Resolve the competitor's workspace and verify membership. Without this
+  // any authed user could trigger paid Claude analysis against any
+  // competitor_id — cost-abuse + data exfil.
+  const { data: guardCompetitor } = await supabase
+    .from('competitor_brands')
+    .select('id, workspace_id')
+    .eq('id', competitor_id)
+    .single();
+  if (!guardCompetitor) {
+    return NextResponse.json({ error: 'Competitor not found' }, { status: 404 });
+  }
+  const access = await verifyWorkspaceAccess(req, guardCompetitor.workspace_id);
+  if (access instanceof NextResponse) return access;
 
   // Check for fresh cached analysis (< 24hrs)
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();

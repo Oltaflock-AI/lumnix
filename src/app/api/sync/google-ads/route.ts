@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchGoogleAdsCampaigns, fetchGoogleAdsAccounts } from '@/lib/connectors/google-ads';
 import { refreshAccessToken } from '@/lib/google-oauth';
 import { rateLimit } from '@/lib/rate-limit';
+import { verifyIntegrationInWorkspace } from '@/lib/auth-guard';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000];
@@ -28,6 +29,10 @@ export async function POST(req: NextRequest) {
 
     const rateLimited = rateLimit(`sync:gads:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;
+
+    // Block cross-workspace exfil via a stolen integration_id.
+    const integrationCheck = await verifyIntegrationInWorkspace(integration_id, workspace_id);
+    if (integrationCheck) return integrationCheck;
 
     const { data: tokenRow } = await getSupabaseAdmin()
       .from('oauth_tokens')
