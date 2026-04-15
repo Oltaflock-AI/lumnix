@@ -13,10 +13,13 @@ export async function GET() {
     checks.database = 'error';
   }
 
-  // Check required env vars
-  checks.anthropic = process.env.ANTHROPIC_API_KEY ? 'ok' : 'error';
-  checks.supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY ? 'ok' : 'error';
-  checks.cron_secret = process.env.CRON_SECRET ? 'ok' : 'error';
+  // Check services are configured (don't reveal which specific keys are set/missing)
+  const servicesConfigured = !!(
+    process.env.ANTHROPIC_API_KEY &&
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+  checks.services = servicesConfigured ? 'ok' : 'error';
 
   const allOk = Object.values(checks).every(v => v === 'ok');
 

@@ -52,7 +52,7 @@ async function completeSyncJob(db: ReturnType<typeof getSupabaseAdmin>, jobId: s
 // Also callable manually: GET /api/cron/sync?workspace_id=xxx
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET || 'lumnix-cron-2026';
+  const cronSecret = process.env.CRON_SECRET;
   const workspaceIdParam = req.nextUrl.searchParams.get('workspace_id');
 
   if (authHeader !== `Bearer ${cronSecret}` && !workspaceIdParam) {

@@ -384,7 +384,29 @@ function toAnthropicTools() {
 
 export async function POST(req: NextRequest) {
   try {
+    // Auth is enforced by middleware — get user ID from header
+    const userId = req.headers.get('x-user-id');
+    if (!userId) {
+      return new Response('Authentication required', { status: 401 });
+    }
+
     const { messages, workspace_id } = await req.json();
+
+    if (!workspace_id) {
+      return new Response('workspace_id is required', { status: 400 });
+    }
+
+    // Verify user has access to this workspace
+    const db = getSupabaseAdmin();
+    const { data: member } = await db
+      .from('workspace_members')
+      .select('role')
+      .eq('workspace_id', workspace_id)
+      .eq('user_id', userId)
+      .single();
+    if (!member) {
+      return new Response('Access denied', { status: 403 });
+    }
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
@@ -392,17 +414,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit: 10 requests per minute per workspace
-    if (workspace_id) {
-      const rateLimited = rateLimit(`chat:${workspace_id}`, 10, 60 * 1000);
-      if (rateLimited) return rateLimited;
+    const rateLimited = rateLimit(`chat:${workspace_id}`, 10, 60 * 1000);
+    if (rateLimited) return rateLimited;
 
-      const db = getSupabaseAdmin();
-      const { data: ws } = await db.from('workspaces').select('plan').eq('id', workspace_id).single();
-      const limitError = await checkAIChatLimit(workspace_id, ws?.plan || 'free');
-      if (limitError) return limitError;
+    const { data: ws } = await db.from('workspaces').select('plan').eq('id', workspace_id).single();
+    const limitError = await checkAIChatLimit(workspace_id, ws?.plan || 'free');
+    if (limitError) return limitError;
 
-      try { await db.from('chat_usage').insert({ workspace_id, created_at: new Date().toISOString() }); } catch {}
-    }
+    try { await db.from('chat_usage').insert({ workspace_id, created_at: new Date().toISOString() }); } catch {}
 
     const overview = workspace_id ? await fetchWorkspaceOverview(workspace_id) : null;
 

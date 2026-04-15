@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create invite token
-    const token = `inv_${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+    const token = `inv_${crypto.randomUUID().replace(/-/g, '')}`;
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
 
     await db.from('team_invites').upsert({
@@ -190,14 +190,17 @@ export async function GET(req: NextRequest) {
       db.from('team_invites').select('id, email, role, token, status, expires_at, created_at').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
     ]);
 
-    // Enrich members with user details (name + email) from Supabase auth
-    const { data: { users: allUsers } } = await db.auth.admin.listUsers();
+    // Enrich members with user details — fetch only workspace member users, not all users
+    const memberUserIds = (membersRes.data || []).map((m: any) => m.user_id);
     const userMap = new Map<string, { name: string; email: string }>();
-    for (const u of allUsers || []) {
-      userMap.set(u.id, {
-        name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'Unknown',
-        email: u.email || '',
-      });
+    for (const uid of memberUserIds) {
+      const { data: { user: u } } = await db.auth.admin.getUserById(uid);
+      if (u) {
+        userMap.set(u.id, {
+          name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'Unknown',
+          email: u.email || '',
+        });
+      }
     }
 
     const enrichedMembers = (membersRes.data || []).map((m: any) => ({

@@ -1,12 +1,32 @@
-import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
+export async function GET(request: NextRequest) {
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get('code');
+  const redirect = requestUrl.searchParams.get('redirect') || '/dashboard';
+
+  const res = NextResponse.redirect(new URL(redirect, request.url));
+
   if (code) {
-    // Supabase handles the exchange client-side via the auth helper
-    return NextResponse.redirect(`${origin}/dashboard`);
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              res.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+    await supabase.auth.exchangeCodeForSession(code);
   }
-  // No code param — implicit flow returns hash tokens client-side; redirect to dashboard and let client handle
-  return NextResponse.redirect(`${origin}/dashboard`);
+
+  return res;
 }

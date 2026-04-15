@@ -3,9 +3,9 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 // GET /api/cron/daily-briefing — generates daily briefing for all workspaces
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET || 'lumnix-cron-2026';
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  // Auth validated by middleware — defense-in-depth check
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || req.headers.get('authorization') !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

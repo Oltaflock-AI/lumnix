@@ -12,8 +12,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard/settings?error=missing_params', req.url));
     }
 
-    const state = JSON.parse(Buffer.from(stateB64, 'base64').toString());
+    let state: any;
+    try {
+      state = JSON.parse(Buffer.from(stateB64, 'base64').toString());
+    } catch {
+      return NextResponse.redirect(new URL('/dashboard/settings?error=invalid_state', req.url));
+    }
     const { provider, workspace_id } = state;
+
+    // Validate required state fields
+    if (!provider || !workspace_id) {
+      return NextResponse.redirect(new URL('/dashboard/settings?error=invalid_state', req.url));
+    }
 
     const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/integrations/callback`;
 

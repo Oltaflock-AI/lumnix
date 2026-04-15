@@ -3,10 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET /api/cron/notifications — consolidated daily cron (8 AM UTC)
 // Runs: check-alerts → send-reports → emails (onboarding drip)
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET || 'lumnix-cron-2026';
-
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  // Auth validated by middleware — defense-in-depth check
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || req.headers.get('authorization') !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

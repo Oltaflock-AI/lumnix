@@ -16,6 +16,11 @@ const PLAN_PRICES: Record<string, number> = {
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = req.headers.get('x-user-id');
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) {
       return NextResponse.json({ error: 'billing_not_configured' }, { status: 503 });
@@ -31,18 +36,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' as any });
-
-    // Get workspace to find owner email
+    // Verify user is owner of this workspace (only owners can change billing)
     const { data: workspace } = await getSupabaseAdmin()
       .from('workspaces')
-      .select('id, name, created_by')
+      .select('id, name, created_by, owner_id')
       .eq('id', workspace_id)
       .single();
 
     if (!workspace) {
       return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
     }
+
+    if (workspace.owner_id !== userId && workspace.created_by !== userId) {
+      return NextResponse.json({ error: 'Only workspace owner can manage billing' }, { status: 403 });
+    }
+
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' as any });
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 

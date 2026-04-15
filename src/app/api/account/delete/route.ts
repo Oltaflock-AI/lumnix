@@ -25,16 +25,30 @@ export async function POST(req: NextRequest) {
 
     const db = getSupabaseAdmin();
 
-    // Get user's workspaces
-    const { data: memberships } = await db
+    // Separate owned workspaces from workspaces user is just a member of
+    const { data: ownedWorkspaces } = await db
+      .from('workspaces')
+      .select('id')
+      .eq('owner_id', user.id);
+
+    const ownedIds = (ownedWorkspaces || []).map(w => w.id);
+
+    // Remove user's membership from workspaces they don't own (preserve those workspaces)
+    const { data: allMemberships } = await db
       .from('workspace_members')
       .select('workspace_id')
       .eq('user_id', user.id);
 
-    const workspaceIds = (memberships || []).map(m => m.workspace_id);
+    const memberOnlyIds = (allMemberships || [])
+      .map(m => m.workspace_id)
+      .filter(id => !ownedIds.includes(id));
 
-    // Delete all workspace data
-    for (const wsId of workspaceIds) {
+    for (const wsId of memberOnlyIds) {
+      await db.from('workspace_members').delete().eq('workspace_id', wsId).eq('user_id', user.id);
+    }
+
+    // Only delete data for workspaces the user owns
+    for (const wsId of ownedIds) {
       // Analytics data
       await db.from('analytics_data').delete().eq('workspace_id', wsId);
       await db.from('meta_ads_data').delete().eq('workspace_id', wsId);
@@ -98,6 +112,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Deletion failed' }, { status: 500 });
+    console.error('Account deletion error:', error);
+    return NextResponse.json({ error: 'Deletion failed' }, { status: 500 });
   }
 }

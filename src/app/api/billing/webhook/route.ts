@@ -13,21 +13,24 @@ export async function POST(req: NextRequest) {
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' as any });
 
+    if (!webhookSecret) {
+      console.error('STRIPE_WEBHOOK_SECRET not configured — rejecting webhook');
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
+    }
+
     const body = await req.text();
     const sig = req.headers.get('stripe-signature');
 
-    let event;
+    if (!sig) {
+      return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 });
+    }
 
-    if (webhookSecret && sig) {
-      try {
-        event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-      } catch (err: any) {
-        console.error('Webhook signature verification failed:', err.message);
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
-      }
-    } else {
-      // In development without webhook secret, parse the body directly
-      event = JSON.parse(body);
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    } catch (err: any) {
+      console.error('Webhook signature verification failed:', err.message);
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
     const db = getSupabaseAdmin();
@@ -89,6 +92,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error: any) {
     console.error('Webhook error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

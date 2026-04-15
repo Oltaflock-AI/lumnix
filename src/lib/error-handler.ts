@@ -38,8 +38,9 @@ export function apiError(
 export function handleApiError(error: unknown): NextResponse {
   if (error instanceof Error) {
     console.error(`[API Error] ${error.message}`, error.stack);
-    return apiError('INTERNAL_ERROR', error.message);
+  } else {
+    console.error('[API Error] Unknown error', error);
   }
-  console.error('[API Error] Unknown error', error);
+  // Never expose internal error details to clients
   return apiError('INTERNAL_ERROR');
 }
