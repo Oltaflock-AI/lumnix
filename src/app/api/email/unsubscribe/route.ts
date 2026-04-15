@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase-admin'
+import { verifyUnsubscribeToken } from '@/lib/email-tokens'
 
-// GET /api/email/unsubscribe?user_id=xxx — unsubscribe from marketing emails
+// GET /api/email/unsubscribe?token=xxx — unsubscribe from marketing emails.
+// Token is an HMAC-signed payload produced by signUnsubscribeToken at send
+// time. Raw user_id is no longer accepted — before this change any visitor
+// could iterate UUIDs and opt-out every user.
 export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get('user_id')
+  const token = req.nextUrl.searchParams.get('token')
+  const userId = token ? verifyUnsubscribeToken(token) : null
 
   if (!userId) {
-    return new NextResponse(renderPage('Missing user ID', false), {
+    return new NextResponse(renderPage('This unsubscribe link is invalid or has been tampered with.', false), {
       status: 400,
       headers: { 'Content-Type': 'text/html' },
     })
@@ -15,7 +20,6 @@ export async function GET(req: NextRequest) {
   try {
     const db = getSupabaseAdmin()
 
-    // Upsert email preference
     const { error } = await db.from('email_preferences').upsert(
       {
         user_id: userId,
@@ -33,7 +37,6 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    // Mark all pending emails for this user as skipped
     await db
       .from('email_sequences')
       .update({ status: 'skipped', error_message: 'User unsubscribed' })

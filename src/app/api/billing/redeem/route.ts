@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { code, workspace_id } = await req.json();
-    if (!code || !workspace_id) {
+    const trimmedCode = typeof code === 'string' ? code.trim() : '';
+    // Reject SQL wildcards so ilike('%') cannot match every coupon row.
+    if (!/^[A-Za-z0-9_-]{3,64}$/.test(trimmedCode) || !workspace_id) {
       return NextResponse.json({ error: 'Missing coupon code or workspace' }, { status: 400 });
     }
 
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
     const { data: coupon } = await db
       .from('coupon_codes')
       .select('*')
-      .ilike('code', code.trim())
+      .ilike('code', trimmedCode)
       .single();
 
     if (!coupon) {

@@ -5,15 +5,18 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 export async function POST(req: NextRequest) {
   try {
     const { code } = await req.json();
-    if (!code?.trim()) {
-      return NextResponse.json({ valid: false, error: 'Invite code is required' }, { status: 400 });
+    const trimmed = typeof code === 'string' ? code.trim() : '';
+    // Reject SQL wildcards (%, _) and anything outside the code alphabet.
+    // Without this, ilike('%') would match every row and leak a valid invite.
+    if (!/^[A-Za-z0-9_-]{3,64}$/.test(trimmed)) {
+      return NextResponse.json({ valid: false, error: 'Invalid invite code' }, { status: 400 });
     }
 
     const db = getSupabaseAdmin();
     const { data: invite } = await db
       .from('beta_invites')
       .select('*')
-      .ilike('code', code.trim())
+      .ilike('code', trimmed)
       .single();
 
     if (!invite) {

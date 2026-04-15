@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 function getUserClient(authHeader: string) {
   return createClient(
@@ -8,6 +9,15 @@ function getUserClient(authHeader: string) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { global: { headers: { Authorization: authHeader } } }
   );
+}
+
+async function resolveRuleWorkspace(ruleId: string): Promise<string | null> {
+  const { data } = await getSupabaseAdmin()
+    .from('alert_rules')
+    .select('workspace_id')
+    .eq('id', ruleId)
+    .single();
+  return data?.workspace_id ?? null;
 }
 
 // GET /api/alerts — list alert rules + history for a workspace
@@ -95,17 +105,24 @@ export async function PATCH(req: NextRequest) {
     const { rule_id, is_active } = await req.json();
     if (!rule_id) return NextResponse.json({ error: 'Missing rule_id' }, { status: 400 });
 
+    // The rule is addressed by id only, so we must resolve its workspace and
+    // verify the caller belongs to it — middleware has nothing to check against.
+    const workspaceId = await resolveRuleWorkspace(rule_id);
+    if (!workspaceId) return NextResponse.json({ error: 'Rule not found' }, { status: 404 });
+    const access = await verifyWorkspaceAccess(req, workspaceId);
+    if (access instanceof NextResponse) return access;
+
     const db = getSupabaseAdmin();
-
     const { error } = await db.from('alert_rules')
-      .update({ is_active })
-      .eq('id', rule_id);
+      .update({ is_active: Boolean(is_active) })
+      .eq('id', rule_id)
+      .eq('workspace_id', workspaceId);
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: 'Failed to update rule' }, { status: 500 });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Failed to update rule' }, { status: 500 });
   }
 }
 
@@ -122,16 +139,20 @@ export async function DELETE(req: NextRequest) {
     const ruleId = req.nextUrl.searchParams.get('rule_id');
     if (!ruleId) return NextResponse.json({ error: 'Missing rule_id' }, { status: 400 });
 
+    const workspaceId = await resolveRuleWorkspace(ruleId);
+    if (!workspaceId) return NextResponse.json({ error: 'Rule not found' }, { status: 404 });
+    const access = await verifyWorkspaceAccess(req, workspaceId);
+    if (access instanceof NextResponse) return access;
+
     const db = getSupabaseAdmin();
-
-    // Delete history first, then rule
+    // Delete history first, then rule — constrain both to this workspace.
     await db.from('alert_history').delete().eq('rule_id', ruleId);
-    const { error } = await db.from('alert_rules').delete().eq('id', ruleId);
+    const { error } = await db.from('alert_rules').delete().eq('id', ruleId).eq('workspace_id', workspaceId);
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ error: 'Failed to delete rule' }, { status: 500 });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Failed to delete rule' }, { status: 500 });
   }
 }

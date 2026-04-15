@@ -6,7 +6,10 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 export async function POST(req: NextRequest) {
   try {
     const { code, email } = await req.json();
-    if (!code?.trim() || !email?.trim()) {
+    const trimmedCode = typeof code === 'string' ? code.trim() : '';
+    const trimmedEmail = typeof email === 'string' ? email.trim() : '';
+    // Reject SQL wildcards so ilike('%') can't match every invite row.
+    if (!/^[A-Za-z0-9_-]{3,64}$/.test(trimmedCode) || !trimmedEmail) {
       return NextResponse.json({ error: 'Code and email are required' }, { status: 400 });
     }
 
@@ -14,7 +17,7 @@ export async function POST(req: NextRequest) {
     const { data: invite } = await db
       .from('beta_invites')
       .select('*')
-      .ilike('code', code.trim())
+      .ilike('code', trimmedCode)
       .single();
 
     if (!invite || !invite.active) {

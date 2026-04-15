@@ -1,12 +1,16 @@
 import { Section, Text, Link } from '@react-email/components'
+import { signUnsubscribeToken } from '@/lib/email-tokens'
 
 interface EmailFooterProps {
   userId?: string
 }
 
 export function EmailFooter({ userId }: EmailFooterProps) {
+  // Token is an HMAC-signed payload binding the link to this user. Without
+  // signing, the endpoint used to accept a bare user_id in the URL and anyone
+  // iterating UUIDs could opt-out every user.
   const unsubscribeUrl = userId
-    ? `https://lumnix-ai.vercel.app/api/email/unsubscribe?user_id=${userId}`
+    ? `https://lumnix-ai.vercel.app/api/email/unsubscribe?token=${encodeURIComponent(signUnsubscribeToken(userId))}`
     : '#'
 
   return (

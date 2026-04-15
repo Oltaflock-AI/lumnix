@@ -81,7 +81,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
       daily,
       sections: dashboard.sections,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    console.error('[share] Error:', error);
+    return NextResponse.json({ error: 'Could not load shared dashboard' }, { status: 500 });
   }
 }

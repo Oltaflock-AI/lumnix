@@ -1,37 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { rateLimit } from '@/lib/rate-limit';
 
-// Auto-create waitlist table if it doesn't exist
-async function ensureTable() {
-  const sb = getSupabaseAdmin();
-  // Try a simple select — if it fails, create the table
-  const { error } = await sb.from('waitlist').select('id').limit(1);
-  if (error?.code === '42P01') {
-    // Table doesn't exist — create it via raw SQL
-    const { error: createErr } = await sb.rpc('exec_sql', {
-      sql: `
-        CREATE TABLE IF NOT EXISTS public.waitlist (
-          id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-          name TEXT NOT NULL,
-          email TEXT NOT NULL UNIQUE,
-          company TEXT,
-          role TEXT,
-          team_size TEXT,
-          source TEXT DEFAULT 'landing_page',
-          created_at TIMESTAMPTZ DEFAULT NOW()
-        );
-        ALTER TABLE public.waitlist ENABLE ROW LEVEL SECURITY;
-      `,
-    });
-    // If rpc doesn't work, the table needs to be created manually
-    if (createErr) {
-      console.warn('Could not auto-create waitlist table:', createErr.message);
-    }
-  }
-}
+// NOTE: the waitlist table is provisioned via supabase migrations
+// (see migrations/waitlist.sql). We used to auto-create it here via a
+// dangerous `exec_sql` RPC — that was removed because exposing an
+// arbitrary-SQL RPC on a public route is an RCE-equivalent primitive.
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit by IP: 5 signups per hour. Light anti-spam without captcha.
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim()
+      || req.headers.get('x-real-ip')
+      || 'unknown';
+    const limited = rateLimit(`waitlist:${ip}`, 5, 60 * 60 * 1000);
+    if (limited) return limited;
+
     const { name, email, company, role, team_size } = await req.json();
 
     if (!name?.trim() || !email?.trim()) {
