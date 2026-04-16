@@ -612,6 +612,15 @@ const AnomaliesWidget = memo(function AnomaliesWidget({ workspaceId }: { workspa
     setAnomalies(prev => prev.map(a => a.id === id ? { ...a, is_read: true } : a));
   }
 
+  const unread = useMemo(() => anomalies.filter(a => !a.is_read), [anomalies]);
+  // Sort: high severity first, then medium, then low
+  const sorted = useMemo(() => {
+    const order: Record<string, number> = { high: 0, medium: 1, low: 2 };
+    return [...anomalies].sort((a, b) => (order[a.severity] ?? 2) - (order[b.severity] ?? 2));
+  }, [anomalies]);
+  const display = useMemo(() => (expanded ? sorted : sorted.slice(0, 3)), [sorted, expanded]);
+  const hiddenCount = sorted.length - 3;
+
   if (loading) return (
     <div
       aria-busy="true" aria-label="Loading anomalies"
@@ -627,15 +636,6 @@ const AnomaliesWidget = memo(function AnomaliesWidget({ workspaceId }: { workspa
       <button onClick={loadAnomalies} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
     </div>
   );
-
-  const unread = useMemo(() => anomalies.filter(a => !a.is_read), [anomalies]);
-  // Sort: high severity first, then medium, then low
-  const sorted = useMemo(() => {
-    const order: Record<string, number> = { high: 0, medium: 1, low: 2 };
-    return [...anomalies].sort((a, b) => (order[a.severity] ?? 2) - (order[b.severity] ?? 2));
-  }, [anomalies]);
-  const display = useMemo(() => (expanded ? sorted : sorted.slice(0, 3)), [sorted, expanded]);
-  const hiddenCount = sorted.length - 3;
 
   return (
     <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px' }}>
