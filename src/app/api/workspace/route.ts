@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (createErr || !newWorkspace) {
-      return NextResponse.json({ error: createErr?.message || 'Failed to create workspace' }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to create workspace' }, { status: 500 });
     }
 
     // Add creator as owner in workspace_members

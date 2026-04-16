@@ -66,7 +66,7 @@ export async function DELETE(
       .eq('id', id);
 
     if (delErr) {
-      return NextResponse.json({ error: delErr.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to delete workspace' }, { status: 500 });
     }
 
     return NextResponse.json({ deleted: true });

@@ -207,7 +207,7 @@ Return ONLY a JSON array (no markdown, no code fences) of objects with these fie
 
     if (!aiResponse.ok) {
       const err = await aiResponse.json().catch(() => ({}));
-      return NextResponse.json({ error: err?.error?.message || 'AI error' }, { status: 500 });
+      return NextResponse.json({ error: 'AI service unavailable' }, { status: 500 });
     }
 
     const aiData = await aiResponse.json();
@@ -238,11 +238,11 @@ Return ONLY a JSON array (no markdown, no code fences) of objects with these fie
 
     const { data: saved, error: insertErr } = await db.from('ai_insights').insert(rows).select();
     if (insertErr) {
-      return NextResponse.json({ error: insertErr.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to save insights' }, { status: 500 });
     }
 
     return NextResponse.json({ insights: saved });
   } catch (error: any) {
-    return NextResponse.json({ error: error?.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

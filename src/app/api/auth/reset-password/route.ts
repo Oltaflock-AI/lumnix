@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { escapeHtml } from '@/lib/html-escape';
 
 function getUserClient(authHeader: string) {
   return createClient(
@@ -72,7 +73,7 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px; }
 <div class="container">
   <div class="logo"><span class="l">L</span>umnix</div>
   <h1>Reset your password</h1>
-  <p>Hey ${firstName}, we received a request to reset your Lumnix account password.</p>
+  <p>Hey ${escapeHtml(firstName)}, we received a request to reset your Lumnix account password.</p>
   <p>Click the button below to set a new password:</p>
   <a href="${resetLink}" class="btn">Reset Password</a>
   <hr class="divider">

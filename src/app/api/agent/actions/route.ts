@@ -52,7 +52,12 @@ export async function POST(req: NextRequest) {
     const { data, error } = await getSupabaseAdmin().from('agent_actions').insert({
       workspace_id, action_type, title, description, reason,
       priority: priority || 'medium',
-      action_data: action_data || {},
+      action_data: (() => {
+        const d = action_data || {};
+        const serialized = JSON.stringify(d);
+        if (serialized.length > 10_000) throw new Error('action_data too large');
+        return d;
+      })(),
       status: 'suggested',
     }).select().single();
 

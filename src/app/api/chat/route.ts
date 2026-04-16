@@ -114,7 +114,10 @@ async function executeToolCall(
           .order('clicks', { ascending: false });
 
         if (args.query_filter) {
-          query = query.ilike('query', `%${args.query_filter}%`);
+          const sanitizedFilter = String(args.query_filter).replace(/[%_]/g, '');
+          if (sanitizedFilter) {
+            query = query.ilike('query', `%${sanitizedFilter}%`);
+          }
         }
 
         const { data } = await query.limit(args.limit || 50);
@@ -350,7 +353,7 @@ async function executeToolCall(
         return JSON.stringify({ error: 'Unknown tool' });
     }
   } catch (e: any) {
-    return JSON.stringify({ error: e.message });
+    return JSON.stringify({ error: 'Failed to query data' });
   }
 }
 
@@ -471,7 +474,7 @@ IMPORTANT RULES:
       if (errMsg.includes('credit') || errMsg.includes('balance') || firstResponse.status === 402) {
         return new Response('Lumnix AI is temporarily unavailable — API credits need to be topped up. Please try again later or contact support.', { status: 503 });
       }
-      return new Response(errMsg || 'AI service error — please try again', { status: 500 });
+      return new Response('AI service error — please try again', { status: 500 });
     }
 
     const firstData = await firstResponse.json();
@@ -527,7 +530,7 @@ IMPORTANT RULES:
       if (errMsg.includes('credit') || errMsg.includes('balance') || streamResponse.status === 402) {
         return new Response('Lumnix AI is temporarily unavailable — API credits need to be topped up.', { status: 503 });
       }
-      return new Response(errMsg || 'AI service error — please try again', { status: 500 });
+      return new Response('AI service error — please try again', { status: 500 });
     }
 
     // Parse Anthropic SSE stream
@@ -566,6 +569,6 @@ IMPORTANT RULES:
       headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Transfer-Encoding': 'chunked' },
     });
   } catch (error: any) {
-    return new Response(error?.message || 'Internal server error', { status: 500 });
+    return new Response('Internal server error', { status: 500 });
   }
 }

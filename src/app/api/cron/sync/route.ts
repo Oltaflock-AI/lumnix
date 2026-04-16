@@ -55,7 +55,10 @@ export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   const workspaceIdParam = req.nextUrl.searchParams.get('workspace_id');
 
-  if (authHeader !== `Bearer ${cronSecret}` && !workspaceIdParam) {
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 });
+  }
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -196,7 +196,7 @@ Return a JSON object with a "gaps" key containing an array. Return 10-20 keyword
 
   const { error: insertError } = await db.from('keyword_gaps').insert(inserts);
   if (insertError) {
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save keyword gaps' }, { status: 500 });
   }
 
   return NextResponse.json({ gaps: inserts, count: inserts.length });

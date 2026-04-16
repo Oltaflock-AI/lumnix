@@ -8,12 +8,11 @@ import { escapeHtml } from '@/lib/html-escape';
 function getResend(key: string) {
   return new Resend(key);
 }
-const PLAN_MEMBER_LIMITS: Record<string, number> = {
-  free: 2,
-  starter: 5,
-  growth: 15,
-  agency: 999, // effectively unlimited
-};
+// Derive from plan-limits.ts — single source of truth
+import { PLAN_LIMITS, type PlanLimits } from '@/lib/plan-limits';
+const PLAN_MEMBER_LIMITS: Record<string, number> = Object.fromEntries(
+  Object.entries(PLAN_LIMITS).map(([plan, limits]: [string, PlanLimits]) => [plan, limits.teamMembers === Infinity ? 999 : limits.teamMembers])
+);
 
 function getUserClient(authHeader: string) {
   return createClient(

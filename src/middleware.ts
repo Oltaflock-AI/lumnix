@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { timingSafeEqual } from 'crypto';
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = new Set([
@@ -47,7 +48,9 @@ export async function middleware(req: NextRequest) {
     if (!cronSecret) {
       return NextResponse.json({ error: 'Cron not configured' }, { status: 503 });
     }
-    if (authHeader !== `Bearer ${cronSecret}`) {
+    const expected = `Bearer ${cronSecret}`;
+    if (!authHeader || authHeader.length !== expected.length ||
+        !timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return NextResponse.next();

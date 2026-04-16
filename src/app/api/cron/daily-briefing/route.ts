@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { escapeHtml } from '@/lib/html-escape';
 
 // GET /api/cron/daily-briefing — generates daily briefing for all workspaces
 export async function GET(req: NextRequest) {
@@ -116,13 +117,13 @@ export async function GET(req: NextRequest) {
               body: JSON.stringify({
                 from: 'Lumnix <hello@oltaflock.ai>',
                 to: [email],
-                subject: `Lumnix Daily Briefing — ${workspace.name}`,
+                subject: `Lumnix Daily Briefing — ${String(workspace.name).slice(0, 60)}`,
                 html: `<div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #0A0A0A; color: #E5E5E5;">
                   <h2 style="color: #7C3AED; margin-bottom: 16px;">Daily Briefing</h2>
-                  <p style="line-height: 1.7; font-size: 15px;">${summary}</p>
+                  <p style="line-height: 1.7; font-size: 15px;">${escapeHtml(summary)}</p>
                   ${recommendations.length > 0 ? `<hr style="border: none; border-top: 1px solid #222; margin: 20px 0;">
                   <h3 style="font-size: 14px; color: #888; margin-bottom: 10px;">Recommended Actions</h3>
-                  <ul style="padding-left: 20px;">${recommendations.map(r => `<li style="margin-bottom: 8px; font-size: 14px;"><strong style="color: #E5E5E5;">${r.action}</strong><br><span style="color: #888; font-size: 13px;">${r.reason}</span></li>`).join('')}</ul>` : ''}
+                  <ul style="padding-left: 20px;">${recommendations.map(r => `<li style="margin-bottom: 8px; font-size: 14px;"><strong style="color: #E5E5E5;">${escapeHtml(r.action)}</strong><br><span style="color: #888; font-size: 13px;">${escapeHtml(r.reason)}</span></li>`).join('')}</ul>` : ''}
                   <div style="margin-top: 24px; text-align: center;"><a href="https://lumnix-ai.vercel.app/dashboard" style="display: inline-block; padding: 12px 28px; background: #7C3AED; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">Open Dashboard</a></div>
                   <p style="text-align: center; margin-top: 24px; font-size: 12px; color: #555;">Lumnix · AI Marketing Intelligence</p>
                 </div>`,

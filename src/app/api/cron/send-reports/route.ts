@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { Resend } from 'resend';
+import { escapeHtml } from '@/lib/html-escape';
 
 function getNextSendDate(frequency: string): string {
   const now = new Date();
@@ -58,7 +59,7 @@ p { font-size: 14px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px; }
 </style></head><body>
 <div class="container">
   <div class="logo"><span class="l">L</span>umnix</div>
-  <h1>Weekly Report — ${workspaceName}</h1>
+  <h1>Weekly Report — ${escapeHtml(workspaceName)}</h1>
   <p>Here's your marketing performance summary for the last 7 days.</p>
   <div class="stats">
     <div class="stat"><div class="stat-value">${sessions.toLocaleString()}</div><div class="stat-label">Sessions</div></div>
@@ -116,7 +117,7 @@ export async function GET(req: NextRequest) {
         await resend.emails.send({
           from: 'Lumnix <noreply@oltaflock.ai>',
           to: recipient,
-          subject: `${schedule.name} — ${workspaceName}`,
+          subject: `${String(schedule.name).slice(0, 60)} — ${String(workspaceName).slice(0, 60)}`,
           html,
         });
       }

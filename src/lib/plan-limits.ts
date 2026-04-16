@@ -14,7 +14,7 @@ export interface PlanLimits {
  *   free | starter | growth | agency
  * "pro"/"enterprise" are kept as legacy aliases so old DB rows don't break.
  */
-const PLAN_LIMITS: Record<string, PlanLimits> = {
+export const PLAN_LIMITS: Record<string, PlanLimits> = {
   free:    { competitors: 2,        teamMembers: 2,        integrations: 2,        aiChatsPerDay: 10,       workspaces: 1 },
   starter: { competitors: 5,        teamMembers: 5,        integrations: 4,        aiChatsPerDay: 50,       workspaces: 1 },
   growth:  { competitors: 15,       teamMembers: 15,       integrations: Infinity, aiChatsPerDay: 200,      workspaces: 1 },

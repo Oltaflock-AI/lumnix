@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/rate-limit';
+import { escapeHtml } from '@/lib/html-escape';
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           from: 'Lumnix <notifications@oltaflock.ai>',
           to: ['admin@oltaflock.ai', 'khush@oltaflock.ai'],
-          subject: `🗑️ Data Deletion Request: ${email.trim()}`,
+          subject: `Data Deletion Request: ${email.trim().slice(0, 60)}`,
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 32px;">
               <h2 style="color: #EF4444; margin-bottom: 24px;">Data Deletion Request</h2>
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
               <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
                 <tr>
                   <td style="padding: 8px 0; color: #888; width: 120px;">Email</td>
-                  <td style="padding: 8px 0; font-weight: 600;">${email.trim()}</td>
+                  <td style="padding: 8px 0; font-weight: 600;">${escapeHtml(email.trim())}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; color: #888;">Requested</td>

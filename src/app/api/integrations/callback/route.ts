@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
       tokens = await exchangeCodeForTokens(code, redirectUri);
 
       if (tokens.error) {
-        return NextResponse.redirect(new URL(`/dashboard/settings?error=${tokens.error}`, req.url));
+        return NextResponse.redirect(new URL(`/dashboard/settings?error=${encodeURIComponent(String(tokens.error))}`, req.url));
       }
 
       // Get user email for display
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
       tokens = await metaRes.json();
 
       if (tokens.error) {
-        return NextResponse.redirect(new URL(`/dashboard/settings?error=${tokens.error.message}`, req.url));
+        return NextResponse.redirect(new URL(`/dashboard/settings?error=${encodeURIComponent('meta_auth_failed')}`, req.url));
       }
 
       // Exchange for long-lived token
@@ -87,7 +87,9 @@ export async function GET(req: NextRequest) {
 
       // Get user info
       try {
-        const meRes = await fetch(`https://graph.facebook.com/v19.0/me?access_token=${tokens.access_token}`);
+        const meRes = await fetch('https://graph.facebook.com/v19.0/me', {
+          headers: { Authorization: `Bearer ${tokens.access_token}` },
+        });
         const me = await meRes.json();
         displayName = me.name || 'Meta Ads';
         providerAccountId = me.id || '';
@@ -140,7 +142,7 @@ export async function GET(req: NextRequest) {
 
     if (intError) {
       console.error('Integration insert error:', intError);
-      return NextResponse.redirect(new URL(`/dashboard/settings?error=${encodeURIComponent(intError.message)}`, req.url));
+      return NextResponse.redirect(new URL('/dashboard/settings?error=integration_failed', req.url));
     }
 
     // Delete old token and insert fresh

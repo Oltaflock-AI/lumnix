@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { Resend } from 'resend';
+import { escapeHtml } from '@/lib/html-escape';
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
@@ -171,7 +172,7 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 16px; }
 <div class="container">
   <div class="logo"><span class="l">L</span>umnix</div>
   <h1>Alert Triggered</h1>
-  <p>An alert rule for <strong style="color:#f8fafc">${workspace?.name || 'your workspace'}</strong> has been triggered.</p>
+  <p>An alert rule for <strong style="color:#f8fafc">${escapeHtml(workspace?.name || 'your workspace')}</strong> has been triggered.</p>
   <div class="metric-box">
     <div class="metric-label">${metricLabel}</div>
     <div class="metric-value">${metricValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
