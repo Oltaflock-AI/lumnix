@@ -1,10 +1,11 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Bell, AlertCircle, AlertTriangle, Info, CheckCircle2, TrendingDown, TrendingUp, Search, BarChart3, X, RefreshCw } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useGSCData, useGA4Data } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
+import { apiFetch } from '@/lib/api-fetch';
 
 type Alert = {
   id: string;
@@ -13,6 +14,7 @@ type Alert = {
   severity: 'critical' | 'warning' | 'info' | 'success';
   source: string;
   dismissed: boolean;
+  anomalyId?: string; // DB anomaly id, if from anomalies table
 };
 
 function generateAlerts(gscKeywords: any[], ga4Data: any[]): Alert[] {
@@ -127,18 +129,69 @@ const severityConfig = {
   success:  { icon: CheckCircle2, color: '#10B981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.15)' },
 };
 
+function mapAnomalySeverity(severity: string): Alert['severity'] {
+  if (severity === 'critical' || severity === 'high') return 'critical';
+  if (severity === 'medium' || severity === 'warning') return 'warning';
+  if (severity === 'success' || severity === 'positive') return 'success';
+  return 'info';
+}
+
 export default function AlertsPage() {
   const { c } = useTheme();
   const { workspace } = useWorkspaceCtx();
   const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
   const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [anomalies, setAnomalies] = useState<any[]>([]);
+  const [anomaliesLoading, setAnomaliesLoading] = useState(true);
 
-  const loading = gscLoading || ga4Loading;
+  // Fetch anomalies from DB
+  useEffect(() => {
+    if (!workspace?.id) return;
+    const ctrl = new AbortController();
+    apiFetch(`/api/anomalies?workspace_id=${workspace.id}`, { signal: ctrl.signal })
+      .then(r => r.json())
+      .then(data => {
+        if (!ctrl.signal.aborted) setAnomalies(data.anomalies || []);
+      })
+      .catch(() => {})
+      .finally(() => { if (!ctrl.signal.aborted) setAnomaliesLoading(false); });
+    return () => ctrl.abort();
+  }, [workspace?.id]);
+
+  // Mark anomaly as read when dismissed
+  const handleDismiss = useCallback((alertId: string, anomalyId?: string) => {
+    setDismissed(prev => new Set([...prev, alertId]));
+    if (anomalyId) {
+      apiFetch(`/api/anomalies/${anomalyId}/read`, { method: 'POST' }).catch(() => {});
+    }
+  }, []);
+
+  const loading = gscLoading || ga4Loading || anomaliesLoading;
   const gscKeywords = gscResp?.keywords || [];
   const ga4Data = ga4Resp?.data || [];
 
-  const allAlerts = useMemo(() => generateAlerts(gscKeywords, ga4Data), [gscKeywords, ga4Data]);
+  const generatedAlerts = useMemo(() => generateAlerts(gscKeywords, ga4Data), [gscKeywords, ga4Data]);
+
+  // Convert DB anomalies to Alert objects
+  const anomalyAlerts = useMemo<Alert[]>(() =>
+    anomalies.map(a => ({
+      id: `anomaly-${a.id}`,
+      title: a.title || a.type || 'Anomaly detected',
+      detail: a.description || a.message || '',
+      severity: mapAnomalySeverity(a.severity),
+      source: a.source || 'Lumnix AI',
+      dismissed: !!a.is_read,
+      anomalyId: a.id,
+    })),
+  [anomalies]);
+
+  const allAlerts = useMemo(() => {
+    // Unread anomalies first, then generated alerts
+    const unreadAnomalies = anomalyAlerts.filter(a => !a.dismissed);
+    return [...unreadAnomalies, ...generatedAlerts];
+  }, [anomalyAlerts, generatedAlerts]);
+
   const activeAlerts = useMemo(() => allAlerts.filter(a => !dismissed.has(a.id)), [allAlerts, dismissed]);
 
   const counts = useMemo(() => ({
@@ -200,7 +253,7 @@ export default function AlertsPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setDismissed(prev => new Set([...prev, alert.id]))}
+                  onClick={() => handleDismiss(alert.id, alert.anomalyId)}
                   aria-label={`Dismiss alert: ${alert.title}`}
                   title="Dismiss"
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: 4, flexShrink: 0 }}
