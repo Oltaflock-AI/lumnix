@@ -36,9 +36,10 @@ export default function DashboardError({ error, reset }: { error: Error & { dige
         <p style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 24 }}>
           Something went wrong while rendering this page. The rest of the dashboard is still working.
         </p>
-        {error?.digest && (
-          <p style={{ fontSize: 11, color: 'var(--text-muted)', opacity: 0.6, fontFamily: 'var(--font-mono, monospace)', marginBottom: 20 }}>
-            Reference: {error.digest}
+        {(error?.message || error?.digest) && (
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', opacity: 0.6, fontFamily: 'var(--font-mono, monospace)', marginBottom: 20, wordBreak: 'break-word', maxWidth: 400 }}>
+            {error?.message && <>Error: {error.message}<br /></>}
+            {error?.digest && <>Reference: {error.digest}</>}
           </p>
         )}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>

@@ -116,11 +116,11 @@ export default function DashboardPage() {
 
   const loading = wsLoading || ga4Loading || gscLoading || unifiedLoading;
 
-  const ga4Data: any[] = ga4Resp?.data || [];
-  const gscKeywords: any[] = gscResp?.keywords || [];
-  const gscOverview: any[] = gscOverviewResp?.overview || [];
-  const unifiedDaily: any[] = unifiedResp?.daily || [];
-  const uTotals = unifiedResp?.totals || {};
+  const ga4Data: any[] = Array.isArray(ga4Resp?.data) ? ga4Resp.data : [];
+  const gscKeywords: any[] = Array.isArray(gscResp?.keywords) ? gscResp.keywords : [];
+  const gscOverview: any[] = Array.isArray(gscOverviewResp?.overview) ? gscOverviewResp.overview : [];
+  const unifiedDaily: any[] = Array.isArray(unifiedResp?.daily) ? unifiedResp.daily : [];
+  const uTotals = (unifiedResp?.totals && typeof unifiedResp.totals === 'object') ? unifiedResp.totals : {};
 
   // Memoized aggregations — avoid reducing large arrays on every render
   const { totalSessions, totalUsers } = useMemo(() => ({
@@ -155,7 +155,7 @@ export default function DashboardPage() {
   ), [unifiedDaily, gscOverview]);
 
   const connectedProviders = useMemo(
-    () => integrations.filter(i => i.status === 'connected').map(i => i.provider),
+    () => (Array.isArray(integrations) ? integrations : []).filter(i => i.status === 'connected').map(i => i.provider),
     [integrations]
   );
   const hasGA4 = connectedProviders.includes('ga4');
