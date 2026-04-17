@@ -28,7 +28,7 @@ export function EmailFooter({ userId }: EmailFooterProps) {
       <Text style={{ fontSize: '12px', color: '#9CA3AF', margin: '0' }}>
         {userId && (
           <>
-            <Link href={unsubscribeUrl} style={{ color: '#7C3AED', textDecoration: 'underline' }}>
+            <Link href={unsubscribeUrl} style={{ color: '#FF0066', textDecoration: 'underline' }}>
               Unsubscribe
             </Link>
             {' · '}
@@ -36,7 +36,7 @@ export function EmailFooter({ userId }: EmailFooterProps) {
         )}
         Oltaflock AI
         {' · '}
-        <Link href="https://oltaflock.ai" style={{ color: '#7C3AED', textDecoration: 'none' }}>
+        <Link href="https://oltaflock.ai" style={{ color: '#FF0066', textDecoration: 'none' }}>
           oltaflock.ai
         </Link>
       </Text>

@@ -43,7 +43,7 @@ export function PageShell({ title, description, icon: Icon, badge, action, child
       <div className="fade-in" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
           <div className="icon-pill scale-in">
-            <Icon size={18} color="#7C3AED" />
+            <Icon size={18} color="#FF0066" />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -51,7 +51,7 @@ export function PageShell({ title, description, icon: Icon, badge, action, child
               {badge && (
                 <span style={{
                   fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-                  color: '#7C3AED', backgroundColor: 'rgba(124,58,237,0.1)',
+                  color: '#FF0066', backgroundColor: 'rgba(255,0,102,0.1)',
                   padding: '3px 8px', borderRadius: 6,
                   fontFamily: "'DM Sans', sans-serif",
                 }}>
@@ -76,11 +76,11 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 32px', textAlign: 'center' }}>
       <div style={{
         width: 72, height: 72, borderRadius: 16,
-        background: 'rgba(124,58,237,0.1)',
+        background: 'rgba(255,0,102,0.1)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginBottom: 20,
       }}>
-        <Icon size={32} color="#7C3AED" />
+        <Icon size={32} color="#FF0066" />
       </div>
       <h2 style={{ fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontWeight: 700, fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>
         {title}
@@ -93,13 +93,13 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
           onClick={onAction}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '10px 20px', background: '#7C3AED', color: '#FFFFFF',
+            padding: '10px 20px', background: '#FF0066', color: '#FFFFFF',
             borderRadius: 8, border: 'none',
             fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 14,
             cursor: 'pointer', transition: 'background 150ms, box-shadow 150ms',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#6D28D9'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(124,58,237,0.3)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#7C3AED'; e.currentTarget.style.boxShadow = 'none'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#FF3385'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(255,0,102,0.3)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#FF0066'; e.currentTarget.style.boxShadow = 'none'; }}
         >
           {actionLabel}
         </button>

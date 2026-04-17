@@ -502,8 +502,8 @@ Each competitor row:
   Display: flex, align-items center, gap 10px
 
   Active state:
-    Background: rgba(124, 58, 237, 0.10)
-    Left border: 2px solid #7C3AED
+    Background: rgba(255, 0, 102, 0.10)
+    Left border: 2px solid #FF0066
 
   Hover state:
     Background: var(--bg-card-secondary)
@@ -565,7 +565,7 @@ Each ad card:
 ```
 
 Badge styles:
-- "TOP PERFORMER": background `#7C3AED`, text white, DM Sans 600 11px
+- "TOP PERFORMER": background `#FF0066`, text white, DM Sans 600 11px
 - "WINNING": background `#059669`, text white
 - Days counter: DM Sans 500 12px, `var(--text-muted)`, right side of badge row
 
@@ -628,7 +628,7 @@ Layout:
 └─────────────────────────────────────────────────────────┘
 ```
 
-Section heading style: Plus Jakarta Sans 600 13px, `#7C3AED`, uppercase, letter-spacing 0.06em
+Section heading style: Plus Jakarta Sans 600 13px, `#FF0066`, uppercase, letter-spacing 0.06em
 Section content: DM Sans 400 14px, `var(--text-secondary)`, line-height 1.6
 
 Content angle cards:
@@ -638,7 +638,7 @@ Content angle cards:
 - Padding: `16px`
 - Gap between cards: `10px`
 - Angle name: Plus Jakarta Sans 600 15px, `var(--text-primary)`
-- Format badge: DM Sans 600 11px, background `rgba(124,58,237,0.1)`, text `#7C3AED`
+- Format badge: DM Sans 600 11px, background `rgba(255,0,102,0.1)`, text `#FF0066`
 - Hook line: DM Sans 400 14px italic, `var(--text-secondary)`
 - Core message + reasoning: DM Sans 400 13px, `var(--text-muted)`
 
@@ -728,7 +728,7 @@ On search → show loading state → then show results:
 - Left panel uses `var(--bg-card)` with border-right separator
 - All buttons follow the button standards from `PHASE1_SETTINGS_OVERHAUL.md`
 - Fonts: Plus Jakarta Sans for headings and badge labels, DM Sans for all body text
-- Brand purple `#7C3AED` for all interactive elements and badges
+- Brand purple `#FF0066` for all interactive elements and badges
 - No blue buttons anywhere
 
 ---

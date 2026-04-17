@@ -294,7 +294,7 @@ Make this more visually distinct with a stronger left border:
 <Section style={{
   backgroundColor: '#F4F2FF',
   border: '1px solid #DDD8FF',
-  borderLeft: '4px solid #7C3AED',   // thicker accent
+  borderLeft: '4px solid #FF0066',   // thicker accent
   borderRadius: '0 10px 10px 0',     // flush on left, rounded on right
   padding: '20px 22px',
   margin: '20px 0',
@@ -302,7 +302,7 @@ Make this more visually distinct with a stronger left border:
   <Text style={{
     fontSize: '10px',
     fontWeight: '700',
-    color: '#7C3AED',
+    color: '#FF0066',
     textTransform: 'uppercase',
     letterSpacing: '0.1em',
     margin: '0 0 8px',
@@ -331,14 +331,14 @@ The feature cards need a more premium feel:
   backgroundColor: '#F8F7FC',
   borderRadius: '12px',
   padding: '20px 24px',
-  borderLeft: '3px solid #7C3AED',
+  borderLeft: '3px solid #FF0066',
 }}>
 
 // UPGRADED:
 <Section style={{
   backgroundColor: '#FAFAFE',
   border: '1px solid #EAE8FF',
-  borderLeft: '4px solid #7C3AED',
+  borderLeft: '4px solid #FF0066',
   borderRadius: '0 12px 12px 0',
   padding: '22px 26px',
   marginBottom: '14px',
@@ -348,7 +348,7 @@ The feature cards need a more premium feel:
 <Text style={{
   fontSize: '10px',
   fontWeight: '800',
-  color: '#7C3AED',
+  color: '#FF0066',
   textTransform: 'uppercase',
   letterSpacing: '0.12em',   // more spaced out
   margin: '0 0 8px',
@@ -374,7 +374,7 @@ For the chat bubble mockup in the Lumi feature card:
 ```tsx
 // User bubble — make more obvious it's a chat:
 <div style={{
-  background: '#7C3AED',
+  background: '#FF0066',
   color: '#FFFFFF',
   padding: '10px 16px',
   borderRadius: '18px 18px 4px 18px',
@@ -413,7 +413,7 @@ For the chat bubble mockup in the Lumi feature card:
 ```tsx
 // CURRENT button style:
 style={{
-  backgroundColor: '#7C3AED',
+  backgroundColor: '#FF0066',
   padding: '14px 32px',
   borderRadius: '10px',
   fontSize: '15px',
@@ -422,7 +422,7 @@ style={{
 
 // UPGRADED — all primary buttons:
 style={{
-  backgroundColor: '#7C3AED',
+  backgroundColor: '#FF0066',
   color: '#FFFFFF',
   padding: '16px 36px',
   borderRadius: '12px',
@@ -470,13 +470,13 @@ Hover color (for email clients that support it, add as a separate style block):
     You're receiving this because you signed up for Lumnix.
   </Text>
   <Text style={{ fontSize: '12px', color: '#9CA3AF', margin: '0' }}>
-    <Link href={unsubscribeUrl} style={{ color: '#7C3AED', textDecoration: 'underline' }}>
+    <Link href={unsubscribeUrl} style={{ color: '#FF0066', textDecoration: 'underline' }}>
       Unsubscribe
     </Link>
     {' · '}
     Oltaflock AI
     {' · '}
-    <Link href="https://oltaflock.ai" style={{ color: '#7C3AED', textDecoration: 'none' }}>
+    <Link href="https://oltaflock.ai" style={{ color: '#FF0066', textDecoration: 'none' }}>
       oltaflock.ai
     </Link>
   </Text>

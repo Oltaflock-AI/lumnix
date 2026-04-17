@@ -20,10 +20,10 @@ export function PricingSection() {
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 12 }}>
               Less than the cost of one bad ad.
             </h2>
-            <p style={{ fontSize: 18, color: '#7C7AAA', maxWidth: 480, margin: '0 auto 12px' }}>
+            <p style={{ fontSize: 18, color: '#9CA3AF', maxWidth: 480, margin: '0 auto 12px' }}>
               The tools you&apos;re replacing cost ₹75,000/mo combined.
             </p>
-            <p style={{ fontSize: 16, color: '#7C3AED', fontWeight: 600 }}>
+            <p style={{ fontSize: 16, color: '#FF0066', fontWeight: 600 }}>
               Lumnix starts at ₹2,499. <span style={{ color: '#059669', fontWeight: 700 }}>Try any plan free for 7 days.</span>
             </p>
           </div>
@@ -34,21 +34,21 @@ export function PricingSection() {
             {plans.map(plan => (
               <div key={plan.name} style={{
                 background: '#fff', borderRadius: 18, padding: '24px 22px', position: 'relative',
-                border: plan.popular ? '2px solid #7C3AED' : '1px solid #E4E2F4',
-                boxShadow: plan.popular ? '0 8px 40px rgba(124,58,237,0.15)' : '0 2px 12px rgba(91,33,182,0.06)',
+                border: plan.popular ? '2px solid #FF0066' : '1px solid #E4E5EC',
+                boxShadow: plan.popular ? '0 8px 40px rgba(255,0,102,0.15)' : '0 2px 12px rgba(91,33,182,0.06)',
                 transition: 'all 0.25s cubic-bezier(0.23,1,0.32,1)',
               }}
               onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-4px)')}
               onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
               >
                 {plan.popular && (
-                  <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: '#7C3AED', color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 20, whiteSpace: 'nowrap', letterSpacing: '0.04em' }}>Most Popular</div>
+                  <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: '#FF0066', color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 20, whiteSpace: 'nowrap', letterSpacing: '0.04em' }}>Most Popular</div>
                 )}
-                <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: '#18163A', marginBottom: 2 }}>{plan.name}</div>
-                <div style={{ fontSize: 12, color: '#7C7AAA', marginBottom: 10, fontWeight: 500 }}>{plan.tagline}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, color: '#111827', marginBottom: 2 }}>{plan.name}</div>
+                <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 10, fontWeight: 500 }}>{plan.tagline}</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 4 }}>
-                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 800, color: '#18163A', letterSpacing: '-0.02em' }}>{plan.price}</span>
-                  <span style={{ fontSize: 13, color: '#7C7AAA' }}>{plan.period}</span>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 800, color: '#111827', letterSpacing: '-0.02em' }}>{plan.price}</span>
+                  <span style={{ fontSize: 13, color: '#9CA3AF' }}>{plan.period}</span>
                 </div>
                 {plan.name !== 'Free' && (
                   <p style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginBottom: 16 }}>
@@ -62,7 +62,7 @@ export function PricingSection() {
                       <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(5,150,105,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Check size={9} color="#059669" />
                       </div>
-                      <span style={{ fontSize: 13, color: '#4A4770' }}>{f}</span>
+                      <span style={{ fontSize: 13, color: '#4B5563' }}>{f}</span>
                     </div>
                   ))}
                 </div>
@@ -71,9 +71,9 @@ export function PricingSection() {
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     width: '100%', padding: '13px 0', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', transition: 'all 150ms', minHeight: 44, textDecoration: 'none',
-                    background: plan.primary ? '#7C3AED' : 'transparent',
-                    color: plan.primary ? '#fff' : '#7C3AED',
-                    border: plan.primary ? 'none' : '1px solid #7C3AED',
+                    background: plan.primary ? '#FF0066' : 'transparent',
+                    color: plan.primary ? '#fff' : '#FF0066',
+                    border: plan.primary ? 'none' : '1px solid #FF0066',
                   }}
                 >{plan.cta}</Link>
               </div>

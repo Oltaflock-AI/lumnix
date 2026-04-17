@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 function getMetaToken(): string | null {
@@ -155,14 +155,21 @@ export async function POST(req: NextRequest) {
       active_ads_count: upsertRows.filter(r => r.is_active).length,
     }).eq('id', competitor_id);
 
-    // Trigger AI analysis if there are winning ads
-    if (winningCount > 0) {
+    // Trigger AI analysis if any ads were scraped (analyze route falls back
+    // to top-30 by days_running when no winners ≥90d exist yet).
+    if (allAds.length > 0) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      fetch(`${appUrl}/api/competitors/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ competitor_id, workspace_id }),
-      }).catch(() => {});
+      after(async () => {
+        try {
+          await fetch(`${appUrl}/api/competitors/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ competitor_id, workspace_id }),
+          });
+        } catch (e) {
+          console.error('Analyze trigger failed:', e);
+        }
+      });
     }
 
     return NextResponse.json({

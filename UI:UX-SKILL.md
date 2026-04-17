@@ -224,8 +224,8 @@ This Skill should be used when the task involves **UI structure, visual design d
 When working on the Lumnix codebase, these design decisions are already locked in and must be respected:
 
 **Colors:**
-- Primary/CTA: `#7C3AED` (hover: `#6D28D9`) — all buttons, active nav, interactive elements
-- Chart accent: `#0891B2` — chart secondary lines only, never on buttons
+- Primary/CTA: `#FF0066` (hover: `#FF3385`) — all buttons, active nav, interactive elements
+- Chart accent: `#00D4AA` — chart secondary lines only, never on buttons
 - Success/positive: `#059669`
 - Warning/caution: `#F59E0B`
 - Danger/negative: `#DC2626`
@@ -254,7 +254,7 @@ When working on the Lumnix codebase, these design decisions are already locked i
 
 **Sidebar:** Always `220px` wide, never collapses. Dark bg `#0F172A`, light bg `#FFFFFF`.
 
-**Charts:** All primary lines `#7C3AED` with fill `rgba(124,58,237,0.08)`. No dark maroon anywhere.
+**Charts:** All primary lines `#FF0066` with fill `rgba(255,0,102,0.08)`. No dark maroon anywhere.
 
 ---
 
@@ -262,15 +262,15 @@ When working on the Lumnix codebase, these design decisions are already locked i
 
 Before delivering any UI work on Lumnix:
 
-* [ ] No blue buttons anywhere — all CTAs use `#7C3AED`
-* [ ] All chart primary lines are `#7C3AED` — no default Recharts colors
+* [ ] No blue buttons anywhere — all CTAs use `#FF0066`
+* [ ] All chart primary lines are `#FF0066` — no default Recharts colors
 * [ ] No dark maroon/crimson on charts (replace with purple/green/amber/gray system)
 * [ ] Plus Jakarta Sans on all page titles, section headings, metric numbers
 * [ ] DM Sans on all body text, table cells, nav items, labels
 * [ ] Dark mode text minimum `#CBD5E1` — never below this for readable content
 * [ ] ROAS shows `—` not `0.00x` when no revenue data
 * [ ] Numbers use Indian locale formatting (`3,14,735` not `314,735`)
-* [ ] Active nav items have left border `3px solid #7C3AED` + background `rgba(124,58,237,0.18)`
+* [ ] Active nav items have left border `3px solid #FF0066` + background `rgba(255,0,102,0.18)`
 * [ ] Sidebar is always `220px` — no collapse button
 * [ ] Skeleton loaders on all data-fetching sections (not spinners)
 * [ ] Empty states have icon + title + description + CTA button

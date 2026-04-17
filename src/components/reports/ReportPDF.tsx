@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
   metaItem: {},
   metaLabel: { fontSize: 7, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 },
   metaVal: { fontSize: 9, color: '#e2e8f0', fontWeight: 700 },
-  sectionTitle: { fontSize: 10, fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 20, marginBottom: 10, borderBottomWidth: 1, borderBottomColor: '#e5e7eb', paddingBottom: 4 },
+  sectionTitle: { fontSize: 10, fontWeight: 700, color: '#FF0066', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 20, marginBottom: 10, borderBottomWidth: 1, borderBottomColor: '#e5e7eb', paddingBottom: 4 },
   kpiRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   kpiBox: { flex: 1, backgroundColor: '#f8fafc', border: '1 solid #e2e8f0', borderRadius: 6, padding: 12 },
   kpiVal: { fontSize: 18, fontWeight: 700, color: '#111827' },

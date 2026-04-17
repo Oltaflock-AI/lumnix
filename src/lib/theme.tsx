@@ -42,23 +42,23 @@ interface ThemeCtx {
 }
 
 const DARK: ColorTokens = {
-  bgPage: '#0B0F1A',
-  bgSidebar: '#0B0F1A',
-  bgCard: '#141924',
-  bgCardHover: '#1C2333',
-  bgInput: '#141924',
-  bgTag: '#141924',
-  border: 'rgba(139,92,246,0.08)',
-  borderSubtle: 'rgba(139,92,246,0.05)',
-  borderStrong: 'rgba(139,92,246,0.15)',
-  text: '#F0EDFF',
-  textSecondary: '#C4C0E8',
-  textMuted: '#8B88B8',
+  bgPage: '#0C0C10',
+  bgSidebar: '#0C0C10',
+  bgCard: '#16161D',
+  bgCardHover: '#1E1E28',
+  bgInput: '#16161D',
+  bgTag: '#16161D',
+  border: 'rgba(255,0,102,0.08)',
+  borderSubtle: 'rgba(255,0,102,0.05)',
+  borderStrong: 'rgba(255,0,102,0.15)',
+  text: '#F0F0F5',
+  textSecondary: '#9CA3AF',
+  textMuted: '#6B7280',
   shadow: '0 1px 3px rgba(0,0,0,0.4)',
-  surfaceElevated: '#141924',
-  accent: '#7C3AED',
-  accentHover: '#6D28D9',
-  accentSubtle: 'rgba(124,58,237,0.12)',
+  surfaceElevated: '#16161D',
+  accent: '#FF0066',
+  accentHover: '#FF3385',
+  accentSubtle: 'rgba(255,0,102,0.12)',
   success: '#22C55E',
   successSubtle: 'rgba(34,197,94,0.12)',
   successBorder: 'rgba(34,197,94,0.25)',
@@ -68,28 +68,28 @@ const DARK: ColorTokens = {
   danger: '#EF4444',
   dangerSubtle: 'rgba(239,68,68,0.12)',
   dangerBorder: 'rgba(239,68,68,0.25)',
-  accentGlow: '0 0 24px rgba(124,58,237,0.2), 0 0 64px rgba(124,58,237,0.08)',
-  accentTeal: '#0891B2',
+  accentGlow: '0 0 24px rgba(255,0,102,0.2), 0 0 64px rgba(255,0,102,0.08)',
+  accentTeal: '#00D4AA',
 };
 
 const LIGHT: ColorTokens = {
-  bgPage: '#F7F6FE',
+  bgPage: '#F5F6FA',
   bgSidebar: '#FFFFFF',
   bgCard: '#FFFFFF',
-  bgCardHover: '#F0EEF9',
-  bgInput: '#F0EEF9',
-  bgTag: '#F0EEF9',
-  border: '#E4E2F4',
-  borderSubtle: '#F0EEF9',
-  borderStrong: '#D4D0E8',
-  text: '#18163A',
-  textSecondary: '#4A4770',
-  textMuted: '#7C7AAA',
+  bgCardHover: '#F0F1F7',
+  bgInput: '#F0F1F7',
+  bgTag: '#F0F1F7',
+  border: '#E4E5EC',
+  borderSubtle: '#F0F1F7',
+  borderStrong: '#D4D4DC',
+  text: '#111827',
+  textSecondary: '#4B5563',
+  textMuted: '#9CA3AF',
   shadow: '0 1px 3px rgba(91,33,182,0.06)',
   surfaceElevated: '#FFFFFF',
-  accent: '#7C3AED',
-  accentHover: '#6D28D9',
-  accentSubtle: 'rgba(124,58,237,0.08)',
+  accent: '#FF0066',
+  accentHover: '#FF3385',
+  accentSubtle: 'rgba(255,0,102,0.08)',
   success: '#22C55E',
   successSubtle: 'rgba(34,197,94,0.08)',
   successBorder: 'rgba(34,197,94,0.2)',
@@ -99,8 +99,8 @@ const LIGHT: ColorTokens = {
   danger: '#EF4444',
   dangerSubtle: 'rgba(239,68,68,0.08)',
   dangerBorder: 'rgba(239,68,68,0.2)',
-  accentGlow: '0 0 24px rgba(124,58,237,0.12), 0 0 64px rgba(124,58,237,0.04)',
-  accentTeal: '#0891B2',
+  accentGlow: '0 0 24px rgba(255,0,102,0.12), 0 0 64px rgba(255,0,102,0.04)',
+  accentTeal: '#00D4AA',
 };
 
 const Ctx = createContext<ThemeCtx>({
@@ -137,7 +137,7 @@ function applyAccent(base: ColorTokens, hex: string, isDark: boolean): ColorToke
   };
 }
 
-const DEFAULT_ACCENT = '#7C3AED';
+const DEFAULT_ACCENT = '#FF0066';
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');

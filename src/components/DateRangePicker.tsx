@@ -114,7 +114,7 @@ export function DateRangePicker({
                 backgroundColor: index === focusedIndex ? c.accentSubtle : opt.value === value ? c.accentSubtle : 'transparent',
                 color: opt.value === value ? c.accent : c.text,
                 fontWeight: opt.value === value ? 600 : 400,
-                outline: index === focusedIndex ? '2px solid #7C3AED' : 'none',
+                outline: index === focusedIndex ? '2px solid #FF0066' : 'none',
                 outlineOffset: -2,
               }}
             >

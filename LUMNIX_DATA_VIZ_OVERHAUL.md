@@ -139,9 +139,9 @@ Top Source card:
 **Sessions Trend chart**
 
 Currently a flat line chart. Improve it:
-- Fill area under the line: `rgba(124,58,237,0.08)`
-- Line color: `#7C3AED`, stroke-width 2.5
-- Add a reference line at the period average (horizontal dashed line `rgba(124,58,237,0.3)`)
+- Fill area under the line: `rgba(255,0,102,0.08)`
+- Line color: `#FF0066`, stroke-width 2.5
+- Add a reference line at the period average (horizontal dashed line `rgba(255,0,102,0.3)`)
 - Tooltip: show date, sessions count, % vs average
 - X-axis: show every 3rd date label to avoid crowding
 - Y-axis: right-aligned, clean number formatting
@@ -153,7 +153,7 @@ Replace the plain colored bars with a proper two-column layout:
 
 Left: Horizontal bar chart (Recharts BarChart horizontal)
 - Each source is one bar
-- Bar color: Google=`#7C3AED`, CPC=`#0891B2`, Direct=`#059669`, Others=`#94A3B8`
+- Bar color: Google=`#FF0066`, CPC=`#00D4AA`, Direct=`#059669`, Others=`#94A3B8`
 - Bar height: 28px with 8px gap between bars
 - Show percentage label at end of each bar
 
@@ -168,7 +168,7 @@ Pull from GA4 data the top 10 pages by sessions:
 - Columns: Page path (truncated), Sessions, Pageviews, Avg time on page, Bounce rate
 - Sort by sessions descending by default
 - Page path: truncate at 40 chars with tooltip showing full URL
-- Sessions column: show a mini bar (width proportional to max sessions in set, `#7C3AED` fill, height 4px below the number)
+- Sessions column: show a mini bar (width proportional to max sessions in set, `#FF0066` fill, height 4px below the number)
 
 ---
 
@@ -191,7 +191,7 @@ The current chart uses random green/maroon/orange. Replace with a meaningful gra
 
 ```
 #1–3:   #059669 (excellent — green)
-#4–10:  #7C3AED (good — brand purple)  
+#4–10:  #FF0066 (good — brand purple)  
 #11–20: #F59E0B (needs work — amber)
 #20+:   #94A3B8 (low — muted gray)
 ```
@@ -215,12 +215,12 @@ Currently a plain list. Each quick win should be a card:
 - Card background: `rgba(245,158,11,0.05)`, border `1px solid rgba(245,158,11,0.2)`
 - Position badge: amber pill `#F59E0B`
 - CTR: red `#DC2626`, DM Sans 700
-- "Optimize title..." hint: DM Sans 400 12px, `#7C3AED`, italic
+- "Optimize title..." hint: DM Sans 400 12px, `#FF0066`, italic
 
 **Organic Clicks Trend chart**
 
 Same fixes as GA4 sessions chart:
-- Line color: `#7C3AED`, fill `rgba(124,58,237,0.08)`
+- Line color: `#FF0066`, fill `rgba(255,0,102,0.08)`
 - Remove the jarring maroon/dark red — use brand purple throughout
 - Height: 200px
 - Tooltip: date + click count
@@ -228,7 +228,7 @@ Same fixes as GA4 sessions chart:
 **All Keywords table**
 
 This is already good. Minor fixes:
-- Position badge colors: `#1–#3` = green `#059669`, `#4–#10` = purple `#7C3AED`, `#11–#20` = amber, `#20+` = gray
+- Position badge colors: `#1–#3` = green `#059669`, `#4–#10` = purple `#FF0066`, `#11–#20` = amber, `#20+` = gray
 - "Quick Win" signal badge: amber background `#FFFBEB`, text `#92400E`
 - "Top 3" signal badge: green background `#ECFDF5`, text `#065F46`
 - Clicks column: bold if > 10 clicks
@@ -270,7 +270,7 @@ Current table shows CAMPAIGN, STATUS, SPEND, CLICKS, IMPRESSIONS, CONVERSIONS, C
 
 - Status badge "Active": currently a solid purple pill. Change to: background `#DCFCE7`, text `#166534`, DM Sans 600 11px — green pill matches the positive meaning
 - ROAS column: values like `295.75x`, `13.38x`, `675.18x` should all be in green `#065F46` with font-weight 600 since these are excellent
-- Add a mini bar under each campaign name showing relative spend (width proportional to spend, `#7C3AED` fill, height 3px)
+- Add a mini bar under each campaign name showing relative spend (width proportional to spend, `#FF0066` fill, height 3px)
 - CPC `₹0.25` is very low — show in green
 - Sort by Spend descending by default, show sort indicator on that column
 
@@ -300,7 +300,7 @@ Each insight card currently has the type label + priority badge + title + body +
 
 - Card border-radius: 12px (up from current)
 - Card padding: 20px
-- Card left border: 3px solid [type color] — WIN=`#059669`, TIP=`#7C3AED`, OPPORTUNITY=`#F59E0B`, WARNING=`#DC2626`
+- Card left border: 3px solid [type color] — WIN=`#059669`, TIP=`#FF0066`, OPPORTUNITY=`#F59E0B`, WARNING=`#DC2626`
 - Card top-left type label: DM Sans 700 10px uppercase, letter-spacing 0.08em, matching color
 - Priority badge (HIGH/MEDIUM): top-right, DM Sans 600 10px uppercase
   - HIGH: background `rgba(220,38,38,0.1)`, text `#DC2626`
@@ -308,7 +308,7 @@ Each insight card currently has the type label + priority badge + title + body +
 - Card title: Plus Jakarta Sans 600 15px `var(--text-primary)`, margin-top 8px
 - Body text: DM Sans 400 14px `var(--text-secondary)`, line-height 1.6, margin-top 6px
 - Data badge (e.g. "86 clicks"): background `var(--bg-card-secondary)`, DM Sans 600 12px, padding 4px 10px, border-radius 6px
-- Action link (→ text): DM Sans 400 13px `#7C3AED`, margin-top 10px, cursor pointer
+- Action link (→ text): DM Sans 400 13px `#FF0066`, margin-top 10px, cursor pointer
 
 **Insights grid**
 
@@ -317,7 +317,7 @@ Each insight card currently has the type label + priority badge + title + body +
 **Chat tab**
 
 The chat bubble issue in dark mode was previously identified. Ensure:
-- User bubbles: background `#7C3AED`, text white, right-aligned
+- User bubbles: background `#FF0066`, text white, right-aligned
 - AI bubbles: background `var(--bg-card-secondary)`, text `var(--text-primary)`, left-aligned with "L" avatar
 - Input area: full-width text area, send button inside (absolute position right side)
 - Empty state: 4 quick-action prompt buttons in 2×2 grid
@@ -344,7 +344,7 @@ Mostly empty because no competitors are added yet, but the stat cards (Competito
 
 Each of the 3 stat cards:
 - Add an icon (left of number): Competitors=users SVG, Winning Ads=trophy SVG, AI Briefs=sparkle SVG
-- Icon container: 36px circle, background `rgba(124,58,237,0.1)`, icon color `#7C3AED`
+- Icon container: 36px circle, background `rgba(255,0,102,0.1)`, icon color `#FF0066`
 - Number: Plus Jakarta Sans 700 32px
 - Sub-label: DM Sans 400 12px `var(--text-muted)`
 - When 0: show `—` styled in `var(--text-muted)` instead of bold `0` — communicates "nothing yet" vs "a real zero"
@@ -354,7 +354,7 @@ Each of the 3 stat cards:
 Replace "Add a competitor to get started" plain text with a proper empty state:
 
 ```
-[Eye icon — 48px, rgba(124,58,237,0.1) circle background]
+[Eye icon — 48px, rgba(255,0,102,0.1) circle background]
 
 Track your competitors' ads
 Discover what's working for them before you spend a rupee.
@@ -373,8 +373,8 @@ The "How it works" section: 4 numbered steps in a horizontal row, each with a sm
 **"AD LIBRARY" badge**
 
 Currently appears as a generic badge. Style it:
-- Background: `rgba(124,58,237,0.1)`
-- Text: `#7C3AED`
+- Background: `rgba(255,0,102,0.1)`
+- Text: `#FF0066`
 - DM Sans 600 11px uppercase
 - Padding: 3px 8px, border-radius 6px
 
@@ -396,13 +396,13 @@ Each anomaly row:
 Source badge colors:
 - GSC: `rgba(5,150,105,0.1)` bg, `#065F46` text
 - GA4: `rgba(234,88,12,0.1)` bg, `#9A3412` text
-- Meta Ads: `rgba(124,58,237,0.1)` bg, `#5B21B6` text
+- Meta Ads: `rgba(255,0,102,0.1)` bg, `#5B21B6` text
 - Google Ads: `rgba(37,99,235,0.1)` bg, `#1D4ED8` text
 
 **Organic vs Paid chart**
 
-- Organic line: `#7C3AED`, fill `rgba(124,58,237,0.08)`
-- Paid line: `#0891B2`, no fill, dashed `strokeDasharray="4 3"`
+- Organic line: `#FF0066`, fill `rgba(255,0,102,0.08)`
+- Paid line: `#00D4AA`, no fill, dashed `strokeDasharray="4 3"`
 - Both lines smooth (tension 0.4)
 - Legend: custom HTML legend above chart (not Chart.js default)
 - Empty paid data: show "Connect Google Ads or Meta Ads →" inline link in the chart area
@@ -422,15 +422,15 @@ Currently just 2 rows visible. Make it a proper mini-table:
 All charts across the entire app must use this consistent palette:
 
 ```
-Primary data line/bar:    #7C3AED  (brand purple)
-Secondary data line:      #0891B2  (teal accent, dashed)
+Primary data line/bar:    #FF0066  (brand purple)
+Secondary data line:      #00D4AA  (teal accent, dashed)
 Positive/Success metric:  #059669  (green)
 Negative/Warning metric:  #DC2626  (red)
 Neutral/Other:            #94A3B8  (gray)
 Amber/Caution:            #F59E0B  (amber)
 
-Chart area fill (primary):   rgba(124, 58, 237, 0.06)
-Chart area fill (secondary): rgba(8, 145, 178, 0.04)
+Chart area fill (primary):   rgba(255, 0, 102, 0.06)
+Chart area fill (secondary): rgba(0, 212, 170, 0.04)
 Chart grid lines:            rgba(0, 0, 0, 0.04) light / rgba(255,255,255,0.04) dark
 Chart axis text:             #94A3B8, DM Sans 400 11px
 Chart tooltip:               white bg, 1px solid #E2E8F0, 8px border-radius, DM Sans 400 12px
@@ -504,6 +504,6 @@ Every page must have this hierarchy applied consistently:
 
 ### Charts global
 - [ ] No dark maroon/crimson anywhere in the app
-- [ ] All primary chart lines are `#7C3AED`
+- [ ] All primary chart lines are `#FF0066`
 - [ ] All chart tooltips use consistent card style
 - [ ] All chart grid lines are the same faint color

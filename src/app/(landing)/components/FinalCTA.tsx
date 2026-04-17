@@ -7,14 +7,14 @@ export function FinalCTA() {
   return (
     <section id="cta" className="wr-section" style={{ textAlign: 'center', overflow: 'hidden', paddingTop: 80, paddingBottom: 80 }}>
       {/* Top divider for visual separation from pricing */}
-      <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '60%', height: 1, background: 'linear-gradient(to right, transparent, rgba(124,58,237,0.4), transparent)' }} />
+      <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '60%', height: 1, background: 'linear-gradient(to right, transparent, rgba(255,0,102,0.4), transparent)' }} />
 
       {/* Glow orb */}
-      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 900, height: 900, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 900, height: 900, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,0,102,0.25) 0%, transparent 60%)', pointerEvents: 'none' }} />
 
       <div className="wr-container" style={{ position: 'relative', maxWidth: 800 }}>
         <ScrollReveal>
-          <span className="wr-label" style={{ display: 'inline-block', marginBottom: 28, background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.25)', padding: '8px 16px', borderRadius: 24 }}>STOP GUESSING</span>
+          <span className="wr-label" style={{ display: 'inline-block', marginBottom: 28, background: 'rgba(255,0,102,0.12)', border: '1px solid rgba(255,0,102,0.25)', padding: '8px 16px', borderRadius: 24 }}>STOP GUESSING</span>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 800, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 20 }}>
             Marketing that guesses
             <br />is <span style={{ color: '#F87171' }}>expensive.</span>

@@ -57,7 +57,7 @@ export function ConnectSourcesEmail({ name, user_id }: ConnectSourcesEmailProps)
       userId={user_id}
     >
       <Heading style={{
-        fontSize: '28px', fontWeight: '800', color: '#18163A',
+        fontSize: '28px', fontWeight: '800', color: '#111827',
         letterSpacing: '-0.03em', lineHeight: '1.2', margin: '0 0 8px',
         fontFamily: "'DM Sans', Arial, sans-serif",
       }}>
@@ -66,7 +66,7 @@ export function ConnectSourcesEmail({ name, user_id }: ConnectSourcesEmailProps)
       <Text style={{ fontSize: '15px', color: '#374151', lineHeight: '1.7', margin: '0 0 6px' }}>
         Hey {firstName}, connecting your first data source takes about 2 minutes and unlocks everything Lumnix can do for you.
       </Text>
-      <Text style={{ fontSize: '18px', fontWeight: '700', color: '#18163A', margin: '0 0 24px' }}>
+      <Text style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: '0 0 24px' }}>
         Takes 2 minutes. Works instantly.
       </Text>
 
@@ -84,7 +84,7 @@ export function ConnectSourcesEmail({ name, user_id }: ConnectSourcesEmailProps)
                 }}>
                   {item.initial}
                 </div>
-                <Text style={{ fontSize: '14px', fontWeight: '600', color: '#18163A', margin: '0 0 4px' }}>
+                <Text style={{ fontSize: '14px', fontWeight: '600', color: '#111827', margin: '0 0 4px' }}>
                   {item.name}
                 </Text>
                 <Text style={{ fontSize: '13px', color: '#6B7280', margin: '0 0 8px', lineHeight: '1.5' }}>
@@ -114,7 +114,7 @@ export function ConnectSourcesEmail({ name, user_id }: ConnectSourcesEmailProps)
                 }}>
                   {item.initial}
                 </div>
-                <Text style={{ fontSize: '14px', fontWeight: '600', color: '#18163A', margin: '0 0 4px' }}>
+                <Text style={{ fontSize: '14px', fontWeight: '600', color: '#111827', margin: '0 0 4px' }}>
                   {item.name}
                 </Text>
                 <Text style={{ fontSize: '13px', color: '#6B7280', margin: '0', lineHeight: '1.5' }}>

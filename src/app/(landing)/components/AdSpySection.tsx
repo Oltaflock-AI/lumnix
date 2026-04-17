@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { Check, Clock, Eye, TrendingUp, Heart, MessageCircle, Share2 } from 'lucide-react';
 import { IntelCard } from './IntelCard';
 import { ScrollReveal } from './ScrollReveal';
@@ -56,12 +55,12 @@ export function AdSpySection() {
             <div className="wr-hide-mobile" style={{ position: 'absolute', top: 15, left: -5, width: '100%', maxWidth: 380, height: 300, background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 18, transform: 'rotate(-2deg)', zIndex: 0 }} />
 
             <IntelCard maxTilt={5} style={{ position: 'relative', zIndex: 1, width: '100%' }}>
-              <div style={{ width: '100%', maxWidth: 400, background: 'rgba(20,25,36,0.9)', backdropFilter: 'blur(20px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 18, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.5)' }}>
+              <div style={{ width: '100%', maxWidth: 400, background: 'rgba(19,19,26,0.92)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255,0,102,0.28)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 50px rgba(255,0,102,0.06)' }}>
                 {/* Ad creative area */}
-                <div style={{ height: 180, background: 'linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(8,145,178,0.1) 50%, rgba(52,211,153,0.05) 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ height: 180, background: 'linear-gradient(135deg, rgba(255,0,102,0.15) 0%, rgba(0,212,170,0.1) 50%, rgba(52,211,153,0.05) 100%)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {/* Badges */}
                   <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', gap: 6 }}>
-                    <span style={{ background: '#7C3AED', color: '#fff', fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ background: '#FF0066', color: '#fff', fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: 4 }}>
                       <TrendingUp size={10} /> TOP PERFORMER
                     </span>
                   </div>
@@ -75,8 +74,8 @@ export function AdSpySection() {
                       {[44, 56, 44].map((h, i) => (
                         <div key={i} style={{
                           width: 28, height: h, borderRadius: '6px 6px 4px 4px',
-                          background: `linear-gradient(180deg, ${['rgba(52,211,153,0.5)', 'rgba(124,58,237,0.5)', 'rgba(8,145,178,0.5)'][i]} 0%, ${['rgba(52,211,153,0.15)', 'rgba(124,58,237,0.15)', 'rgba(8,145,178,0.15)'][i]} 100%)`,
-                          border: `1px solid ${['rgba(52,211,153,0.3)', 'rgba(124,58,237,0.3)', 'rgba(8,145,178,0.3)'][i]}`,
+                          background: `linear-gradient(180deg, ${['rgba(52,211,153,0.5)', 'rgba(255,0,102,0.5)', 'rgba(0,212,170,0.5)'][i]} 0%, ${['rgba(52,211,153,0.15)', 'rgba(255,0,102,0.15)', 'rgba(0,212,170,0.15)'][i]} 100%)`,
+                          border: `1px solid ${['rgba(52,211,153,0.3)', 'rgba(255,0,102,0.3)', 'rgba(0,212,170,0.3)'][i]}`,
                         }} />
                       ))}
                     </div>
@@ -124,7 +123,7 @@ export function AdSpySection() {
                 </div>
 
                 {/* AI analysis bar */}
-                <div style={{ padding: '12px 18px', background: 'rgba(124,58,237,0.1)', borderTop: '1px solid rgba(124,58,237,0.15)' }}>
+                <div style={{ padding: '12px 18px', background: 'rgba(255,0,102,0.1)', borderTop: '1px solid rgba(255,0,102,0.15)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <span className="wr-label" style={{ fontSize: 9 }}>LUMI&apos;S TAKE</span>

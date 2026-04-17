@@ -15,9 +15,9 @@ const statusConfig: Record<StatusType, {
   paused:       { bg: '#FFFBEB', darkBg: 'rgba(245,158,11,0.12)', text: '#92400E', darkText: '#FCD34D', border: '#FDE68A', darkBorder: 'rgba(245,158,11,0.25)', dotColor: '#D97706', label: 'Paused' },
   error:        { bg: '#FEF2F2', darkBg: 'rgba(220,38,38,0.12)',  text: '#991B1B', darkText: '#FCA5A5', border: '#FECACA', darkBorder: 'rgba(220,38,38,0.25)',  dotColor: '#DC2626', label: 'Error',        animate: 'pulse' },
   connected:    { bg: '#ECFDF5', darkBg: 'rgba(5,150,105,0.15)',   text: '#065F46', darkText: '#6EE7B7', border: '#A7F3D0', darkBorder: 'rgba(5,150,105,0.3)',   dotColor: '#059669', label: 'Connected',    animate: 'pulse' },
-  disconnected: { bg: '#F7F6FE', darkBg: 'rgba(139,92,246,0.08)', text: '#7C7AAA', darkText: '#8B88B8', border: '#E4E2F4', darkBorder: 'rgba(139,92,246,0.12)', dotColor: '#8B88B8', label: 'Disconnected' },
-  syncing:      { bg: '#EDE9FF', darkBg: 'rgba(124,58,237,0.12)', text: '#5B21B6', darkText: '#C4B5FD', border: '#DDD8FF', darkBorder: 'rgba(124,58,237,0.25)', dotColor: '#7C3AED', label: 'Syncing',      animate: 'spin' },
-  pending:      { bg: '#F7F6FE', darkBg: 'rgba(139,92,246,0.06)', text: '#7C7AAA', darkText: '#8B88B8', border: '#E4E2F4', darkBorder: 'rgba(139,92,246,0.08)', dotColor: '#8B88B8', label: 'Pending' },
+  disconnected: { bg: '#F5F6FA', darkBg: 'rgba(255,0,102,0.08)', text: '#9CA3AF', darkText: '#6B7280', border: '#E4E5EC', darkBorder: 'rgba(255,0,102,0.12)', dotColor: '#6B7280', label: 'Disconnected' },
+  syncing:      { bg: '#EDE9FF', darkBg: 'rgba(255,0,102,0.12)', text: '#5B21B6', darkText: '#C4B5FD', border: '#DDD8FF', darkBorder: 'rgba(255,0,102,0.25)', dotColor: '#FF0066', label: 'Syncing',      animate: 'spin' },
+  pending:      { bg: '#F5F6FA', darkBg: 'rgba(255,0,102,0.06)', text: '#9CA3AF', darkText: '#6B7280', border: '#E4E5EC', darkBorder: 'rgba(255,0,102,0.08)', dotColor: '#6B7280', label: 'Pending' },
 };
 
 /** Map Google Ads API statuses to our standard types */

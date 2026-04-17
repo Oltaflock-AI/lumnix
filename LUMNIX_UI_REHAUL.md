@@ -26,7 +26,7 @@ Functionality is never touched. All changes are CSS, layout, typography, animati
 | A2 | Metric card labels at `#A09CC0` on white = 2.6:1 — fails AA | 🔴 CRITICAL | Use `#6B6893` minimum |
 | A3 | "Quick Win" amber badge `#F59E0B` on `#FEF3C7` = 2.1:1 — fails | 🔴 CRITICAL | Darken text to `#78350F` |
 | A4 | Chart lines rely on color only — no shape or pattern differentiation | 🔴 CRITICAL | Add dashed pattern to paid line, solid to organic |
-| A5 | No visible focus rings on nav items or buttons | 🔴 CRITICAL | Add `outline: 2px solid #7C3AED; outline-offset: 3px` on :focus-visible |
+| A5 | No visible focus rings on nav items or buttons | 🔴 CRITICAL | Add `outline: 2px solid #FF0066; outline-offset: 3px` on :focus-visible |
 | A6 | Icon-only buttons (dark mode toggle, logout) have no aria-label | 🟠 HIGH | Add `aria-label="Toggle dark mode"` etc. |
 | A7 | Alert badges (number "7") have no screen reader text | 🟠 HIGH | Add `<span className="sr-only">7 unread alerts</span>` |
 
@@ -48,8 +48,8 @@ Functionality is never touched. All changes are CSS, layout, typography, animati
 | S2 | Card borders `#E2E8F0` have no purple personality | 🟡 MEDIUM | Shift to `#EAE8FF` — subtle purple-tinted border |
 | S3 | Sidebar section labels (ANALYTICS) are barely visible | 🟠 HIGH | Stronger contrast + slight uppercase treatment |
 | S4 | Status badges inconsistent — Active is sometimes green pill, sometimes purple pill | 🔴 CRITICAL | Standardise: Active=green always, Paused=amber always, Error=red always |
-| S5 | Blue buttons still present in Billing and Settings tabs | 🔴 CRITICAL | All CTAs → `#7C3AED` — zero exceptions |
-| S6 | Chart area fill colors not consistent across pages | 🟠 HIGH | All primary fills → `rgba(124,58,237,0.07)` |
+| S5 | Blue buttons still present in Billing and Settings tabs | 🔴 CRITICAL | All CTAs → `#FF0066` — zero exceptions |
+| S6 | Chart area fill colors not consistent across pages | 🟠 HIGH | All primary fills → `rgba(255,0,102,0.07)` |
 
 ### Priority 5: Layout & Responsive 🟠
 
@@ -171,12 +171,12 @@ Replace the current token set with this evolved version. Same brand, more person
   /* Borders */
   --border-default:    #E4E2F4;   /* purple-tinted — was #E2E8F0 */
   --border-subtle:     #EEECF8;
-  --border-focus:      #7C3AED;
+  --border-focus:      #FF0066;
 
   /* Brand */
-  --primary:           #7C3AED;
+  --primary:           #FF0066;
   --primary-dark:      #5B21B6;
-  --primary-hover:     #6D28D9;
+  --primary-hover:     #FF3385;
   --primary-light:     #EDE9FF;
   --primary-ultra:     #F4F2FF;
 
@@ -190,7 +190,7 @@ Replace the current token set with this evolved version. Same brand, more person
   --danger:            #DC2626;
   --danger-bg:         #FEF2F2;
   --danger-border:     #FECACA;
-  --info:              #0891B2;
+  --info:              #00D4AA;
 
   /* Text */
   --text-primary:      #18163A;   /* deep purple-tinted dark — was #0F172A */
@@ -247,7 +247,7 @@ Structure:
 └────────────────────────────────────────┘
 
 Top border colors:
-  Sessions:       #7C3AED (brand)
+  Sessions:       #FF0066 (brand)
   Organic Clicks: #059669 (green)
   Ad Spend:       #D97706 (amber)
   ROAS:           #94A3B8 (muted when no data) / #059669 (green when healthy)
@@ -270,23 +270,23 @@ New:     white bg with subtle purple gradient on inner left edge,
          nav items with animated left border, section labels with dot
 
 Sidebar gradient accent (left 3px strip):
-  background: linear-gradient(to bottom, #7C3AED, #0891B2)
+  background: linear-gradient(to bottom, #FF0066, #00D4AA)
   width: 3px, position: absolute left 0
 
 Nav item active:
-  background: linear-gradient(to right, rgba(124,58,237,0.12), rgba(124,58,237,0.04))
-  border-left: 3px solid #7C3AED
+  background: linear-gradient(to right, rgba(255,0,102,0.12), rgba(255,0,102,0.04))
+  border-left: 3px solid #FF0066
   text: #5B21B6, weight 600
 
 Nav item hover:
-  background: rgba(124,58,237,0.06)
-  border-left: 3px solid rgba(124,58,237,0.3) (grows to full on active)
+  background: rgba(255,0,102,0.06)
+  border-left: 3px solid rgba(255,0,102,0.3) (grows to full on active)
   transition: 150ms ease
 
 Section label:
   Before each section label, add a 4px colored dot:
-    ANALYTICS:    dot #7C3AED
-    ADVERTISING:  dot #0891B2
+    ANALYTICS:    dot #FF0066
+    ADVERTISING:  dot #00D4AA
     INTELLIGENCE: dot #059669
   Dot size: 4px circle, margin-right 6px
 ```
@@ -388,7 +388,7 @@ function CustomTooltip({ active, payload, label }) {
 
 **Changes:**
 1. WoW change card → red top border + red icon when negative
-2. Sessions trend chart → purple fill `rgba(124,58,237,0.08)`, custom tooltip, dashed average line
+2. Sessions trend chart → purple fill `rgba(255,0,102,0.08)`, custom tooltip, dashed average line
 3. Traffic sources → horizontal bar chart, branded colors per source
 4. Top pages → add mini progress bars showing relative traffic
 
@@ -396,7 +396,7 @@ function CustomTooltip({ active, payload, label }) {
 
 **Changes:**
 1. Ranking distribution chart → correct color system (green/purple/amber/gray)
-2. Remove ALL dark maroon — replace with `#7C3AED`
+2. Remove ALL dark maroon — replace with `#FF0066`
 3. Quick Wins → amber card style, CTR in `#DC2626`
 4. Keywords table → position badges with 4-color system, clickable column headers
 
@@ -424,7 +424,7 @@ Per `META_ADS_DASHBOARD_SPEC.md` — already fully specced.
 
 **Changes:**
 1. Tab bar → segmented control style with purple active pill
-2. All save buttons → `#7C3AED` (zero blue)
+2. All save buttons → `#FF0066` (zero blue)
 3. Toggle switches → purple when active
 4. Disconnect → confirmation modal before action
 
@@ -489,7 +489,7 @@ src/app/dashboard/settings/page.tsx  → Tabs, buttons, toggle colors, confirm m
 
 ### Accessibility
 - [ ] All text/background combinations pass 4.5:1 contrast ratio
-- [ ] Every interactive element has visible `:focus-visible` ring (2px solid #7C3AED)
+- [ ] Every interactive element has visible `:focus-visible` ring (2px solid #FF0066)
 - [ ] Icon-only buttons have `aria-label`
 - [ ] Charts have text alternatives (data tables or aria descriptions)
 

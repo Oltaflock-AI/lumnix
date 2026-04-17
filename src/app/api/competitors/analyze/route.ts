@@ -29,8 +29,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Competitor not found' }, { status: 404 });
   }
 
-  // Fetch winning + top_performer ads
-  const { data: winningAds, error: adsErr } = await supabase
+  // Prefer winning + top_performer ads (≥90d). Fall back to top 30 by longevity
+  // so brand-new competitors with only short-lived ads still get a brief.
+  const { data: winners } = await supabase
     .from('competitor_ads')
     .select('*')
     .eq('competitor_id', competitor_id)
@@ -39,13 +40,36 @@ export async function POST(req: NextRequest) {
     .order('days_running', { ascending: false })
     .limit(30);
 
-  if (adsErr || !winningAds || winningAds.length === 0) {
-    return NextResponse.json({ error: 'No winning ads to analyze' }, { status: 400 });
+  let adsToAnalyze = winners ?? [];
+  let usingFallback = false;
+
+  if (adsToAnalyze.length === 0) {
+    const { data: fallback } = await supabase
+      .from('competitor_ads')
+      .select('*')
+      .eq('competitor_id', competitor_id)
+      .eq('workspace_id', workspace_id)
+      .order('days_running', { ascending: false })
+      .limit(30);
+    adsToAnalyze = fallback ?? [];
+    usingFallback = true;
   }
 
+  if (adsToAnalyze.length === 0) {
+    return NextResponse.json({ error: 'No ads to analyze' }, { status: 400 });
+  }
+
+  const winningAds = adsToAnalyze;
+
   // Build prompt payload
+  const tierLabel = (tier: string) => {
+    if (tier === 'top_performer') return 'TOP PERFORMER';
+    if (tier === 'winning') return 'WINNING';
+    return 'ACTIVE';
+  };
+
   const adsPayload = winningAds.map((ad: any, i: number) => `
-Ad #${i + 1} (Running ${ad.days_running} days — ${ad.performance_tier === 'top_performer' ? 'TOP PERFORMER' : 'WINNING'})
+Ad #${i + 1} (Running ${ad.days_running} days — ${tierLabel(ad.performance_tier)})
 Format: ${ad.ad_format || 'unknown'}
 Headline: ${ad.headline || 'none'}
 Body Copy: ${ad.ad_copy || 'none'}
@@ -69,7 +93,9 @@ CTA: ${ad.call_to_action || 'none'}
           role: 'user',
           content: `You are a senior creative strategist analyzing competitor ads to find winning patterns.
 
-Here are ${winningAds.length} ads from ${brandName} that have been running for 90+ days on Meta — meaning they are proven performers.
+${usingFallback
+  ? `Here are ${winningAds.length} of ${brandName}'s current Meta ads, ordered by longevity. None have hit the 90-day "proven performer" threshold yet, so treat this as an early read on their creative strategy rather than a pattern of proven winners.`
+  : `Here are ${winningAds.length} ads from ${brandName} that have been running for 90+ days on Meta — meaning they are proven performers.`}
 
 ${adsPayload}
 

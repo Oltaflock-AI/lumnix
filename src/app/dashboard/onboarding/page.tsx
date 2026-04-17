@@ -191,7 +191,7 @@ export default function OnboardingPage() {
   const progressBarFill: React.CSSProperties = {
     height: '100%',
     width: `${(connectedCount / PROVIDERS.length) * 100}%`,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#FF0066',
     borderRadius: 3,
     transition: 'width 400ms ease',
   };
@@ -210,7 +210,7 @@ export default function OnboardingPage() {
       <div style={containerStyle}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
           <img
-            src="/favicon.png"
+            src="/logo-mark.svg"
             alt="Lumnix"
             style={{ width: 36, height: 36, borderRadius: 8, opacity: 0.6 }}
             className="animate-pulse"
@@ -229,7 +229,7 @@ export default function OnboardingPage() {
         {/* Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
           <img
-            src="/favicon.png"
+            src="/logo-mark.svg"
             alt="Lumnix"
             style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain' }}
           />
@@ -345,7 +345,7 @@ export default function OnboardingPage() {
                         gap: 5,
                         fontSize: 12,
                         fontWeight: 600,
-                        color: '#7C3AED',
+                        color: '#FF0066',
                         padding: '6px 14px',
                       }}
                     >
@@ -363,7 +363,7 @@ export default function OnboardingPage() {
                         fontSize: 12,
                         fontWeight: 600,
                         color: '#FFFFFF',
-                        backgroundColor: '#7C3AED',
+                        backgroundColor: '#FF0066',
                         border: 'none',
                         borderRadius: 8,
                         padding: '7px 16px',
@@ -373,10 +373,10 @@ export default function OnboardingPage() {
                         transition: 'background-color 150ms, transform 100ms',
                       }}
                       onMouseEnter={e => {
-                        if (!isConnecting) e.currentTarget.style.backgroundColor = '#6D28D9';
+                        if (!isConnecting) e.currentTarget.style.backgroundColor = '#FF3385';
                       }}
                       onMouseLeave={e => {
-                        if (!isConnecting) e.currentTarget.style.backgroundColor = '#7C3AED';
+                        if (!isConnecting) e.currentTarget.style.backgroundColor = '#FF0066';
                       }}
                     >
                       {isConnecting ? (
@@ -420,7 +420,7 @@ export default function OnboardingPage() {
               fontSize: 14,
               fontWeight: 700,
               color: '#FFFFFF',
-              backgroundColor: hasAtLeastOne ? '#7C3AED' : '#CBD5E1',
+              backgroundColor: hasAtLeastOne ? '#FF0066' : '#CBD5E1',
               border: 'none',
               borderRadius: 10,
               padding: '12px 24px',
@@ -430,10 +430,10 @@ export default function OnboardingPage() {
               letterSpacing: '-0.01em',
             }}
             onMouseEnter={e => {
-              if (hasAtLeastOne) e.currentTarget.style.backgroundColor = '#6D28D9';
+              if (hasAtLeastOne) e.currentTarget.style.backgroundColor = '#FF3385';
             }}
             onMouseLeave={e => {
-              if (hasAtLeastOne) e.currentTarget.style.backgroundColor = '#7C3AED';
+              if (hasAtLeastOne) e.currentTarget.style.backgroundColor = '#FF0066';
             }}
           >
             Go to Dashboard

@@ -35,7 +35,7 @@ export function FirstInsightEmail({
         userId={user_id}
       >
         <Heading style={{
-          fontSize: '28px', fontWeight: '800', color: '#18163A',
+          fontSize: '28px', fontWeight: '800', color: '#111827',
           letterSpacing: '-0.03em', lineHeight: '1.2', margin: '0 0 14px',
           fontFamily: "'DM Sans', Arial, sans-serif",
         }}>
@@ -72,7 +72,7 @@ export function FirstInsightEmail({
   return (
     <EmailLayout previewText={previewText} userId={user_id}>
       <Heading style={{
-        fontSize: '28px', fontWeight: '800', color: '#18163A',
+        fontSize: '28px', fontWeight: '800', color: '#111827',
         letterSpacing: '-0.03em', lineHeight: '1.2', margin: '0 0 14px',
         fontFamily: "'DM Sans', Arial, sans-serif",
       }}>
@@ -102,7 +102,7 @@ export function FirstInsightEmail({
               verticalAlign: 'middle' as const,
             }}>
               <Text style={{
-                fontSize: '36px', fontWeight: '800', color: '#18163A',
+                fontSize: '36px', fontWeight: '800', color: '#111827',
                 letterSpacing: '-0.03em', margin: '0', lineHeight: '1',
                 fontFamily: "'DM Sans', Arial, sans-serif",
               }}>
@@ -123,19 +123,19 @@ export function FirstInsightEmail({
       <Section style={{
         backgroundColor: '#F4F2FF',
         border: '1px solid #DDD8FF',
-        borderLeft: '4px solid #7C3AED',
+        borderLeft: '4px solid #FF0066',
         borderRadius: '0 10px 10px 0',
         padding: '20px 22px',
         margin: '20px 0',
       }}>
         <Text style={{
-          fontSize: '10px', fontWeight: '700', color: '#7C3AED',
+          fontSize: '10px', fontWeight: '700', color: '#FF0066',
           textTransform: 'uppercase' as const, letterSpacing: '0.1em', margin: '0 0 8px',
         }}>
           {"LUMI'S INSIGHT"}
         </Text>
         <Text style={{
-          fontSize: '15px', color: '#18163A', lineHeight: '1.65',
+          fontSize: '15px', color: '#111827', lineHeight: '1.65',
           margin: '0', fontWeight: '500',
         }}>
           {insight}

@@ -52,16 +52,16 @@ Lumnix is an AI-powered marketing intelligence platform built by Oltaflock AI. I
 ### Colors
 
 ```
-Primary (all CTAs, active nav, interactive):  #7C3AED
-Primary hover:                                 #6D28D9
-Chart accent (secondary lines only):           #0891B2
+Primary (all CTAs, active nav, interactive):  #FF0066
+Primary hover:                                 #FF3385
+Chart accent (secondary lines only):           #00D4AA
 Success / positive metrics:                    #059669
 Warning / caution:                             #F59E0B
 Danger / negative metrics:                     #DC2626
 Muted / disabled:                              #94A3B8
 ```
 
-**No blue buttons anywhere.** Blue (`#0891B2`) is for chart lines only, never UI elements.
+**No blue buttons anywhere.** Blue (`#00D4AA`) is for chart lines only, never UI elements.
 
 ### CSS Variables (light/dark)
 
@@ -113,16 +113,16 @@ No Inter. No system-ui. No Arial. No fonts other than these two.
 - Dark mode background: `#0F172A`
 - Light mode background: `#FFFFFF` with `1px solid #E2E8F0` right border
 - Nav default text: `#CBD5E1` (dark) / `#374151` (light)
-- Nav active state: `3px solid #7C3AED` left border + `rgba(124,58,237,0.18)` background + `#FFFFFF` text
+- Nav active state: `3px solid #FF0066` left border + `rgba(255,0,102,0.18)` background + `#FFFFFF` text
 - Section labels (ANALYTICS, ADVERTISING, INTELLIGENCE): DM Sans 600 10px uppercase, `#6B7280`
 
 ### Charts (global rules)
 
 ```
-Primary line/bar:     #7C3AED
-Primary fill area:    rgba(124, 58, 237, 0.06)
-Secondary line:       #0891B2 (dashed, strokeDasharray="4 3")
-Secondary fill:       rgba(8, 145, 178, 0.04)
+Primary line/bar:     #FF0066
+Primary fill area:    rgba(255, 0, 102, 0.06)
+Secondary line:       #00D4AA (dashed, strokeDasharray="4 3")
+Secondary fill:       rgba(0, 212, 170, 0.04)
 Success metric:       #059669
 Danger metric:        #DC2626
 Neutral:              #94A3B8
@@ -203,13 +203,13 @@ All spec files are in the project outputs directory. Read them completely before
 
 ```
 Primary (Save, Connect, CTA):
-  height 40px · padding 0 20px · background #7C3AED · color #fff
-  border-radius 8px · DM Sans 600 14px · hover: #6D28D9
+  height 40px · padding 0 20px · background #FF0066 · color #fff
+  border-radius 8px · DM Sans 600 14px · hover: #FF3385
 
 Secondary/outline (Sync Now, Upload, Copy):
   height 40px · padding 0 16px · transparent bg
   border 1px solid var(--border-default) · color var(--text-secondary)
-  border-radius 8px · hover: var(--bg-card-secondary) + border #7C3AED
+  border-radius 8px · hover: var(--bg-card-secondary) + border #FF0066
 
 Danger/outline (Disconnect, Remove):
   height 40px · padding 0 16px · transparent bg
@@ -240,9 +240,9 @@ Metric card:
   sub-text: DM Sans 400 12px var(--text-muted)
 
 Top performer strip:
-  background rgba(124,58,237,0.04)
-  border 1px solid rgba(124,58,237,0.2)
-  border-left 3px solid #7C3AED
+  background rgba(255,0,102,0.04)
+  border 1px solid rgba(255,0,102,0.2)
+  border-left 3px solid #FF0066
   border-radius 12px
 ```
 
@@ -271,7 +271,7 @@ Empty state layout:
   flex-direction column · align-items center · justify-content center
   min-height 200px · text-align center · padding 40px
 
-Icon container: 72px circle · bg rgba(124,58,237,0.1) · icon 32px color #7C3AED
+Icon container: 72px circle · bg rgba(255,0,102,0.1) · icon 32px color #FF0066
 Title: Plus Jakarta Sans 700 20px var(--text-primary) · margin-bottom 8px
 Description: DM Sans 400 14px var(--text-secondary) · max-width 360px · line-height 1.6
 CTA button: Primary style · margin-top 24px
@@ -395,7 +395,7 @@ Key facts:
 ### Analytics (GA4)
 - WoW decline card: red left border 3px + faint red bg
 - Sessions trend: purple fill + dashed average reference line
-- Traffic sources: horizontal bar chart, Google=#7C3AED CPC=#0891B2 Direct=#059669
+- Traffic sources: horizontal bar chart, Google=#FF0066 CPC=#00D4AA Direct=#059669
 - Top pages table: 10 rows, mini progress bar under each page name
 
 ### SEO (GSC)
@@ -417,14 +417,14 @@ Key facts:
 - Full spec in `META_ADS_DASHBOARD_SPEC.md`
 
 ### AI Assistant
-- Insight cards: 3px left border — WIN=#059669, TIP=#7C3AED, OPPORTUNITY=#F59E0B, WARNING=#DC2626
+- Insight cards: 3px left border — WIN=#059669, TIP=#FF0066, OPPORTUNITY=#F59E0B, WARNING=#DC2626
 - Chat bubbles: user=purple bg/white text, AI=var(--bg-card-secondary)/var(--text-primary)
 - Empty chat: 4 quick-action prompt buttons in 2×2 grid
 
 ### Competitor Ad Spy
 - Stat cards: icon circle + number + sub-label
 - Empty state: proper onboarding with "How it works" 4-step flow
-- AD LIBRARY badge: rgba(124,58,237,0.1) bg, #7C3AED text
+- AD LIBRARY badge: rgba(255,0,102,0.1) bg, #FF0066 text
 
 ---
 
@@ -520,7 +520,7 @@ Phase 1 is complete when every item below is checked:
 | Growth | ₹6,499/mo | All integrations, 1-year retention, 15 members, AI chat, white-label, competitor tracking |
 | Agency | ₹16,499/mo | Unlimited everything + multi-workspace, priority support, API access |
 
-Growth card gets "Most Popular" badge in `#7C3AED`. All 4 plans on one row: `grid-template-columns: repeat(4, 1fr)`.
+Growth card gets "Most Popular" badge in `#FF0066`. All 4 plans on one row: `grid-template-columns: repeat(4, 1fr)`.
 
 ---
 

@@ -142,9 +142,9 @@ User types message → /api/chat (POST)
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| Primary | `#7C3AED` | CTAs, active nav, links |
-| Primary Hover | `#6D28D9` | Button hover |
-| Accent | `#0891B2` | Charts, info states |
+| Primary | `#FF0066` | CTAs, active nav, links |
+| Primary Hover | `#FF3385` | Button hover |
+| Accent | `#00D4AA` | Charts, info states |
 | Sidebar BG | `#0F172A` | Sidebar, header |
 | Card BG | `#1E293B` | Cards, panels |
 | Page BG | `#F8FAFC` | Light mode canvas |

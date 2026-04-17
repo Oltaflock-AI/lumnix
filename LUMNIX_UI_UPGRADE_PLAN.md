@@ -12,10 +12,10 @@ After reviewing every page of the live app, here are the specific issues grouped
 
 | ID | Page | Issue | What to fix |
 |---|---|---|---|
-| C1 | Settings > Brand | "Save Brand Settings" button is BLUE (#3b82f6) | Change to `bg-[#7C3AED]` |
-| C2 | Settings > Security | "Update Password" and "Send Password Reset Email" buttons are BLUE | Change all to `#7C3AED` |
-| C3 | Settings > Brand | Brand color picker shows #3b82f6 as selected/default | The default brand color should be `#7C3AED`, not blue |
-| C4 | Reports | "Generate & Download" full-width button is BLUE | Change to `#7C3AED` |
+| C1 | Settings > Brand | "Save Brand Settings" button is BLUE (#3b82f6) | Change to `bg-[#FF0066]` |
+| C2 | Settings > Security | "Update Password" and "Send Password Reset Email" buttons are BLUE | Change all to `#FF0066` |
+| C3 | Settings > Brand | Brand color picker shows #3b82f6 as selected/default | The default brand color should be `#FF0066`, not blue |
+| C4 | Reports | "Generate & Download" full-width button is BLUE | Change to `#FF0066` |
 | C5 | Dashboard | AI Anomalies shows 13 items all at once — overwhelming and repetitive | Collapse to 3 visible + "Show 10 more" |
 | C6 | Meta Ads | 24 campaigns at ₹0 spend listed one by one — unreadable clutter | Collapse zero-spend rows behind "Show 24 inactive campaigns ↓" |
 
@@ -27,7 +27,7 @@ After reviewing every page of the live app, here are the specific issues grouped
 | H2 | Dashboard | AI Anomalies: all 13 are "WARNING" with near-identical text — no hierarchy | Group by severity: Critical first, then Warning, then Info |
 | H3 | Dashboard | "Quick win opportunities will appear here when data is available" empty state is a bare italic line in the middle of a white card | Replace with proper empty state: icon + title + description |
 | H4 | Analytics | Sessions Trend chart has barely any data (30 sessions) — flat line doesn't communicate growth well | Add avg reference line + annotate the trend direction clearly |
-| H5 | Analytics | Traffic Sources bar chart uses generic gray for both "(direct)" and "(none)" bars — no color differentiation | Apply distinct colors: Google=#7C3AED, direct=#0891B2, organic=#059669, none=#94A3B8 |
+| H5 | Analytics | Traffic Sources bar chart uses generic gray for both "(direct)" and "(none)" bars — no color differentiation | Apply distinct colors: Google=#FF0066, direct=#00D4AA, organic=#059669, none=#94A3B8 |
 | H6 | SEO | Ranking Distribution bars look correct (green for #1-3) but the `#4-10` bar is missing — shows 0 but still renders space | Show a "0" placeholder bar with a light fill when count is zero |
 | H7 | SEO | "No quick wins found — your CTRs look healthy!" empty state is just text. Positive feedback deserves a better visual treatment | Green success state with checkmark icon |
 | H8 | AI Assistant > Insights | Cards look good but the "action" text at bottom (purple italic) is too small and easily missed | Make action text 13px, add arrow icon, increase contrast |
@@ -38,14 +38,14 @@ After reviewing every page of the live app, here are the specific issues grouped
 
 | ID | Page | Issue | What to fix |
 |---|---|---|---|
-| M1 | All pages | Section labels in sidebar (ANALYTICS, ADVERTISING, INTELLIGENCE) render correctly but the section dot colors don't match the design spec | ANALYTICS=`#7C3AED`, ADVERTISING=`#0891B2`, INTELLIGENCE=`#059669` |
+| M1 | All pages | Section labels in sidebar (ANALYTICS, ADVERTISING, INTELLIGENCE) render correctly but the section dot colors don't match the design spec | ANALYTICS=`#FF0066`, ADVERTISING=`#00D4AA`, INTELLIGENCE=`#059669` |
 | M2 | Dashboard | "Data Sources" section shows 3 sources with green dots and timestamps — compact and useful but visual style is too plain | Add source logo color circles, show "Healthy" vs "Stale" status more clearly |
 | M3 | Dashboard | "Cross-Channel" section just says "Connect 1 more source for deeper cross-channel insights" with no visual interest | Add a subtle illustrated state showing what cross-channel looks like when active |
 | M4 | Dashboard | "AI Insights" section at the bottom uses red dot (●) for all items — the dot color should match insight severity | Red=WARNING, Amber=OPPORTUNITY, Purple=TIP |
 | M5 | Meta Ads | Account switcher dropdown (Vippy Soya / Khush Mutha) is styled correctly but the dropdown shadow and border need the purple-tinted border style | Border: `#E4E2F4`, shadow: `0 8px 32px rgba(91,33,182,0.12)` |
 | M6 | Billing | Plan cards look correct but the "Included" button on Free/Starter/Growth plans is extremely low contrast (near-white on white) | Change "Included" to a muted text label, not a button |
 | M7 | Billing | The "Current Plan" button on Agency card is disabled gray — hard to distinguish from normal state | Add "✓ Current Plan" with a green checkmark |
-| M8 | Settings > General | "Save Workspace Name" button style is purple but washed out (looks like opacity 0.6) | Ensure full `#7C3AED` opacity on Save buttons |
+| M8 | Settings > General | "Save Workspace Name" button style is purple but washed out (looks like opacity 0.6) | Ensure full `#FF0066` opacity on Save buttons |
 | M9 | AI Assistant > Chat | Empty state shows "What can I help you with?" with 4 prompt chips — chips look OK but feel small | Make prompt chips 44px height minimum, add icon left of each chip |
 | M10 | AI Assistant > Chat | "AI has access to: META ADS · GA4 · GSC" info bar at top is visually disconnected | Style as colored pills per source (Meta=blue, GA4=orange, GSC=green) |
 
@@ -96,7 +96,7 @@ const visibleAnomalies = expanded ? anomalies : anomalies.slice(0, 3)
 // Each row: left border color = severity color
 // ● CRITICAL = 3px solid #DC2626
 // ● WARNING  = 3px solid #F59E0B
-// ● INFO     = 3px solid #0891B2
+// ● INFO     = 3px solid #00D4AA
 ```
 
 **Issue 3: AI Insights section at bottom — semantic dot colors**
@@ -106,7 +106,7 @@ const visibleAnomalies = expanded ? anomalies : anomalies.slice(0, 3)
 const dotColor = {
   'WARNING': '#DC2626',
   'OPPORTUNITY': '#F59E0B', 
-  'TIP': '#7C3AED',
+  'TIP': '#FF0066',
   'WIN': '#059669',
 }
 
@@ -155,8 +155,8 @@ const SOURCE_COLORS = {
 // Fix: map source names to brand colors
 
 const sourceColors = {
-  '(direct)': '#0891B2',
-  'google': '#7C3AED',
+  '(direct)': '#00D4AA',
+  'google': '#FF0066',
   'organic': '#059669',
   '(none)': '#94A3B8',
   'referral': '#F59E0B',
@@ -437,7 +437,7 @@ The one alert showing ("Average keyword position is below page 2") looks too pla
 // Fix:
 <button style={{
   width: '100%',
-  background: '#7C3AED',  // NOT BLUE
+  background: '#FF0066',  // NOT BLUE
   color: '#fff',
   padding: '14px 24px',
   borderRadius: 10,
@@ -541,22 +541,22 @@ The one alert showing ("Average keyword position is below page 2") looks too pla
 Global search across all settings tab components:
 ```
 Find: bg-blue-600, bg-blue-500, #3b82f6, #2563eb, bg-[#3b82f6]
-Replace with: bg-[#7C3AED] or style={{ background: '#7C3AED' }}
+Replace with: bg-[#FF0066] or style={{ background: '#FF0066' }}
 ```
 
 Specific buttons to fix:
 - Settings > General: "Save Workspace Name" → already purple but check opacity
-- Settings > Security: "Update Password" → change from blue to `#7C3AED`
-- Settings > Security: "Send Password Reset Email" → change from blue to outline style with `#7C3AED` border
-- Settings > Brand: "Save Brand Settings" → change from blue to `#7C3AED`
-- Settings > Brand: default brand color should be `#7C3AED` not `#3b82f6`
+- Settings > Security: "Update Password" → change from blue to `#FF0066`
+- Settings > Security: "Send Password Reset Email" → change from blue to outline style with `#FF0066` border
+- Settings > Brand: "Save Brand Settings" → change from blue to `#FF0066`
+- Settings > Brand: default brand color should be `#FF0066` not `#3b82f6`
 
 **Issue 2: Brand color picker default**
 
 ```tsx
 // In the Brand settings component, find the default/initial color value
 // Change from: '#3b82f6' (or 'blue' or any hex blue)
-// To: '#7C3AED'
+// To: '#FF0066'
 
 // The color swatches also include a blue one — that's fine to keep as an option
 // But the SELECTED state should default to purple
@@ -688,7 +688,7 @@ export function EmptyState({ icon, title, description, action, variant = 'defaul
       </p>
       {action && (
         <button style={{
-          background: '#7C3AED', color: '#fff',
+          background: '#FF0066', color: '#fff',
           border: 'none', borderRadius: 9,
           padding: '10px 20px',
           fontSize: 13, fontWeight: 600,
@@ -776,9 +776,9 @@ export function PageHeader({ icon, iconBg = '#EDE9FF', title, description, badge
 Execute in this exact order to avoid breaking changes:
 
 ### Phase 1: Critical bug fixes (1 session, ~45 mins)
-1. Fix ALL blue buttons across all settings tabs → `#7C3AED`
-2. Fix brand color default from `#3b82f6` to `#7C3AED`
-3. Fix Reports "Generate & Download" button → `#7C3AED`
+1. Fix ALL blue buttons across all settings tabs → `#FF0066`
+2. Fix brand color default from `#3b82f6` to `#FF0066`
+3. Fix Reports "Generate & Download" button → `#FF0066`
 4. Fix Billing "Included" text and "Current Plan" states
 
 ### Phase 2: Data readability (1 session, ~90 mins)

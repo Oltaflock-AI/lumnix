@@ -7,7 +7,7 @@ import { IntelCard } from './IntelCard';
 import { ScrollReveal } from './ScrollReveal';
 
 /* Mini sparkline SVG — pure visual, no library needed */
-function Sparkline({ color = '#7C3AED', data = [3,5,4,7,6,8,7,9,8,11,10,14,12,15] }: { color?: string; data?: number[] }) {
+function Sparkline({ color = '#FF0066', data = [3,5,4,7,6,8,7,9,8,11,10,14,12,15] }: { color?: string; data?: number[] }) {
   const id = useId();
   const max = Math.max(...data);
   const min = Math.min(...data);
@@ -77,15 +77,15 @@ export function Hero() {
         </div>
 
         {/* 3D Intel Card */}
-        <ScrollReveal delay={0.2} className="flex justify-center">
-          <IntelCard className="wr-float">
-            <div className="wr-glass wr-intel-card">
+        <ScrollReveal delay={0.2} className="wr-intel-wrap">
+          <IntelCard>
+            <div className="wr-intel-card">
               {/* Top KPI strip */}
               <div className="wr-kpi-strip">
                 {[
                   { label: 'Sessions', value: '9,511', change: '+12%', color: '#34D399', data: [4,5,4,6,5,7,6,8,7,9,8,10,9,11] },
-                  { label: 'Clicks', value: '214', change: '+8%', color: '#7C3AED', data: [2,3,2,4,3,5,4,5,4,6,5,6,5,7] },
-                  { label: 'ROAS', value: '4.2x', change: '+23%', color: '#0891B2', data: [2,2,3,3,3,4,3,4,4,4,5,4,5,5] },
+                  { label: 'Clicks', value: '214', change: '+8%', color: '#FF0066', data: [2,3,2,4,3,5,4,5,4,6,5,6,5,7] },
+                  { label: 'ROAS', value: '4.2x', change: '+23%', color: '#00D4AA', data: [2,2,3,3,3,4,3,4,4,4,5,4,5,5] },
                 ].map((kpi, i) => (
                   <div key={kpi.label} className="wr-kpi-cell" style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
                     <div className="wr-kpi-label">{kpi.label}</div>
@@ -103,14 +103,14 @@ export function Hero() {
                 <div className="wr-intel-header">
                   <span className="wr-label" style={{ fontSize: 10 }}>COMPETITOR INTEL</span>
                   <div className="wr-live-badge">
-                    <span className="wr-pulse-dot" />
+                    <span className="wr-pulse-dot wr-pulse-dot--green" />
                     LIVE
                   </div>
                 </div>
 
                 <div className="wr-intel-competitor">
                   <div className="wr-intel-icon">
-                    <BarChart3 size={18} color="#A78BFA" />
+                    <BarChart3 size={18} color="#FF85B5" />
                   </div>
                   <div>
                     <div className="wr-intel-name">Mamaearth</div>
@@ -126,7 +126,7 @@ export function Hero() {
                     { Icon: Zap, val: '₹0.37', label: 'CPC' },
                   ].map(s => (
                     <div key={s.label} className="wr-intel-stat">
-                      <s.Icon size={13} color="#A78BFA" style={{ margin: '0 auto 4px' }} />
+                      <s.Icon size={13} color="#FF85B5" style={{ margin: '0 auto 4px' }} />
                       <div className="wr-intel-stat-val">{s.val}</div>
                       <div className="wr-intel-stat-label">{s.label}</div>
                     </div>

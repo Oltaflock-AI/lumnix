@@ -356,8 +356,8 @@ const useCountUp = (target, duration = 2000) => {
 .hero-bg {
   background-color: #07051A;
   background-image:
-    radial-gradient(circle at 20% 50%, rgba(124,58,237,0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(8,145,178,0.08) 0%, transparent 40%);
+    radial-gradient(circle at 20% 50%, rgba(255,0,102,0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0,212,170,0.08) 0%, transparent 40%);
 }
 
 /* Subtle grain overlay */
@@ -384,22 +384,22 @@ Background (sections): #0D0A24  (slightly lighter)
 Background (cards):    rgba(255,255,255,0.04) with backdrop-blur
 Background (alt):      #F7F6FE  (use for light sections — sharp contrast)
 Card border:           rgba(255,255,255,0.08)
-Card border hover:     rgba(124,58,237,0.4)
+Card border hover:     rgba(255,0,102,0.4)
 
-Primary CTA:           #7C3AED
-Primary CTA hover:     #6D28D9
-CTA glow:              0 0 40px rgba(124,58,237,0.3)
+Primary CTA:           #FF0066
+Primary CTA hover:     #FF3385
+CTA glow:              0 0 40px rgba(255,0,102,0.3)
 
 Text (main):           #FFFFFF
 Text (secondary):      rgba(255,255,255,0.65)
 Text (muted):          rgba(255,255,255,0.35)
-Text (accent):         #A78BFA  (light purple — for highlights)
+Text (accent):         #FF85B5  (light purple — for highlights)
 
 Metric color:          #34D399  (green — positive numbers)
 Danger/competitor:     #F87171  (soft red)
 Info:                  #60A5FA  (blue — data indicators)
 
-Section dividers:      linear-gradient(to right, transparent, rgba(124,58,237,0.3), transparent)
+Section dividers:      linear-gradient(to right, transparent, rgba(255,0,102,0.3), transparent)
 ```
 
 ---
@@ -448,13 +448,13 @@ Center: Nav links (Features, Pricing, Changelog)
 Right: "Get early access" CTA button
 
 CTA button:
-  background: #7C3AED
+  background: #FF0066
   border: 1px solid rgba(255,255,255,0.1)
-  box-shadow: 0 0 20px rgba(124,58,237,0.25)
+  box-shadow: 0 0 20px rgba(255,0,102,0.25)
   padding: 10px 20px
   border-radius: 10px
   font: DM Sans 600 14px
-  hover: background #6D28D9, box-shadow 0 0 32px rgba(124,58,237,0.4)
+  hover: background #FF3385, box-shadow 0 0 32px rgba(255,0,102,0.4)
 
 Scroll behavior: after 100px scroll, increase bg opacity and add subtle shadow
 ```
@@ -468,14 +468,14 @@ This is the most important element. It must feel like a real intelligence briefi
 ```
 Card dimensions: 360px × 220px
 Background: rgba(255,255,255,0.04)
-Border: 1px solid rgba(124,58,237,0.3)
+Border: 1px solid rgba(255,0,102,0.3)
 Border-radius: 16px
 Backdrop-blur: 20px
-Box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,58,237,0.1)
+Box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,0,102,0.1)
 
 Card content:
   Top row:
-    "COMPETITOR INTEL" badge — 10px uppercase, color #A78BFA, letter-spacing 0.1em
+    "COMPETITOR INTEL" badge — 10px uppercase, color #FF85B5, letter-spacing 0.1em
     Live dot (pulsing green) + "LIVE"
 
   Middle:

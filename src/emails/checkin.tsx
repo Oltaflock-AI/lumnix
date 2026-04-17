@@ -25,7 +25,7 @@ export function CheckinEmail({ name, user_id }: CheckinEmailProps) {
       userId={user_id}
     >
       <Heading style={{
-        fontSize: '26px', fontWeight: '800', color: '#18163A',
+        fontSize: '26px', fontWeight: '800', color: '#111827',
         letterSpacing: '-0.02em', margin: '0 0 20px',
         fontFamily: "'DM Sans', Arial, sans-serif",
       }}>
@@ -57,7 +57,7 @@ export function CheckinEmail({ name, user_id }: CheckinEmailProps) {
             </Column>
             <Column>
               <Text style={{ fontSize: '14px', margin: '0', lineHeight: '1.6' }}>
-                <span style={{ fontWeight: '700', color: '#18163A' }}>{item.text}</span>
+                <span style={{ fontWeight: '700', color: '#111827' }}>{item.text}</span>
                 <span style={{ color: '#6B7280' }}> — {item.desc}</span>
               </Text>
             </Column>
@@ -67,7 +67,7 @@ export function CheckinEmail({ name, user_id }: CheckinEmailProps) {
 
       <Text style={{ fontSize: '15px', color: '#374151', lineHeight: '1.7', margin: '0 0 20px' }}>
         {"If you haven't connected your data sources yet, here's a direct link: "}
-        <Link href={settingsUrl} style={{ color: '#7C3AED', fontWeight: '600' }}>
+        <Link href={settingsUrl} style={{ color: '#FF0066', fontWeight: '600' }}>
           {"Connect in Settings →"}
         </Link>
       </Text>
@@ -79,7 +79,7 @@ export function CheckinEmail({ name, user_id }: CheckinEmailProps) {
       <Hr style={{ border: 'none', borderTop: '1px solid #EAE8FF', margin: '0 0 20px' }} />
 
       {/* Signature */}
-      <Text style={{ fontSize: '14px', color: '#18163A', margin: '0 0 4px', fontWeight: '600' }}>
+      <Text style={{ fontSize: '14px', color: '#111827', margin: '0 0 4px', fontWeight: '600' }}>
         — Khush
       </Text>
       <Text style={{ fontSize: '13px', color: '#6B7280', lineHeight: '1.6', margin: '0 0 24px' }}>

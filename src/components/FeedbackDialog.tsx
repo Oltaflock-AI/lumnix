@@ -94,7 +94,7 @@ export function FeedbackDialog({ open, onClose, workspaceId, workspaceName, user
               <div role="alert" style={{ marginTop: 10, padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#EF4444', fontSize: 13 }}>{error}</div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 14 }}>
-              <a href={mailtoFallback} style={{ fontSize: 12, color: isDark ? '#8B88B8' : '#6B7280', textDecoration: 'underline' }}>Email instead</a>
+              <a href={mailtoFallback} style={{ fontSize: 12, color: isDark ? '#6B7280' : '#6B7280', textDecoration: 'underline' }}>Email instead</a>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={onClose} style={{ padding: '8px 16px', borderRadius: 8, border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E2E8F0', background: 'transparent', color: isDark ? '#CBD5E1' : '#374151', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
                 <button

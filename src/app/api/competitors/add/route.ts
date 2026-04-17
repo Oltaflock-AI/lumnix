@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { checkPlanLimit } from '@/lib/plan-limits';
 import { safeFetchUrl } from '@/lib/url-guard';
@@ -62,13 +62,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 
-  // Trigger first scrape asynchronously
+  // Trigger first scrape asynchronously — runs after response sent
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  fetch(`${appUrl}/api/competitors/scrape`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ competitor_id: data.id, workspace_id }),
-  }).catch(() => {});
+  after(async () => {
+    try {
+      await fetch(`${appUrl}/api/competitors/scrape`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ competitor_id: data.id, workspace_id }),
+      });
+    } catch (e) {
+      console.error('Scrape trigger failed:', e);
+    }
+  });
 
   return NextResponse.json({ competitor: data });
 }

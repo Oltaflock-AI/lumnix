@@ -46,10 +46,10 @@ Display: flex, align-items: center, gap: 10px
 Meta icon:
   SVG circle-with-infinity Meta logo or use a placeholder circle
   Width/height: 28px
-  Background: rgba(124,58,237,0.1)
+  Background: rgba(255,0,102,0.1)
   Border-radius: 8px
   Padding: 4px
-  Icon color: #7C3AED
+  Icon color: #FF0066
 
 Page title "Meta Ads":
   Font: Plus Jakarta Sans 700 22px
@@ -85,12 +85,12 @@ Sync Now button:
   Height: 34px
   Padding: 0 14px
   Background: transparent
-  Border: 1px solid #7C3AED
+  Border: 1px solid #FF0066
   Border-radius: 8px
-  Color: #7C3AED
+  Color: #FF0066
   Font: DM Sans 500 13px
   Icon: refresh SVG 13px, left of text, gap 5px
-  Hover: background rgba(124,58,237,0.06)
+  Hover: background rgba(255,0,102,0.06)
   On click: trigger POST /api/sync/meta-ads, show spinner on icon, disable button during sync
   After sync: update last_sync_at badge, re-fetch all data
 ```
@@ -118,7 +118,7 @@ Container:
 User icon (left):
   SVG person icon
   Size: 16px
-  Color: #7C3AED
+  Color: #FF0066
 
 Account name:
   Font: DM Sans 600 14px
@@ -131,7 +131,7 @@ Account ID + currency:
 
 "Switch account ▾" (right, margin-left: auto):
   Font: DM Sans 500 12px
-  Color: #7C3AED
+  Color: #FF0066
   Cursor: pointer
   On click: show dropdown with all connected Meta ad accounts
   Hover: text-decoration underline
@@ -162,7 +162,7 @@ Dropdown (when open):
 
     Account name: DM Sans 500 14px var(--text-primary)
     Account ID + currency: DM Sans 400 12px var(--text-muted)
-    Active account: show checkmark ✓ on right in #7C3AED
+    Active account: show checkmark ✓ on right in #FF0066
 
   "Cancel" option:
     Padding: 8px 12px
@@ -225,7 +225,7 @@ Trend indicator (optional, below sub-text):
 - Value: `₹X,XXX` — sum of spend across all campaigns in selected date range
 - Sub-text: "Last [N] days"
 - Trend: % change vs previous period (same number of days)
-- Icon (top right): dollar sign SVG, 18px, in a `28px` square, background `rgba(124,58,237,0.1)`, color `#7C3AED`, border-radius `6px`
+- Icon (top right): dollar sign SVG, 18px, in a `28px` square, background `rgba(255,0,102,0.1)`, color `#FF0066`, border-radius `6px`
 
 **Card 2: Impressions**
 - Label: "IMPRESSIONS"
@@ -300,8 +300,8 @@ Header row (flex, space-between):
     Each item: flex row, gap 5px, align-items center
       Dot: 8px circle
       Text: DM Sans 400 12px var(--text-secondary)
-    Item 1: dot color #7C3AED, text "Spend"
-    Item 2: dot color #0891B2, dashed line indicator, text "Clicks"
+    Item 1: dot color #FF0066, text "Spend"
+    Item 2: dot color #00D4AA, dashed line indicator, text "Clicks"
 
 Chart:
   Type: Line chart (Recharts LineChart or Chart.js)
@@ -309,14 +309,14 @@ Chart:
   Container: position relative, height 160px, margin-top 14px
 
   Spend line:
-    Color: #7C3AED
+    Color: #FF0066
     Stroke-width: 2
-    Fill area: rgba(124,58,237,0.06)
+    Fill area: rgba(255,0,102,0.06)
     Smooth curve (tension 0.4)
     No dots on data points
 
   Clicks line:
-    Color: #0891B2
+    Color: #00D4AA
     Stroke-width: 2
     Stroke-dasharray: 4 3
     No fill
@@ -407,17 +407,17 @@ This is a special highlighted row shown ABOVE the main campaigns table. It alway
 
 ```
 Container:
-  Background: rgba(124,58,237,0.04)
-  Border: 1px solid rgba(124,58,237,0.2)
+  Background: rgba(255,0,102,0.04)
+  Border: 1px solid rgba(255,0,102,0.2)
   Border-radius: 12px
   Overflow: hidden
 
 Top label bar:
   Padding: 10px 18px 8px
-  Border-bottom: 1px solid rgba(124,58,237,0.1)
+  Border-bottom: 1px solid rgba(255,0,102,0.1)
   Display: flex, align-items center, gap 6px
   Text: "TOP PERFORMER BY SPEND"
-  Font: DM Sans 600 11px #7C3AED
+  Font: DM Sans 600 11px #FF0066
   Text-transform: uppercase
   Letter-spacing: 0.06em
 
@@ -500,9 +500,9 @@ Header bar:
       Hover: background var(--bg-card-secondary)
 
     Active filter:
-      Background: #7C3AED
+      Background: #FF0066
       Color: #FFFFFF
-      Border-color: #7C3AED
+      Border-color: #FF0066
 
     Filters:
       "All (25)" — shows all campaigns
@@ -539,7 +539,7 @@ Header bar:
     Hover: color var(--text-secondary)
 
   Sort indicator:
-    Active sorted column: color #7C3AED, show ▼ or ▲
+    Active sorted column: color #FF0066, show ▼ or ▲
     Other sortable columns: show ↕ on hover
 ```
 
@@ -552,9 +552,9 @@ Each row:
   Hover: background var(--bg-card-secondary)
 
   Top performer row (highest spend):
-    Background: rgba(124,58,237,0.04)
-    Left border: 3px solid #7C3AED
-    Hover: rgba(124,58,237,0.07)
+    Background: rgba(255,0,102,0.04)
+    Left border: 3px solid #FF0066
+    Hover: rgba(255,0,102,0.07)
 
   Last row: no border-bottom
 
@@ -688,7 +688,7 @@ Clicking new column: sorts by that column desc
 Sort indicator:
   ▼ = descending (current)
   ▲ = ascending
-  Show on active column header, color #7C3AED
+  Show on active column header, color #FF0066
 
 Sorting is client-side only (data already loaded)
 ```
@@ -750,11 +750,11 @@ Container: flex column, align-items center, justify-content center, min-height 4
 
 Icon container:
   Width: 72px, height: 72px
-  Background: rgba(124,58,237,0.1)
+  Background: rgba(255,0,102,0.1)
   Border-radius: 16px
   Display flex, align-items center, justify-content center
   Margin-bottom: 20px
-  Meta icon SVG: 32px, color #7C3AED
+  Meta icon SVG: 32px, color #FF0066
 
 Title: "Connect Meta Ads"
   Font: Plus Jakarta Sans 700 20px var(--text-primary)
@@ -768,7 +768,7 @@ Description:
   Text: "Link your Facebook and Instagram ad accounts to track campaign performance, spend, ROAS, and get AI-powered optimization recommendations."
 
 Button:
-  Primary style: background #7C3AED, color white, height 42px, padding 0 20px, border-radius 8px
+  Primary style: background #FF0066, color white, height 42px, padding 0 20px, border-radius 8px
   Font: DM Sans 600 14px
   Icon: settings SVG 16px, gap 8px
   Text: "Connect in Settings"
@@ -838,7 +838,7 @@ Dark mode:
 --text-muted: #94A3B8
 ```
 
-All colors on this page must use these variables — no hardcoded hex values for backgrounds, text, or borders (except brand purple `#7C3AED` and semantic colors for status badges and trend indicators).
+All colors on this page must use these variables — no hardcoded hex values for backgrounds, text, or borders (except brand purple `#FF0066` and semantic colors for status badges and trend indicators).
 
 ---
 
@@ -864,4 +864,4 @@ All colors on this page must use these variables — no hardcoded hex values for
 - [ ] Not connected state shows with correct connect CTA
 - [ ] All responsive breakpoints work correctly
 - [ ] Dark mode and light mode both render correctly using CSS variables
-- [ ] No blue buttons or accents — only `#7C3AED` and semantic greens/reds
+- [ ] No blue buttons or accents — only `#FF0066` and semantic greens/reds

@@ -17,7 +17,7 @@ export function FeatureSpotlightEmail({ name, user_id }: FeatureSpotlightEmailPr
       userId={user_id}
     >
       <Heading style={{
-        fontSize: '28px', fontWeight: '800', color: '#18163A',
+        fontSize: '28px', fontWeight: '800', color: '#111827',
         letterSpacing: '-0.03em', lineHeight: '1.2', margin: '0 0 14px',
         fontFamily: "'DM Sans', Arial, sans-serif",
       }}>
@@ -31,19 +31,19 @@ export function FeatureSpotlightEmail({ name, user_id }: FeatureSpotlightEmailPr
       <Section style={{
         backgroundColor: '#FAFAFE',
         border: '1px solid #EAE8FF',
-        borderLeft: '4px solid #7C3AED',
+        borderLeft: '4px solid #FF0066',
         borderRadius: '0 12px 12px 0',
         padding: '22px 26px',
         marginBottom: '14px',
       }}>
         <Text style={{
-          fontSize: '10px', fontWeight: '800', color: '#7C3AED',
+          fontSize: '10px', fontWeight: '800', color: '#FF0066',
           textTransform: 'uppercase' as const, letterSpacing: '0.12em', margin: '0 0 8px',
         }}>
           FEATURE 01
         </Text>
         <Heading as="h2" style={{
-          fontSize: '20px', fontWeight: '800', color: '#18163A',
+          fontSize: '20px', fontWeight: '800', color: '#111827',
           letterSpacing: '-0.02em', margin: '0 0 10px', lineHeight: '1.2',
         }}>
           Competitor Ad Spy
@@ -54,7 +54,7 @@ export function FeatureSpotlightEmail({ name, user_id }: FeatureSpotlightEmailPr
           {"Then our AI tells you exactly what hooks, pain points, and offers they're using, "}
           {"so you know what to make before you spend a rupee on creative."}
         </Text>
-        <Link href="https://lumnix-ai.vercel.app/dashboard/competitors" style={{ color: '#7C3AED', fontSize: '14px', fontWeight: '600' }}>
+        <Link href="https://lumnix-ai.vercel.app/dashboard/competitors" style={{ color: '#FF0066', fontSize: '14px', fontWeight: '600' }}>
           {"Try it →"}
         </Link>
       </Section>
@@ -77,7 +77,7 @@ export function FeatureSpotlightEmail({ name, user_id }: FeatureSpotlightEmailPr
           FEATURE 02
         </Text>
         <Heading as="h2" style={{
-          fontSize: '20px', fontWeight: '800', color: '#18163A',
+          fontSize: '20px', fontWeight: '800', color: '#111827',
           letterSpacing: '-0.02em', margin: '0 0 10px', lineHeight: '1.2',
         }}>
           Ask Lumi anything
@@ -94,7 +94,7 @@ export function FeatureSpotlightEmail({ name, user_id }: FeatureSpotlightEmailPr
         <div style={{ marginBottom: '12px' }}>
           {/* User bubble - right aligned */}
           <div style={{
-            background: '#7C3AED', color: '#FFFFFF',
+            background: '#FF0066', color: '#FFFFFF',
             padding: '10px 16px', borderRadius: '18px 18px 4px 18px',
             fontSize: '14px', lineHeight: '1.5',
             display: 'inline-block', maxWidth: '85%',
@@ -106,7 +106,7 @@ export function FeatureSpotlightEmail({ name, user_id }: FeatureSpotlightEmailPr
           <div style={{ clear: 'both' as const }} />
           {/* Lumi bubble - left aligned */}
           <div style={{
-            background: '#F4F2FF', color: '#18163A',
+            background: '#F4F2FF', color: '#111827',
             padding: '10px 16px', borderRadius: '18px 18px 18px 4px',
             fontSize: '13px', lineHeight: '1.6',
             display: 'inline-block', maxWidth: '90%',

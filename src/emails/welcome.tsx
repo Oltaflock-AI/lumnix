@@ -25,7 +25,7 @@ export function WelcomeEmail({ name, workspace_id, user_id }: WelcomeEmailProps)
       userId={user_id}
     >
       <Heading style={{
-        fontSize: '28px', fontWeight: '800', color: '#18163A',
+        fontSize: '28px', fontWeight: '800', color: '#111827',
         letterSpacing: '-0.03em', lineHeight: '1.2', margin: '0 0 14px',
         fontFamily: "'DM Sans', Arial, sans-serif",
       }}>
@@ -46,7 +46,7 @@ export function WelcomeEmail({ name, workspace_id, user_id }: WelcomeEmailProps)
               <Text style={{ fontSize: '18px', margin: '0' }}>{item.icon}</Text>
             </Column>
             <Column>
-              <Text style={{ fontSize: '14px', fontWeight: '600', color: '#18163A', margin: '0 0 2px' }}>{item.title}</Text>
+              <Text style={{ fontSize: '14px', fontWeight: '600', color: '#111827', margin: '0 0 2px' }}>{item.title}</Text>
               <Text style={{ fontSize: '13px', color: '#6B7280', margin: '0' }}>{item.desc}</Text>
             </Column>
           </Row>
@@ -60,7 +60,7 @@ export function WelcomeEmail({ name, workspace_id, user_id }: WelcomeEmailProps)
 
       <Text style={{ fontSize: '15px', color: '#374151', lineHeight: '1.7', margin: '0 0 8px' }}>
         Your first step: connect at least one data source in{' '}
-        <Link href={`${dashboardUrl}/settings?tab=integrations`} style={{ color: '#7C3AED' }}>
+        <Link href={`${dashboardUrl}/settings?tab=integrations`} style={{ color: '#FF0066' }}>
           {"Settings → Integrations"}
         </Link>
         . It takes about 2 minutes and unlocks everything.

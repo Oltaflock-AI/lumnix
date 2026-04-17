@@ -153,9 +153,9 @@ All tables in Supabase Postgres with RLS.
 
 | Token | Value | Usage |
 |---|---|---|
-| Primary | `#7C3AED` | All CTAs, active nav, links, badges, interactive elements |
-| Primary Hover | `#6D28D9` | Button hover state |
-| Accent | `#0891B2` | Chart accent line only — not used on buttons |
+| Primary | `#FF0066` | All CTAs, active nav, links, badges, interactive elements |
+| Primary Hover | `#FF3385` | Button hover state |
+| Accent | `#00D4AA` | Chart accent line only — not used on buttons |
 | Sidebar BG (dark) | `#0F172A` | Sidebar background in dark mode |
 | Card BG (dark) | `#1E293B` | Cards, panels in dark mode |
 | Page BG (light) | `#F8FAFC` | Light mode page canvas |
@@ -186,7 +186,7 @@ All tables in Supabase Postgres with RLS.
 
 ### Billing page rules
 - All 4 plans display in a single horizontal row on desktop (`grid-template-columns: repeat(4, 1fr)`)
-- Growth card has "Most Popular" badge in brand purple `#7C3AED`
+- Growth card has "Most Popular" badge in brand purple `#FF0066`
 - Free plan → "Free" button (disabled/outline)
 - Starter / Growth → "Upgrade" button (primary purple)
 - Current plan → "Current Plan" button (disabled gray)
@@ -241,7 +241,7 @@ INTELLIGENCE
 - Dark mode background: `#0F172A`
 - Light mode background: `#FFFFFF` with `1px solid #E2E8F0` right border
 - Nav item default text: `#CBD5E1` (dark) / `#374151` (light)
-- Nav item active: left border `3px solid #7C3AED`, background `rgba(124,58,237,0.18)`, text `#FFFFFF`
+- Nav item active: left border `3px solid #FF0066`, background `rgba(255,0,102,0.18)`, text `#FFFFFF`
 - Section labels (ANALYTICS, ADVERTISING, INTELLIGENCE): `10px` uppercase, `#6B7280`
 
 ---
@@ -280,7 +280,7 @@ Every item below must be complete before Phase 2 begins.
 - [ ] Dark mode text minimum `#CBD5E1` across all pages
 - [ ] All page titles: Plus Jakarta Sans 700
 - [ ] All body text: DM Sans 400
-- [ ] No blue buttons anywhere (`#7C3AED` only for all CTAs)
+- [ ] No blue buttons anywhere (`#FF0066` only for all CTAs)
 - [ ] Light/dark mode toggle switches entire app
 - [ ] Billing: 4 pricing plans in one row on desktop
 - [ ] All integration cards have properly spaced buttons (no overflow)

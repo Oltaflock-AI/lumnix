@@ -2,9 +2,30 @@
 
 import { useState } from 'react';
 import { Send } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
 import { ScrollReveal } from './ScrollReveal';
+
+/* Lumi avatar — friendly glowing orb (mono 2.0 style) */
+function LumiAvatar({ size = 32 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" aria-hidden="true">
+      <defs>
+        <radialGradient id="lumi-grad" cx="40%" cy="40%" r="60%">
+          <stop offset="0%" stopColor="#FFF" stopOpacity="1" />
+          <stop offset="60%" stopColor="#FFB3D9" stopOpacity="0.8" />
+          <stop offset="100%" stopColor="#FF0066" stopOpacity="0.6" />
+        </radialGradient>
+      </defs>
+      <circle cx="60" cy="60" r="56" stroke="#FF0066" strokeWidth="2" opacity="0.3" />
+      <circle cx="60" cy="60" r="35" fill="url(#lumi-grad)" />
+      <circle cx="48" cy="48" r="10" fill="white" opacity="0.4" />
+      <circle cx="50" cy="55" r="3" fill="white" />
+      <circle cx="49.5" cy="54" r="1.5" fill="#FF0066" opacity="0.7" />
+      <circle cx="70" cy="55" r="3" fill="white" />
+      <circle cx="70.5" cy="54" r="1.5" fill="#FF0066" opacity="0.7" />
+      <path d="M50 65Q60 71 70 65" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.7" />
+    </svg>
+  );
+}
 
 const convos = [
   { q: 'Why did my traffic drop last week?', a: "Your top GSC keyword 'promunch' dropped from position 1.2 to position 3.8 between Apr 8–10. This coincides with a new Mamaearth campaign targeting the same search intent. Recommend: strengthen the page's internal linking and update the meta title." },
@@ -38,8 +59,8 @@ export function LumiSection() {
               {convos.map((c, i) => (
                 <button key={i} onClick={() => setActiveQ(i)} aria-label={`Show answer to: ${c.q}`} aria-pressed={activeQ === i} style={{
                   textAlign: 'left', padding: '14px 16px', borderRadius: 10, fontSize: 14, cursor: 'pointer', transition: 'all 150ms', minHeight: 48,
-                  border: activeQ === i ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(255,255,255,0.07)',
-                  background: activeQ === i ? 'rgba(124,58,237,0.12)' : 'transparent',
+                  border: activeQ === i ? '1px solid rgba(255,0,102,0.4)' : '1px solid rgba(255,255,255,0.07)',
+                  background: activeQ === i ? 'rgba(255,0,102,0.12)' : 'transparent',
                   color: activeQ === i ? '#fff' : 'rgba(255,255,255,0.65)',
                 }}>
                   &ldquo;{c.q}&rdquo;
@@ -53,7 +74,7 @@ export function LumiSection() {
         <ScrollReveal delay={0.2}>
           <div className="wr-glass" style={{ borderRadius: 20, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
             <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Image src="/favicon.png" alt="Lumi" width={30} height={30} style={{ borderRadius: 8 }} />
+              <LumiAvatar size={32} />
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', fontFamily: 'var(--font-display)' }}>Lumi</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>AI Marketing Assistant</div>
@@ -63,12 +84,12 @@ export function LumiSection() {
 
             <div style={{ padding: 20, minHeight: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <div style={{ background: '#7C3AED', color: '#fff', padding: '10px 14px', borderRadius: '18px 18px 4px 18px', fontSize: 13, maxWidth: '80%', lineHeight: 1.5, boxShadow: '0 4px 12px rgba(124,58,237,0.3)' }}>
+                <div style={{ background: '#FF0066', color: '#fff', padding: '10px 14px', borderRadius: '18px 18px 4px 18px', fontSize: 13, maxWidth: '80%', lineHeight: 1.5, boxShadow: '0 4px 12px rgba(255,0,102,0.3)' }}>
                   &ldquo;{convos[activeQ].q}&rdquo;
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <Image src="/favicon.png" alt="Lumi" width={28} height={28} style={{ borderRadius: 7, flexShrink: 0, marginTop: 2 }} />
+                <div style={{ flexShrink: 0, marginTop: 2 }}><LumiAvatar size={28} /></div>
                 <div style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', padding: '12px 14px', borderRadius: '18px 18px 18px 4px', fontSize: 13, lineHeight: 1.65, maxWidth: '85%' }}>
                   {convos[activeQ].a}
                 </div>
@@ -77,7 +98,7 @@ export function LumiSection() {
 
             <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '9px 14px', fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Ask Lumi anything...</div>
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: '#FF0066', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
                 <Send size={14} color="#fff" />
               </div>
             </div>

@@ -203,7 +203,7 @@ All emails share the same brand identity. Use these exact values:
 Background (outer):    #F8F7FC  (lavender page bg)
 Email container:       #FFFFFF  max-width 600px, border-radius 16px
 Header bar:            #5B21B6  (deep brand purple)
-Primary CTA button:    #7C3AED  bg, #FFFFFF text
+Primary CTA button:    #FF0066  bg, #FFFFFF text
 Secondary text:        #6B7280
 Border:                #EAE8FF
 Accent purple light:   #EDE9FF
@@ -310,14 +310,14 @@ export function WelcomeEmail({ name, workspace_id }: WelcomeEmailProps) {
             <Section style={{ textAlign: 'center', marginBottom: '28px' }}>
               <Button
                 href={dashboardUrl}
-                style={{ backgroundColor: '#7C3AED', color: '#FFFFFF', padding: '14px 32px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', textDecoration: 'none', display: 'inline-block' }}
+                style={{ backgroundColor: '#FF0066', color: '#FFFFFF', padding: '14px 32px', borderRadius: '10px', fontSize: '15px', fontWeight: '600', textDecoration: 'none', display: 'inline-block' }}
               >
                 Open Your Dashboard →
               </Button>
             </Section>
 
             <Text style={{ fontSize: '14px', color: '#6B7280', lineHeight: '1.6', margin: '0 0 8px' }}>
-              Your first step: connect at least one data source in <Link href={`${dashboardUrl}/settings?tab=integrations`} style={{ color: '#7C3AED' }}>Settings → Integrations</Link>. It takes about 2 minutes and unlocks everything.
+              Your first step: connect at least one data source in <Link href={`${dashboardUrl}/settings?tab=integrations`} style={{ color: '#FF0066' }}>Settings → Integrations</Link>. It takes about 2 minutes and unlocks everything.
             </Text>
           </Section>
 
@@ -327,7 +327,7 @@ export function WelcomeEmail({ name, workspace_id }: WelcomeEmailProps) {
               You're receiving this because you signed up for Lumnix.
             </Text>
             <Text style={{ fontSize: '12px', color: '#9CA3AF', margin: '0' }}>
-              Oltaflock AI · <Link href="https://oltaflock.ai" style={{ color: '#7C3AED' }}>oltaflock.ai</Link>
+              Oltaflock AI · <Link href="https://oltaflock.ai" style={{ color: '#FF0066' }}>oltaflock.ai</Link>
             </Text>
           </Section>
 
@@ -455,9 +455,9 @@ Structure:
 
 - Feature 1: Competitor Ad Spy
   ```
-  Section bg: #F8F7FC, border-radius 12px, padding 20px, border-left 3px solid #7C3AED
+  Section bg: #F8F7FC, border-radius 12px, padding 20px, border-left 3px solid #FF0066
   
-  Label: "FEATURE 01" — 10px uppercase #7C3AED letter-spacing .07em
+  Label: "FEATURE 01" — 10px uppercase #FF0066 letter-spacing .07em
   Title: "Competitor Ad Spy" — 18px 700 #18163A
   Body: "Add any competitor's name or website and we'll pull every Meta ad they're running.
          We flag ads that have been running 90+ days — those are their winners.
@@ -482,7 +482,7 @@ Structure:
   CTA link: "Chat with Lumi → lumnix-ai.vercel.app/dashboard/ai-assistant"
   
   Chat bubble mockup (HTML table):
-    User bubble (right): bg #7C3AED, color white, 13px, border-radius 18px 18px 4px 18px, padding 10px 14px
+    User bubble (right): bg #FF0066, color white, 13px, border-radius 18px 18px 4px 18px, padding 10px 14px
     Text: "What should I focus on this week?"
     
     Lumi bubble (left): bg #F4F2FF, color #18163A, same border-radius mirrored
@@ -581,8 +581,8 @@ interface EmailLayoutProps {
 
 **File:** `src/emails/components/cta-button.tsx`
 ```tsx
-// Primary: bg #7C3AED, color #FFF, padding 14px 32px, border-radius 10px, 15px 600
-// Secondary/outline: bg transparent, border 2px solid #7C3AED, color #7C3AED, same sizing
+// Primary: bg #FF0066, color #FFF, padding 14px 32px, border-radius 10px, 15px 600
+// Secondary/outline: bg transparent, border 2px solid #FF0066, color #FF0066, same sizing
 ```
 
 ---
@@ -694,4 +694,4 @@ Day 7 — CHECK-IN
 - [ ] Unsubscribe flag checked before sending any scheduled email
 - [ ] All emails tested via React Email dev server
 - [ ] Sender name shows "Khush from Lumnix" not a no-reply address
-- [ ] All email brand colors match: header #5B21B6, CTA #7C3AED, bg #F8F7FC, card bg #FFFFFF
+- [ ] All email brand colors match: header #5B21B6, CTA #FF0066, bg #F8F7FC, card bg #FFFFFF

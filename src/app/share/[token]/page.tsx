@@ -28,7 +28,7 @@ export default function SharedDashboardPage({ params }: { params: Promise<{ toke
     </div>
   );
 
-  const accent = data?.brand_color || '#7C3AED';
+  const accent = data?.brand_color || '#FF0066';
   const totals = data?.totals || {};
   const daily = data?.daily || [];
 
