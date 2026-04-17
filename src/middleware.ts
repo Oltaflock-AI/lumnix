@@ -5,7 +5,6 @@ import { timingSafeEqual } from 'crypto';
 // Routes that don't require authentication
 const PUBLIC_ROUTES = new Set([
   '/api/auth/callback',
-  '/api/billing/webhook',     // Stripe webhook (validates its own signature)
   '/api/health',              // Health check (sanitized — no secrets)
   '/api/share',               // Public share links
   '/api/data-deletion',       // Meta data deletion callback (has own confirmation flow)

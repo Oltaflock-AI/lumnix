@@ -10,7 +10,7 @@ export interface PlanLimits {
 }
 
 /**
- * Plan names must match the UI/Stripe product mapping:
+ * Plan names must match the UI/Razorpay product mapping:
  *   free | starter | growth | agency
  * "pro"/"enterprise" are kept as legacy aliases so old DB rows don't break.
  */

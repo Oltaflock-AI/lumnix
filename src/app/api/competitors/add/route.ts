@@ -14,8 +14,18 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { workspace_id, facebook_page_id, facebook_page_name, facebook_page_url, logo_url, website_url } = body;
 
-  if (!workspace_id || !facebook_page_id || !facebook_page_name) {
+  if (
+    typeof workspace_id !== 'string' ||
+    typeof facebook_page_id !== 'string' ||
+    typeof facebook_page_name !== 'string'
+  ) {
     return NextResponse.json({ error: 'workspace_id, facebook_page_id, and facebook_page_name required' }, { status: 400 });
+  }
+  if (!/^[0-9]{5,25}$/.test(facebook_page_id)) {
+    return NextResponse.json({ error: 'Invalid facebook_page_id' }, { status: 400 });
+  }
+  if (facebook_page_name.length > 200) {
+    return NextResponse.json({ error: 'facebook_page_name too long' }, { status: 400 });
   }
 
   const supabase = getSupabaseAdmin();

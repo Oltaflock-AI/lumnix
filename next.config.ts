@@ -12,14 +12,17 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live",
+      "script-src 'self' 'unsafe-inline' https://vercel.live",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' https://fonts.gstatic.com",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://api.resend.com https://graph.facebook.com https://www.googleapis.com https://accounts.google.com https://vercel.live",
+      "frame-src 'none'",
       "frame-ancestors 'none'",
+      "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "upgrade-insecure-requests",
     ].join('; '),
   },
 ];
@@ -32,6 +35,12 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: securityHeaders,
       },
+    ];
+  },
+  async rewrites() {
+    return [
+      { source: '/legal/privacy', destination: '/privacy' },
+      { source: '/legal/terms', destination: '/terms' },
     ];
   },
 };

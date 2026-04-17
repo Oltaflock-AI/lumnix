@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 
 function getSecret(): string {
-  const secret = process.env.OAUTH_STATE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secret) throw new Error('OAUTH_STATE_SECRET or SUPABASE_SERVICE_ROLE_KEY required for OAuth state signing');
+  const secret = process.env.OAUTH_STATE_SECRET;
+  if (!secret) throw new Error('OAUTH_STATE_SECRET required for OAuth state signing');
   return secret;
 }
 

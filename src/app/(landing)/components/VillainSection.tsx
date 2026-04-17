@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, type CSSProperties, type ComponentType, type ReactNode, type MouseEvent } from 'react';
 import { ScrollReveal } from './ScrollReveal';
 
 function GSCLogo() {
@@ -40,29 +41,124 @@ function MetaLogo() {
   );
 }
 
-const tools = [
+type Tool = {
+  color: string;
+  category: string;
+  title: string;
+  Logo: ComponentType;
+  knows: ReactNode;
+  blind: ReactNode;
+  cost: ReactNode;
+};
+
+const tools: Tool[] = [
   {
-    color: '#34A853', title: 'Google Search Console',
+    color: '#34A853',
+    category: 'SEO',
+    title: 'Google Search Console',
     Logo: GSCLogo,
-    knows: 'Your keyword "promunch" ranks #1',
-    blind: 'Has no idea you\'re paying ₹4,200/mo to bid on the same keyword in Google Ads',
-    cost: '₹0/mo spent here',
+    knows: (
+      <>Your keyword <strong>&ldquo;promunch&rdquo;</strong> ranks <strong>#1</strong></>
+    ),
+    blind: (
+      <>Has no idea you&rsquo;re paying <strong>₹4,200/mo</strong> to bid on the same keyword in Google Ads</>
+    ),
+    cost: <><span className="wr-tool-cost-dot" />₹0/mo spent here</>,
   },
   {
-    color: '#F9AB00', title: 'Google Analytics 4',
+    color: '#F9AB00',
+    category: 'Analytics',
+    title: 'Google Analytics 4',
     Logo: GA4Logo,
-    knows: 'Sessions dropped 25% last week',
-    blind: 'Can\'t tell you it\'s because Mamaearth launched 12 new ads targeting your audience on Tuesday',
-    cost: '₹0/mo but 3hrs/week exporting CSVs',
+    knows: (
+      <>Sessions dropped <strong>25%</strong> last week</>
+    ),
+    blind: (
+      <>Can&rsquo;t tell you it&rsquo;s because Mamaearth launched <strong>12 new ads</strong> targeting your audience on <strong>Tuesday</strong></>
+    ),
+    cost: <><span className="wr-tool-cost-dot" />₹0/mo · 3hrs/week exporting CSVs</>,
   },
   {
-    color: '#0081FB', title: 'Meta Ads Manager',
+    color: '#0081FB',
+    category: 'Paid Ads',
+    title: 'Meta Ads Manager',
     Logo: MetaLogo,
-    knows: 'You spent ₹8,159 this month',
-    blind: 'Doesn\'t know your competitors are spending 10x and stealing your audience with hooks you\'ve never seen',
-    cost: '₹8,159/mo and climbing',
+    knows: (
+      <>You spent <strong>₹8,159</strong> this month</>
+    ),
+    blind: (
+      <>Doesn&rsquo;t know your competitors are spending <strong>10×</strong> and stealing your audience with hooks you&rsquo;ve never seen</>
+    ),
+    cost: <><span className="wr-tool-cost-dot" />₹8,159/mo and climbing</>,
   },
 ];
+
+function ToolCard({ tool }: { tool: Tool }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handleMove = (e: MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    const rotY = (px - 0.5) * 12;
+    const rotX = (0.5 - py) * 8;
+    el.style.setProperty('--wr-rx', `${rotX.toFixed(2)}deg`);
+    el.style.setProperty('--wr-ry', `${rotY.toFixed(2)}deg`);
+    el.style.setProperty('--wr-mx', `${(px * 100).toFixed(1)}%`);
+    el.style.setProperty('--wr-my', `${(py * 100).toFixed(1)}%`);
+  };
+
+  const handleLeave = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.setProperty('--wr-rx', '0deg');
+    el.style.setProperty('--wr-ry', '0deg');
+  };
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className="wr-pain-card"
+      style={{ '--wr-card-accent': tool.color } as CSSProperties}
+    >
+      <div className="wr-pain-card-inner">
+        <div className="wr-tool-header">
+          <div
+            className="wr-tool-icon"
+            style={{ background: `${tool.color}20`, borderColor: `${tool.color}40` }}
+          >
+            <tool.Logo />
+          </div>
+          <div className="wr-tool-heading">
+            <span className="wr-tool-eyebrow" style={{ color: tool.color }}>{tool.category}</span>
+            <span className="wr-tool-name">{tool.title}</span>
+          </div>
+        </div>
+
+        <div className="wr-tool-row wr-tool-row--knows">
+          <div className="wr-tool-tag wr-tool-tag--green">
+            <span className="wr-tool-tag-dot" />KNOWS
+          </div>
+          <p className="wr-tool-detail">{tool.knows}</p>
+        </div>
+
+        <div className="wr-tool-row wr-tool-row--blind">
+          <div className="wr-tool-tag wr-tool-tag--red">
+            <span className="wr-tool-tag-dot" />BLIND TO
+          </div>
+          <p className="wr-tool-detail">{tool.blind}</p>
+        </div>
+
+        <div className="wr-tool-cost">{tool.cost}</div>
+      </div>
+    </div>
+  );
+}
 
 export function VillainSection() {
   return (
@@ -86,26 +182,7 @@ export function VillainSection() {
         <ScrollReveal delay={0.15}>
           <div className="wr-tools-grid">
             {tools.map(tool => (
-              <div key={tool.title} className="wr-pain-card">
-                <div className="wr-tool-header">
-                  <div className="wr-tool-icon" style={{ background: `${tool.color}20`, borderColor: `${tool.color}30` }}>
-                    <tool.Logo />
-                  </div>
-                  <span className="wr-tool-name">{tool.title}</span>
-                </div>
-
-                <div className="wr-tool-knows">
-                  <div className="wr-tool-tag wr-tool-tag--green">KNOWS</div>
-                  <p className="wr-tool-detail">{tool.knows}</p>
-                </div>
-
-                <div className="wr-tool-blind">
-                  <div className="wr-tool-tag wr-tool-tag--red">BLIND TO</div>
-                  <p className="wr-tool-detail wr-text-secondary">{tool.blind}</p>
-                </div>
-
-                <p className="wr-tool-cost">{tool.cost}</p>
-              </div>
+              <ToolCard key={tool.title} tool={tool} />
             ))}
           </div>
         </ScrollReveal>

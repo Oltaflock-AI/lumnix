@@ -37,7 +37,13 @@ export async function POST(req: NextRequest) {
     if (limited) return limited;
 
     const { email, workspace_id, role } = await req.json();
-    if (!email || !workspace_id) return NextResponse.json({ error: 'Missing email or workspace_id' }, { status: 400 });
+    if (typeof email !== 'string' || typeof workspace_id !== 'string') {
+      return NextResponse.json({ error: 'Missing email or workspace_id' }, { status: 400 });
+    }
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || normalizedEmail.length > 320) {
+      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+    }
     const memberRole = ['admin', 'member', 'viewer'].includes(role) ? role : 'member';
 
     const db = getSupabaseAdmin();
@@ -57,7 +63,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if already invited/member
-    const { data: existing } = await db.from('team_invites').select('id, status').eq('workspace_id', workspace_id).eq('email', email.toLowerCase()).single();
+    const { data: existing } = await db.from('team_invites').select('id, status').eq('workspace_id', workspace_id).eq("email", normalizedEmail).single();
     if (existing && existing.status === 'pending') {
       return NextResponse.json({ error: 'Invite already sent to this email' }, { status: 409 });
     }
@@ -68,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     await db.from('team_invites').upsert({
       workspace_id,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       invited_by: user.id,
       token,
       role: memberRole,
@@ -89,7 +95,7 @@ export async function POST(req: NextRequest) {
       try {
         const { data: emailData, error: emailError } = await getResend(resendKey).emails.send({
           from: `Lumnix <${senderEmail}>`,
-          to: email,
+          to: normalizedEmail,
           subject: `${inviterName.slice(0, 80)} invited you to join ${(workspace.name || '').slice(0, 80)} on Lumnix`,
           html: `<!DOCTYPE html>
 <html>
@@ -133,7 +139,7 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px; }
       success: true,
       emailSent,
       inviteUrl,
-      message: emailSent ? `Invite sent to ${email}` : `Invite created — email couldn't be sent (domain not verified). Share this link manually.`,
+      message: emailSent ? `Invite sent to ${normalizedEmail}` : `Invite created — email couldn't be sent (domain not verified). Share this link manually.`,
     });
   } catch (error: any) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

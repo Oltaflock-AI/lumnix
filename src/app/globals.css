@@ -1,8 +1,6 @@
 /* Fonts loaded via next/font in src/app/layout.tsx — do NOT also @import from Google here. */
 
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 

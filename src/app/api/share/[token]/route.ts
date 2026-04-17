@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { rateLimit } from '@/lib/rate-limit';
 
 // GET /api/share/[token] — public endpoint for shared dashboards
 export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   try {
     const { token } = await params;
+
+    // Public endpoint → brute-force guard. Limit by IP: 60 req / minute.
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || req.headers.get('x-real-ip')
+      || 'unknown';
+    const limited = rateLimit(`share:${ip}`, 60, 60_000);
+    if (limited) return limited;
+
     const db = getSupabaseAdmin();
 
     const { data: dashboard } = await db.from('shared_dashboards')
