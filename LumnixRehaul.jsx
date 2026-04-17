@@ -3,7 +3,6 @@ import { useState } from "react";
 /**
  * LUMNIX UI REHAUL — Interactive Showcase
  * Shows the new design system across Dashboard, Meta Ads, SEO, and Settings
- * All design tokens from LUMNIX_UI_REHAUL.md applied
  */
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
