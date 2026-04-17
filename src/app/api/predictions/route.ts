@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { callClaude } from '@/lib/anthropic';
 
@@ -125,39 +125,39 @@ export async function GET(req: NextRequest) {
     };
   });
 
-  // AI narrative
-  let narrative = '';
-  if (process.env.ANTHROPIC_API_KEY) {
-    try {
-      const trend = forecastWithDates.length > 0 ? forecastWithDates[forecastWithDates.length - 1].predicted - values[values.length - 1] : 0;
-      const avgRecent = values.slice(-7).reduce((a, b) => a + b, 0) / 7;
-      const avgForecast = forecastWithDates.reduce((a, b) => a + b.predicted, 0) / forecastWithDates.length;
-
-      narrative = await callClaude(
-        [{ role: 'user', content: `Metric: ${metric}. Last 7 days avg: ${Math.round(avgRecent)}. Forecast avg (next ${forecastDays} days): ${Math.round(avgForecast)}. Trend: ${trend > 0 ? 'up' : trend < 0 ? 'down' : 'flat'} by ${Math.abs(Math.round(trend))}.` }],
-        { maxTokens: 150, system: 'You are a marketing analyst. Write a 2-3 sentence forecast summary based on the data. Be specific with numbers. Keep it concise.' },
-      );
-    } catch {}
-  }
-
   const result = {
     metric,
     historical: dates.map((d, i) => ({ date: d, value: values[i] })),
     forecast: forecastWithDates,
-    narrative,
+    narrative: '',
+    generating: !!process.env.ANTHROPIC_API_KEY,
     generated_at: new Date().toISOString(),
   };
 
-  // Cache prediction
-  try {
-    await db.from('predictions').insert({
-      workspace_id: workspaceId,
-      metric,
-      forecast_data: forecastWithDates,
-      narrative,
-      generated_at: new Date().toISOString(),
-    });
-  } catch {}
+  // Persist forecast immediately; narrative backfilled async.
+  after(async () => {
+    let narrative = '';
+    if (process.env.ANTHROPIC_API_KEY) {
+      try {
+        const trend = forecastWithDates.length > 0 ? forecastWithDates[forecastWithDates.length - 1].predicted - values[values.length - 1] : 0;
+        const avgRecent = values.slice(-7).reduce((a, b) => a + b, 0) / 7;
+        const avgForecast = forecastWithDates.reduce((a, b) => a + b.predicted, 0) / forecastWithDates.length;
+        narrative = await callClaude(
+          [{ role: 'user', content: `Metric: ${metric}. Last 7 days avg: ${Math.round(avgRecent)}. Forecast avg (next ${forecastDays} days): ${Math.round(avgForecast)}. Trend: ${trend > 0 ? 'up' : trend < 0 ? 'down' : 'flat'} by ${Math.abs(Math.round(trend))}.` }],
+          { maxTokens: 150, system: 'You are a marketing analyst. Write a 2-3 sentence forecast summary based on the data. Be specific with numbers. Keep it concise.' },
+        );
+      } catch {}
+    }
+    try {
+      await db.from('predictions').insert({
+        workspace_id: workspaceId,
+        metric,
+        forecast_data: forecastWithDates,
+        narrative,
+        generated_at: new Date().toISOString(),
+      });
+    } catch {}
+  });
 
   return NextResponse.json(result);
 }

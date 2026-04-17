@@ -95,10 +95,10 @@ export default function DashboardPage() {
   const { workspace, loading: wsLoading } = useWorkspaceCtx();
   const [days, setDays] = useState(30);
   const { integrations } = useIntegrations(workspace?.id);
-  const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', days);
-  const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', days);
+  const { data: ga4Resp } = useGA4Data(workspace?.id, 'overview', days);
+  const { data: gscResp } = useGSCData(workspace?.id, 'keywords', days);
   const { data: gscOverviewResp } = useGSCData(workspace?.id, 'overview', days);
-  const { data: unifiedResp, loading: unifiedLoading } = useUnifiedData(workspace?.id, days);
+  const { data: unifiedResp } = useUnifiedData(workspace?.id, days);
 
   // Get user's first name for greeting
   const [userName, setUserName] = useState('');
@@ -113,7 +113,7 @@ export default function DashboardPage() {
     return () => { cancelled = true; };
   }, []);
 
-  const loading = wsLoading || ga4Loading || gscLoading || unifiedLoading;
+  const loading = wsLoading;
 
   const ga4Data: any[] = Array.isArray(ga4Resp?.data) ? ga4Resp.data : [];
   const gscKeywords: any[] = Array.isArray(gscResp?.keywords) ? gscResp.keywords : [];
