@@ -95,16 +95,6 @@ export function PricingSection() {
               boxShadow: '0 8px 40px rgba(255,0,102,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
             }}
           >
-            <span
-              aria-hidden="true"
-              style={{
-                position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
-                fontFamily: 'var(--font-display)', fontSize: 64, fontWeight: 900,
-                color: '#FF0066', lineHeight: 1, opacity: 0.25,
-              }}
-            >
-              &ldquo;
-            </span>
             <p
               style={{
                 fontFamily: 'var(--font-display)',
