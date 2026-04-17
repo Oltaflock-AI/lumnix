@@ -1,32 +1,43 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { ThemeProvider, useTheme } from '@/lib/theme';
 
+// Only allow redirects to same-origin relative paths.
+function safeRedirect(target: string | null): string {
+  if (!target) return '/dashboard';
+  if (!target.startsWith('/') || target.startsWith('//')) return '/dashboard';
+  return target;
+}
+
 function SignInInner() {
   const { c } = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get('redirect');
+  const messageParam = searchParams.get('message');
+  const postSignInTarget = safeRedirect(redirectParam);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(messageParam || '');
 
   useEffect(() => {
     // Check existing session first
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) { router.push('/dashboard'); return; }
+      if (session) { router.push(postSignInTarget); return; }
     });
 
     // Listen for auth state changes (handles OAuth callbacks)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) router.push('/dashboard');
+      if (session) router.push(postSignInTarget);
     });
 
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, [router, postSignInTarget]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,13 +55,17 @@ function SignInInner() {
       setLoading(false);
       return;
     }
-    router.push('/dashboard');
+    router.push(postSignInTarget);
   }
 
   async function handleGoogleSignIn() {
+    const callback = new URL('/auth/callback', window.location.origin);
+    if (redirectParam && postSignInTarget !== '/dashboard') {
+      callback.searchParams.set('redirect', postSignInTarget);
+    }
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` }
+      options: { redirectTo: callback.toString() }
     });
   }
 

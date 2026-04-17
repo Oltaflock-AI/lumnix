@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       expires_at: expiresAt,
     }, { onConflict: 'workspace_id,email' });
 
-    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?invite=${token}`;
+    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/team/accept?token=${token}`;
     const inviterName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Someone';
 
     // Try sending email via Resend

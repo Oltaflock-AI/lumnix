@@ -24,9 +24,12 @@ function SignUpInner() {
   const [error, setError] = useState('');
   const couponFromUrl = searchParams.get('coupon') || '';
   const inviteFromUrl = searchParams.get('invite') || '';
+  const teamInviteToken = searchParams.get('team_invite') || '';
+  const prefillEmail = searchParams.get('email') || '';
 
-  // Pre-fill invite code from URL
+  // Pre-fill invite code from URL (beta code, not team invite token)
   useEffect(() => { if (inviteFromUrl) setInviteCode(inviteFromUrl); }, [inviteFromUrl]);
+  useEffect(() => { if (prefillEmail) setEmail(prefillEmail); }, [prefillEmail]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +67,12 @@ function SignUpInner() {
       // Redeem beta invite code (fire and forget)
       if (code) {
         try { fetch('/api/beta/redeem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, email }) }); } catch {}
+      }
+      // Team invite: join the inviter's workspace, then land on dashboard.
+      if (teamInviteToken && /^inv_[a-f0-9]+$/.test(teamInviteToken)) {
+        try { await fetch(`/api/team/accept?token=${encodeURIComponent(teamInviteToken)}`, { redirect: 'manual' }); } catch {}
+        router.push('/dashboard?invite_accepted=true');
+        return;
       }
     }
     const onboardingUrl = couponFromUrl ? `/onboarding?coupon=${encodeURIComponent(couponFromUrl)}` : '/onboarding';
