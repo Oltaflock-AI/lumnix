@@ -1482,7 +1482,7 @@ export default function SettingsPage() {
         </div>
 
         {/* ─── GENERAL ─── */}
-        <TabsContent value="general">
+        <TabsContent value="general" className="space-y-6">
           <WorkspaceSection workspace={workspace} loading={wsLoading} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
           <ProfileTab />
           {workspace && (
@@ -1667,7 +1667,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* ─── TEAM ─── */}
-        <TabsContent value="team">
+        <TabsContent value="team" className="space-y-6">
           {/* Slots / Plan indicator */}
           <div className="lx-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1942,7 +1942,7 @@ export default function SettingsPage() {
         </TabsContent>
 
         {/* ─── ALERTS ─── */}
-        <TabsContent value="alerts">
+        <TabsContent value="alerts" className="space-y-6">
           <NotificationsTab />
           {workspace?.id && <AlertsTab workspaceId={workspace.id} />}
         </TabsContent>

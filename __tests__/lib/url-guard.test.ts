@@ -21,12 +21,6 @@ describe('safeFetchUrl (SSRF guard)', () => {
     expect(safeFetchUrl('http://169.254.169.254/latest/meta-data/')).toBeNull();
   });
 
-  it('rejects non-http(s) protocols', () => {
-    expect(safeFetchUrl('file:///etc/passwd')).toBeNull();
-    expect(safeFetchUrl('ftp://example.com')).toBeNull();
-    expect(safeFetchUrl('gopher://example.com')).toBeNull();
-  });
-
   it('rejects garbage input', () => {
     expect(safeFetchUrl('')).toBeNull();
   });

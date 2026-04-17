@@ -102,7 +102,7 @@ function TermsInner() {
           <li><strong style={{ color: c.text }}>Billing Cycle:</strong> Paid subscriptions are billed monthly or annually, depending on the plan you choose. Charges are non-refundable except as required by law.</li>
           <li><strong style={{ color: c.text }}>Price Changes:</strong> We may change subscription prices with 30 days&apos; notice. Continued use after the price change constitutes acceptance.</li>
           <li><strong style={{ color: c.text }}>Cancellation:</strong> You may cancel your subscription at any time from your dashboard. Your access continues until the end of the current billing period.</li>
-          <li><strong style={{ color: c.text }}>Payment Processing:</strong> Payments are processed by Stripe. We do not store your payment card details.</li>
+          <li><strong style={{ color: c.text }}>Payment Processing:</strong> Payments are processed by Razorpay. We do not store your payment card details.</li>
         </ul>
 
         <h2 style={heading}>6. Intellectual Property</h2>

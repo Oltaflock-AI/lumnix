@@ -66,7 +66,7 @@ function PrivacyInner() {
         <ul style={listStyle}>
           <li><strong style={{ color: c.text }}>Account Information:</strong> When you create an account, we collect your name, email address, and password.</li>
           <li><strong style={{ color: c.text }}>Workspace Data:</strong> Brand name, logo, and other workspace configuration you provide.</li>
-          <li><strong style={{ color: c.text }}>Payment Information:</strong> If you subscribe to a paid plan, payment is processed by Stripe. We do not store your credit card details.</li>
+          <li><strong style={{ color: c.text }}>Payment Information:</strong> If you subscribe to a paid plan, payment is processed by Razorpay. We do not store your credit card details.</li>
           <li><strong style={{ color: c.text }}>Support Communications:</strong> Any messages you send us via email or in-app support.</li>
         </ul>
 
@@ -98,7 +98,7 @@ function PrivacyInner() {
           We do not sell, rent, or trade your personal information. We may share data only in the following circumstances:
         </p>
         <ul style={listStyle}>
-          <li><strong style={{ color: c.text }}>Service Providers:</strong> We use third-party services (Supabase for database hosting, Vercel for deployment, Stripe for payments, OpenAI/Anthropic for AI analysis) that process data on our behalf under strict data processing agreements.</li>
+          <li><strong style={{ color: c.text }}>Service Providers:</strong> We use third-party services (Supabase for database hosting, Vercel for deployment, Razorpay for payments, OpenAI/Anthropic for AI analysis) that process data on our behalf under strict data processing agreements.</li>
           <li><strong style={{ color: c.text }}>Legal Requirements:</strong> If required by law, regulation, or legal process.</li>
           <li><strong style={{ color: c.text }}>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets.</li>
         </ul>
@@ -134,7 +134,7 @@ function PrivacyInner() {
         <ul style={listStyle}>
           <li><strong style={{ color: c.text }}>Google APIs:</strong> Subject to <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: c.accent }}>Google's Privacy Policy</a>. Our use of Google data complies with the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" style={{ color: c.accent }}>Google API Services User Data Policy</a>.</li>
           <li><strong style={{ color: c.text }}>Meta APIs:</strong> Subject to <a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer" style={{ color: c.accent }}>Meta's Privacy Policy</a>. Competitor ad data is sourced from the publicly accessible Meta Ad Library.</li>
-          <li><strong style={{ color: c.text }}>Stripe:</strong> Payment processing subject to <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: c.accent }}>Stripe's Privacy Policy</a>.</li>
+          <li><strong style={{ color: c.text }}>Razorpay:</strong> Payment processing subject to <a href="https://razorpay.com/privacy/" target="_blank" rel="noopener noreferrer" style={{ color: c.accent }}>Razorpay's Privacy Policy</a>.</li>
         </ul>
 
         <h2 style={heading('8')}>8. Children's Privacy</h2>
