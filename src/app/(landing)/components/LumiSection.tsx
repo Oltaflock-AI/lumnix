@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Send } from 'lucide-react';
+import { Activity, BarChart3, Clock, Send } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 /* Lumi avatar — friendly glowing orb (mono 2.0 style) */
@@ -28,9 +28,9 @@ function LumiAvatar({ size = 32 }: { size?: number }) {
 }
 
 const convos = [
-  { q: 'Why did my traffic drop last week?', a: "Your top GSC keyword 'promunch' dropped from position 1.2 to position 3.8 between Apr 8–10. This coincides with a new Mamaearth campaign targeting the same search intent. Recommend: strengthen the page's internal linking and update the meta title." },
-  { q: 'What should I focus on this week?', a: "3 quick wins on page 1: 'soya mini chunks' (190 impressions, 0% CTR), 'soya munch' (8 impressions, 0% CTR), 'peri peri soya' (1 impression, 1 click). Fixing meta titles on these 3 pages could add ~20 organic clicks/week at zero cost." },
-  { q: 'Compare my organic vs paid this month', a: 'Organic: 214 clicks, ₹0 spend, estimated ₹6,200 value at avg CPC. Paid: 18,038 clicks, ₹8,159 spend, ₹0.45 CPC. Organic CTR 26% vs paid CTR 3.87%. Your organic is significantly more efficient — consider doubling down on content.' },
+  { q: 'Why did my traffic drop last week?', a: "Your top GSC keyword 'promunch' dropped from position 1.2 to position 3.8 between Apr 8–10. This coincides with a new Mamaearth campaign targeting the same search intent. Recommend: strengthen the page's internal linking and update the meta title.", Icon: Activity },
+  { q: 'What should I focus on this week?', a: "3 quick wins on page 1: 'soya mini chunks' (190 impressions, 0% CTR), 'soya munch' (8 impressions, 0% CTR), 'peri peri soya' (1 impression, 1 click). Fixing meta titles on these 3 pages could add ~20 organic clicks/week at zero cost.", Icon: Clock },
+  { q: 'Compare my organic vs paid this month', a: 'Organic: 214 clicks, ₹0 spend, estimated ₹6,200 value at avg CPC. Paid: 18,038 clicks, ₹8,159 spend, ₹0.45 CPC. Organic CTR 26% vs paid CTR 3.87%. Your organic is significantly more efficient — consider doubling down on content.', Icon: BarChart3 },
 ];
 
 export function LumiSection() {
@@ -55,17 +55,79 @@ export function LumiSection() {
           </ScrollReveal>
 
           <ScrollReveal delay={0.25}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {convos.map((c, i) => (
-                <button key={i} onClick={() => setActiveQ(i)} aria-label={`Show answer to: ${c.q}`} aria-pressed={activeQ === i} style={{
-                  textAlign: 'left', padding: '14px 16px', borderRadius: 10, fontSize: 14, cursor: 'pointer', transition: 'all 150ms', minHeight: 48,
-                  border: activeQ === i ? '1px solid rgba(255,0,102,0.4)' : '1px solid rgba(255,255,255,0.07)',
-                  background: activeQ === i ? 'rgba(255,0,102,0.12)' : 'transparent',
-                  color: activeQ === i ? '#fff' : 'rgba(255,255,255,0.65)',
-                }}>
-                  &ldquo;{c.q}&rdquo;
-                </button>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {convos.map((c, i) => {
+                const active = activeQ === i;
+                const Icon = c.Icon;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => setActiveQ(i)}
+                    aria-label={`Show answer to: ${c.q}`}
+                    aria-pressed={active}
+                    style={{
+                      position: 'relative',
+                      textAlign: 'left',
+                      padding: '18px 44px 18px 58px',
+                      borderRadius: 16,
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 15,
+                      fontWeight: 700,
+                      letterSpacing: '-0.01em',
+                      lineHeight: 1.4,
+                      cursor: 'pointer',
+                      minHeight: 60,
+                      transition: 'all 0.3s cubic-bezier(0.23,1,0.32,1)',
+                      border: active ? '1px solid rgba(255,0,102,0.45)' : '1px solid rgba(255,255,255,0.07)',
+                      background: active
+                        ? 'linear-gradient(135deg, rgba(255,0,102,0.10) 0%, rgba(123,97,255,0.05) 100%)'
+                        : 'rgba(255,255,255,0.02)',
+                      color: active ? '#fff' : 'rgba(255,255,255,0.65)',
+                      boxShadow: active
+                        ? '0 4px 24px rgba(255,0,102,0.10), inset 0 1px 0 rgba(255,255,255,0.04)'
+                        : 'none',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute', top: 0, left: 0, bottom: 0,
+                        width: active ? 4 : 3,
+                        background: '#FF0066',
+                        opacity: active ? 1 : 0,
+                        borderRadius: '0 4px 4px 0',
+                        transition: 'opacity 0.25s, width 0.25s cubic-bezier(0.23,1,0.32,1)',
+                      }}
+                    />
+                    <span
+                      style={{
+                        position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
+                        width: 28, height: 28, borderRadius: 8,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: active ? '#FF0066' : 'rgba(255,0,102,0.08)',
+                        border: active ? '1px solid #FF0066' : '1px solid rgba(255,0,102,0.12)',
+                        transition: 'all 0.25s cubic-bezier(0.23,1,0.32,1)',
+                      }}
+                    >
+                      <Icon size={14} strokeWidth={2} color={active ? '#fff' : '#FF0066'} />
+                    </span>
+                    {c.q}
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute', right: 18, top: '50%',
+                        transform: `translateY(-50%) translateX(${active ? 0 : -6}px)`,
+                        fontSize: 16, fontWeight: 800, color: '#FF0066',
+                        opacity: active ? 1 : 0,
+                        transition: 'all 0.25s cubic-bezier(0.23,1,0.32,1)',
+                      }}
+                    >
+                      →
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </ScrollReveal>
         </div>

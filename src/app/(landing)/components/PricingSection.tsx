@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Check } from 'lucide-react';
+import { Check, TrendingUp } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const plans = [
@@ -82,11 +82,66 @@ export function PricingSection() {
         </ScrollReveal>
 
         <ScrollReveal delay={0.3}>
-          <div style={{ maxWidth: 560, margin: '40px auto 0', textAlign: 'center', padding: '20px 24px', background: '#EDE9FF', border: '1px solid #DDD8FF', borderRadius: 12 }}>
-            <p style={{ fontSize: 14, color: '#5B21B6', lineHeight: 1.6 }}>
-              &ldquo;I replaced Ahrefs (₹8,000/mo), Atria ($129/mo ≈ ₹10,700), and 3 manual reporting hours per week with Lumnix.&rdquo;
+          <div
+            style={{
+              position: 'relative',
+              maxWidth: 720,
+              margin: '56px auto 0',
+              textAlign: 'center',
+              padding: '44px 40px 40px',
+              background: 'linear-gradient(135deg, rgba(255,0,102,0.06) 0%, rgba(123,97,255,0.04) 100%)',
+              border: '1px solid rgba(255,0,102,0.12)',
+              borderRadius: 24,
+              boxShadow: '0 8px 40px rgba(255,0,102,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)',
+                fontFamily: 'var(--font-display)', fontSize: 64, fontWeight: 900,
+                color: '#FF0066', lineHeight: 1, opacity: 0.25,
+              }}
+            >
+              &ldquo;
+            </span>
+            <p
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(20px, 2.5vw, 26px)',
+                fontWeight: 800, color: '#1A1028',
+                letterSpacing: '-0.02em', lineHeight: 1.45, marginBottom: 8,
+              }}
+            >
+              I replaced{' '}
+              <span style={{ color: '#DC2626', textDecoration: 'line-through', textDecorationColor: 'rgba(220,38,38,0.4)', fontWeight: 700 }}>
+                Ahrefs (₹8,000/mo)
+              </span>
+              ,{' '}
+              <span style={{ color: '#DC2626', textDecoration: 'line-through', textDecorationColor: 'rgba(220,38,38,0.4)', fontWeight: 700 }}>
+                Atria ($129/mo)
+              </span>
+              , and{' '}
+              <span style={{ color: '#DC2626', textDecoration: 'line-through', textDecorationColor: 'rgba(220,38,38,0.4)', fontWeight: 700 }}>
+                3 hours/week
+              </span>{' '}
+              of manual reporting with{' '}
+              <span style={{ color: '#059669', fontWeight: 800 }}>Lumnix</span>.
             </p>
-            <p style={{ fontSize: 12, color: '#9B97C2', marginTop: 8, fontWeight: 500 }}>— Early access user, D2C snack brand</p>
+            <div
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                margin: '16px auto 20px', padding: '6px 16px',
+                background: 'rgba(5,150,105,0.10)', border: '1px solid rgba(5,150,105,0.20)',
+                borderRadius: 100, fontSize: 13, fontWeight: 700, color: '#059669',
+              }}
+            >
+              <TrendingUp size={14} strokeWidth={2.5} />
+              Saving ₹18,700/mo + 12 hrs/month
+            </div>
+            <p style={{ fontSize: 14, color: '#8B7AA0', fontWeight: 600 }}>
+              — Early access user, <strong style={{ color: '#5B21B6', fontWeight: 700 }}>D2C snack brand</strong>
+            </p>
           </div>
         </ScrollReveal>
       </div>
