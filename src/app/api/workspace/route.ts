@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       workspace: selected.workspace,
       role: selected.role,
-      workspaces: allWorkspaces.map(w => ({ id: w.workspace.id, name: w.workspace.name })),
+      workspaces: allWorkspaces.map(w => ({ id: w.workspace.id, name: w.workspace.name, logo_url: w.workspace.logo_url, brand_color: w.workspace.brand_color })),
     });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

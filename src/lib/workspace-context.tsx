@@ -5,7 +5,7 @@ import { useTheme } from './theme';
 
 interface WorkspaceCtx {
   workspace: any;
-  workspaces: { id: string; name: string }[];
+  workspaces: { id: string; name: string; logo_url?: string | null; brand_color?: string | null }[];
   loading: boolean;
   refetch: () => void;
   setWorkspace: (w: any) => void;
@@ -25,7 +25,7 @@ const WS_KEY = 'lumnix-active-workspace';
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [workspace, setWorkspaceState] = useState<any>(null);
-  const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([]);
+  const [workspaces, setWorkspaces] = useState<{ id: string; name: string; logo_url?: string | null; brand_color?: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
   const { setAccentColor } = useTheme();

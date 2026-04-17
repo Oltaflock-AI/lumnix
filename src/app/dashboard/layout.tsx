@@ -195,7 +195,11 @@ function WorkspaceSwitcher() {
                   onMouseEnter={e => { setFocusedIndex(index); if (!isCurrent) e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; }}
                   onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : (isDark ? '#334155' : '#E2E8F0'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: isCurrent ? 'white' : (isDark ? 'white' : '#374151'), flexShrink: 0 }}>{wsInitials}</div>
+                  {ws.logo_url ? (
+                    <img src={ws.logo_url} alt="" style={{ width: 22, height: 22, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }} />
+                  ) : (
+                    <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : (isDark ? '#334155' : '#E2E8F0'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: isCurrent ? 'white' : (isDark ? 'white' : '#374151'), flexShrink: 0 }}>{wsInitials}</div>
+                  )}
                   <span style={{ fontSize: 12, color: isCurrent ? (isDark ? '#FFFFFF' : '#FF0066') : (isDark ? '#94A3B8' : '#6B7280'), flex: 1, fontWeight: isCurrent ? 600 : 400 }}>{ws.name}</span>
                   {isCurrent && (
                     <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#FF0066" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
