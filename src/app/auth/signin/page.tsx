@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -217,7 +217,9 @@ function SignInInner() {
 export default function SignInPage() {
   return (
     <ThemeProvider>
-      <SignInInner />
+      <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>
+        <SignInInner />
+      </Suspense>
     </ThemeProvider>
   );
 }
