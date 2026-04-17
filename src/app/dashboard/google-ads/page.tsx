@@ -278,7 +278,7 @@ export default function GoogleAdsPage() {
                   <span className="lx-card-title">Campaign Performance</span>
                   <span className="lx-pill lx-pill--primary">{enabledCampaigns} active</span>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
+                <div className="lx-table-wrap">
                   <table className="lx-table">
                     <caption className="sr-only">Google Ads campaign performance</caption>
                     <thead>

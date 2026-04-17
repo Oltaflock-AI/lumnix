@@ -345,6 +345,7 @@ export default function AnalyticsPage() {
                 <span className="lx-card-title">Top Pages</span>
                 <span className="lx-card-action" onClick={() => exportPagesCSV(topPages)}>Export &rarr;</span>
               </div>
+              <div className="lx-table-wrap">
               <table className="lx-table">
                 <thead className="lx-table-header">
                   <tr>
@@ -376,6 +377,7 @@ export default function AnalyticsPage() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {/* Device Mix Donut — placeholder until GA4 device dim is wired */}

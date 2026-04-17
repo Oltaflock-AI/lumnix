@@ -367,6 +367,7 @@ export default function MetaAdsPage() {
                   Export CSV
                 </button>
               </div>
+              <div className="lx-table-wrap">
               <table className="lx-table">
                 <thead>
                   <tr>
@@ -417,6 +418,7 @@ export default function MetaAdsPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {/* Placement Mix */}

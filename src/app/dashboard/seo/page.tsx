@@ -326,6 +326,7 @@ export default function SEOPage() {
                 <span className="lx-card-title">Top Keywords</span>
                 {quickWins.length > 0 && <span className="lx-pill lx-pill--warning"><Zap size={11} /> {quickWins.length} quick wins</span>}
               </div>
+              <div className="lx-table-wrap">
               <table className="lx-table">
                 <thead>
                   <tr>
@@ -346,6 +347,7 @@ export default function SEOPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
 
             <div className="lx-card">
@@ -412,6 +414,7 @@ export default function SEOPage() {
               </div>
             </div>
 
+            <div className="lx-table-wrap">
             <table className="lx-table">
               <caption className="sr-only">SEO keyword performance data</caption>
               <thead>
@@ -446,6 +449,7 @@ export default function SEOPage() {
                 })}
               </tbody>
             </table>
+            </div>
             {filteredKeywords.length === 0 && (
               <div style={{ textAlign: 'center', padding: '30px 0', color: c.textMuted, fontSize: 13 }}>
                 No keywords match this filter

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Outfit, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import './mono.css';
@@ -34,9 +34,16 @@ export const metadata: Metadata = {
     icon: '/logo-mark.svg',
     apple: '/logo-mark.svg',
   },
-  other: {
-    'theme-color': '#0C0C10',
-  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0C0C10' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

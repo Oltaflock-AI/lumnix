@@ -526,13 +526,42 @@ code, pre, kbd, samp {
   .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
   .kpi-grid-3 { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
   .integration-grid { grid-template-columns: 1fr !important; }
-  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
   .desktop-sidebar { display: none !important; }
   .mobile-header { display: block !important; }
 }
 
 @media (max-width: 480px) {
-  .kpi-grid, .kpi-grid-3, .three-col { grid-template-columns: 1fr 1fr !important; }
+  .kpi-grid, .kpi-grid-3, .three-col { grid-template-columns: 1fr !important; }
+  .dash-content-pad { padding: 14px 10px !important; }
+}
+
+/* ══════════════════════════════════════
+   Table Scroll Wrapper (mobile-safe)
+   ══════════════════════════════════════ */
+.lx-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.lx-table-wrap::-webkit-scrollbar { height: 6px; }
+.lx-table-wrap::-webkit-scrollbar-track { background: transparent; }
+.lx-table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.lx-table-wrap > table { min-width: 480px; }
+
+@media (max-width: 640px) {
+  .lx-table-wrap > table { min-width: 560px; }
+  .lx-table-wrap { position: relative; }
+  .lx-table-wrap::after {
+    content: '';
+    position: absolute; top: 0; right: 0; bottom: 6px;
+    width: 24px;
+    background: linear-gradient(to right, transparent, var(--bg-surface) 80%);
+    pointer-events: none;
+    opacity: 0.7;
+  }
 }
 
 /* ══════════════════════════════════════

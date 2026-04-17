@@ -1261,9 +1261,32 @@ html[data-theme="light"] .lx-card { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); }
 /* ═══════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════ */
+/* Tablet */
+@media (max-width: 1024px) {
+  .lx-grid-3 { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* Small tablet / phone landscape */
 @media (max-width: 900px) {
   .lx-grid-60-40 { grid-template-columns: 1fr !important; }
   .lx-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .lx-equal-col { grid-template-columns: 1fr !important; }
+}
+
+/* Phone portrait */
+@media (max-width: 640px) {
+  .lx-grid-3 { grid-template-columns: 1fr !important; }
+  .lx-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .lx-kpi-card { padding: 14px 14px 12px !important; }
+  .lx-page-header { flex-direction: column; align-items: flex-start !important; gap: 12px !important; }
+  .lx-card { padding: 16px !important; }
+  .lx-card-header { flex-wrap: wrap; gap: 8px; }
+}
+
+/* Small phone */
+@media (max-width: 480px) {
+  .lx-kpi-grid { grid-template-columns: 1fr !important; }
+  .lx-sources-grid { grid-template-columns: 1fr !important; }
 }
 
 /* ═══════════════════════════════════════════

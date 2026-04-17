@@ -402,6 +402,7 @@ export default function DashboardPage() {
                   <button className="lx-card-action" onClick={() => router.push('/dashboard/seo')}>View all →</button>
                 )}
               </div>
+              <div className="lx-table-wrap">
               <table className="lx-table">
                 <thead>
                   <tr>
@@ -424,6 +425,7 @@ export default function DashboardPage() {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           ) : <div />}
 
