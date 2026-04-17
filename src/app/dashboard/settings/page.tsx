@@ -15,45 +15,22 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import type { CSSProperties } from "react";
+import Image from "next/image";
 
 /* ────────────────────────────────────────────────────────────────
-   Inline brand SVGs (official colored logos) for Integrations tab
+   Official brand logos for Integrations tab (from public/integrations/)
    ──────────────────────────────────────────────────────────────── */
 function GSCIcon() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" width="28" height="28" aria-hidden="true">
-      <circle cx="24" cy="24" r="20" fill="#4285F4" />
-      <path d="M24 4A20 20 0 0 1 44 24H24V4z" fill="#EA4335" />
-      <path d="M24 24H4A20 20 0 0 0 24 44V24z" fill="#34A853" />
-      <path d="M24 24h20A20 20 0 0 1 24 44V24z" fill="#FBBC04" />
-      <circle cx="24" cy="24" r="7" fill="white" />
-    </svg>
-  );
+  return <Image src="/integrations/gsc.svg" alt="Google Search Console" width={28} height={28} />;
 }
 function GA4Icon() {
-  return (
-    <svg viewBox="0 0 48 48" fill="none" width="28" height="28" aria-hidden="true">
-      <rect x="31" y="4" width="8" height="40" rx="3" fill="#F9AB00" />
-      <rect x="16" y="16" width="8" height="28" rx="3" fill="#E37400" />
-      <circle cx="11" cy="38" r="6" fill="#E37400" />
-    </svg>
-  );
+  return <Image src="/integrations/ga4.svg" alt="Google Analytics 4" width={28} height={28} />;
 }
 function GoogleAdsIcon() {
-  return (
-    <svg viewBox="0 0 192 192" fill="none" width="28" height="28" aria-hidden="true">
-      <path d="M8.6 129.4l52.9-91.6c6.3-10.9 20.3-14.6 31.2-8.3s14.6 20.3 8.3 31.2L48 152.3c-6.3 10.9-20.3 14.6-31.2 8.3-10.9-6.3-14.6-20.3-8.2-31.2z" fill="#FBBC04" />
-      <path d="M183.4 129.4l-52.9-91.6c-6.3-10.9-20.3-14.6-31.2-8.3-10.9 6.3-14.6 20.3-8.3 31.2l52.9 91.6c6.3 10.9 20.3 14.6 31.2 8.3 10.9-6.3 14.6-20.3 8.3-31.2z" fill="#4285F4" />
-      <circle cx="38.7" cy="152.5" r="31.7" fill="#34A853" />
-    </svg>
-  );
+  return <Image src="/integrations/google-ads.svg" alt="Google Ads" width={28} height={28} />;
 }
 function MetaAdsIcon() {
-  return (
-    <svg viewBox="0 0 80 80" fill="none" width="28" height="28" aria-hidden="true">
-      <path d="M16.8 26.4c-4.4 5.2-7.2 12-7.2 17.6 0 6.8 2.4 11.2 6.4 11.2 3.2 0 5.6-2.4 9.6-9.6l5.2-9.6 3.2-5.6c4.8-8.4 8.8-12.8 15.2-12.8 5.6 0 10 3.2 13.6 8.8 4 6.4 6 14.4 6 22.4 0 8-3.6 13.2-10 13.2v-8.4c3.2 0 4.8-2.4 4.8-5.2 0-6-1.6-12.4-4.4-16.8-2-3.2-4.4-4.8-7.2-4.8-3.6 0-6 2.8-10 10l-5.2 9.6-3.2 5.6c-4.4 7.6-8 11.6-14.8 11.6C11.2 63.6 4 56 4 44c0-7.6 3.6-16 9.6-22.4l3.2 4.8z" fill="#0081FB" />
-    </svg>
-  );
+  return <Image src="/integrations/meta.svg" alt="Meta Ads" width={28} height={28} />;
 }
 
 /* ────────────────────────────────────────────────────────────────
