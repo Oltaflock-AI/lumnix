@@ -34,36 +34,45 @@ function useScrollReveal() {
 }
 
 export function PageShell({ title, description, icon: Icon, badge, action, children }: {
-  title: string; description: string; icon: LucideIcon; badge?: string; action?: React.ReactNode; children: React.ReactNode;
+  title?: string; description?: string; icon?: LucideIcon; badge?: string; action?: React.ReactNode; children: React.ReactNode;
 }) {
   const { c } = useTheme();
   const scrollRef = useScrollReveal();
+  const showHeader = Boolean(title || description || Icon || action);
   return (
     <div ref={scrollRef} className="page-enter" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
-      <div className="fade-in" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-          <div className="icon-pill scale-in">
-            <Icon size={18} color="#FF0066" />
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{title}</h1>
-              {badge && (
-                <span style={{
-                  fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-                  color: '#FF0066', backgroundColor: 'rgba(255,0,102,0.1)',
-                  padding: '3px 8px', borderRadius: 6,
-                  fontFamily: "'DM Sans', sans-serif",
-                }}>
-                  {badge}
-                </span>
+      {showHeader && (
+        <div className="fade-in" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+            {Icon && (
+              <div className="icon-pill scale-in">
+                <Icon size={18} color="#FF0066" />
+              </div>
+            )}
+            <div>
+              {title && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{title}</h1>
+                  {badge && (
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+                      color: '#FF0066', backgroundColor: 'rgba(255,0,102,0.1)',
+                      padding: '3px 8px', borderRadius: 6,
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}>
+                      {badge}
+                    </span>
+                  )}
+                </div>
+              )}
+              {description && (
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{description}</p>
               )}
             </div>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{description}</p>
           </div>
+          {action && <div style={{ flexShrink: 0 }}>{action}</div>}
         </div>
-        {action && <div style={{ flexShrink: 0 }}>{action}</div>}
-      </div>
+      )}
       {children}
     </div>
   );
