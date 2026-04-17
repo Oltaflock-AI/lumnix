@@ -959,3 +959,57 @@ table td {
   .lx-card-interactive:hover,
   .lx-card-interactive:focus-visible { transform: none !important; }
 }
+
+/* ══════════════════════════════════════
+   Pop card — 3D depth, hover glow lift, shimmer badge, send btn pulse
+   Used on landing AdSpy + Lumi cards
+   ══════════════════════════════════════ */
+.lx-pop-card {
+  transition: box-shadow 0.4s var(--ease-out-strong), border-color 0.4s var(--ease-out-strong);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lx-pop-card:hover {
+    box-shadow: 0 30px 100px rgba(0,0,0,0.6), 0 0 80px rgba(255,0,102,0.22), 0 0 0 1px rgba(255,0,102,0.5) inset;
+    border-color: rgba(255,0,102,0.65);
+  }
+}
+
+.lx-shimmer-badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: lx-shimmer 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes lx-shimmer {
+  0% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(120%); }
+}
+
+.lx-bottles > div {
+  animation: lx-bottle-float 3.2s ease-in-out infinite;
+}
+.lx-bottles > div:nth-child(1) { animation-delay: 0s; }
+.lx-bottles > div:nth-child(2) { animation-delay: 0.4s; }
+.lx-bottles > div:nth-child(3) { animation-delay: 0.8s; }
+@keyframes lx-bottle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.lx-send-btn:hover {
+  transform: scale(1.08) rotate(-8deg);
+  box-shadow: 0 10px 28px rgba(255,0,102,0.6);
+}
+.lx-send-btn:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-shimmer-badge::after,
+  .lx-bottles > div { animation: none !important; }
+  .lx-pop-card:hover { transform: none !important; }
+  .lx-send-btn:hover { transform: none !important; }
+}

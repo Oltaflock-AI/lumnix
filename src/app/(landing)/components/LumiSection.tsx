@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Activity, BarChart3, Clock, Send } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
+import { IntelCard } from './IntelCard';
 
 /* Lumi avatar — friendly glowing orb (mono 2.0 style) */
 function LumiAvatar({ size = 32 }: { size?: number }) {
@@ -134,37 +135,39 @@ export function LumiSection() {
 
         {/* Chat window */}
         <ScrollReveal delay={0.2}>
-          <div className="wr-glass" style={{ borderRadius: 20, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-            <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <LumiAvatar size={32} />
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', fontFamily: 'var(--font-display)' }}>Lumi</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>AI Marketing Assistant</div>
+          <IntelCard maxTilt={10} style={{ width: '100%' }}>
+            <div className="lx-pop-card wr-glass" style={{ borderRadius: 20, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.3), 0 0 50px rgba(255,0,102,0.06)', border: '1px solid rgba(255,0,102,0.18)', transformStyle: 'preserve-3d', transition: 'box-shadow 0.4s cubic-bezier(0.23,1,0.32,1), border-color 0.4s' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 12, transform: 'translateZ(20px)' }}>
+                <LumiAvatar size={36} />
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>Lumi</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: 600 }}>AI Marketing Assistant</div>
+                </div>
+                <span className="wr-pulse-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: '#34D399', marginLeft: 'auto', boxShadow: '0 0 12px rgba(52,211,153,0.7)' }} />
               </div>
-              <span className="wr-pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#34D399', marginLeft: 'auto' }} />
-            </div>
 
-            <div style={{ padding: 20, minHeight: 280, display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <div style={{ background: '#FF0066', color: '#fff', padding: '10px 14px', borderRadius: '18px 18px 4px 18px', fontSize: 13, maxWidth: '80%', lineHeight: 1.5, boxShadow: '0 4px 12px rgba(255,0,102,0.3)' }}>
-                  &ldquo;{convos[activeQ].q}&rdquo;
+              <div style={{ padding: 22, minHeight: 280, display: 'flex', flexDirection: 'column', gap: 14, transform: 'translateZ(30px)' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <div style={{ background: 'linear-gradient(135deg, #FF0066 0%, #E6005C 100%)', color: '#fff', padding: '12px 16px', borderRadius: '18px 18px 4px 18px', fontSize: 14, fontWeight: 700, maxWidth: '82%', lineHeight: 1.5, letterSpacing: '-0.01em', boxShadow: '0 6px 20px rgba(255,0,102,0.45)' }}>
+                    &ldquo;{convos[activeQ].q}&rdquo;
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
+                  <div style={{ flexShrink: 0, marginTop: 2 }}><LumiAvatar size={30} /></div>
+                  <div style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.06)', color: '#fff', padding: '14px 16px', borderRadius: '18px 18px 18px 4px', fontSize: 14, fontWeight: 600, lineHeight: 1.65, maxWidth: '85%', letterSpacing: '-0.005em' }}>
+                    {convos[activeQ].a}
+                  </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                <div style={{ flexShrink: 0, marginTop: 2 }}><LumiAvatar size={28} /></div>
-                <div style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.85)', padding: '12px 14px', borderRadius: '18px 18px 18px 4px', fontSize: 13, lineHeight: 1.65, maxWidth: '85%' }}>
-                  {convos[activeQ].a}
-                </div>
-              </div>
-            </div>
 
-            <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '9px 14px', fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>Ask Lumi anything...</div>
-              <div style={{ width: 34, height: 34, borderRadius: 9, background: '#FF0066', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-                <Send size={14} color="#fff" />
+              <div style={{ padding: '12px 18px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 11, transform: 'translateZ(15px)' }}>
+                <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 15px', fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>Ask Lumi anything...</div>
+                <button type="button" aria-label="Send" className="lx-send-btn" style={{ width: 38, height: 38, borderRadius: 10, background: 'linear-gradient(135deg, #FF0066 0%, #E6005C 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, border: 'none', boxShadow: '0 6px 18px rgba(255,0,102,0.45)', transition: 'transform 0.2s cubic-bezier(0.23,1,0.32,1), box-shadow 0.2s' }}>
+                  <Send size={15} color="#fff" strokeWidth={2.4} />
+                </button>
               </div>
             </div>
-          </div>
+          </IntelCard>
         </ScrollReveal>
       </div>
     </section>
