@@ -27,7 +27,7 @@ const FIVE_MINUTES_MS = 5 * 60 * 1000;
 // Body: { integration_id, workspace_id, days?: number }
 export async function POST(req: NextRequest) {
   try {
-    const { integration_id, workspace_id, days = 30 } = await req.json();
+    const { integration_id, workspace_id, days = 90 } = await req.json();
 
     const rateLimited = rateLimit(`sync:ga4:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;

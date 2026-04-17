@@ -24,8 +24,10 @@ async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
 const FIVE_MINUTES_MS = 5 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
+  let integration_id: string | undefined;
+  let workspace_id: string | undefined;
   try {
-    const { integration_id, workspace_id } = await req.json();
+    ({ integration_id, workspace_id } = await req.json());
 
     const rateLimited = rateLimit(`sync:gads:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;
@@ -96,7 +98,8 @@ export async function POST(req: NextRequest) {
     const campaigns = await withRetry(() => fetchGoogleAdsCampaigns(accessToken, customerId), 'Google Ads fetchCampaigns');
 
     const db = getSupabaseAdmin();
-    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    // 90d window so the dashboard date-range picker has real per-day history.
+    const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const endDate = new Date().toISOString().split('T')[0];
 
     // Delete existing data for this workspace in the date range
@@ -155,6 +158,25 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, campaigns_synced: campaigns.length, customer_id: customerId });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Sync failed' }, { status: 500 });
+    const message = error?.message || 'Sync failed';
+    console.error('Google Ads sync error:', error);
+    if (integration_id && workspace_id) {
+      try {
+        const db = getSupabaseAdmin();
+        await db.from('integrations').update({ status: 'error' }).eq('id', integration_id);
+        await db.from('sync_jobs').insert({
+          workspace_id,
+          integration_id,
+          job_type: 'manual',
+          status: 'error',
+          error_message: message.substring(0, 500),
+          started_at: new Date().toISOString(),
+          completed_at: new Date().toISOString(),
+        });
+      } catch (logErr) {
+        console.error('Failed to record sync_jobs error row:', logErr);
+      }
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

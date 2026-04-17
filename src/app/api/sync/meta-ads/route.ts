@@ -99,10 +99,11 @@ export async function POST(req: NextRequest) {
     // Lumnix displays everything in INR — we don't honor the raw account currency
     const currency = 'INR';
 
-    const insights = await withRetry(() => fetchMetaInsights(accessToken, adAccountId), 'Meta fetchInsights');
+    const insights = await withRetry(() => fetchMetaInsights(accessToken, adAccountId, 90), 'Meta fetchInsights');
 
-    // Store in dedicated meta_ads_data table
-    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    // Store in dedicated meta_ads_data table — clear + repopulate 90d window so the
+    // dashboard date-range picker has real per-day data to slice.
+    const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const endDate = new Date().toISOString().split('T')[0];
 
     await db.from('meta_ads_data')

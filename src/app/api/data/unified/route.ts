@@ -127,6 +127,8 @@ export async function GET(req: NextRequest) {
 
       if (fallback?.data && Array.isArray(fallback.data)) {
         for (const c of fallback.data) {
+          // Respect date window if record carries a date; else include (single-snapshot data).
+          if (c.date && (c.date < startDateStr || c.date > endDateStr)) continue;
           gAdsTotals.spend += Number(c.spend) || 0;
           gAdsTotals.clicks += Number(c.clicks) || 0;
           gAdsTotals.impressions += Number(c.impressions) || 0;
@@ -168,6 +170,7 @@ export async function GET(req: NextRequest) {
 
       if (fallback?.data && Array.isArray(fallback.data)) {
         for (const c of fallback.data) {
+          if (c.date && (c.date < startDateStr || c.date > endDateStr)) continue;
           metaTotals.spend += Number(c.spend) || 0;
           metaTotals.clicks += Number(c.clicks) || 0;
           metaTotals.impressions += Number(c.impressions) || 0;
