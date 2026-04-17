@@ -103,7 +103,7 @@ export default function GoogleAdsPage() {
   const enabledCampaigns = campaigns.filter((camp: any) => camp.status === 'ENABLED').length;
 
   return (
-    <PageShell title="Google Ads" description="Campaign performance & spend tracking" icon={DollarSign}>
+    <PageShell title="Google" titleAccent="Ads" description="Campaign performance & spend tracking">
       {loading || dataLoading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
           {[1, 2, 3, 4].map(i => (

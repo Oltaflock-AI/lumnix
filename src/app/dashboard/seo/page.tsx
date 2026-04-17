@@ -161,17 +161,12 @@ export default function SEOPage() {
   );
 
   return (
-    <PageShell>
-      <div className="lx-welcome" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <div>
-          <h1>SEO <span>Performance</span></h1>
-          <div className="lx-welcome-sub">
-            <span className="lx-welcome-dot"></span>
-            Google Search Console synced{hasData ? ` • ${keywords.length} keywords tracked` : ''}
-          </div>
-        </div>
-        <DateRangePicker value={days} onChange={setDays} />
-      </div>
+    <PageShell
+      title="SEO"
+      titleAccent="Performance"
+      description={`Google Search Console synced${hasData ? ` • ${keywords.length} keywords tracked` : ''}`}
+      action={<DateRangePicker value={days} onChange={setDays} />}
+    >
 
       {loading && (
         <>

@@ -49,7 +49,7 @@ export default function ActionsPage() {
   const suggested = actions.filter(a => a.status === 'suggested').length;
 
   return (
-    <PageShell title="Action Queue" description="AI-suggested actions — review, approve, or reject" icon={Zap}>
+    <PageShell title="Action" titleAccent="Queue" description="AI-suggested actions — review, approve, or reject">
       {/* Filter tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {(['all', 'suggested', 'approved', 'executed', 'rejected'] as const).map(f => (

@@ -157,7 +157,7 @@ export default function MetaAdsPage() {
   // Not connected state
   if (!loading && !metaIntegration) {
     return (
-      <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Share2}>
+      <PageShell title="Meta" titleAccent="Ads" description="Facebook & Instagram ad performance">
         <EmptyState
           icon={Share2}
           title="Connect Meta Ads"
@@ -173,9 +173,9 @@ export default function MetaAdsPage() {
 
   return (
     <PageShell
-      title="Meta Ads"
+      title="Meta"
+      titleAccent="Ads"
       description="Facebook & Instagram ad performance"
-      icon={Share2}
       action={
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {/* Account Switcher */}
@@ -247,15 +247,6 @@ export default function MetaAdsPage() {
 
       {!loading && hasData && totals && (
         <>
-          {/* Welcome header */}
-          <div className="lx-welcome">
-            <h1>Lumnix – <span>Meta Ads</span></h1>
-            <div className="lx-welcome-sub">
-              <span className="lx-welcome-dot"></span>
-              Performance across Facebook, Instagram &amp; Threads · {days}-day analysis
-            </div>
-          </div>
-
           {/* KPI Cards */}
           <div className="lx-kpi-grid">
             {/* Spend */}

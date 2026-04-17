@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
 import { apiFetch } from "@/lib/api-fetch";
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { PageShell } from '@/components/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -1460,15 +1461,11 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="lx-content">
-      {/* Page Header */}
-      <div className="lx-page-header">
-        <div>
-          <h1 className="lx-page-title">Settings</h1>
-          <p className="lx-page-desc">Manage integrations, brand, and preferences</p>
-        </div>
-      </div>
-
+    <PageShell
+      title="Workspace"
+      titleAccent="Settings"
+      description="Manage integrations, brand, and preferences"
+    >
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {/* Tab bar — mono styled */}
         <div className="lx-tabs">
@@ -1960,6 +1957,6 @@ export default function SettingsPage() {
         onCancel={() => setConfirmState(null)}
         onConfirm={() => confirmState?.onConfirm()}
       />
-    </div>
+    </PageShell>
   );
 }

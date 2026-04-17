@@ -21,7 +21,7 @@ export default function BriefingsPage() {
   }, [workspace?.id]);
 
   return (
-    <PageShell title="Daily Briefings" description="AI-generated daily marketing summaries" icon={Mail}>
+    <PageShell title="Daily" titleAccent="Briefings" description="AI-generated daily marketing summaries">
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {[1,2,3].map(i => <div key={i} style={{ height: 100, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, animation: 'pulse 1.5s infinite' }} />)}

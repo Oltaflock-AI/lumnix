@@ -10,6 +10,7 @@ import { formatNumber, formatINRCompact, formatROAS } from '@/lib/format';
 import { apiFetch } from '@/lib/api-fetch';
 import { supabase } from '@/lib/supabase';
 import { Sparkline } from '@/components/Sparkline';
+import { PageShell } from '@/components/PageShell';
 
 /* ─── Brand Icons (inline SVG for platform logos) ─── */
 const GA4Icon = () => (
@@ -227,22 +228,16 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="lx-content">
-      {/* Welcome */}
-      <div className="lx-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-        <div>
-          <h1>
-            {userName ? <>Welcome back, <span>{userName}</span></> : 'Dashboard'}
-          </h1>
-          <div className="lx-welcome-sub">
-            <span className="lx-welcome-dot" />
-            {connectedProviders.length > 0
-              ? <>{connectedProviders.length} source{connectedProviders.length > 1 ? 's' : ''} connected &middot; {lastSyncMin > 0 ? `Last synced ${lastSyncMin} min ago` : `Last ${days} days`}</>
-              : <>Connect your first integration to see live data</>}
-          </div>
-        </div>
-        <DateRangePicker value={days} onChange={setDays} />
-      </div>
+    <PageShell
+      title={userName ? 'Welcome back,' : ''}
+      titleAccent={userName || 'Dashboard'}
+      description={
+        connectedProviders.length > 0
+          ? `${connectedProviders.length} source${connectedProviders.length > 1 ? 's' : ''} connected · ${lastSyncMin > 0 ? `Last synced ${lastSyncMin} min ago` : `Last ${days} days`}`
+          : 'Connect your first integration to see live data'
+      }
+      action={<DateRangePicker value={days} onChange={setDays} />}
+    >
 
       {/* KPI Grid */}
       <div className="lx-kpi-grid">
@@ -468,17 +463,11 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Recommendations + Predictions */}
-      <div className="lx-grid-2" style={{ marginTop: 24 }}>
-        <RecommendationsWidget workspaceId={workspace?.id} />
-        <PredictionsWidget workspaceId={workspace?.id} />
-      </div>
-
       {/* AI Insights */}
       <AIInsightsWidget workspaceId={workspace?.id} />
 
       {/* Quick Actions */}
-      <div className="lx-card">
+      <div className="lx-card" style={{ marginTop: 24 }}>
         <div className="lx-card-header">
           <span className="lx-card-title">Quick Actions</span>
         </div>
@@ -509,7 +498,7 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }
 
@@ -678,113 +667,6 @@ const RecentActivity = memo(function RecentActivity({ workspaceId }: { workspace
           <span className="lx-activity-time">{a.time}</span>
         </div>
       ))}
-    </div>
-  );
-});
-
-/* ─── Recommendations Widget ─── */
-const RecommendationsWidget = memo(function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefined }) {
-  const { c } = useTheme();
-  const [recs, setRecs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
-
-  function loadRecs() {
-    if (!workspaceId) { setLoading(false); return; }
-    setLoading(true);
-    setFetchError(false);
-    apiFetch(`/api/recommendations/generate?workspace_id=${workspaceId}`)
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(d => { setRecs(d.recommendations || []); setLoading(false); })
-      .catch(() => { setFetchError(true); setLoading(false); });
-  }
-
-  useEffect(() => { loadRecs(); }, [workspaceId]);
-
-  const priorityPill: Record<string, string> = { high: 'lx-pill--danger', medium: 'lx-pill--warning', low: 'lx-pill--success' };
-
-  return (
-    <div className="lx-card">
-      <div className="lx-card-header">
-        <span className="lx-card-title"><Lightbulb size={14} style={{ display: 'inline', marginRight: 6, color: 'var(--primary)' }} />AI Recommendations</span>
-      </div>
-      {loading ? (
-        <div style={{ height: 80, background: 'var(--elevated)', borderRadius: 8 }} />
-      ) : fetchError ? (
-        <div style={{ textAlign: 'center', padding: '12px 0' }}>
-          <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 8 }}>Failed to load recommendations</p>
-          <button className="lx-card-action" onClick={loadRecs}>Retry</button>
-        </div>
-      ) : recs.length === 0 ? (
-        <p style={{ fontSize: 12, color: c.textMuted }}>No recommendations yet. Connect integrations and sync data to get AI-powered suggestions.</p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {recs.slice(0, 4).map((r: any, i: number) => (
-            <div key={r.id || i} className="lx-insight-item">
-              <span className={`lx-pill ${priorityPill[r.priority] || 'lx-pill--muted'}`} style={{ flexShrink: 0, height: 'fit-content' }}>{r.priority || 'low'}</span>
-              <div className="lx-insight-body">
-                <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>{r.title}</p>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>{r.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-});
-
-/* ─── Predictions Widget ─── */
-const PredictionsWidget = memo(function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined }) {
-  const { c } = useTheme();
-  const [prediction, setPrediction] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(false);
-
-  function loadPredictions() {
-    if (!workspaceId) { setLoading(false); return; }
-    setLoading(true);
-    setFetchError(false);
-    apiFetch(`/api/predictions?workspace_id=${workspaceId}&metric=sessions&days=14`)
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(d => { setPrediction(d); setLoading(false); })
-      .catch(() => { setFetchError(true); setLoading(false); });
-  }
-
-  useEffect(() => { loadPredictions(); }, [workspaceId]);
-
-  const forecast = prediction?.forecast || [];
-  const narrative = prediction?.narrative || '';
-  const avgForecast = useMemo(
-    () => forecast.length > 0 ? Math.round(forecast.reduce((s: number, f: any) => s + f.predicted, 0) / forecast.length) : 0,
-    [forecast]
-  );
-
-  return (
-    <div className="lx-card">
-      <div className="lx-card-header">
-        <span className="lx-card-title"><TrendingUp size={14} style={{ display: 'inline', marginRight: 6, color: 'var(--success)' }} />Traffic Forecast</span>
-      </div>
-      {loading ? (
-        <div style={{ height: 80, background: 'var(--elevated)', borderRadius: 8 }} />
-      ) : fetchError ? (
-        <div style={{ textAlign: 'center', padding: '12px 0' }}>
-          <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 8 }}>Failed to load forecast</p>
-          <button className="lx-card-action" onClick={loadPredictions}>Retry</button>
-        </div>
-      ) : forecast.length === 0 ? (
-        <p style={{ fontSize: 12, color: c.textMuted }}>{prediction?.message || 'Connect GA4 and sync data to see traffic predictions.'}</p>
-      ) : (
-        <div>
-          <div className="lx-kpi-value">~{formatNumber(avgForecast)}</div>
-          <p style={{ fontSize: 11, color: 'var(--text-sec)', marginBottom: 12 }}>avg daily sessions forecast (next 14 days)</p>
-          {narrative && (
-            <p style={{ fontSize: 12, color: c.textMuted, lineHeight: 1.6, padding: '10px 12px', background: 'var(--elevated)', borderRadius: 8 }}>
-              {narrative}
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 });

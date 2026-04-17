@@ -1,13 +1,8 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { type LucideIcon } from 'lucide-react';
-import { useTheme } from '@/lib/theme';
 import { Skeleton } from '@/components/ui/skeleton';
 
-/**
- * Intersection Observer hook for scroll-triggered reveal animations.
- * Adds 'revealed' class when element enters viewport.
- */
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -33,42 +28,74 @@ function useScrollReveal() {
   return ref;
 }
 
-export function PageShell({ title, description, icon: Icon, badge, action, children }: {
-  title?: string; description?: string; icon?: LucideIcon; badge?: string; action?: React.ReactNode; children: React.ReactNode;
+export function PageShell({
+  title,
+  titleAccent,
+  description,
+  badge,
+  action,
+  children,
+  // Deprecated — kept for backwards compatibility but no longer rendered
+  icon: _icon,
+}: {
+  title?: string;
+  titleAccent?: string;
+  description?: string;
+  badge?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  icon?: LucideIcon;
 }) {
-  const { c } = useTheme();
   const scrollRef = useScrollReveal();
-  const showHeader = Boolean(title || description || Icon || action);
+  const showHeader = Boolean(title || titleAccent || description || action);
   return (
     <div ref={scrollRef} className="page-enter" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
       {showHeader && (
-        <div className="fade-in" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
-            {Icon && (
-              <div className="icon-pill scale-in">
-                <Icon size={18} color="#FF0066" />
-              </div>
-            )}
-            <div>
-              {title && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>{title}</h1>
-                  {badge && (
-                    <span style={{
-                      fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-                      color: '#FF0066', backgroundColor: 'rgba(255,0,102,0.1)',
-                      padding: '3px 8px', borderRadius: 6,
-                      fontFamily: "'DM Sans', sans-serif",
-                    }}>
-                      {badge}
-                    </span>
-                  )}
-                </div>
+        <div
+          className="lx-welcome fade-in"
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 16,
+            flexWrap: 'wrap',
+          }}
+        >
+          <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ minWidth: 0 }}>
+              {(title || titleAccent) && (
+                <h1>
+                  {title}
+                  {title && titleAccent ? ' ' : ''}
+                  {titleAccent && <span>{titleAccent}</span>}
+                </h1>
               )}
               {description && (
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>{description}</p>
+                <div className="lx-welcome-sub">
+                  <span className="lx-welcome-dot" />
+                  {description}
+                </div>
               )}
             </div>
+            {badge && (
+              <span
+                style={{
+                  alignSelf: 'flex-start',
+                  marginTop: 4,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-accent)',
+                  background: 'var(--primary-glow)',
+                  padding: '3px 8px',
+                  borderRadius: 6,
+                  fontFamily: 'var(--font-body)',
+                }}
+              >
+                {badge}
+              </span>
+            )}
           </div>
           {action && <div style={{ flexShrink: 0 }}>{action}</div>}
         </div>
@@ -85,30 +112,23 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '64px 32px', textAlign: 'center' }}>
       <div style={{
         width: 72, height: 72, borderRadius: 16,
-        background: 'rgba(255,0,102,0.1)',
+        background: 'var(--primary-glow)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         marginBottom: 20,
       }}>
-        <Icon size={32} color="#FF0066" />
+        <Icon size={32} color="var(--color-accent)" />
       </div>
-      <h2 style={{ fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontWeight: 700, fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>
+      <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 20, color: 'var(--text-primary)', marginBottom: 8 }}>
         {title}
       </h2>
-      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, color: 'var(--text-secondary)', maxWidth: 360, lineHeight: 1.6, marginBottom: 24 }}>
+      <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: 'var(--text-secondary)', maxWidth: 360, lineHeight: 1.6, marginBottom: 24 }}>
         {description}
       </p>
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '10px 20px', background: '#FF0066', color: '#FFFFFF',
-            borderRadius: 8, border: 'none',
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: 14,
-            cursor: 'pointer', transition: 'background 150ms, box-shadow 150ms',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#FF3385'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(255,0,102,0.3)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#FF0066'; e.currentTarget.style.boxShadow = 'none'; }}
+          className="lx-btn-primary"
+          style={{ padding: '10px 20px', fontSize: 14 }}
         >
           {actionLabel}
         </button>
@@ -153,13 +173,11 @@ export function ChartSkeleton({ height = 240 }: { height?: number }) {
 export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: number }) {
   return (
     <div className="rounded-xl border border-[var(--border-strong)] overflow-hidden" style={{ backgroundColor: "var(--bg-surface)" }}>
-      {/* Header */}
       <div className="flex gap-4 p-4 border-b" style={{ borderColor: "var(--bg-elevated)" }}>
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-3 flex-1" />
         ))}
       </div>
-      {/* Rows */}
       {Array.from({ length: rows }).map((_, ri) => (
         <div key={ri} className="flex gap-4 p-4 border-b last:border-0" style={{ borderColor: "var(--bg-elevated)" }}>
           {Array.from({ length: cols }).map((_, ci) => (
@@ -174,9 +192,7 @@ export function TableSkeleton({ rows = 5, cols = 4 }: { rows?: number; cols?: nu
 export function PageSkeleton() {
   return (
     <div>
-      {/* Header skeleton */}
       <div className="flex items-start gap-4 mb-7">
-        <Skeleton className="h-9 w-9 rounded-[10px]" />
         <div>
           <Skeleton className="h-6 w-48 mb-2" />
           <Skeleton className="h-3 w-64" />

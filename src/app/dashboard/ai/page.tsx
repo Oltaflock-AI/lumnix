@@ -453,7 +453,7 @@ export default function AIPage() {
   const isIdle = !loading && !streaming;
 
   return (
-    <PageShell title="AI Assistant" description="AI-powered insights and chat for your marketing data" icon={Brain} badge="Claude AI">
+    <PageShell title="AI" titleAccent="Assistant" description="AI-powered insights and chat for your marketing data" badge="Claude AI">
       {/* Tab bar */}
       <div className="lx-tabs" style={{ marginBottom: 20 }}>
         <button

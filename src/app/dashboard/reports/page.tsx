@@ -1291,33 +1291,13 @@ export default function ReportsPage() {
     setGenerating(null);
   }
 
-  // Suppress unused import warning — PageShell kept for prop compatibility
-  void PageShell;
-
   return (
-    <div className="lx-content" style={{ padding: 28 }}>
-      {/* Page Header */}
-      <div className="lx-page-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 24 }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          background: 'var(--elevated)', border: '1px solid var(--border)',
-        }}>
-          <FileText size={22} style={{ color: 'var(--text-sec)' }} />
-        </div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em' }}>Reports</h1>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center',
-              padding: '3px 10px', borderRadius: 6,
-              fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
-              background: 'rgba(0,212,170,0.1)', color: 'var(--secondary)',
-            }}>Client-Ready</span>
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Client-ready marketing reports with real data and AI insights</p>
-        </div>
-      </div>
+    <PageShell
+      title="Marketing"
+      titleAccent="Reports"
+      description="Client-ready marketing reports with real data and AI insights"
+      badge="Client-Ready"
+    >
 
       {/* Date Range Selector */}
       <div style={{
@@ -1556,6 +1536,6 @@ export default function ReportsPage() {
       </div>
 
       {workspace?.id && <ScheduledReports workspaceId={workspace.id} />}
-    </div>
+    </PageShell>
   );
 }

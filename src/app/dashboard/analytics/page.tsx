@@ -154,18 +154,12 @@ export default function AnalyticsPage() {
   const geoData: { country: string; sessions: number; pct: number }[] = [];
 
   return (
-    <div className="lx-content">
-      {/* Welcome header */}
-      <div className="lx-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-        <div>
-          <h1><span>Analytics Overview</span></h1>
-          <div className="lx-welcome-sub">
-            <span className="lx-welcome-dot" />
-            {days}-day performance metrics
-          </div>
-        </div>
-        <DateRangePicker value={days} onChange={setDays} />
-      </div>
+    <PageShell
+      title="Analytics"
+      titleAccent="Overview"
+      description={`${days}-day performance metrics`}
+      action={<DateRangePicker value={days} onChange={setDays} />}
+    >
 
       {/* Loading state */}
       {loading && (
@@ -490,6 +484,6 @@ export default function AnalyticsPage() {
           )}
         </>
       )}
-    </div>
+    </PageShell>
   );
 }

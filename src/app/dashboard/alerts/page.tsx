@@ -5,6 +5,7 @@ import { useGSCData, useGA4Data } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
 import { apiFetch } from '@/lib/api-fetch';
+import { PageShell } from '@/components/PageShell';
 
 type Alert = {
   id: string;
@@ -217,15 +218,11 @@ export default function AlertsPage() {
   };
 
   return (
-    <div className="lx-content">
-      {/* Welcome */}
-      <div className="lx-welcome">
-        <h1>Your <span>Alerts</span></h1>
-        <div className="lx-welcome-sub">
-          <span className="lx-welcome-dot" />
-          {counts.total} unresolved alert{counts.total === 1 ? '' : 's'} across all data sources
-        </div>
-      </div>
+    <PageShell
+      title="Your"
+      titleAccent="Alerts"
+      description={`${counts.total} unresolved alert${counts.total === 1 ? '' : 's'} across all data sources`}
+    >
 
       {/* Filter Pills */}
       <div className="lx-alert-filters">
@@ -443,6 +440,6 @@ export default function AlertsPage() {
           </a>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

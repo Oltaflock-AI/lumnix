@@ -264,9 +264,9 @@ export default function CompetitorsPage() {
   /* ── RENDER ── */
   return (
     <PageShell
-      title="Competitor Ad Spy"
+      title="Competitor Ad"
+      titleAccent="Spy"
       description="Track and analyze your competitors' Meta Ads creative strategies"
-      icon={Eye}
       badge="INTELLIGENCE"
     >
       {/* KPI STATS ROW */}
