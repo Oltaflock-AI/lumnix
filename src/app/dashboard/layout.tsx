@@ -67,7 +67,7 @@ function WorkspaceSwitcher() {
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const { workspace, workspaces, switchWorkspace, refetch } = useWorkspaceCtx();
   const { theme } = useTheme();
-  const accent = workspace?.brand_color || '#7C3AED';
+  const accent = workspace?.brand_color || '#FF0066';
   const isDark = theme === 'dark';
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -185,19 +185,19 @@ function WorkspaceSwitcher() {
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: 8,
                     padding: '8px 8px', borderRadius: 6, border: 'none',
-                    backgroundColor: isFocused ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : isCurrent ? 'rgba(124,58,237,0.15)' : 'transparent',
+                    backgroundColor: isFocused ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)') : isCurrent ? 'rgba(255,0,102,0.15)' : 'transparent',
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'background-color 0.15s',
-                    outline: isFocused ? '2px solid #7C3AED' : 'none',
+                    outline: isFocused ? '2px solid #FF0066' : 'none',
                     outlineOffset: -2,
                   }}
                   onMouseEnter={e => { setFocusedIndex(index); if (!isCurrent) e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'; }}
                   onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
                   <div style={{ width: 22, height: 22, borderRadius: 5, backgroundColor: isCurrent ? accent : (isDark ? '#334155' : '#E2E8F0'), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: isCurrent ? 'white' : (isDark ? 'white' : '#374151'), flexShrink: 0 }}>{wsInitials}</div>
-                  <span style={{ fontSize: 12, color: isCurrent ? (isDark ? '#FFFFFF' : '#7C3AED') : (isDark ? '#94A3B8' : '#6B7280'), flex: 1, fontWeight: isCurrent ? 600 : 400 }}>{ws.name}</span>
+                  <span style={{ fontSize: 12, color: isCurrent ? (isDark ? '#FFFFFF' : '#FF0066') : (isDark ? '#94A3B8' : '#6B7280'), flex: 1, fontWeight: isCurrent ? 600 : 400 }}>{ws.name}</span>
                   {isCurrent && (
-                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#FF0066" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                   )}
                 </button>
               );
@@ -314,7 +314,7 @@ function AddWorkspaceModal({ onClose, onCreated }: { onClose: () => void; onCrea
           background: isDark ? '#1E293B' : '#FFFFFF',
           border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #E2E8F0',
           boxShadow: '0 24px 48px rgba(0,0,0,0.3)',
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: 'var(--font-body)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -375,7 +375,7 @@ function AddWorkspaceModal({ onClose, onCreated }: { onClose: () => void; onCrea
               onClick={() => { onClose(); router.push('/dashboard/settings?tab=billing'); }}
               style={{
                 padding: '8px 16px', borderRadius: 8, border: 'none',
-                background: '#7C3AED', color: '#fff',
+                background: '#FF0066', color: '#fff',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}
             >
@@ -387,7 +387,7 @@ function AddWorkspaceModal({ onClose, onCreated }: { onClose: () => void; onCrea
               disabled={loading || !name.trim()}
               style={{
                 padding: '8px 16px', borderRadius: 8, border: 'none',
-                background: '#7C3AED', color: '#fff',
+                background: '#FF0066', color: '#fff',
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
                 opacity: loading || !name.trim() ? 0.6 : 1,
               }}
@@ -415,7 +415,7 @@ function SignOutConfirmDialog({ isDark, onCancel, onConfirm }: { isDark: boolean
         width: 340, padding: 24, borderRadius: 14,
         background: isDark ? '#1E293B' : '#FFFFFF',
         border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid #E2E8F0',
-        boxShadow: '0 24px 48px rgba(0,0,0,0.3)', fontFamily: "'DM Sans', sans-serif",
+        boxShadow: '0 24px 48px rgba(0,0,0,0.3)', fontFamily: 'var(--font-body)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -482,11 +482,11 @@ const CommandPalette = memo(function CommandPalette({ open, onOpenChange }: { op
 });
 
 /* ── Sidebar ── */
-/* ── Section group colors for nav dots ── */
+/* ── Section group colors for nav dots (MONO 2.0) ── */
 const GROUP_DOT_COLORS: Record<string, string> = {
-  'Analytics': '#7C3AED',
-  'Advertising': '#0891B2',
-  'Intelligence': '#059669',
+  'Analytics': '#FF0066',
+  'Advertising': '#00D4AA',
+  'Intelligence': '#7B61FF',
 };
 
 const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, onToggleCollapse }: { onClose?: () => void; collapsed?: boolean; onToggleCollapse?: () => void }) {
@@ -511,43 +511,43 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
   }
 
   const sc = isDark ? {
-    bg: '#0B0F1A',
-    sectionLabel: '#8B88B8',
-    navText: '#C4C0E8',
-    navIcon: '#8B88B8',
-    navTextHover: '#F0EDFF',
-    navIconHover: '#A78BFA',
-    navHoverBg: 'rgba(124,58,237,0.10)',
-    navActiveText: '#F0EDFF',
-    navActiveIcon: '#A78BFA',
-    navActiveBg: 'rgba(124,58,237,0.12)',
-    wsName: '#F0EDFF',
-    userName: '#C4C0E8',
-    userSub: '#8B88B8',
-    separator: 'rgba(139,92,246,0.08)',
-    avatarBg: 'rgba(139,92,246,0.1)',
-    avatarBorder: 'rgba(139,92,246,0.15)',
-    mutedIcon: '#8B88B8',
-    border: 'rgba(139,92,246,0.08)',
+    bg: '#101018',
+    sectionLabel: '#6B7280',
+    navText: '#B0ACD0',
+    navIcon: '#6B7280',
+    navTextHover: '#F0F0F5',
+    navIconHover: '#FF3385',
+    navHoverBg: 'rgba(255,0,102,0.08)',
+    navActiveText: '#F0F0F5',
+    navActiveIcon: '#FF3385',
+    navActiveBg: 'rgba(255,0,102,0.12)',
+    wsName: '#F0F0F5',
+    userName: '#B0ACD0',
+    userSub: '#6B7280',
+    separator: 'rgba(255,255,255,0.05)',
+    avatarBg: 'rgba(255,0,102,0.08)',
+    avatarBorder: 'rgba(255,255,255,0.08)',
+    mutedIcon: '#6B7280',
+    border: 'rgba(255,255,255,0.05)',
   } : {
     bg: '#FFFFFF',
-    sectionLabel: '#7C7AAA',
-    navText: '#4A4770',
-    navIcon: '#7C7AAA',
-    navTextHover: '#18163A',
-    navIconHover: '#7C3AED',
-    navHoverBg: 'rgba(124,58,237,0.06)',
-    navActiveText: '#7C3AED',
-    navActiveIcon: '#7C3AED',
-    navActiveBg: 'rgba(124,58,237,0.08)',
-    wsName: '#18163A',
-    userName: '#4A4770',
-    userSub: '#7C7AAA',
-    separator: '#E4E2F4',
-    avatarBg: '#F0EEF9',
-    avatarBorder: '#E4E2F4',
-    mutedIcon: '#7C7AAA',
-    border: '#E4E2F4',
+    sectionLabel: '#6B7280',
+    navText: '#5C597A',
+    navIcon: '#9CA3AF',
+    navTextHover: '#111827',
+    navIconHover: '#FF0066',
+    navHoverBg: 'rgba(255,0,102,0.06)',
+    navActiveText: '#FF0066',
+    navActiveIcon: '#FF0066',
+    navActiveBg: 'rgba(255,0,102,0.08)',
+    wsName: '#111827',
+    userName: '#4B5563',
+    userSub: '#6B7280',
+    separator: 'rgba(0,0,0,0.06)',
+    avatarBg: '#F0F1F7',
+    avatarBorder: 'rgba(0,0,0,0.06)',
+    mutedIcon: '#9CA3AF',
+    border: 'rgba(0,0,0,0.06)',
   };
 
   useEffect(() => {
@@ -582,7 +582,7 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
         onClick={onToggleCollapse}
         title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
-        <Image src="/favicon.png" alt="Lumnix" width={30} height={30} priority style={{ borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
+        <Image src="/logo-mark.svg" alt="Lumnix" width={30} height={30} priority style={{ borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
         {!collapsed && (
           <span className="gradient-text" style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)', overflow: 'hidden', whiteSpace: 'nowrap' }}>Lumnix</span>
         )}
@@ -608,7 +608,7 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
                   fontSize: 11, fontWeight: 600, color: sc.sectionLabel,
                   textTransform: 'uppercase', letterSpacing: '0.06em',
                   padding: '14px 12px 5px 12px',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: 'var(--font-body)',
                   display: 'flex', alignItems: 'center', gap: 6,
                   margin: 0,
                 }}
@@ -642,7 +642,7 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
                     borderRadius: 8,
                     color: active ? sc.navActiveText : sc.navText,
                     fontSize: 13, fontWeight: active ? 600 : 500,
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: 'var(--font-body)',
                     textDecoration: 'none', cursor: 'pointer',
                     background: active ? sc.navActiveBg : 'transparent',
                     transition: 'all 0.15s cubic-bezier(0.23,1,0.32,1)',
@@ -669,8 +669,8 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
                       left: collapsed ? 2 : 0,
                       top: '50%', transform: 'translateY(-50%)',
                       width: 3, height: 20, borderRadius: '0 4px 4px 0',
-                      backgroundColor: '#7C3AED',
-                      boxShadow: '0 0 8px rgba(124,58,237,0.4)',
+                      backgroundColor: '#FF0066',
+                      boxShadow: '0 0 8px rgba(255,0,102,0.4)',
                     }} />
                   )}
                   <item.icon size={16} color={active ? sc.navActiveIcon : sc.navIcon} strokeWidth={1.5} style={{ transition: 'color 0.15s', flexShrink: 0 }} />
@@ -680,7 +680,7 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
                       {'shortcut' in item && item.shortcut && (
                         <kbd style={{
                           fontSize: 10, padding: '1px 5px', borderRadius: 4,
-                          backgroundColor: isDark ? 'rgba(139,92,246,0.06)' : '#F0EEF9',
+                          backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#F0F1F7',
                           border: `1px solid ${sc.separator}`,
                           fontFamily: 'var(--font-mono)',
                           color: sc.sectionLabel, opacity: 0.6,
@@ -689,7 +689,7 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
                         </kbd>
                       )}
                       {'badge' in item && item.badge && unreadAlerts > 0 && (
-                        <span style={{ background: '#7C3AED', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px' }}>{unreadAlerts}</span>
+                        <span style={{ background: '#FF0066', color: '#FFFFFF', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, lineHeight: '16px' }}>{unreadAlerts}</span>
                       )}
                     </>
                   )}
@@ -727,7 +727,7 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
             <>
               <div style={{
                 flex: 1, minWidth: 0,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'var(--font-body)',
                 fontSize: 13, fontWeight: 500, color: sc.userName,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
@@ -781,7 +781,7 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
                 onClick={toggle}
                 style={{
                   width: 32, height: 32, borderRadius: 8,
-                  background: isDark ? 'rgba(139,92,246,0.08)' : '#F0EEF9',
+                  background: isDark ? 'rgba(255,255,255,0.04)' : '#F0F1F7',
                   border: `1px solid ${sc.separator}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
@@ -790,12 +790,12 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
                   flexShrink: 0,
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(124,58,237,0.18)' : 'rgba(124,58,237,0.08)';
-                  e.currentTarget.style.borderColor = '#7C3AED';
-                  e.currentTarget.style.color = isDark ? '#C4B5FD' : '#7C3AED';
+                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,0,102,0.12)' : 'rgba(255,0,102,0.08)';
+                  e.currentTarget.style.borderColor = '#FF0066';
+                  e.currentTarget.style.color = '#FF3385';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(139,92,246,0.08)' : '#F0EEF9';
+                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.04)' : '#F0F1F7';
                   e.currentTarget.style.borderColor = sc.separator;
                   e.currentTarget.style.color = sc.mutedIcon;
                 }}
@@ -813,7 +813,7 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
                 display: 'flex', alignItems: 'center', gap: 5,
                 background: 'transparent', border: 'none', cursor: 'pointer',
                 padding: '4px 6px', borderRadius: 6,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: 'var(--font-body)',
                 fontSize: 12, fontWeight: 500, color: sc.mutedIcon,
                 transition: 'color 0.15s',
               }}
@@ -853,7 +853,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (!checked) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-page, #F8FAFC)' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <Image src="/favicon.png" alt="Lumnix" width={32} height={32} className="animate-pulse" style={{ borderRadius: 8, objectFit: 'contain', opacity: 0.6 }} />
+        <Image src="/logo-mark.svg" alt="Lumnix" width={32} height={32} className="animate-pulse" style={{ borderRadius: 8, objectFit: 'contain', opacity: 0.6 }} />
       </div>
     </div>
   );
@@ -907,7 +907,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: c.bgCard, borderBottom: `1px solid ${c.border}`, padding: '10px 16px', display: 'none' }} className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Image src="/favicon.png" alt="Lumnix" width={28} height={28} style={{ borderRadius: 7, objectFit: 'contain' }} />
+            <Image src="/logo-mark.svg" alt="Lumnix" width={28} height={28} style={{ borderRadius: 7, objectFit: 'contain' }} />
             <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)', color: c.text }}>Lumnix</span>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
@@ -950,11 +950,11 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
                 width: 240,
                 transition: 'border-color 150ms, box-shadow 150ms',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.08)'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF0066'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,0,102,0.08)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.boxShadow = 'none'; }}
             >
               <Search size={13} />
-              <span style={{ flex: 1, textAlign: 'left', fontFamily: "'DM Sans', sans-serif" }}>Search...</span>
+              <span style={{ flex: 1, textAlign: 'left', fontFamily: 'var(--font-body)' }}>Search...</span>
               <kbd style={{ fontSize: 10, padding: '2px 6px', borderRadius: 5, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontFamily: 'var(--font-mono)', color: c.textMuted, letterSpacing: '0.02em' }}>
                 ⌘K
               </kbd>
