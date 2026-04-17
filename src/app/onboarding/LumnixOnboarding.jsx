@@ -2,25 +2,27 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { Wordmark } from "@/components/Wordmark";
 
-// ─── Design Tokens ────────────────────────────────────────────────────────────
+// ─── Design Tokens — Mono 2.0 (hot pink on dark) ──────────────────────────────
+// Property names (purple*) are preserved for minimal diff. Values are Mono 2.0.
 const T = {
-  purple: "#7C3AED",
-  purpleDark: "#5B21B6",
-  purpleLight: "#EDE9FF",
-  purpleMid: "#A78BFA",
-  page: "#F8F7FC",
-  card: "#FFFFFF",
-  border: "#EAE8FF",
-  textPrimary: "#18163A",
-  textSecondary: "#6B7280",
-  textMuted: "#A09CC0",
-  green: "#059669",
-  greenLight: "#ECFDF5",
+  purple: "#FF0066",
+  purpleDark: "#D90057",
+  purpleLight: "rgba(255,0,102,0.14)",
+  purpleMid: "#FF3385",
+  page: "#0A0612",
+  card: "#14101E",
+  border: "rgba(255,255,255,0.08)",
+  textPrimary: "#FFFFFF",
+  textSecondary: "rgba(255,255,255,0.7)",
+  textMuted: "rgba(255,255,255,0.45)",
+  green: "#22C55E",
+  greenLight: "rgba(34,197,94,0.14)",
   amber: "#F59E0B",
-  amberLight: "#FEF3C7",
+  amberLight: "rgba(245,158,11,0.14)",
   red: "#EF4444",
-  redLight: "#FEF2F2",
+  redLight: "rgba(239,68,68,0.14)",
 };
 
 // ─── Shared Styles ────────────────────────────────────────────────────────────
@@ -32,7 +34,7 @@ const styles = {
     padding: "40px",
     width: "100%",
     maxWidth: "520px",
-    boxShadow: "0 4px 24px rgba(91,33,182,0.06)",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,0,102,0.08)",
   },
   logoMark: {
     width: "44px",
@@ -151,9 +153,8 @@ function ProgressBar({ step, total }) {
 // ─── Logo ─────────────────────────────────────────────────────────────────────
 function Logo() {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "32px" }}>
-      <div style={styles.logoMark}>L</div>
-      <span style={styles.logoText}>Lumnix</span>
+    <div style={{ marginBottom: "32px" }}>
+      <Wordmark size={32} />
     </div>
   );
 }
@@ -952,8 +953,8 @@ export default function LumnixOnboarding() {
         justifyContent: "center",
         background: T.page,
       }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-          <div style={{ ...styles.logoMark, opacity: 0.6 }}>L</div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", opacity: 0.75 }}>
+          <Wordmark size={40} markOnly />
           <span style={{ fontSize: "13px", color: T.textMuted }}>Loading...</span>
         </div>
       </div>

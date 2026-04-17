@@ -161,7 +161,7 @@ export default function SEOPage() {
   );
 
   return (
-    <PageShell title="SEO Intelligence" description="Google Search Console data — insights beyond native GSC" icon={Search}>
+    <PageShell>
       <div className="lx-welcome" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
         <div>
           <h1>SEO <span>Performance</span></h1>

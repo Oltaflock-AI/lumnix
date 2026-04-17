@@ -21,6 +21,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { apiFetch } from '@/lib/api-fetch';
 import Image from 'next/image';
+import { Wordmark } from '@/components/Wordmark';
 import { FeedbackDialog } from '@/components/FeedbackDialog';
 
 /* ── Navigation Config ── */
@@ -582,9 +583,10 @@ const SidebarInner = memo(function SidebarInner({ onClose, collapsed = false, on
         onClick={onToggleCollapse}
         title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
-        <Image src="/logo-mark.svg" alt="Lumnix" width={30} height={30} priority style={{ borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
-        {!collapsed && (
-          <span className="gradient-text" style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)', overflow: 'hidden', whiteSpace: 'nowrap' }}>Lumnix</span>
+        {collapsed ? (
+          <Wordmark size={30} markOnly />
+        ) : (
+          <Wordmark size={24} />
         )}
       </div>
 
@@ -907,8 +909,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: c.bgCard, borderBottom: `1px solid ${c.border}`, padding: '10px 16px', display: 'none' }} className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Image src="/logo-mark.svg" alt="Lumnix" width={28} height={28} style={{ borderRadius: 7, objectFit: 'contain' }} />
-            <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: 'var(--font-display)', color: c.text }}>Lumnix</span>
+            <Wordmark size={24} />
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             <Button variant="ghost" size="icon-sm" onClick={() => setCmdOpen(true)} aria-label="Search">
