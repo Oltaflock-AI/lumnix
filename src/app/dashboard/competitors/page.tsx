@@ -26,7 +26,7 @@ function timeAgo(s: string | null): string {
 
 type Tab = 'ads' | 'brief';
 type AdsFilter = 'all' | 'winning' | 'top_performer';
-type PlatformFilter = 'all' | 'google' | 'meta' | 'active' | 'paused';
+type AdStatusFilter = 'all' | 'active' | 'paused';
 
 /* ── Main Page ── */
 export default function CompetitorsPage() {
@@ -66,7 +66,7 @@ export default function CompetitorsPage() {
 
   // Grid filter + search
   const [gridSearch, setGridSearch] = useState('');
-  const [platformFilter, setPlatformFilter] = useState<PlatformFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<AdStatusFilter>('all');
 
   const selectedCompetitor = competitors.find((comp: any) => comp.id === selectedId);
 
@@ -255,10 +255,8 @@ export default function CompetitorsPage() {
   /* Recent ads across all competitors (derived from selected or all) */
   const recentAds = ads.slice(0, 8);
 
-  const platformFilters: { k: PlatformFilter; label: string }[] = [
-    { k: 'all', label: 'All Platforms' },
-    { k: 'google', label: 'Google Ads' },
-    { k: 'meta', label: 'Meta Ads' },
+  const statusFilters: { k: AdStatusFilter; label: string }[] = [
+    { k: 'all', label: 'All Ads' },
     { k: 'active', label: 'Active' },
     { k: 'paused', label: 'Paused' },
   ];
@@ -267,7 +265,7 @@ export default function CompetitorsPage() {
   return (
     <PageShell
       title="Competitor Ad Spy"
-      description="Track and analyze your competitors' advertising strategies across platforms"
+      description="Track and analyze your competitors' Meta Ads creative strategies"
       icon={Eye}
       badge="INTELLIGENCE"
     >
@@ -294,11 +292,11 @@ export default function CompetitorsPage() {
         </div>
 
         <div className="lx-spy-pill-row">
-          {platformFilters.map(p => (
+          {statusFilters.map(p => (
             <button
               key={p.k}
-              className={`lx-filter-pill${platformFilter === p.k ? ' active' : ''}`}
-              onClick={() => setPlatformFilter(p.k)}
+              className={`lx-filter-pill${statusFilter === p.k ? ' active' : ''}`}
+              onClick={() => setStatusFilter(p.k)}
               type="button"
             >
               {p.label}
