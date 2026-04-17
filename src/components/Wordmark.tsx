@@ -2,9 +2,13 @@ interface WordmarkProps {
   size?: number;
   markOnly?: boolean;
   className?: string;
+  variant?: 'theme' | 'light' | 'dark';
 }
 
-export function Wordmark({ size = 28, markOnly = false, className }: WordmarkProps) {
+export function Wordmark({ size = 28, markOnly = false, className, variant = 'theme' }: WordmarkProps) {
+  const textColor =
+    variant === 'light' ? '#FFFFFF' : variant === 'dark' ? '#0C0C10' : 'var(--text-primary)';
+
   return (
     <span
       className={className}
@@ -32,9 +36,9 @@ export function Wordmark({ size = 28, markOnly = false, className }: WordmarkPro
           style={{
             fontSize: size * 0.72,
             fontWeight: 800,
-            color: 'var(--text-primary)',
+            color: textColor,
             background: 'none',
-            WebkitTextFillColor: 'var(--text-primary)',
+            WebkitTextFillColor: textColor,
             WebkitBackgroundClip: 'initial',
             backgroundClip: 'initial',
             letterSpacing: '-0.04em',

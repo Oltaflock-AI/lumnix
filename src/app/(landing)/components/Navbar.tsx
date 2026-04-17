@@ -32,7 +32,7 @@ export function Navbar() {
       <a href="#main-content" className="wr-skip-link">Skip to content</a>
       <nav className={`wr-nav ${scrolled ? 'wr-nav--scrolled' : 'wr-nav--top'}`} aria-label="Main navigation">
         <Link href="/" className="wr-nav-brand">
-          <Wordmark size={28} />
+          <Wordmark size={28} variant="light" />
         </Link>
 
         <div className="wr-nav-right">

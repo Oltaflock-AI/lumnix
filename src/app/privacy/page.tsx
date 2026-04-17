@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { ThemeProvider, useTheme } from '@/lib/theme';
+import { Wordmark } from '@/components/Wordmark';
 
 function PrivacyInner() {
   const { c } = useTheme();
@@ -32,18 +33,16 @@ function PrivacyInner() {
         position: 'sticky', top: 0, zIndex: 100,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         padding: '0 40px', height: 64,
-        backgroundColor: 'rgba(10,10,10,0.8)',
-        backdropFilter: 'blur(16px) saturate(180%)',
-        borderBottom: `1px solid ${c.border}`,
+        backgroundColor: '#000000',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
         <button onClick={() => router.push('/')} style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          background: 'none', border: 'none', cursor: 'pointer', color: c.textSecondary, fontSize: 14,
+          display: 'flex', alignItems: 'center', gap: 12,
+          background: 'none', border: 'none', cursor: 'pointer', color: '#FFFFFF', fontSize: 14,
+          padding: 0,
         }}>
-          <ArrowLeft size={16} />
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.5px', color: c.text }}>
-            <span style={{ color: c.accent }}>L</span>umnix
-          </span>
+          <ArrowLeft size={16} color="#FFFFFF" />
+          <Wordmark size={28} variant="light" />
         </button>
       </nav>
 
