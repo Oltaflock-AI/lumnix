@@ -50,7 +50,7 @@ export function FeedbackDialog({ open, onClose, workspaceId, workspaceName, user
   const mailtoFallback = (() => {
     const subject = encodeURIComponent(`Lumnix Feedback — ${workspaceName || ''}`);
     const body = encodeURIComponent(`Workspace: ${workspaceName || ''}\nUser: ${userEmail || ''}\n\n${message}`);
-    return `mailto:khush@oltaflock.ai?subject=${subject}&body=${body}`;
+    return `mailto:admin@oltaflock.ai?subject=${subject}&body=${body}`;
   })();
 
   if (!open) return null;

@@ -138,7 +138,7 @@ function DataDeletionInner() {
 
         <h3 style={{ fontSize: 16, fontWeight: 600, color: c.text, marginTop: 28, marginBottom: 12 }}>Option 2: Email Us Directly</h3>
         <p style={para}>
-          Send an email to <a href="mailto:khush@oltaflock.ai?subject=Data%20Deletion%20Request%20-%20Lumnix" style={{ color: c.accent }}>khush@oltaflock.ai</a> with the subject line &quot;Data Deletion Request — Lumnix&quot; and include the email address associated with your account.
+          Send an email to <a href="mailto:admin@oltaflock.ai?subject=Data%20Deletion%20Request%20-%20Lumnix" style={{ color: c.accent }}>admin@oltaflock.ai</a> with the subject line &quot;Data Deletion Request — Lumnix&quot; and include the email address associated with your account.
         </p>
 
         <h3 style={{ fontSize: 16, fontWeight: 600, color: c.text, marginTop: 28, marginBottom: 12 }}>Option 3: From Your Dashboard</h3>
@@ -197,7 +197,7 @@ function DataDeletionInner() {
         </div>
 
         <p style={{ ...para, marginTop: 32 }}>
-          For questions about data deletion, contact us at <a href="mailto:khush@oltaflock.ai" style={{ color: c.accent }}>khush@oltaflock.ai</a>.
+          For questions about data deletion, contact us at <a href="mailto:admin@oltaflock.ai" style={{ color: c.accent }}>admin@oltaflock.ai</a>.
           See our full <a href="/privacy" style={{ color: c.accent }}>Privacy Policy</a> and <a href="/terms" style={{ color: c.accent }}>Terms of Service</a>.
         </p>
       </div>

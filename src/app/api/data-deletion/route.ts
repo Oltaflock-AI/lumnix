@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           from: 'Lumnix <notifications@oltaflock.ai>',
-          to: ['admin@oltaflock.ai', 'khush@oltaflock.ai'],
+          to: ['admin@oltaflock.ai'],
           subject: `Data Deletion Request: ${email.trim().slice(0, 60)}`,
           html: `
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 500px; margin: 0 auto; padding: 32px;">

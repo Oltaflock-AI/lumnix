@@ -75,7 +75,7 @@ export default function AboutPage() {
               <Link href="/auth/signup" className="wr-cta wr-cta--lg">
                 Get early access <span style={{ fontSize: 20 }}>→</span>
               </Link>
-              <a href="mailto:hello@oltaflock.ai" className="wr-cta-ghost">
+              <a href="mailto:admin@oltaflock.ai" className="wr-cta-ghost">
                 Talk to the founders
               </a>
             </div>
@@ -311,8 +311,8 @@ export default function AboutPage() {
                 <Link href="/auth/signup" className="wr-cta wr-cta--lg">
                   Claim your spot <span style={{ fontSize: 20 }}>→</span>
                 </Link>
-                <a href="mailto:hello@oltaflock.ai" className="wr-cta-ghost">
-                  hello@oltaflock.ai
+                <a href="mailto:admin@oltaflock.ai" className="wr-cta-ghost">
+                  admin@oltaflock.ai
                 </a>
               </div>
             </ScrollReveal>

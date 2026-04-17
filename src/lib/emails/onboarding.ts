@@ -55,7 +55,7 @@ function baseTemplate(content: string, previewText: string): string {
         &nbsp;·&nbsp;
         <a href="https://lumnix-ai.vercel.app/privacy" style="color: ${BRAND.textMuted}; text-decoration: none;">Privacy</a>
         &nbsp;·&nbsp;
-        <a href="mailto:khush@oltaflock.ai" style="color: ${BRAND.textMuted}; text-decoration: none;">Support</a>
+        <a href="mailto:admin@oltaflock.ai" style="color: ${BRAND.textMuted}; text-decoration: none;">Support</a>
         <br><br>
         © 2026 Oltaflock AI. All rights reserved.
       </p>
@@ -293,7 +293,7 @@ export function powerTipsEmail(userName: string): { subject: string; html: strin
 
       <div style="text-align: center; padding: 16px;">
         <p style="font-size: 14px;">
-          Questions? Reply to this email or reach out at <a href="mailto:khush@oltaflock.ai">khush@oltaflock.ai</a>. We read every message.
+          Questions? Reply to this email or reach out at <a href="mailto:admin@oltaflock.ai">admin@oltaflock.ai</a>. We read every message.
         </p>
       </div>
     `, '5 power moves to get 10x more from Lumnix — connect sources, set alerts, track competitors'),

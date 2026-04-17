@@ -125,7 +125,7 @@ function PrivacyInner() {
           <li>Lodge a complaint with a supervisory authority</li>
         </ul>
         <p style={para}>
-          To exercise any of these rights, contact us at <a href="mailto:khush@oltaflock.ai" style={{ color: c.accent }}>khush@oltaflock.ai</a>.
+          To exercise any of these rights, contact us at <a href="mailto:admin@oltaflock.ai" style={{ color: c.accent }}>admin@oltaflock.ai</a>.
         </p>
 
         <h2 style={heading('7')}>7. Third-Party Services</h2>
@@ -155,7 +155,7 @@ function PrivacyInner() {
           marginTop: 8,
         }}>
           <p style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 600, color: c.text }}>Oltaflock AI</p>
-          <p style={{ margin: '0 0 4px', fontSize: 14, color: c.textSecondary }}>Email: <a href="mailto:khush@oltaflock.ai" style={{ color: c.accent }}>khush@oltaflock.ai</a></p>
+          <p style={{ margin: '0 0 4px', fontSize: 14, color: c.textSecondary }}>Email: <a href="mailto:admin@oltaflock.ai" style={{ color: c.accent }}>admin@oltaflock.ai</a></p>
           <p style={{ margin: 0, fontSize: 14, color: c.textSecondary }}>Website: <a href="https://oltaflock.ai" target="_blank" rel="noopener noreferrer" style={{ color: c.accent }}>oltaflock.ai</a></p>
         </div>
       </div>

@@ -17,7 +17,7 @@ const cols = [
     title: 'Company',
     links: [
       { label: 'About', href: '/about' },
-      { label: 'Contact', href: 'mailto:hello@oltaflock.ai' },
+      { label: 'Contact', href: 'mailto:admin@oltaflock.ai' },
       { label: 'Blog', href: '/blog' },
     ],
   },

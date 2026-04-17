@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: 'Lumnix <notifications@oltaflock.ai>',
-          to: ['khush@oltaflock.ai'],
+          to: ['admin@oltaflock.ai'],
           reply_to: userEmail !== 'unknown' ? userEmail : undefined,
           subject: `💬 Feedback — ${workspace_name || 'Lumnix'}`,
           html: `

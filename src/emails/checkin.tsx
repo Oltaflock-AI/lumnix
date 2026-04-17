@@ -84,7 +84,7 @@ export function CheckinEmail({ name, user_id }: CheckinEmailProps) {
       </Text>
       <Text style={{ fontSize: '13px', color: '#6B7280', lineHeight: '1.6', margin: '0 0 24px' }}>
         Founder, Lumnix / Oltaflock AI{'\n'}
-        khush@oltaflock.ai{'\n'}
+        admin@oltaflock.ai{'\n'}
         lumnix-ai.vercel.app
       </Text>
 
@@ -95,7 +95,7 @@ export function CheckinEmail({ name, user_id }: CheckinEmailProps) {
             <CtaButton href={dashboardUrl}>{"Open Dashboard →"}</CtaButton>
           </td>
           <td style={{ textAlign: 'center' as const, paddingLeft: '8px' }}>
-            <CtaButton href="mailto:khush@oltaflock.ai" variant="outline">Give feedback</CtaButton>
+            <CtaButton href="mailto:admin@oltaflock.ai" variant="outline">Give feedback</CtaButton>
           </td>
         </tr>
       </table>
