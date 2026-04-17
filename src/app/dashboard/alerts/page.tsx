@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Bell, AlertCircle, AlertTriangle, Info, CheckCircle2, TrendingDown, TrendingUp, Search, BarChart3, X, RefreshCw } from 'lucide-react';
-import { PageShell } from '@/components/PageShell';
+import { AlertCircle, AlertTriangle, Info, CheckCircle2, X, Bell } from 'lucide-react';
 import { useGSCData, useGA4Data } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useTheme } from '@/lib/theme';
@@ -125,7 +124,7 @@ function generateAlerts(gscKeywords: any[], ga4Data: any[]): Alert[] {
 const severityConfig = {
   critical: { icon: AlertCircle, color: '#EF4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.15)' },
   warning:  { icon: AlertTriangle, color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.15)' },
-  info:     { icon: Info, color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', border: 'rgba(124,58,237,0.15)' },
+  info:     { icon: Info, color: '#FF0066', bg: 'rgba(255,0,102,0.08)', border: 'rgba(255,0,102,0.15)' },
   success:  { icon: CheckCircle2, color: '#10B981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.15)' },
 };
 
@@ -136,6 +135,8 @@ function mapAnomalySeverity(severity: string): Alert['severity'] {
   return 'info';
 }
 
+type FilterKey = 'all' | 'critical' | 'warning' | 'info';
+
 export default function AlertsPage() {
   const { c } = useTheme();
   const { workspace } = useWorkspaceCtx();
@@ -144,6 +145,7 @@ export default function AlertsPage() {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [anomalies, setAnomalies] = useState<any[]>([]);
   const [anomaliesLoading, setAnomaliesLoading] = useState(true);
+  const [filter, setFilter] = useState<FilterKey>('all');
 
   // Fetch anomalies from DB
   useEffect(() => {
@@ -197,80 +199,220 @@ export default function AlertsPage() {
   const counts = useMemo(() => ({
     critical: activeAlerts.filter(a => a.severity === 'critical').length,
     warning: activeAlerts.filter(a => a.severity === 'warning').length,
-    success: activeAlerts.filter(a => a.severity === 'success').length,
+    info: activeAlerts.filter(a => a.severity === 'info' || a.severity === 'success').length,
+    total: activeAlerts.length,
   }), [activeAlerts]);
 
+  const filteredAlerts = useMemo(() => {
+    if (filter === 'all') return activeAlerts;
+    if (filter === 'info') return activeAlerts.filter(a => a.severity === 'info' || a.severity === 'success');
+    return activeAlerts.filter(a => a.severity === filter);
+  }, [activeAlerts, filter]);
+
+  const severityLabel: Record<Alert['severity'], string> = {
+    critical: 'CRITICAL',
+    warning: 'WARNING',
+    info: 'INFO',
+    success: 'WIN',
+  };
+
   return (
-    <PageShell title="Alerts" description="AI-detected anomalies and opportunities from your live data" icon={Bell}>
-      {/* Summary bar */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-        {[
-          { label: 'Critical', count: counts.critical, color: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
-          { label: 'Warnings', count: counts.warning, color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
-          { label: 'Wins', count: counts.success, color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
-        ].map(s => (
-          <div key={s.label} style={{ padding: '12px 20px', borderRadius: 10, backgroundColor: s.bg, border: `1px solid ${s.color}20`, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: 'var(--font-display)' }}>{s.count}</span>
-            <span style={{ fontSize: 13, color: c.textSecondary }}>{s.label}</span>
-          </div>
-        ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: c.textMuted }}>
-          <RefreshCw size={13} />
-          <span>Based on your last sync</span>
+    <div className="lx-content">
+      {/* Welcome */}
+      <div className="lx-welcome">
+        <h1>Your <span>Alerts</span></h1>
+        <div className="lx-welcome-sub">
+          <span className="lx-welcome-dot" />
+          {counts.total} unresolved alert{counts.total === 1 ? '' : 's'} across all data sources
         </div>
       </div>
 
-      {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[1,2,3].map(i => (
-            <div key={i} style={{ height: 80, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
-          ))}
+      {/* Filter Pills */}
+      <div className="lx-alert-filters">
+        <button
+          type="button"
+          className={`lx-filter-pill${filter === 'all' ? ' active' : ''}`}
+          onClick={() => setFilter('all')}
+        >
+          All
+        </button>
+        <button
+          type="button"
+          className={`lx-filter-pill${filter === 'critical' ? ' active' : ''}`}
+          onClick={() => setFilter('critical')}
+        >
+          Critical ({counts.critical})
+        </button>
+        <button
+          type="button"
+          className={`lx-filter-pill${filter === 'warning' ? ' active' : ''}`}
+          onClick={() => setFilter('warning')}
+        >
+          Warning ({counts.warning})
+        </button>
+        <button
+          type="button"
+          className={`lx-filter-pill${filter === 'info' ? ' active' : ''}`}
+          onClick={() => setFilter('info')}
+        >
+          Info ({counts.info})
+        </button>
+      </div>
+
+      {/* Alert Summary Stats */}
+      <div className="lx-alert-summary">
+        <div className="lx-alert-stat lx-alert-stat--critical">
+          <div className="lx-alert-stat-icon">
+            <AlertCircle />
+          </div>
+          <div className="lx-alert-stat-content">
+            <div className="lx-alert-stat-label">Critical</div>
+            <div className="lx-alert-stat-value">{counts.critical}</div>
+          </div>
         </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {activeAlerts.length === 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', textAlign: 'center' }}>
-              <div style={{ width: 56, height: 56, background: '#ECFDF5', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, marginBottom: 16 }}>🏆</div>
-              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 17, fontWeight: 700, color: c.text, marginBottom: 8 }}>All clear!</h3>
-              <p style={{ fontSize: 14, color: c.textMuted, maxWidth: 320, margin: '0 auto', lineHeight: 1.6 }}>
-                No active alerts right now. Wins appear when Lumi detects positive signals — ranking improvements, traffic spikes, or campaigns beating benchmarks.
-              </p>
+
+        <div className="lx-alert-stat lx-alert-stat--warning">
+          <div className="lx-alert-stat-icon">
+            <AlertTriangle />
+          </div>
+          <div className="lx-alert-stat-content">
+            <div className="lx-alert-stat-label">Warning</div>
+            <div className="lx-alert-stat-value">{counts.warning}</div>
+          </div>
+        </div>
+
+        <div className="lx-alert-stat lx-alert-stat--info">
+          <div className="lx-alert-stat-icon">
+            <Info />
+          </div>
+          <div className="lx-alert-stat-content">
+            <div className="lx-alert-stat-label">Info</div>
+            <div className="lx-alert-stat-value">{counts.info}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Alerts Timeline */}
+      <div className="lx-alert-timeline">
+        <div className="lx-alert-timeline-title">Recent Alerts</div>
+
+        {loading ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[1, 2, 3].map(i => (
+              <div
+                key={i}
+                style={{
+                  height: 80,
+                  backgroundColor: c.bgCard,
+                  border: `1px solid ${c.border}`,
+                  borderRadius: 10,
+                  animation: 'pulse 1.5s ease-in-out infinite',
+                }}
+              />
+            ))}
+          </div>
+        ) : filteredAlerts.length === 0 ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '48px 24px',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                background: 'rgba(16,185,129,0.12)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 16,
+              }}
+            >
+              <CheckCircle2 size={26} color="#10B981" />
             </div>
-          )}
-          {activeAlerts.map(alert => {
+            <h3
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 17,
+                fontWeight: 700,
+                color: c.text,
+                marginBottom: 8,
+              }}
+            >
+              All clear!
+            </h3>
+            <p style={{ fontSize: 14, color: c.textMuted, maxWidth: 360, margin: '0 auto', lineHeight: 1.6 }}>
+              No active alerts right now. Wins and anomalies appear here when Lumi detects signals from your connected data sources.
+            </p>
+          </div>
+        ) : (
+          filteredAlerts.map(alert => {
             const cfg = severityConfig[alert.severity];
+            const itemClass =
+              alert.severity === 'critical'
+                ? 'lx-alert-item critical'
+                : alert.severity === 'warning'
+                  ? 'lx-alert-item warning'
+                  : 'lx-alert-item info';
+            const sevClass =
+              alert.severity === 'critical'
+                ? 'lx-alert-severity lx-alert-severity--critical'
+                : alert.severity === 'warning'
+                  ? 'lx-alert-severity lx-alert-severity--warning'
+                  : 'lx-alert-severity lx-alert-severity--info';
+            const SevIcon = cfg.icon;
             return (
-              <div key={alert.id} style={{ padding: '16px 20px', borderRadius: '0 12px 12px 0', backgroundColor: cfg.bg, border: `1px solid ${cfg.border}`, borderLeft: `3px solid ${cfg.color}`, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                <cfg.icon size={20} color={cfg.color} style={{ flexShrink: 0, marginTop: 1 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4 }}>{alert.title}</div>
-                  <div style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.5 }}>{alert.detail}</div>
-                  <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, backgroundColor: `${cfg.color}12`, color: cfg.color }}>
-                      {alert.source}
-                    </span>
-                    <span style={{ fontSize: 11, color: c.textMuted }}>Live data</span>
+              <div key={alert.id} className={itemClass}>
+                <div className="lx-alert-icon">
+                  <SevIcon />
+                </div>
+                <div className="lx-alert-content">
+                  <div className="lx-alert-header">
+                    <span className="lx-alert-title">{alert.title}</span>
+                    <span className={sevClass}>{severityLabel[alert.severity]}</span>
+                  </div>
+                  <div className="lx-alert-description">{alert.detail}</div>
+                  <div className="lx-alert-meta">
+                    <span className="lx-alert-source">{alert.source}</span>
+                    <span className="lx-alert-time">Live data</span>
+                    <div className="lx-alert-actions">
+                      <button
+                        type="button"
+                        className="lx-alert-btn lx-alert-btn--primary"
+                        onClick={() => handleDismiss(alert.id, alert.anomalyId)}
+                        aria-label={`Dismiss alert: ${alert.title}`}
+                      >
+                        <X size={12} aria-hidden="true" />
+                        Dismiss
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleDismiss(alert.id, alert.anomalyId)}
-                  aria-label={`Dismiss alert: ${alert.title}`}
-                  title="Dismiss"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: 4, flexShrink: 0 }}
-                >
-                  <X size={16} aria-hidden="true" />
-                </button>
               </div>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
 
       {!loading && dismissed.size > 0 && (
         <div style={{ marginTop: 16, textAlign: 'center' }}>
           <button
+            type="button"
             onClick={() => setDismissed(new Set())}
-            style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            style={{
+              fontSize: 12,
+              color: c.accent,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+            }}
           >
             Restore {dismissed.size} dismissed alert{dismissed.size > 1 ? 's' : ''}
           </button>
@@ -279,12 +421,28 @@ export default function AlertsPage() {
 
       {/* Setup note if no data */}
       {!loading && gscKeywords.length === 0 && ga4Data.length === 0 && (
-        <div style={{ marginTop: 20, padding: 20, borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, textAlign: 'center' }}>
+        <div
+          style={{
+            marginTop: 20,
+            padding: 20,
+            borderRadius: 12,
+            backgroundColor: c.bgCard,
+            border: `1px solid ${c.border}`,
+            textAlign: 'center',
+          }}
+        >
           <Bell size={28} color={c.textMuted} style={{ marginBottom: 10 }} />
-          <p style={{ fontSize: 14, color: c.textSecondary, marginBottom: 8 }}>Connect and sync GSC or GA4 to get real-time alerts</p>
-          <a href="/dashboard/settings" style={{ fontSize: 13, color: c.accent, textDecoration: 'none', fontWeight: 500 }}>Go to Settings &rarr;</a>
+          <p style={{ fontSize: 14, color: c.textSecondary, marginBottom: 8 }}>
+            Connect and sync GSC or GA4 to get real-time alerts
+          </p>
+          <a
+            href="/dashboard/settings"
+            style={{ fontSize: 13, color: c.accent, textDecoration: 'none', fontWeight: 500 }}
+          >
+            Go to Settings &rarr;
+          </a>
         </div>
       )}
-    </PageShell>
+    </div>
   );
 }

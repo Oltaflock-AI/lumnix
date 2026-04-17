@@ -12,8 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatNumber, formatINR } from '@/lib/format';
 import { apiFetch } from '@/lib/api-fetch';
-
-const COLORS = ['#1877F2', '#7C3AED', '#0891B2', '#10B981', '#F59E0B', '#ec4899'];
+import { Sparkline } from '@/components/Sparkline';
 
 function exportCampaignsCSV(campaigns: any[]) {
   const headers = ['Campaign', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'Conversions', 'ROAS'];
@@ -29,6 +28,15 @@ function exportCampaignsCSV(campaigns: any[]) {
   const a = document.createElement('a');
   a.href = url; a.download = 'lumnix-meta-ads.csv'; a.click();
   URL.revokeObjectURL(url);
+}
+
+// Meta brand logo (blue infinity) — inline SVG per skin rules
+function MetaLogo({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 80 80" fill="none" aria-hidden="true">
+      <path d="M16.8 26.4c-4.4 5.2-7.2 12-7.2 17.6 0 6.8 2.4 11.2 6.4 11.2 3.2 0 5.6-2.4 9.6-9.6l5.2-9.6 3.2-5.6c4.8-8.4 8.8-12.8 15.2-12.8 5.6 0 10 3.2 13.6 8.8 4 6.4 6 14.4 6 22.4 0 8-3.6 13.2-10 13.2v-8.4c3.2 0 4.8-2.4 4.8-5.2 0-6-1.6-12.4-4.4-16.8-2-3.2-4.4-4.8-7.2-4.8-3.6 0-6 2.8-10 10l-5.2 9.6-3.2 5.6c-4.4 7.6-8 11.6-14.8 11.6C11.2 63.6 4 56 4 44c0-7.6 3.6-16 9.6-22.4l3.2 4.8z" fill="#0081FB"/>
+    </svg>
+  );
 }
 
 export default function MetaAdsPage() {
@@ -124,6 +132,28 @@ export default function MetaAdsPage() {
     [c.bgCard, c.borderStrong, c.text]
   );
 
+  // Derived KPI displays (use — for missing)
+  const spendDisplay = totals ? formatINR(totals.spend) : '—';
+  const reachDisplay = totals && typeof totals.reach === 'number' && totals.reach > 0 ? formatNumber(totals.reach) : '—';
+  const cpmDisplay = totals && totals.impressions > 0
+    ? formatINR((totals.spend / totals.impressions) * 1000, 2)
+    : '—';
+  const roasDisplay = totals && totals.roas > 0 ? totals.roas.toFixed(2) + 'x' : '—';
+
+  // Placement mix aggregation — TODO: plug real placement breakdown when API exposes it
+  // For now show — when no breakdown. impressionsTotal used for donut center label.
+  const impressionsTotal = totals?.impressions ?? 0;
+
+  // Daily series for KPI sparklines
+  const dailySpendArr = useMemo(() => daily.map((d: any) => d.spend || 0), [daily]);
+  const dailyReachArr = useMemo(() => daily.map((d: any) => d.reach || 0), [daily]);
+  const dailyCPMArr = useMemo(
+    () => daily.map((d: any) => (d.impressions > 0 ? ((d.spend || 0) / d.impressions) * 1000 : 0)),
+    [daily]
+  );
+  // Per-day ROAS not exposed (no conversion_value in daily) — fall back to spend trend
+  const dailyROASArr = dailySpendArr;
+
   // Not connected state
   if (!loading && !metaIntegration) {
     return (
@@ -153,41 +183,21 @@ export default function MetaAdsPage() {
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '7px 12px', borderRadius: 8,
-                  backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
-                  color: c.text, fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
+                className="lx-btn-outline"
               >
                 {selectedAccount?.name || 'Select Account'}
-                <ChevronDown size={14} color={c.textMuted} />
+                <ChevronDown size={14} />
               </button>
               {accountDropdownOpen && (
-                <div style={{
-                  position: 'absolute', top: '100%', right: 0, marginTop: 4,
-                  backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
-                  borderRadius: 10, padding: 4, minWidth: 220, zIndex: 50,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                }}>
+                <div className="lx-date-dropdown open" style={{ right: 0 }}>
                   {accounts.map((acct: any) => (
                     <button
                       key={acct.id}
                       onClick={() => handleAccountSwitch(acct.id)}
-                      style={{
-                        display: 'block', width: '100%', textAlign: 'left',
-                        padding: '8px 12px', borderRadius: 6, border: 'none',
-                        backgroundColor: acct.id === selectedAccountId ? (isDark ? 'rgba(124,58,237,0.15)' : 'rgba(124,58,237,0.08)') : 'transparent',
-                        color: acct.id === selectedAccountId ? '#7C3AED' : c.text,
-                        fontSize: 13, fontWeight: acct.id === selectedAccountId ? 600 : 400,
-                        cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-                      }}
-                      onMouseEnter={e => { if (acct.id !== selectedAccountId) (e.target as HTMLElement).style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'; }}
-                      onMouseLeave={e => { if (acct.id !== selectedAccountId) (e.target as HTMLElement).style.backgroundColor = 'transparent'; }}
+                      className={`lx-date-option ${acct.id === selectedAccountId ? 'active' : ''}`}
                     >
                       <div>{acct.name}</div>
-                      <div style={{ fontSize: 11, color: c.textMuted, marginTop: 2 }}>{acct.id} · {acct.currency}</div>
+                      <div style={{ fontSize: 11, opacity: 0.6, marginTop: 2 }}>{acct.id} · {acct.currency}</div>
                     </button>
                   ))}
                 </div>
@@ -195,9 +205,8 @@ export default function MetaAdsPage() {
             </div>
           )}
 
-          {/* Single account display */}
           {accounts.length === 1 && (
-            <span style={{ fontSize: 12, color: c.textMuted, fontFamily: "'DM Sans', sans-serif" }}>
+            <span style={{ fontSize: 12, color: c.textMuted }}>
               {accounts[0].name}
             </span>
           )}
@@ -212,19 +221,17 @@ export default function MetaAdsPage() {
             <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} />
             {syncing ? 'Syncing...' : 'Sync Now'}
           </Button>
+
+          <DateRangePicker value={days} onChange={setDays} />
         </div>
       }
     >
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
-        <DateRangePicker value={days} onChange={setDays} />
-      </div>
-
       {loading && (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
-            {[1,2,3,4].map(i => <Skeleton key={i} className="h-[100px] rounded-xl" />)}
+          <div className="lx-kpi-grid">
+            {[1,2,3,4].map(i => <Skeleton key={i} className="h-[120px] rounded-xl" />)}
           </div>
-          <Skeleton className="h-[250px] rounded-xl" />
+          <Skeleton className="h-[260px] rounded-xl" />
         </>
       )}
 
@@ -240,88 +247,101 @@ export default function MetaAdsPage() {
 
       {!loading && hasData && totals && (
         <>
-          {/* KPI Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
-            {[
-              { key: 'spend', label: 'Total Spend', value: formatINR(totals.spend), icon: DollarSign, color: '#1877F2' },
-              { key: 'impressions', label: 'Impressions', value: formatNumber(totals.impressions), icon: Eye, color: '#7C3AED' },
-              { key: 'clicks', label: 'Clicks', value: formatNumber(totals.clicks), icon: MousePointer, color: '#0891B2' },
-              { key: 'ctr', label: 'Avg CTR', value: totals.impressions > 0 ? ((totals.clicks / totals.impressions) * 100).toFixed(2) + '%' : '0%', icon: TrendingUp, color: '#10B981' },
-            ].map(k => (
-              <div key={k.key} style={{
-                backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
-                borderRadius: 12, padding: 18,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 7, backgroundColor: `${k.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <k.icon size={14} color={k.color} />
-                  </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{k.label}</div>
-                </div>
-                <div style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 26, fontWeight: 700, color: c.text,
-                  letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums',
-                }}>{k.value}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Secondary KPIs */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
-            {[
-              { label: 'Reach', value: formatNumber(totals.reach) },
-              { label: 'Conversions', value: formatNumber(totals.conversions) },
-              { label: 'ROAS', value: totals.roas > 0 ? totals.roas.toFixed(2) + 'x' : '—' },
-            ].map(k => (
-              <div key={k.label} style={{
-                backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
-                borderRadius: 12, padding: '14px 18px',
-              }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{k.label}</div>
-                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: c.text, fontVariantNumeric: 'tabular-nums' }}>{k.value}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Spend Trend Chart */}
-          {daily.length > 1 && (
-            <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 16px', marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Daily Spend Trend
-              </div>
-              <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={daily}>
-                  <defs>
-                    <linearGradient id="metaSpendGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#1877F2" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="#1877F2" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: c.textMuted }} tickLine={false} axisLine={false} tickFormatter={(v: string) => v.slice(5)} />
-                  <YAxis tick={{ fontSize: 11, fill: c.textMuted }} tickLine={false} axisLine={false} width={50} tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatINR(v), 'Spend']} labelFormatter={(l: string) => l} />
-                  <Area type="monotone" dataKey="spend" stroke="#1877F2" strokeWidth={2} fill="url(#metaSpendGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
+          {/* Welcome header */}
+          <div className="lx-welcome">
+            <h1>Lumnix – <span>Meta Ads</span></h1>
+            <div className="lx-welcome-sub">
+              <span className="lx-welcome-dot"></span>
+              Performance across Facebook, Instagram &amp; Threads · {days}-day analysis
             </div>
-          )}
+          </div>
 
-          {/* Clicks + Impressions Chart */}
-          {daily.length > 1 && (
-            <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 16px', marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 16, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Clicks & Impressions
+          {/* KPI Cards */}
+          <div className="lx-kpi-grid">
+            {/* Spend */}
+            <div className="lx-kpi-card">
+              <div className="lx-kpi-top">
+                <span className="lx-kpi-label">Spend</span>
+                <div className="lx-icon-pill lx-icon-pill--meta"><MetaLogo /></div>
               </div>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={daily}>
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: c.textMuted }} tickLine={false} axisLine={false} tickFormatter={(v: string) => v.slice(5)} />
-                  <YAxis tick={{ fontSize: 11, fill: c.textMuted }} tickLine={false} axisLine={false} width={50} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Bar dataKey="clicks" fill="#7C3AED" radius={[4, 4, 0, 0]} name="Clicks" />
-                  <Bar dataKey="impressions" fill="#0891B220" radius={[4, 4, 0, 0]} name="Impressions" />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="lx-kpi-value">{spendDisplay}</div>
+              <Sparkline data={dailySpendArr} color="#0081FB" className="lx-sparkline" ariaLabel="Daily spend trend" />
+              <div className="lx-kpi-footer">
+                <span className="lx-kpi-compare">{days}-day total</span>
+              </div>
+            </div>
+
+            {/* Reach */}
+            <div className="lx-kpi-card">
+              <div className="lx-kpi-top">
+                <span className="lx-kpi-label">Reach</span>
+                <div className="lx-icon-pill lx-icon-pill--meta"><MetaLogo /></div>
+              </div>
+              <div className="lx-kpi-value">{reachDisplay}</div>
+              <Sparkline data={dailyReachArr} color="var(--primary)" className="lx-sparkline" ariaLabel="Daily reach trend" />
+              <div className="lx-kpi-footer">
+                <span className="lx-kpi-compare">Unique users reached</span>
+              </div>
+            </div>
+
+            {/* CPM */}
+            <div className="lx-kpi-card">
+              <div className="lx-kpi-top">
+                <span className="lx-kpi-label">CPM</span>
+                <div className="lx-icon-pill lx-icon-pill--meta"><MetaLogo /></div>
+              </div>
+              <div className="lx-kpi-value">{cpmDisplay}</div>
+              <Sparkline data={dailyCPMArr} color="#F59E0B" className="lx-sparkline" ariaLabel="Daily CPM trend" />
+              <div className="lx-kpi-footer">
+                <span className="lx-kpi-compare">Cost per 1K impressions</span>
+              </div>
+            </div>
+
+            {/* ROAS */}
+            <div className="lx-kpi-card">
+              <div className="lx-kpi-top">
+                <span className="lx-kpi-label">ROAS</span>
+                <div className="lx-icon-pill lx-icon-pill--meta"><MetaLogo /></div>
+              </div>
+              <div className="lx-kpi-value">{roasDisplay}</div>
+              <Sparkline data={dailyROASArr} color="#10B981" className="lx-sparkline" ariaLabel="Daily ROAS trend" />
+              <div className="lx-kpi-footer">
+                <span className="lx-kpi-compare">Return on ad spend</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Reach & Impressions Chart */}
+          {daily.length > 1 && (
+            <div className="lx-card" style={{ marginBottom: 24 }}>
+              <div className="lx-card-header">
+                <span className="lx-card-title">Reach &amp; Impressions ({days} Days)</span>
+              </div>
+              <div className="lx-chart-area" style={{ height: 220 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={daily}>
+                    <defs>
+                      <linearGradient id="gradMetaReach" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#0081FB" stopOpacity={0.2}/>
+                        <stop offset="100%" stopColor="#0081FB" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="gradMetaImpr" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#00D4AA" stopOpacity={0.15}/>
+                        <stop offset="100%" stopColor="#00D4AA" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: c.textMuted }} tickLine={false} axisLine={false} tickFormatter={(v: string) => v.slice(5)} />
+                    <YAxis tick={{ fontSize: 11, fill: c.textMuted }} tickLine={false} axisLine={false} width={50} />
+                    <Tooltip contentStyle={tooltipStyle} />
+                    <Area type="monotone" dataKey="impressions" stroke="#00D4AA" strokeWidth={2} fill="url(#gradMetaImpr)" name="Impressions" />
+                    <Area type="monotone" dataKey="reach" stroke="#0081FB" strokeWidth={2.5} fill="url(#gradMetaReach)" name="Reach" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="lx-chart-legend">
+                <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#0081FB' }}></span>Reach</span>
+                <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#00D4AA' }}></span>Impressions</span>
+              </div>
             </div>
           )}
 
@@ -333,7 +353,7 @@ export default function MetaAdsPage() {
               borderLeft: '3px solid #059669',
               borderRadius: '0 10px 10px 0',
               padding: '12px 16px',
-              marginBottom: 14,
+              marginBottom: 20,
               display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
             }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: '#065F46' }}>
@@ -345,95 +365,147 @@ export default function MetaAdsPage() {
             </div>
           )}
 
-          {/* Campaigns Table */}
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: `1px solid ${c.border}` }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: c.text, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Campaigns ({activeCampaigns.length} active{inactiveCampaigns.length > 0 ? ` · ${inactiveCampaigns.length} inactive` : ''})
+          {/* 60/40 grid — Ad Set Performance + Placement Mix */}
+          <div className="lx-grid-60-40">
+            {/* Campaign performance table */}
+            <div className="lx-card">
+              <div className="lx-card-header">
+                <span className="lx-card-title">Campaign Performance</span>
+                <button className="lx-card-action" onClick={() => exportCampaignsCSV(campaigns)}>
+                  <Download size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                  Export CSV
+                </button>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => exportCampaignsCSV(campaigns)} style={{ gap: 4 }}>
-                <Download size={13} /> Export
-              </Button>
-            </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>
+              <table className="lx-table">
                 <thead>
-                  <tr style={{ borderBottom: `1px solid ${c.border}` }}>
-                    {['Campaign', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'Conv.', 'ROAS'].map(h => (
-                      <th key={h} style={{ padding: '10px 16px', textAlign: h === 'Campaign' ? 'left' : 'right', fontSize: 11, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        {h}
-                      </th>
-                    ))}
+                  <tr>
+                    <th>Campaign</th>
+                    <th>Status</th>
+                    <th>Spend</th>
+                    <th>Clicks</th>
+                    <th>CTR</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {activeCampaigns.map((camp: any, i: number) => (
-                    <tr key={`active-${i}`} style={{ borderBottom: `1px solid ${c.border}` }}>
-                      <td style={{ padding: '12px 16px', color: c.text, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {camp.campaign_name || camp.name || 'Unknown'}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.text, fontVariantNumeric: 'tabular-nums' }}>
-                        {typeof camp.spend === 'number' ? formatINR(camp.spend) : camp.spend}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>
-                        {typeof camp.impressions === 'number' ? formatNumber(camp.impressions) : camp.impressions}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>
-                        {typeof camp.clicks === 'number' ? formatNumber(camp.clicks) : camp.clicks}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textSecondary }}>
-                        {typeof camp.ctr === 'number' ? camp.ctr.toFixed(2) + '%' : camp.ctr}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>
-                        {typeof camp.cpc === 'number' ? formatINR(camp.cpc, 2) : camp.cpc}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>
-                        {typeof camp.conversions === 'number' ? formatNumber(camp.conversions) : camp.conversions}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: camp.roas > 1 ? (isDark ? '#34D399' : '#059669') : c.textSecondary }}>
-                        {typeof camp.roas === 'number' ? (camp.roas > 0 ? camp.roas.toFixed(2) + 'x' : '—') : camp.roas}
-                      </td>
+                  {activeCampaigns.slice(0, 6).map((camp: any, i: number) => (
+                    <tr key={`active-${i}`}>
+                      <td><strong>{camp.campaign_name || camp.name || 'Unknown'}</strong></td>
+                      <td><span className="lx-pill lx-pill--primary">Active</span></td>
+                      <td>{typeof camp.spend === 'number' ? formatINR(camp.spend) : '—'}</td>
+                      <td>{typeof camp.clicks === 'number' ? formatNumber(camp.clicks) : '—'}</td>
+                      <td>{typeof camp.ctr === 'number' ? camp.ctr.toFixed(2) + '%' : '—'}</td>
                     </tr>
                   ))}
                   {inactiveCampaigns.length > 0 && (
                     <tr>
-                      <td colSpan={8} style={{ padding: 0 }}>
+                      <td colSpan={5} style={{ padding: 0 }}>
                         <button
                           onClick={() => setShowInactive(!showInactive)}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 8,
                             width: '100%', padding: '10px 16px',
-                            fontSize: 12, color: '#A09CC0',
+                            fontSize: 12, color: c.textMuted,
                             background: 'none', border: 'none', cursor: 'pointer',
                           }}
                         >
                           <div style={{ flex: 1, height: 1, background: c.border }} />
-                          <span>{showInactive ? '↑ Hide' : '↓ Show'} {inactiveCampaigns.length} inactive campaign{inactiveCampaigns.length > 1 ? 's' : ''} (₹0 spend)</span>
+                          <span>{showInactive ? '↑ Hide' : '↓ Show'} {inactiveCampaigns.length} inactive</span>
                           <div style={{ flex: 1, height: 1, background: c.border }} />
                         </button>
                       </td>
                     </tr>
                   )}
-                  {showInactive && inactiveCampaigns.map((camp: any, i: number) => (
-                    <tr key={`inactive-${i}`} style={{ borderBottom: `1px solid ${c.border}`, opacity: 0.5 }}>
-                      <td style={{ padding: '12px 16px', color: c.textMuted, fontWeight: 500, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {camp.campaign_name || camp.name || 'Unknown'}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted, fontVariantNumeric: 'tabular-nums' }}>—</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted, fontVariantNumeric: 'tabular-nums' }}>
-                        {typeof camp.impressions === 'number' ? formatNumber(camp.impressions) : '0'}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted, fontVariantNumeric: 'tabular-nums' }}>
-                        {typeof camp.clicks === 'number' ? formatNumber(camp.clicks) : '0'}
-                      </td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted }}>—</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted }}>—</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted }}>—</td>
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: c.textMuted }}>—</td>
+                  {showInactive && inactiveCampaigns.slice(0, 6).map((camp: any, i: number) => (
+                    <tr key={`inactive-${i}`} style={{ opacity: 0.5 }}>
+                      <td>{camp.campaign_name || camp.name || 'Unknown'}</td>
+                      <td><span className="lx-pill" style={{ background: c.bgCard, color: c.textMuted }}>Paused</span></td>
+                      <td>—</td>
+                      <td>{typeof camp.clicks === 'number' ? formatNumber(camp.clicks) : '0'}</td>
+                      <td>—</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Placement Mix */}
+            <div className="lx-card">
+              <div className="lx-card-header">
+                <span className="lx-card-title">Placement Mix</span>
+                <span className="lx-pill lx-pill--primary">{days} days</span>
+              </div>
+              {/* TODO: replace placeholder placement breakdown with real API data when Meta insights placement-level field is added */}
+              <div className="lx-donut-wrap">
+                <div className="lx-donut-chart">
+                  <svg viewBox="0 0 140 140">
+                    <circle cx="70" cy="70" r="56" fill="none" stroke={c.border} strokeWidth="14"/>
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="#FF0066" strokeWidth="14" strokeDasharray="145.6 253.4" strokeDashoffset="0" transform="rotate(-90 70 70)"/>
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="#00D4AA" strokeWidth="14" strokeDasharray="79.7 298.4" strokeDashoffset="-145.6" transform="rotate(-90 70 70)"/>
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="#7B61FF" strokeWidth="14" strokeDasharray="39.8 338.3" strokeDashoffset="-225.3" transform="rotate(-90 70 70)"/>
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="#FF8A00" strokeWidth="14" strokeDasharray="21.1 359.4" strokeDashoffset="-265.1" transform="rotate(-90 70 70)"/>
+                    <text x="70" y="65" textAnchor="middle" fill={c.text} fontFamily="Outfit" fontSize="20" fontWeight="700">
+                      {impressionsTotal > 0 ? formatNumber(impressionsTotal) : '—'}
+                    </text>
+                    <text x="70" y="82" textAnchor="middle" fill={c.textMuted} fontFamily="Plus Jakarta Sans" fontSize="10">impressions</text>
+                  </svg>
+                </div>
+                <div className="lx-donut-legend">
+                  <div className="lx-donut-row">
+                    <span className="lx-donut-color" style={{ background: '#FF0066' }}></span>
+                    <span className="lx-donut-label">Feed</span>
+                    <span className="lx-donut-val">—</span>
+                    <span className="lx-donut-pct">—</span>
+                  </div>
+                  <div className="lx-donut-row">
+                    <span className="lx-donut-color" style={{ background: '#00D4AA' }}></span>
+                    <span className="lx-donut-label">Stories</span>
+                    <span className="lx-donut-val">—</span>
+                    <span className="lx-donut-pct">—</span>
+                  </div>
+                  <div className="lx-donut-row">
+                    <span className="lx-donut-color" style={{ background: '#7B61FF' }}></span>
+                    <span className="lx-donut-label">Reels</span>
+                    <span className="lx-donut-val">—</span>
+                    <span className="lx-donut-pct">—</span>
+                  </div>
+                  <div className="lx-donut-row">
+                    <span className="lx-donut-color" style={{ background: '#FF8A00' }}></span>
+                    <span className="lx-donut-label">Other</span>
+                    <span className="lx-donut-val">—</span>
+                    <span className="lx-donut-pct">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Creative Performance — top campaigns as creative cards */}
+          <div className="lx-card" style={{ marginBottom: 24 }}>
+            <div className="lx-card-header">
+              <span className="lx-card-title">Creative Performance</span>
+              <span className="lx-card-action">Top campaigns by spend</span>
+            </div>
+            {/* TODO: swap card preview for real ad creative thumbnails when Meta creative API is integrated */}
+            <div className="lx-grid-3" style={{ margin: 0 }}>
+              {activeCampaigns.slice(0, 3).map((camp: any, i: number) => (
+                <div key={`creative-${i}`} className="lx-ad-card">
+                  <div className="lx-ad-preview">[Ad Creative Preview]</div>
+                  <div className="lx-ad-info">
+                    <div className="lx-ad-title">
+                      {camp.campaign_name || camp.name || 'Unknown'}
+                    </div>
+                    <div className="lx-ad-metrics">
+                      <span>Spend: {typeof camp.spend === 'number' ? formatINR(camp.spend) : '—'}</span>
+                      <span>CTR: {typeof camp.ctr === 'number' ? camp.ctr.toFixed(2) + '%' : '—'}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {activeCampaigns.length === 0 && (
+                <div style={{ gridColumn: '1 / -1', padding: 16, color: c.textMuted, fontSize: 13 }}>
+                  No active creatives to display.
+                </div>
+              )}
             </div>
           </div>
 

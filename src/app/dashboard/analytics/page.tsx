@@ -12,9 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { formatNumber } from '@/lib/format';
+import { Sparkline } from '@/components/Sparkline';
 
-const COLORS = ['#7C3AED','#0891B2','#10B981','#F59E0B','#ec4899','#8B5CF6'];
-
+const COLORS = ['#FF0066','#00D4AA','#10B981','#F59E0B','#ec4899','#FF3385'];
 
 function InsightCard({ icon: Icon, color, title, value, sub }: { icon: any; color: string; title: string; value: string; sub: string }) {
   const { c } = useTheme();
@@ -43,6 +43,24 @@ function exportPagesCSV(pages: any[]) {
   URL.revokeObjectURL(url);
 }
 
+// Gradient color palette for progress bars (mockup parity)
+const PROG_COLORS = ['#FF0066', '#00D4AA', '#7B61FF', '#FF8A00', '#EF4444', '#F59E0B', '#3B82F6', '#10B981'];
+const GEO_GRADIENTS = [
+  'linear-gradient(90deg, #FF0066, #FF3385)',
+  'linear-gradient(90deg, #00D4AA, #00E8BE)',
+  'linear-gradient(90deg, #7B61FF, #9078FF)',
+  'linear-gradient(90deg, #FF8A00, #FFB000)',
+  'linear-gradient(90deg, #EF4444, #F87171)',
+];
+
+// Format seconds to "Xm YYs"
+function fmtDuration(sec: number): string {
+  if (!sec || !isFinite(sec)) return '—';
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return `${m}m ${String(s).padStart(2, '0')}s`;
+}
+
 export default function AnalyticsPage() {
   const [days, setDays] = useState(30);
   const [syncing, setSyncing] = useState(false);
@@ -63,12 +81,10 @@ export default function AnalyticsPage() {
   const pagesData: any[] = pagesResp?.data || [];
 
   const hasData = overviewData.length > 0;
-  // Check if we ever had data (to distinguish "never synced" from "no data for this range")
   const { data: anyDataCheck } = useGA4Data(workspaceId, 'overview', 90);
   const hasSyncedBefore = (anyDataCheck?.data?.length || 0) > 0;
 
-  // KPI totals + week-over-week + anomalies, memoized
-  const { totalSessions, totalUsers, totalPageviews, pagesPerSession, wowChange, anomalies, avgSessions } = useMemo(() => {
+  const { totalSessions, totalUsers, totalPageviews, pagesPerSession, wowChange, anomalies, avgSessions, avgSessionDuration, bounceRate } = useMemo(() => {
     const sessions = overviewData.reduce((s: number, r: any) => s + (r.sessions || 0), 0);
     const users = overviewData.reduce((s: number, r: any) => s + (r.users || 0), 0);
     const pageviews = overviewData.reduce((s: number, r: any) => s + (r.pageviews || 0), 0);
@@ -76,6 +92,10 @@ export default function AnalyticsPage() {
     const thisWeek = overviewData.slice(half).reduce((s: number, r: any) => s + (r.sessions || 0), 0);
     const lastWeek = overviewData.slice(0, half).reduce((s: number, r: any) => s + (r.sessions || 0), 0);
     const avg = sessions / (overviewData.length || 1);
+    const totalDur = overviewData.reduce((s: number, r: any) => s + ((r.avgSessionDuration || r.avg_session_duration || 0) * (r.sessions || 0)), 0);
+    const avgDur = sessions > 0 ? totalDur / sessions : 0;
+    const bounceTotal = overviewData.reduce((s: number, r: any) => s + ((r.bounceRate || r.bounce_rate || 0) * (r.sessions || 0)), 0);
+    const avgBounce = sessions > 0 ? bounceTotal / sessions : 0;
     return {
       totalSessions: sessions,
       totalUsers: users,
@@ -84,6 +104,8 @@ export default function AnalyticsPage() {
       wowChange: lastWeek > 0 ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : 0,
       anomalies: overviewData.filter((r: any) => r.sessions > avg * 1.5 || r.sessions < avg * 0.5),
       avgSessions: avg,
+      avgSessionDuration: avgDur,
+      bounceRate: avgBounce,
     };
   }, [overviewData]);
 
@@ -92,6 +114,24 @@ export default function AnalyticsPage() {
     sessions: r.sessions || 0,
     users: r.users || 0,
   })), [overviewData]);
+
+  // Daily series for KPI sparklines (real GA4 overview data)
+  const usersSeries = useMemo<number[]>(
+    () => overviewData.map((r: any) => Number(r.users) || 0),
+    [overviewData]
+  );
+  const pageviewsSeries = useMemo<number[]>(
+    () => overviewData.map((r: any) => Number(r.pageviews) || 0),
+    [overviewData]
+  );
+  const sessionsSeries = useMemo<number[]>(
+    () => overviewData.map((r: any) => Number(r.sessions) || 0),
+    [overviewData]
+  );
+  const bounceRateSeries = useMemo<number[]>(
+    () => overviewData.map((r: any) => Number(r.bounceRate ?? r.bounce_rate) || 0),
+    [overviewData]
+  );
 
   const topSources = useMemo(
     () => [...sourcesData].sort((a, b) => (b.sessions || 0) - (a.sessions || 0)).slice(0, 8),
@@ -107,32 +147,52 @@ export default function AnalyticsPage() {
     [c.bgCard, c.borderStrong, c.text]
   );
 
+  // Device mix — GA4 data may not include this; fall back to placeholder rendering
+  const deviceMix: { label: string; value: number; pct: number; color: string }[] = [];
+
+  // Geography — GA4 data may not include this; empty until wired
+  const geoData: { country: string; sessions: number; pct: number }[] = [];
+
   return (
-    <PageShell title="Web Analytics" description="GA4 traffic data — sessions, users, sources, and top pages" icon={BarChart3}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
+    <div className="lx-content">
+      {/* Welcome header */}
+      <div className="lx-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+        <div>
+          <h1><span>Analytics Overview</span></h1>
+          <div className="lx-welcome-sub">
+            <span className="lx-welcome-dot" />
+            {days}-day performance metrics
+          </div>
+        </div>
         <DateRangePicker value={days} onChange={setDays} />
       </div>
 
+      {/* Loading state */}
       {loading && (
-        <>
-          <div className="kpi-grid">{[1,2,3,4].map(i => <Skeleton key={i} className="h-[100px] rounded-xl" />)}</div>
-          <Skeleton className="h-[200px] rounded-xl" />
-        </>
+        <div className="lx-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 240 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 32, height: 32, border: `3px solid ${c.border}`, borderTopColor: '#FF0066', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ fontSize: 13, color: c.textMuted }}>Loading analytics…</div>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        </div>
       )}
 
+      {/* Empty: synced before, no data in range */}
       {!loading && !hasData && hasSyncedBefore && (
-        <div style={{ textAlign: 'center', padding: '40px 20px', borderRadius: 12, border: `1px dashed ${c.border}`, backgroundColor: c.bgCard }}>
+        <div className="lx-card" style={{ textAlign: 'center', padding: '40px 20px', borderStyle: 'dashed' }}>
           <p style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4 }}>No data for the last {days} days</p>
           <p style={{ fontSize: 13, color: c.textMuted }}>Try a longer date range or sync to pull the latest data.</p>
         </div>
       )}
 
+      {/* Empty: never synced */}
       {!loading && !hasData && !hasSyncedBefore && (
         <EmptyState
           icon={BarChart3}
           title="No GA4 data found"
           description="Your Google Analytics account is connected. Click Sync Now to pull your analytics data."
-          actionLabel={syncing ? "Syncing..." : "Sync Now"}
+          actionLabel={syncing ? 'Syncing...' : 'Sync Now'}
           onAction={() => {
             if (!workspaceId) { router.push('/dashboard/settings'); return; }
             setSyncing(true);
@@ -158,247 +218,278 @@ export default function AnalyticsPage() {
 
       {!loading && hasData && (
         <>
-          {/* KPIs */}
-          {(() => {
-            const kpis = [
-              { key: 'sessions', label: 'Sessions', value: totalSessions.toLocaleString('en-IN'), sub: `${days}d period`, trend: wowChange, big: true },
-              { key: 'users', label: 'Users', value: totalUsers.toLocaleString('en-IN'), sub: 'Unique visitors', trend: null },
-              { key: 'pageviews', label: 'Pageviews', value: totalPageviews.toLocaleString('en-IN'), sub: `${pagesPerSession} pages/session`, trend: null },
-              { key: 'wow', label: 'WoW Change', value: `${wowChange > 0 ? '+' : ''}${wowChange}%`, sub: 'vs previous period', wowCard: true, wowNegative: wowChange < 0 },
-            ];
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 20 }}>
-                {kpis.map(k => {
-                  const isWowNeg = k.wowCard && k.wowNegative;
-                  const isWowPos = k.wowCard && !k.wowNegative && wowChange !== 0;
+          {/* KPI Cards */}
+          <div className="lx-kpi-grid">
+            {/* Users */}
+            <div className="lx-kpi-card">
+              <div className="lx-kpi-top">
+                <span className="lx-kpi-label">Users</span>
+                <div className="lx-icon-pill lx-icon-pill--primary">
+                  <Users size={16} color="#FF0066" strokeWidth={1.8} />
+                </div>
+              </div>
+              <div className="lx-kpi-value">{totalUsers > 0 ? totalUsers.toLocaleString('en-US') : '—'}</div>
+              <Sparkline
+                data={usersSeries}
+                color="#FF0066"
+                className="lx-sparkline"
+                ariaLabel="Users trend"
+              />
+              <div className="lx-kpi-footer">
+                {wowChange !== 0 ? (
+                  <span className={`lx-delta ${wowChange > 0 ? 'lx-delta--up' : 'lx-delta--down'}`}>
+                    {wowChange > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                    {Math.abs(wowChange)}%
+                  </span>
+                ) : (
+                  <span className="lx-kpi-compare">—</span>
+                )}
+                <span className="lx-kpi-compare">vs prev. period</span>
+              </div>
+            </div>
+
+            {/* Pageviews */}
+            <div className="lx-kpi-card">
+              <div className="lx-kpi-top">
+                <span className="lx-kpi-label">Pageviews</span>
+                <div className="lx-icon-pill lx-icon-pill--primary">
+                  <MousePointer size={16} color="#FF0066" strokeWidth={1.8} />
+                </div>
+              </div>
+              <div className="lx-kpi-value">{totalPageviews > 0 ? totalPageviews.toLocaleString('en-US') : '—'}</div>
+              <Sparkline
+                data={pageviewsSeries}
+                color="#00D4AA"
+                className="lx-sparkline"
+                ariaLabel="Pageviews trend"
+              />
+              <div className="lx-kpi-footer">
+                <span className="lx-kpi-compare">{pagesPerSession} pages/session</span>
+              </div>
+            </div>
+
+            {/* Avg Session */}
+            <div className="lx-kpi-card">
+              <div className="lx-kpi-top">
+                <span className="lx-kpi-label">Avg Session</span>
+                <div className="lx-icon-pill lx-icon-pill--primary">
+                  <Clock size={16} color="#FF0066" strokeWidth={1.8} />
+                </div>
+              </div>
+              <div className="lx-kpi-value">{avgSessionDuration > 0 ? fmtDuration(avgSessionDuration) : '—'}</div>
+              <Sparkline
+                data={sessionsSeries}
+                color="#7B61FF"
+                className="lx-sparkline"
+                ariaLabel="Sessions trend"
+              />
+              <div className="lx-kpi-footer">
+                <span className="lx-kpi-compare">avg duration</span>
+              </div>
+            </div>
+
+            {/* Bounce Rate */}
+            <div className="lx-kpi-card">
+              <div className="lx-kpi-top">
+                <span className="lx-kpi-label">Bounce Rate</span>
+                <div className="lx-icon-pill lx-icon-pill--primary">
+                  <AlertCircle size={16} color="#FF0066" strokeWidth={1.8} />
+                </div>
+              </div>
+              <div className="lx-kpi-value">{bounceRate > 0 ? `${(bounceRate * (bounceRate > 1 ? 1 : 100)).toFixed(1)}%` : '—'}</div>
+              <Sparkline
+                data={bounceRateSeries}
+                color="#F59E0B"
+                className="lx-sparkline"
+                ariaLabel="Bounce rate trend"
+              />
+              <div className="lx-kpi-footer">
+                <span className="lx-kpi-compare">session-level</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Large Area Chart: Sessions over Time */}
+          <div className="lx-card" style={{ marginBottom: 24 }}>
+            <div className="lx-card-header">
+              <span className="lx-card-title">Sessions over Time</span>
+              <span className="lx-pill lx-pill--primary">{days} days</span>
+            </div>
+            <div className="lx-chart-area">
+              <ResponsiveContainer width="100%" height={220}>
+                <AreaChart data={trendData} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
+                  <defs>
+                    <linearGradient id="gSessions" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#FF0066" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="#FF0066" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="gUsers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#00D4AA" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="#00D4AA" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="day" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 11 }} axisLine={false} tickLine={false} interval={2} />
+                  <YAxis orientation="right" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <ReferenceLine y={Math.round(avgSessions)} stroke="rgba(255,0,102,0.3)" strokeDasharray="4 4" />
+                  <Area type="monotone" dataKey="users" stroke="#00D4AA" fill="url(#gUsers)" strokeWidth={2.5} dot={false} />
+                  <Area type="monotone" dataKey="sessions" stroke="#FF0066" fill="url(#gSessions)" strokeWidth={3} dot={false} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="lx-chart-legend">
+              <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#FF0066' }} />Sessions</span>
+              <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#00D4AA' }} />Users</span>
+            </div>
+          </div>
+
+          {/* Two-column: Top Pages Table + Device Mix Donut */}
+          <div className="lx-grid-60-40">
+            {/* Top Pages Table */}
+            <div className="lx-card">
+              <div className="lx-card-header">
+                <span className="lx-card-title">Top Pages</span>
+                <span className="lx-card-action" onClick={() => exportPagesCSV(topPages)}>Export &rarr;</span>
+              </div>
+              <table className="lx-table">
+                <thead className="lx-table-header">
+                  <tr>
+                    <th style={{ width: '50%' }}>Page</th>
+                    <th style={{ width: '20%' }}>Views</th>
+                    <th style={{ width: '30%' }}>Share</th>
+                  </tr>
+                </thead>
+                <tbody className="lx-table-body">
+                  {topPages.slice(0, 6).map((p, i) => {
+                    const views = p.pageviews || 0;
+                    const maxViews = topPages[0]?.pageviews || 1;
+                    const pct = (views / maxViews) * 100;
+                    const path = p.page || '/';
+                    const truncated = path.length > 40 ? path.slice(0, 37) + '…' : path;
+                    return (
+                      <tr key={i}>
+                        <td><span className="lx-table-url">{truncated}</span></td>
+                        <td style={{ fontWeight: 600 }}>{views.toLocaleString('en-US')}</td>
+                        <td>
+                          <div className="lx-progress-bar"><div className="lx-progress-fill" style={{ width: `${pct}%`, background: PROG_COLORS[i % PROG_COLORS.length] }} /></div>
+                          <small style={{ fontSize: 10, color: c.textMuted }}>{pct.toFixed(0)}% of top</small>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {topPages.length === 0 && (
+                    <tr><td colSpan={3} style={{ textAlign: 'center', padding: 20, color: c.textMuted }}>—</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Device Mix Donut — placeholder until GA4 device dim is wired */}
+            <div className="lx-card">
+              <div className="lx-card-header">
+                <span className="lx-card-title">Device Mix</span>
+                <span className="lx-pill lx-pill--primary">{days} days</span>
+              </div>
+              <div className="lx-donut-wrap">
+                <div className="lx-donut-chart">
+                  {/* TODO: real device-breakdown data points */}
+                  <svg viewBox="0 0 140 140">
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="var(--border)" strokeWidth="14" />
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="#FF0066" strokeWidth="14" strokeDasharray="173.9 360" strokeDashoffset="0" transform="rotate(-90 70 70)" />
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="#00D4AA" strokeWidth="14" strokeDasharray="87.1 360" strokeDashoffset="-173.9" transform="rotate(-90 70 70)" />
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="#7B61FF" strokeWidth="14" strokeDasharray="19.6 360" strokeDashoffset="-261" transform="rotate(-90 70 70)" />
+                    <text x="70" y="65" textAnchor="middle" fill="var(--text)" fontFamily="Outfit" fontSize="22" fontWeight="700">
+                      {totalPageviews >= 1000 ? `${(totalPageviews / 1000).toFixed(1)}K` : totalPageviews || '—'}
+                    </text>
+                    <text x="70" y="82" textAnchor="middle" fill="var(--text-muted)" fontSize="10">total views</text>
+                  </svg>
+                </div>
+                <div className="lx-donut-legend">
+                  <div className="lx-donut-row">
+                    <span className="lx-donut-color" style={{ background: '#FF0066' }} />
+                    <span className="lx-donut-label">Desktop</span>
+                    <span className="lx-donut-val">—</span>
+                    <span className="lx-donut-pct">—</span>
+                  </div>
+                  <div className="lx-donut-row">
+                    <span className="lx-donut-color" style={{ background: '#00D4AA' }} />
+                    <span className="lx-donut-label">Mobile</span>
+                    <span className="lx-donut-val">—</span>
+                    <span className="lx-donut-pct">—</span>
+                  </div>
+                  <div className="lx-donut-row">
+                    <span className="lx-donut-color" style={{ background: '#7B61FF' }} />
+                    <span className="lx-donut-label">Tablet</span>
+                    <span className="lx-donut-val">—</span>
+                    <span className="lx-donut-pct">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Traffic Sources bar chart */}
+          {topSources.length > 0 && (
+            <div className="lx-card" style={{ marginBottom: 24 }}>
+              <div className="lx-card-header">
+                <span className="lx-card-title">Top Traffic Sources</span>
+                <span className="lx-card-action">View all &rarr;</span>
+              </div>
+              <div style={{ padding: '12px 0' }}>
+                {topSources.slice(0, 5).map((s, i) => {
+                  const sess = s.sessions || 0;
+                  const pct = totalSessions > 0 ? (sess / totalSessions * 100) : 0;
+                  const name = s.source || 'direct';
                   return (
-                    <div key={k.key} style={{
-                      backgroundColor: isWowNeg ? (isDark ? 'rgba(220,38,38,0.1)' : 'rgba(220,38,38,0.04)') : c.bgCard,
-                      border: `1px solid ${c.border}`,
-                      borderLeft: isWowNeg ? '3px solid #DC2626' : isWowPos ? '3px solid #059669' : `1px solid ${c.border}`,
-                      borderRadius: 12, padding: 18,
-                    }}>
-                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{k.label}</div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                        <div style={{
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
-                          fontSize: k.big ? 32 : 26, fontWeight: 700, color: c.text,
-                          letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums',
-                        }}>{k.value}</div>
-                        {k.trend != null && k.trend !== 0 && (
-                          <span style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 2,
-                            fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
-                            padding: '2px 7px', borderRadius: 20,
-                            background: k.trend > 0 ? (isDark ? 'rgba(5,150,105,0.2)' : 'rgba(5,150,105,0.1)') : (isDark ? 'rgba(220,38,38,0.2)' : 'rgba(220,38,38,0.1)'),
-                            color: k.trend > 0 ? (isDark ? '#34D399' : '#059669') : (isDark ? '#FCA5A5' : '#DC2626'),
-                          }}>
-                            {k.trend > 0 ? '▲' : '▼'} {Math.abs(k.trend)}%
-                          </span>
-                        )}
+                    <div key={i} style={{ marginBottom: i === topSources.slice(0, 5).length - 1 ? 0 : 18 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontSize: 13, color: c.text, fontWeight: 500, textTransform: 'capitalize' }}>{name}</span>
+                        <span style={{ fontSize: 12, color: c.textMuted, fontWeight: 600 }}>{sess.toLocaleString('en-US')} ({pct.toFixed(0)}%)</span>
                       </div>
-                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{k.sub}</div>
+                      <div style={{ height: 24, background: 'var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: GEO_GRADIENTS[i % GEO_GRADIENTS.length], borderRadius: 8 }} />
+                      </div>
                     </div>
                   );
                 })}
               </div>
-            );
-          })()}
-
-          {/* Insights strip */}
-          {(anomalies.length > 0 || wowChange !== 0) && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
-              {wowChange !== 0 && (
-                <div style={{
-                  background: wowChange < 0 ? (isDark ? 'rgba(220,38,38,0.12)' : 'rgba(220,38,38,0.05)') : (isDark ? 'rgba(5,150,105,0.12)' : 'rgba(5,150,105,0.05)'),
-                  borderLeft: `3px solid ${wowChange < 0 ? '#DC2626' : '#059669'}`,
-                  border: `1px solid ${c.border}`,
-                  borderRadius: 12, padding: '16px 18px',
-                }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Week-over-Week</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: wowChange < 0 ? (isDark ? '#FCA5A5' : '#DC2626') : (isDark ? '#34D399' : '#059669'), letterSpacing: '-0.02em' }}>
-                    {wowChange > 0 ? '+' : ''}{wowChange}%
-                  </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 2 }}>
-                    {wowChange < 0 ? 'Traffic declining' : 'Traffic growing'}
-                  </div>
-                </div>
-              )}
-              {anomalies.length > 0 && (
-                <div style={{
-                  background: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.05)',
-                  borderLeft: '3px solid #F59E0B',
-                  border: `1px solid ${c.border}`,
-                  borderRadius: 12, padding: '16px 18px',
-                }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Anomalies Detected</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 700, color: isDark ? '#FCD34D' : '#F59E0B', letterSpacing: '-0.02em' }}>
-                    {anomalies.length} anomalies
-                  </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 2 }}>Unusual spikes or drops</div>
-                </div>
-              )}
-              {topSources[0] && (
-                <div style={{
-                  background: isDark ? 'rgba(5,150,105,0.12)' : 'rgba(5,150,105,0.05)',
-                  borderLeft: '3px solid #059669',
-                  border: `1px solid ${c.border}`,
-                  borderRadius: 12, padding: '16px 18px',
-                }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Top Source</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', textTransform: 'capitalize' }}>
-                    {(topSources[0].source || 'direct')}
-                  </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: isDark ? '#34D399' : '#059669', marginTop: 2, fontWeight: 600 }}>
-                    {(topSources[0].sessions || 0).toLocaleString('en-IN')} sessions
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* Sessions trend */}
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24, marginBottom: 20 }}>
-            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 4 }}>Sessions Trend</h2>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginBottom: 16 }}>Daily sessions — dashed line = period average</p>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={trendData} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
-                <defs>
-                  <linearGradient id="gSessions" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#7C3AED" stopOpacity={0.18} />
-                    <stop offset="100%" stopColor="#7C3AED" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="day" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} interval={2} />
-                <YAxis orientation="right" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 11, fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} tickFormatter={(v) => v >= 1000 ? `${(v/1000).toFixed(1)}k` : v} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`,
-                    borderRadius: 8, fontFamily: 'DM Sans', fontSize: 12,
-                  }}
-                  formatter={(value: any) => {
-                    const pct = avgSessions > 0 ? Math.round(((value - avgSessions) / avgSessions) * 100) : 0;
-                    return [`${Number(value).toLocaleString('en-IN')} (${pct >= 0 ? '+' : ''}${pct}% vs avg)`, 'Sessions'];
-                  }}
+          {/* Anomalies insight strip */}
+          {(anomalies.length > 0 || wowChange !== 0 || topSources[0]) && (
+            <div className="lx-grid-3">
+              {wowChange !== 0 && (
+                <InsightCard
+                  icon={wowChange < 0 ? TrendingDown : TrendingUp}
+                  color={wowChange < 0 ? '#EF4444' : '#10B981'}
+                  title="Week-over-Week"
+                  value={`${wowChange > 0 ? '+' : ''}${wowChange}%`}
+                  sub={wowChange < 0 ? 'Traffic declining' : 'Traffic growing'}
                 />
-                <ReferenceLine y={Math.round(avgSessions)} stroke="rgba(124,58,237,0.3)" strokeDasharray="4 4" />
-                <Area type="monotone" dataKey="sessions" stroke="#7C3AED" fill="url(#gSessions)" strokeWidth={2.5} dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="two-col-equal" style={{ marginBottom: 20 }}>
-            {/* Traffic sources — horizontal bar chart */}
-            {topSources.length > 0 && (() => {
-              const barColors: Record<string, string> = { google: '#7C3AED', cpc: '#0891B2', direct: '#059669' };
-              const sourcesForChart = topSources.slice(0, 6).map((s, i) => {
-                const pct = totalSessions > 0 ? ((s.sessions || 0) / totalSessions * 100) : 0;
-                const name = (s.source || 'direct').toLowerCase();
-                return {
-                  name: (s.source || 'direct'),
-                  sessions: s.sessions || 0,
-                  pct: Number(pct.toFixed(1)),
-                  fill: barColors[name] || '#94A3B8',
-                };
-              });
-              const top = sourcesForChart[0];
-              const organicKeywords = ['google', 'bing', 'duckduckgo', 'organic', 'yahoo'];
-              const paidKeywords = ['cpc', 'paid', 'ads'];
-              let organic = 0, paid = 0;
-              for (const s of topSources) {
-                const n = (s.source || '').toLowerCase();
-                if (organicKeywords.some(k => n.includes(k))) organic += s.sessions || 0;
-                else if (paidKeywords.some(k => n.includes(k))) paid += s.sessions || 0;
-              }
-              return (
-                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-                  <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 4 }}>Traffic Sources</h2>
-                  <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginBottom: 16 }}>Where your visitors come from</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 20, alignItems: 'center' }}>
-                    <ResponsiveContainer width="100%" height={sourcesForChart.length * 36 + 20}>
-                      <BarChart data={sourcesForChart} layout="vertical" margin={{ left: 0, right: 40, top: 0, bottom: 0 }}>
-                        <XAxis type="number" hide />
-                        <YAxis type="category" dataKey="name" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} width={70} />
-                        <Tooltip
-                          cursor={{ fill: 'rgba(124,58,237,0.06)' }}
-                          contentStyle={{ backgroundColor: c.bgCard, border: `1px solid ${c.borderStrong}`, borderRadius: 8, fontFamily: 'DM Sans', fontSize: 12 }}
-                          formatter={(value: any) => [`${Number(value).toLocaleString('en-IN')} sessions`, 'Traffic']}
-                        />
-                        <Bar dataKey="sessions" radius={[0, 6, 6, 0]} barSize={28}
-                          label={{ position: 'right', formatter: (v: any) => {
-                            const row = sourcesForChart.find(r => r.sessions === v); return row ? `${row.pct}%` : '';
-                          }, fill: c.textSecondary, fontSize: 11, fontFamily: 'DM Sans' }}>
-                          {sourcesForChart.map((s, i) => <Cell key={i} fill={s.fill} />)}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, borderLeft: `1px solid ${c.border}`, paddingLeft: 16 }}>
-                      <div>
-                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Total</div>
-                        <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, color: c.text }}>{totalSessions.toLocaleString('en-IN')}</div>
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Top source</div>
-                        <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: c.text, textTransform: 'capitalize' }}>{top?.name}</div>
-                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: '#7C3AED', fontWeight: 600 }}>{top?.pct}%</div>
-                      </div>
-                      {(organic > 0 || paid > 0) && (
-                        <div>
-                          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Organic / Paid</div>
-                          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text }}>
-                            <span style={{ color: '#7C3AED', fontWeight: 600 }}>{organic.toLocaleString('en-IN')}</span>
-                            {' / '}
-                            <span style={{ color: '#0891B2', fontWeight: 600 }}>{paid.toLocaleString('en-IN')}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* Top pages */}
-            {topPages.length > 0 && (() => {
-              const maxViews = Math.max(...topPages.slice(0, 10).map(p => p.pageviews || 0));
-              return (
-                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <div>
-                      <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 4 }}>Top Pages</h2>
-                      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted }}>Top 10 pages by sessions</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => exportPagesCSV(topPages)}>
-                      <Download size={11} /> Export
-                    </Button>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '20px 1fr 60px', gap: 12, fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', paddingBottom: 8, borderBottom: `1px solid ${c.border}` }}>
-                    <span>#</span><span>Page</span><span style={{ textAlign: 'right' }}>Sessions</span>
-                  </div>
-                  {topPages.slice(0, 10).map((p, i) => {
-                    const views = p.pageviews || 0;
-                    const pct = maxViews > 0 ? (views / maxViews) * 100 : 0;
-                    const path = p.page || '';
-                    const truncated = path.length > 40 ? path.slice(0, 37) + '…' : path;
-                    return (
-                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '20px 1fr 60px', gap: 12, alignItems: 'center', padding: '10px 0', borderBottom: i < 9 ? `1px solid ${c.border}` : 'none' }}>
-                        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: c.textMuted, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{i + 1}</span>
-                        <div style={{ minWidth: 0 }}>
-                          <div title={path} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{truncated || '/'}</div>
-                          <div style={{ marginTop: 4, height: 4, borderRadius: 2, backgroundColor: c.bgCardHover, overflow: 'hidden' }}>
-                            <div style={{ height: '100%', borderRadius: 2, background: '#7C3AED', width: `${pct}%` }} />
-                          </div>
-                        </div>
-                        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: c.text, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{views.toLocaleString('en-IN')}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-          </div>
+              )}
+              {anomalies.length > 0 && (
+                <InsightCard
+                  icon={Zap}
+                  color="#F59E0B"
+                  title="Anomalies Detected"
+                  value={`${anomalies.length} anomalies`}
+                  sub="Unusual spikes or drops"
+                />
+              )}
+              {topSources[0] && (
+                <InsightCard
+                  icon={Star}
+                  color="#10B981"
+                  title="Top Source"
+                  value={(topSources[0].source || 'direct')}
+                  sub={`${(topSources[0].sessions || 0).toLocaleString('en-US')} sessions`}
+                />
+              )}
+            </div>
+          )}
         </>
       )}
-    </PageShell>
+    </div>
   );
 }

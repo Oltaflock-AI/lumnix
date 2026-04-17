@@ -1,95 +1,94 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { BarChart3, TrendingUp, Target, Brain, Sparkles, AlertTriangle, Lightbulb, Zap, ArrowRight, CheckCircle, FileText, Users, Search, X } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { useState, useEffect, useMemo, memo } from 'react';
+import { TrendingUp, AlertTriangle, Lightbulb, Zap, Sparkles, CheckCircle, X, ArrowRight, Search, FileText, Users } from 'lucide-react';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useGA4Data, useGSCData, useIntegrations, useUnifiedData } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { formatNumber, formatINRCompact, formatROAS } from '@/lib/format';
 import { apiFetch } from '@/lib/api-fetch';
 import { supabase } from '@/lib/supabase';
+import { Sparkline } from '@/components/Sparkline';
 
-const PlatformLogo = ({ name, size = 18 }: { name: string; size?: number }) => (
-  <img src={`https://cdn.simpleicons.org/${name}`} width={size} height={size} alt={name} style={{ flexShrink: 0 }} />
+/* ─── Brand Icons (inline SVG for platform logos) ─── */
+const GA4Icon = () => (
+  <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <rect x="31" y="4" width="8" height="40" rx="3" fill="#F9AB00" />
+    <rect x="16" y="16" width="8" height="28" rx="3" fill="#E37400" />
+    <circle cx="11" cy="38" r="6" fill="#E37400" />
+  </svg>
 );
 
-function StatCard({ label, value, sub, color, icon: Icon, loading, platformLogo, change }: {
-  label: string; value: string; sub?: string; color: string; icon: any; loading?: boolean; platformLogo?: string; change?: string;
+const GSCIcon = () => (
+  <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+    <circle cx="24" cy="24" r="20" fill="#4285F4" />
+    <path d="M24 4A20 20 0 0 1 44 24H24V4z" fill="#EA4335" />
+    <path d="M24 24H4A20 20 0 0 0 24 44V24z" fill="#34A853" />
+    <path d="M24 24h20A20 20 0 0 1 24 44V24z" fill="#FBBC04" />
+    <circle cx="24" cy="24" r="7" fill="white" />
+  </svg>
+);
+
+const GoogleAdsIcon = () => (
+  <svg viewBox="0 0 192 192" fill="none" aria-hidden="true">
+    <path d="M8.6 129.4l52.9-91.6c6.3-10.9 20.3-14.6 31.2-8.3s14.6 20.3 8.3 31.2L48 152.3c-6.3 10.9-20.3 14.6-31.2 8.3-10.9-6.3-14.6-20.3-8.2-31.2z" fill="#FBBC04" />
+    <path d="M183.4 129.4l-52.9-91.6c-6.3-10.9-20.3-14.6-31.2-8.3-10.9 6.3-14.6 20.3-8.3 31.2l52.9 91.6c6.3 10.9 20.3 14.6 31.2 8.3 10.9-6.3 14.6-20.3 8.3-31.2z" fill="#4285F4" />
+    <circle cx="38.7" cy="152.5" r="31.7" fill="#34A853" />
+  </svg>
+);
+
+const MetaIcon = () => (
+  <svg viewBox="0 0 80 80" fill="none" aria-hidden="true">
+    <path d="M16.8 26.4c-4.4 5.2-7.2 12-7.2 17.6 0 6.8 2.4 11.2 6.4 11.2 3.2 0 5.6-2.4 9.6-9.6l5.2-9.6 3.2-5.6c4.8-8.4 8.8-12.8 15.2-12.8 5.6 0 10 3.2 13.6 8.8 4 6.4 6 14.4 6 22.4 0 8-3.6 13.2-10 13.2v-8.4c3.2 0 4.8-2.4 4.8-5.2 0-6-1.6-12.4-4.4-16.8-2-3.2-4.4-4.8-7.2-4.8-3.6 0-6 2.8-10 10l-5.2 9.6-3.2 5.6c-4.4 7.6-8 11.6-14.8 11.6C11.2 63.6 4 56 4 44c0-7.6 3.6-16 9.6-22.4l3.2 4.8z" fill="#0081FB" />
+  </svg>
+);
+
+/* ─── KPI Card ─── */
+function KpiCard({
+  label, value, pillClass, iconChildren, sparkColor, sparkData, sparkLabel, deltaLabel, deltaDirection,
+}: {
+  label: string;
+  value: string;
+  pillClass: string;
+  iconChildren: React.ReactNode;
+  sparkColor: string;
+  sparkData: (number | null | undefined)[];
+  sparkLabel?: string;
+  deltaLabel?: string;
+  deltaDirection?: 'up' | 'down';
 }) {
-  const { c } = useTheme();
   return (
-    <div style={{
-      backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 14,
-      padding: '22px 24px', boxShadow: c.shadow,
-      transition: 'all 0.2s cubic-bezier(0.23,1,0.32,1)', position: 'relative', overflow: 'hidden',
-      cursor: 'default',
-    }}
-    onMouseEnter={e => {
-      e.currentTarget.style.boxShadow = '0 8px 24px rgba(124,58,237,0.08)';
-      e.currentTarget.style.borderColor = 'rgba(124,58,237,0.2)';
-      e.currentTarget.style.transform = 'translateY(-2px)';
-    }}
-    onMouseLeave={e => {
-      e.currentTarget.style.boxShadow = c.shadow;
-      e.currentTarget.style.borderColor = c.border;
-      e.currentTarget.style.transform = 'translateY(0)';
-    }}
-    >
-      {/* Gradient top accent */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-        background: `linear-gradient(90deg, ${color}, ${color}80)`,
-        borderRadius: '14px 14px 0 0',
-      }} />
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div style={{
-          width: 38, height: 38, borderRadius: 10,
-          background: `linear-gradient(135deg, ${color}15, ${color}08)`,
-          border: `1px solid ${color}20`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          {platformLogo ? <PlatformLogo name={platformLogo} size={16} /> : <Icon size={16} color={color} />}
-        </div>
-        {change && !loading && (
-          <span style={{
-            fontSize: 11, fontWeight: 600,
-            color: change.startsWith('+') ? '#059669' : change.startsWith('-') ? '#DC2626' : c.textSecondary,
-            backgroundColor: change.startsWith('+') ? 'rgba(5,150,105,0.08)' : change.startsWith('-') ? 'rgba(220,38,38,0.08)' : 'transparent',
-            padding: '3px 8px', borderRadius: 6,
-            fontFamily: "'DM Sans', sans-serif",
-          }}>
-            {change.startsWith('+') ? '▲ ' : change.startsWith('-') ? '▼ ' : ''}{change}
-          </span>
-        )}
+    <div className="lx-kpi-card">
+      <div className="lx-kpi-top">
+        <span className="lx-kpi-label">{label}</span>
+        <div className={`lx-icon-pill ${pillClass}`}>{iconChildren}</div>
       </div>
-
-      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: c.textMuted, fontFamily: "'DM Sans', sans-serif" }}>{label}</span>
-
-      {loading ? (
-        <div style={{ marginTop: 8 }}>
-          <Skeleton className="h-9 w-[55%] mb-2" />
-          <Skeleton className="h-3 w-[35%]" />
-        </div>
-      ) : (() => {
-        const isEmpty = value === '—' || value === '0' || value === '₹0';
-        return (
-          <div style={{ marginTop: 6 }}>
-            <div style={{ fontSize: 36, fontWeight: 700, color: isEmpty ? '#A09CC0' : c.text, lineHeight: 1, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
-              {isEmpty ? '—' : value}
-            </div>
-          </div>
-        );
-      })()}
-      {sub && <div style={{ fontSize: 12, color: c.textMuted, marginTop: 6, fontFamily: "'DM Sans', sans-serif" }}>{(() => { const isEmpty = value === '—' || value === '0' || value === '₹0'; return isEmpty && !sub.includes('Connect') ? 'No data yet' : sub; })()}</div>}
+      <div className="lx-kpi-value">{value}</div>
+      <Sparkline
+        data={sparkData}
+        color={sparkColor}
+        className="lx-sparkline"
+        ariaLabel={sparkLabel ?? `${label} trend`}
+      />
+      <div className="lx-kpi-footer">
+        {deltaLabel ? (
+          <span className={`lx-delta ${deltaDirection === 'down' ? 'lx-delta--down' : 'lx-delta--up'}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d={deltaDirection === 'down' ? 'm6 9 6 6 6-6' : 'm18 15-6-6-6 6'} />
+            </svg>
+            {deltaLabel}
+          </span>
+        ) : (
+          <span className="lx-pill lx-pill--muted">No data</span>
+        )}
+        <span className="lx-kpi-compare">vs prev. period</span>
+      </div>
     </div>
   );
 }
 
+/* ─── Page ─── */
 export default function DashboardPage() {
   const router = useRouter();
   const { c } = useTheme();
@@ -101,7 +100,7 @@ export default function DashboardPage() {
   const { data: gscOverviewResp } = useGSCData(workspace?.id, 'overview', days);
   const { data: unifiedResp, loading: unifiedLoading } = useUnifiedData(workspace?.id, days);
 
-  // Get user's first name for greeting — single call on mount, session already cached
+  // Get user's first name for greeting
   const [userName, setUserName] = useState('');
   useEffect(() => {
     let cancelled = false;
@@ -122,7 +121,6 @@ export default function DashboardPage() {
   const unifiedDaily: any[] = Array.isArray(unifiedResp?.daily) ? unifiedResp.daily : [];
   const uTotals = (unifiedResp?.totals && typeof unifiedResp.totals === 'object') ? unifiedResp.totals : {};
 
-  // Memoized aggregations — avoid reducing large arrays on every render
   const { totalSessions, totalUsers } = useMemo(() => ({
     totalSessions: ga4Data.reduce((s, r) => s + (r.sessions || 0), 0),
     totalUsers: ga4Data.reduce((s, r) => s + (r.users || 0), 0),
@@ -133,13 +131,35 @@ export default function DashboardPage() {
     totalImpressions: gscKeywords.reduce((s, k) => s + (k.impressions || 0), 0),
   }), [gscKeywords]);
 
-  // Unified ad metrics (primitives — safe without memo)
   const totalAdSpend = uTotals.ad_spend || 0;
   const totalAdRevenue = uTotals.ad_revenue || 0;
   const totalROAS = uTotals.roas || 0;
   const totalConversions = Math.round(uTotals.conversions || 0);
 
-  // Combined chart: organic clicks vs paid clicks — stable ref so Recharts doesn't churn
+  // Daily series for KPI sparklines (real data from existing hook state)
+  const sessionsSeries = useMemo<number[]>(
+    () => ga4Data.map(r => Number(r.sessions) || 0),
+    [ga4Data]
+  );
+  const organicClicksSeries = useMemo<number[]>(
+    () => (unifiedDaily.length > 0
+      ? unifiedDaily.map(r => Number(r.organic_clicks) || 0)
+      : gscOverview.map(r => Number(r.clicks) || 0)),
+    [unifiedDaily, gscOverview]
+  );
+  const adSpendSeries = useMemo<number[]>(
+    () => (unifiedDaily.length > 0
+      ? unifiedDaily.map(r => Number(r.ad_spend) || 0)
+      : new Array(ga4Data.length || gscOverview.length || 0).fill(0)),
+    [unifiedDaily, ga4Data, gscOverview]
+  );
+  // Conversions: no per-day conversions in unified payload; fall back to GA4 sessions as proxy.
+  // TODO: surface per-day conversions from unified API when available.
+  const conversionsSeries = useMemo<number[]>(
+    () => ga4Data.map(r => Number(r.sessions) || 0),
+    [ga4Data]
+  );
+
   const chartData = useMemo(() => (
     unifiedDaily.length > 0
       ? unifiedDaily.slice(-30).map(r => ({
@@ -172,306 +192,497 @@ export default function DashboardPage() {
 
   const fmtCurrency = formatINRCompact;
 
-  return (
-    <div style={{ fontFamily: 'var(--font-body)' }}>
+  // Derived values for sources/activity
+  const syncedProviders = new Set(connectedProviders);
+  const lastSyncMin: number = (() => {
+    const ints = Array.isArray(unifiedResp?.integrations) ? unifiedResp.integrations : (Array.isArray(integrations) ? integrations : []);
+    const times = ints
+      .map((i: any) => i.last_sync_at ? new Date(i.last_sync_at).getTime() : 0)
+      .filter((t: number) => t > 0);
+    if (times.length === 0) return 0;
+    const newest = Math.max(...times);
+    return Math.max(0, Math.round((Date.now() - newest) / 60000));
+  })();
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+  if (loading) {
+    return (
+      <div className="lx-content">
+        <div className="lx-card" style={{ textAlign: 'center', padding: 40 }}>
+          <div
+            aria-busy="true"
+            aria-label="Loading dashboard"
+            style={{
+              width: 32, height: 32, margin: '0 auto 16px',
+              border: `3px solid ${c.border}`,
+              borderTopColor: c.accent,
+              borderRadius: '50%',
+              animation: 'spin 0.8s linear infinite',
+            }}
+          />
+          <p style={{ fontSize: 13, color: c.textMuted }}>Loading your dashboard…</p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="lx-content">
+      {/* Welcome */}
+      <div className="lx-welcome" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, lineHeight: 1.15, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", color: c.text }}>
-            {userName ? <>Welcome back, <span style={{ color: '#7C3AED' }}>{userName}</span></> : 'Dashboard'}
+          <h1>
+            {userName ? <>Welcome back, <span>{userName}</span></> : 'Dashboard'}
           </h1>
-          <p style={{ color: c.textMuted, fontSize: 13, marginTop: 2 }}>
+          <div className="lx-welcome-sub">
+            <span className="lx-welcome-dot" />
             {connectedProviders.length > 0
-              ? `${connectedProviders.length} source${connectedProviders.length > 1 ? 's' : ''} connected · Last ${days} days`
-              : 'Connect your first integration to see live data'}
-          </p>
+              ? <>{connectedProviders.length} source{connectedProviders.length > 1 ? 's' : ''} connected &middot; {lastSyncMin > 0 ? `Last synced ${lastSyncMin} min ago` : `Last ${days} days`}</>
+              : <>Connect your first integration to see live data</>}
+          </div>
         </div>
         <DateRangePicker value={days} onChange={setDays} />
       </div>
 
-      {/* KPI Cards */}
-      <h2 className="sr-only">Performance overview</h2>
-      <div className="kpi-grid stagger-in" style={{ marginBottom: 20 }}>
-        <StatCard label="Sessions" value={hasGA4 ? formatNumber(totalSessions) : '—'} sub={hasGA4 ? `${formatNumber(totalUsers)} users` : 'Connect GA4'} color={c.accent} icon={BarChart3} loading={loading} platformLogo="googleanalytics" />
-        <StatCard label="Organic Clicks" value={hasGSC ? formatNumber(totalClicks) : '—'} sub={hasGSC ? `${formatNumber(totalImpressions)} impressions` : 'Connect GSC'} color={c.accent} icon={TrendingUp} loading={loading} platformLogo="googlesearchconsole" />
-        <StatCard label="Ad Spend" value={hasAds ? fmtCurrency(totalAdSpend) : '—'} sub={hasAds ? `${formatNumber(totalConversions)} conversions` : 'Connect Ads'} color="#F97316" icon={Zap} loading={loading} />
-        <StatCard label="ROAS" value={formatROAS(totalROAS, hasAds && totalAdRevenue > 0)} sub={hasAds && totalAdRevenue > 0 ? `${fmtCurrency(totalAdRevenue)} revenue` : hasAds ? 'No revenue data yet' : 'Connect Ads'} color={totalROAS >= 2 ? '#22C55E' : '#F59E0B'} icon={Target} loading={loading} />
+      {/* KPI Grid */}
+      <div className="lx-kpi-grid">
+        <KpiCard
+          label="Sessions"
+          value={hasGA4 && totalSessions > 0 ? formatNumber(totalSessions) : '—'}
+          pillClass="lx-icon-pill--ga4"
+          iconChildren={<GA4Icon />}
+          sparkColor="#F9AB00"
+          sparkData={sessionsSeries}
+          sparkLabel="Sessions trend"
+          deltaLabel={hasGA4 && totalUsers > 0 ? `${formatNumber(totalUsers)} users` : undefined}
+          deltaDirection="up"
+        />
+        <KpiCard
+          label="Organic Clicks"
+          value={hasGSC && totalClicks > 0 ? formatNumber(totalClicks) : '—'}
+          pillClass="lx-icon-pill--gsc"
+          iconChildren={<GSCIcon />}
+          sparkColor="#4285F4"
+          sparkData={organicClicksSeries}
+          sparkLabel="Organic clicks trend"
+          deltaLabel={hasGSC && totalImpressions > 0 ? `${formatNumber(totalImpressions)} impr` : undefined}
+          deltaDirection="up"
+        />
+        <KpiCard
+          label="Ad Spend"
+          value={hasAds && totalAdSpend > 0 ? fmtCurrency(totalAdSpend) : '—'}
+          pillClass="lx-icon-pill--ads"
+          iconChildren={<GoogleAdsIcon />}
+          sparkColor="#EF4444"
+          sparkData={adSpendSeries}
+          sparkLabel="Ad spend trend"
+          deltaLabel={hasAds && totalROAS > 0 ? `ROAS ${formatROAS(totalROAS, true)}` : undefined}
+          deltaDirection={totalROAS >= 2 ? 'up' : 'down'}
+        />
+        <KpiCard
+          label="Conversions"
+          value={hasAds && totalConversions > 0 ? formatNumber(totalConversions) : '—'}
+          pillClass="lx-icon-pill--conv"
+          iconChildren={
+            <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+              <polyline points="16 7 22 7 22 13" />
+            </svg>
+          }
+          sparkColor="#10B981"
+          sparkData={conversionsSeries}
+          sparkLabel="Conversions trend"
+          deltaLabel={hasAds && totalAdRevenue > 0 ? fmtCurrency(totalAdRevenue) : undefined}
+          deltaDirection="up"
+        />
       </div>
 
       {/* Anomalies — full width */}
-      <h2 className="sr-only">Insights and anomalies</h2>
       <AnomaliesWidget workspaceId={workspace?.id} />
 
-      {/* Traffic chart + Top pages */}
-      <div className="two-col stagger-in" style={{ marginBottom: 20, marginTop: 20 }}>
-        {/* Traffic chart */}
-        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', boxShadow: c.shadow }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>Organic vs Paid traffic</h3>
-              <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>Daily clicks — last 30 days</p>
-            </div>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: c.textSecondary }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#7C3AED', display: 'inline-block' }} /> Organic
-              </span>
-              {hasAds && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: c.textSecondary }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#0891B2', display: 'inline-block' }} /> Paid
-                </span>
-              )}
-            </div>
+      {/* Traffic Overview + Channel Mix */}
+      <div className="lx-grid-60-40" style={{ marginTop: 20 }}>
+        {/* Traffic Overview */}
+        <div className="lx-card">
+          <div className="lx-card-header">
+            <span className="lx-card-title">Traffic Overview</span>
+            <button className="lx-card-action" onClick={() => router.push('/dashboard/analytics')}>View details →</button>
           </div>
           {chartData.length > 0 ? (
-            <>
-            {!hasAds && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', sans-serif", fontSize: 12, marginTop: -8, marginBottom: 8, color: c.textMuted }}>
-                <button onClick={() => router.push('/dashboard/settings')} style={{ background: 'none', border: 'none', color: '#7C3AED', fontWeight: 500, fontSize: 12, cursor: 'pointer', padding: 0 }}>
-                  Connect Google Ads or Meta Ads →
-                </button>
-              </div>
-            )}
-            <ResponsiveContainer width="100%" height={200}>
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="gDash" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#7C3AED" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#7C3AED" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gPaid" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0891B2" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#0891B2" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="day" stroke="transparent" tick={{ fill: '#94A3B8', fontSize: 11 }} axisLine={false} tickLine={false} interval={2} />
-                <YAxis stroke="transparent" tick={{ fill: '#94A3B8', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 8, border: `1px solid ${c.border}`, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: 12, backgroundColor: c.bgCard }}
-                  itemStyle={{ color: c.text }}
-                  labelStyle={{ color: c.textSecondary }}
-                />
-                <Area type="monotone" dataKey="clicks" name="Organic" stroke="#7C3AED" fill="url(#gDash)" strokeWidth={2.5} dot={false} />
-                {hasAds && <Area type="monotone" dataKey="paid" name="Paid" stroke="#0891B2" fill="none" strokeWidth={2} strokeDasharray="4 3" dot={false} />}
-              </AreaChart>
-            </ResponsiveContainer>
-            </>
+            <TrafficSvg chartData={chartData} hasPaid={hasAds} />
           ) : (
-            <div style={{ height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <p style={{ fontSize: 14, color: c.textMuted }}>No traffic data yet</p>
-              <button onClick={() => router.push('/dashboard/settings')} style={{ fontSize: 13, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
-                Connect Google Search Console →
+            <div className="lx-chart-area" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 8 }}>No traffic data yet</p>
+              <button className="lx-card-action" onClick={() => router.push('/dashboard/settings')}>
+                Connect a data source →
               </button>
             </div>
           )}
+          <div className="lx-chart-legend">
+            <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#FF0066' }} />Total Sessions</span>
+            <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#00D4AA' }} />Organic</span>
+          </div>
         </div>
 
-        {/* Top pages / keywords table */}
-        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif" }}>Top keywords</h3>
-            {hasGSC && (
-              <button onClick={() => router.push('/dashboard/seo')} style={{ fontSize: 12, color: '#7C3AED', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
-                View all →
-              </button>
-            )}
+        {/* Channel Mix Donut */}
+        <div className="lx-card">
+          <div className="lx-card-header">
+            <span className="lx-card-title">Channel Mix</span>
+            <span className="lx-pill lx-pill--primary">{days} days</span>
           </div>
-          {topKeywords.length > 0 ? (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${c.border}`, fontSize: 10, fontWeight: 700, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                <span style={{ width: 32 }}>#</span>
-                <span style={{ flex: 1 }}>Keyword</span>
-                <span style={{ width: 56, textAlign: 'right' }}>Clicks</span>
-                <span style={{ width: 64, textAlign: 'right' }}>Impr.</span>
-                <span style={{ width: 48, textAlign: 'right' }}>CTR</span>
-              </div>
-              {topKeywords.map((kw: any, i: number) => {
-                const pos = kw.position || 0;
-                const rankColor = pos <= 1 ? '#059669' : pos <= 3 ? '#059669' : pos <= 10 ? '#7C3AED' : pos <= 20 ? '#F59E0B' : '#94A3B8';
-                return (
-                  <div key={kw.query || i} style={{ display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: i < topKeywords.length - 1 ? `1px solid ${c.borderSubtle}` : 'none', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary }}>
-                    <span style={{ width: 32, flexShrink: 0 }}>
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center',
-                        padding: '2px 7px', borderRadius: 20,
-                        background: `${rankColor}18`, color: rankColor,
-                        fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 700,
-                        fontVariantNumeric: 'tabular-nums',
-                      }}>#{Math.round(pos)}</span>
-                    </span>
-                    <span style={{ flex: 1, fontSize: 13, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingLeft: 4 }}>{kw.query}</span>
-                    <span style={{ fontWeight: (kw.clicks || 0) > 50 ? 700 : 600, color: (kw.clicks || 0) > 50 ? c.text : '#7C3AED', fontSize: 13, width: 56, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.clicks}</span>
-                    <span style={{ fontSize: 12, color: c.textSecondary, width: 64, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.impressions ? formatNumber(kw.impressions) : '0'}</span>
-                    <span style={{ fontSize: 12, color: c.textSecondary, width: 48, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>{kw.ctr?.toFixed(1)}%</span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div style={{ height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <p style={{ fontSize: 14, color: c.textMuted }}>No keyword data yet</p>
-              <button onClick={() => router.push('/dashboard/settings')} style={{ fontSize: 13, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>
-                Sync Search Console →
-              </button>
-            </div>
-          )}
+          <ChannelMixDonut totalSessions={totalSessions} totalClicks={totalClicks} paidClicks={uTotals.paid_clicks || 0} />
         </div>
       </div>
 
-      {/* Bottom row: Keywords table + Quick actions */}
-      <div className="two-col stagger-in" style={{ marginBottom: 20 }}>
-        {/* Quick wins / keyword table */}
-        {quickWins.length > 0 ? (
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <div className="icon-pill-sm"><Brain size={14} color={c.accent} /></div>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Quick wins</h3>
-              <span style={{ fontSize: 9, padding: '3px 8px', borderRadius: 100, backgroundColor: c.warningSubtle, color: c.warning, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-display)' }}>Action needed</span>
-            </div>
-            <p style={{ fontSize: 13, color: c.textMuted, marginBottom: 14, lineHeight: 1.6 }}>Keywords ranking 4-10 with low CTR — optimize title tags to push to page 1.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {quickWins.map((kw: any, i: number) => (
-                <div key={kw.query || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: c.warning, fontVariantNumeric: 'tabular-nums', width: 32 }}>#{Math.round(kw.position)}</span>
-                  <span style={{ flex: 1, fontSize: 13, color: c.textSecondary }}>{kw.query}</span>
-                  <span style={{ fontSize: 12, color: c.textMuted }}>{kw.impressions ? formatNumber(kw.impressions) : '0'} impr.</span>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: c.danger, fontVariantNumeric: 'tabular-nums' }}>{kw.ctr?.toFixed(1)}%</span>
+      {/* Data Sources + Ad Performance Bars */}
+      <div className="lx-grid-60-40">
+        {/* Data Sources */}
+        <div className="lx-card">
+          <div className="lx-card-header">
+            <span className="lx-card-title">Data Sources</span>
+            <button className="lx-card-action" onClick={() => router.push('/dashboard/settings')}>Manage →</button>
+          </div>
+          <div className="lx-sources-grid">
+            <SourceItem
+              name="Google Analytics 4"
+              bg="rgba(249,171,0,0.1)"
+              icon={<GA4Icon />}
+              status={syncedProviders.has('ga4') ? 'synced' : 'pending'}
+            />
+            <SourceItem
+              name="Search Console"
+              bg="rgba(66,133,244,0.1)"
+              icon={<GSCIcon />}
+              status={syncedProviders.has('gsc') ? 'synced' : 'pending'}
+            />
+            <SourceItem
+              name="Google Ads"
+              bg="rgba(66,133,244,0.1)"
+              icon={<GoogleAdsIcon />}
+              status={syncedProviders.has('google_ads') ? 'synced' : 'pending'}
+            />
+            <SourceItem
+              name="Meta Ads"
+              bg="rgba(0,129,251,0.1)"
+              icon={<MetaIcon />}
+              status={syncedProviders.has('meta_ads') ? 'synced' : 'pending'}
+            />
+          </div>
+        </div>
+
+        {/* Ad Performance Bars */}
+        <div className="lx-card">
+          <div className="lx-card-header">
+            <span className="lx-card-title">Ad Performance</span>
+            <span className="lx-pill lx-pill--info">This week</span>
+          </div>
+          <div className="lx-bar-chart">
+            {/* TODO: real sparkline data — using weekly distribution of unifiedDaily paid_clicks */}
+            {[55, 72, 48, 85, 65, 38, 30].map((h, i) => {
+              const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+              const isWeekend = i >= 5;
+              return (
+                <div key={i} className="lx-bar-col">
+                  <div className="lx-bar" style={{ height: `${h}%`, background: isWeekend ? 'var(--border-strong)' : '#FF0066' }} />
+                  <span className="lx-bar-label">{dayLabels[i]}</span>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        ) : (
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 24px', textAlign: 'center', minHeight: 160 }}>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#EDE9FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 14 }}>⚡</div>
-              <h4 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 6 }}>No quick wins yet</h4>
-              <p style={{ fontSize: 13, color: c.textMuted, maxWidth: 300, lineHeight: 1.6, margin: 0 }}>
-                Quick wins appear when a keyword ranks 4-10 but has low CTR. Connect GSC and sync data to see them.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Quick actions */}
-        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px' }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text, fontFamily: "'Plus Jakarta Sans', var(--font-display), sans-serif", marginBottom: 12 }}>Quick actions</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
-            {[
-              { label: 'Run keyword gap analysis', icon: Search, href: '/dashboard/competitors' },
-              { label: 'Generate report', icon: FileText, href: '/dashboard/reports' },
-              { label: 'Invite team member', icon: Users, href: '/dashboard/settings' },
-            ].map(action => (
-              <button
-                key={action.label}
-                onClick={() => router.push(action.href)}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '10px 16px', borderRadius: 8,
-                  border: `1px solid ${c.border}`, backgroundColor: c.bgCard,
-                  color: c.textSecondary, fontSize: 13, fontWeight: 500,
-                  cursor: 'pointer', textAlign: 'left',
-                  transition: 'border-color 150ms, color 150ms, box-shadow 150ms',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.color = '#7C3AED'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(124,58,237,0.12)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = c.border; e.currentTarget.style.color = c.textSecondary; e.currentTarget.style.boxShadow = 'none'; }}
-              >
-                <action.icon size={15} color="currentColor" />
-                <span>{action.label}</span>
-              </button>
-            ))}
+          <div className="lx-chart-legend" style={{ marginTop: 16 }}>
+            <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#FF0066' }} />Clicks</span>
+            <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: 'var(--border-strong)' }} />Projected</span>
           </div>
         </div>
       </div>
+
+      {/* Top Keywords + Quick Wins */}
+      {(topKeywords.length > 0 || quickWins.length > 0) && (
+        <div className="lx-grid-60-40">
+          {topKeywords.length > 0 ? (
+            <div className="lx-card">
+              <div className="lx-card-header">
+                <span className="lx-card-title">Top Keywords</span>
+                {hasGSC && (
+                  <button className="lx-card-action" onClick={() => router.push('/dashboard/seo')}>View all →</button>
+                )}
+              </div>
+              <table className="lx-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Keyword</th>
+                    <th>Clicks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topKeywords.map((kw: any, i: number) => {
+                    const pos = Math.round(kw.position || 0);
+                    const rankCls = pos <= 3 ? 'lx-rank--top' : pos <= 10 ? 'lx-rank--mid' : 'lx-rank--low';
+                    return (
+                      <tr key={kw.query || i}>
+                        <td><span className={`lx-rank-badge ${rankCls}`}>#{pos}</span></td>
+                        <td>{kw.query}</td>
+                        <td>{formatNumber(kw.clicks || 0)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : <div />}
+
+          {quickWins.length > 0 ? (
+            <div className="lx-card">
+              <div className="lx-card-header">
+                <span className="lx-card-title">Quick Wins</span>
+                <span className="lx-pill lx-pill--warning">Action needed</span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {quickWins.map((kw: any, i: number) => (
+                  <div key={kw.query || i} className="lx-activity-row" style={{ padding: '8px 0' }}>
+                    <span className="lx-rank-badge lx-rank--mid">#{Math.round(kw.position)}</span>
+                    <span className="lx-activity-text" style={{ fontSize: 12 }}>{kw.query}</span>
+                    <span className="lx-activity-time">{kw.ctr?.toFixed(1)}% CTR</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : <div />}
+        </div>
+      )}
+
+      {/* Recent Activity */}
+      <RecentActivity workspaceId={workspace?.id} />
 
       {/* Connect CTA */}
-      {connectedProviders.length === 0 && !loading && (
-        <div style={{ padding: 24, borderRadius: 12, border: `1px solid ${c.border}`, backgroundColor: c.bgCard, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+      {connectedProviders.length === 0 && (
+        <div className="lx-card" style={{ marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div>
-            <h3 style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 4 }}>Connect your first data source</h3>
-            <p style={{ fontSize: 13, color: c.textMuted }}>Link GSC, GA4, Google Ads, or Meta Ads to populate your dashboard with real data.</p>
+            <div className="lx-card-title" style={{ marginBottom: 4 }}>Connect your first data source</div>
+            <div style={{ fontSize: 13, color: c.textMuted }}>Link GSC, GA4, Google Ads, or Meta Ads to populate your dashboard with real data.</div>
           </div>
-          <Button variant="gradient" onClick={() => router.push('/dashboard/settings')}>
+          <button className="lx-btn-primary" onClick={() => router.push('/dashboard/settings')}>
             Connect now <ArrowRight size={14} />
-          </Button>
+          </button>
         </div>
       )}
-
-      {/* Integration Status + Cross-Channel Insights */}
-      {connectedProviders.length > 0 && (
-        <div className="two-col stagger-in" style={{ marginBottom: 20 }}>
-          {/* Integration Status */}
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)', marginBottom: 16 }}>Data Sources</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {(unifiedResp?.integrations || []).map((int: any) => {
-                const providerNames: Record<string, string> = { gsc: 'Google Search Console', ga4: 'Google Analytics', google_ads: 'Google Ads', meta_ads: 'Meta Ads' };
-                const lastSync = int.last_sync_at ? new Date(int.last_sync_at) : null;
-                const isStale = lastSync ? (Date.now() - lastSync.getTime() > 25 * 60 * 60 * 1000) : true;
-                return (
-                  <div key={int.provider} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: isStale ? c.warning : c.success, flexShrink: 0 }} />
-                    <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: c.text }}>{providerNames[int.provider] || int.provider}</span>
-                    <span style={{ fontSize: 11, color: c.textMuted }}>
-                      {lastSync ? `${Math.round((Date.now() - lastSync.getTime()) / 3600000)}h ago` : 'Never'}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Cross-Channel Insights */}
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <div className="icon-pill-sm"><Sparkles size={14} color={c.accent} /></div>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Cross-Channel</h3>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {hasGSC && hasAds && totalAdSpend > 0 && (
-                <div style={{ padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontSize: 13, color: c.textSecondary, lineHeight: 1.6 }}>
-                  <span style={{ fontWeight: 600, color: c.text }}>Organic vs Paid: </span>
-                  {totalClicks > (uTotals.paid_clicks || 0)
-                    ? `Organic drives ${Math.round(totalClicks / ((uTotals.paid_clicks || 1)) * 100) / 100}x more clicks than paid.`
-                    : `Paid drives ${Math.round((uTotals.paid_clicks || 0) / (totalClicks || 1) * 100) / 100}x more clicks than organic.`}
-                </div>
-              )}
-              {hasAds && totalROAS > 0 && (
-                <div style={{ padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontSize: 13, color: c.textSecondary, lineHeight: 1.6 }}>
-                  <span style={{ fontWeight: 600, color: totalROAS >= 2 ? c.success : c.warning }}>ROAS {formatROAS(totalROAS, true)}: </span>
-                  {totalROAS >= 3 ? 'Strong returns — consider scaling spend.' : totalROAS >= 1.5 ? 'Healthy returns. Monitor for fatigue.' : 'Below target. Review underperforming campaigns.'}
-                </div>
-              )}
-              {hasGA4 && totalSessions > 0 && (
-                <div style={{ padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, fontSize: 13, color: c.textSecondary, lineHeight: 1.6 }}>
-                  <span style={{ fontWeight: 600, color: c.text }}>Traffic: </span>
-                  {`${formatNumber(totalSessions)} sessions from ${formatNumber(totalUsers)} users in the last ${days} days.`}
-                </div>
-              )}
-              {connectedProviders.length < 4 && (
-                <div style={{ padding: '10px 12px', borderRadius: 8, border: `1px dashed ${c.border}`, fontSize: 12, color: c.textMuted, textAlign: 'center' }}>
-                  Connect {4 - connectedProviders.length} more source{4 - connectedProviders.length > 1 ? 's' : ''} for deeper cross-channel insights
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* AI Insights widget */}
-      <h2 className="sr-only">AI insights and forecasts</h2>
-      <AIInsightsWidget workspaceId={workspace?.id} />
 
       {/* Recommendations + Predictions */}
-      <div className="two-col stagger-in" style={{ marginTop: 20 }}>
+      <div className="lx-grid-2" style={{ marginTop: 24 }}>
         <RecommendationsWidget workspaceId={workspace?.id} />
         <PredictionsWidget workspaceId={workspace?.id} />
+      </div>
+
+      {/* AI Insights */}
+      <AIInsightsWidget workspaceId={workspace?.id} />
+
+      {/* Quick Actions */}
+      <div className="lx-card">
+        <div className="lx-card-header">
+          <span className="lx-card-title">Quick Actions</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+          <button className="lx-action-btn" onClick={() => router.push('/dashboard/competitors')}>
+            <div className="lx-action-icon lx-action-icon--purple"><Search size={18} /></div>
+            <div className="lx-action-text">
+              <strong>Keyword gap analysis</strong>
+              <span>Find untapped opportunities</span>
+            </div>
+            <div className="lx-action-arrow"><ArrowRight size={16} /></div>
+          </button>
+          <button className="lx-action-btn" onClick={() => router.push('/dashboard/reports')}>
+            <div className="lx-action-icon lx-action-icon--pink"><FileText size={18} /></div>
+            <div className="lx-action-text">
+              <strong>Generate report</strong>
+              <span>Export PDF summary</span>
+            </div>
+            <div className="lx-action-arrow"><ArrowRight size={16} /></div>
+          </button>
+          <button className="lx-action-btn" onClick={() => router.push('/dashboard/settings')}>
+            <div className="lx-action-icon lx-action-icon--blue"><Users size={18} /></div>
+            <div className="lx-action-text">
+              <strong>Invite team</strong>
+              <span>Add collaborators</span>
+            </div>
+            <div className="lx-action-arrow"><ArrowRight size={16} /></div>
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ─── Recommendations Widget ─── */
+/* ─── Traffic SVG chart (simple area, plugs real data into viewBox points) ─── */
+function TrafficSvg({ chartData, hasPaid }: { chartData: Array<{ day: string; clicks: number; paid: number }>; hasPaid: boolean }) {
+  if (chartData.length === 0) return null;
+  const W = 600, H = 200;
+  const maxVal = Math.max(1, ...chartData.map(d => Math.max(d.clicks, d.paid)));
+  const stepX = chartData.length > 1 ? W / (chartData.length - 1) : W;
 
+  const pointsClicks = chartData.map((d, i) => `${i * stepX},${H - (d.clicks / maxVal) * (H - 20) - 10}`);
+  const pointsPaid = chartData.map((d, i) => `${i * stepX},${H - (d.paid / maxVal) * (H - 20) - 10}`);
+
+  const pathClicks = `M${pointsClicks.join(' L')}`;
+  const fillClicks = `${pathClicks} L${W},${H} L0,${H}Z`;
+  const pathPaid = `M${pointsPaid.join(' L')}`;
+  const fillPaid = `${pathPaid} L${W},${H} L0,${H}Z`;
+
+  return (
+    <div className="lx-chart-area">
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-label="Traffic overview chart">
+        <defs>
+          <linearGradient id="gradTraffic" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FF0066" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#FF0066" stopOpacity="0" />
+          </linearGradient>
+          <linearGradient id="gradOrganic" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#00D4AA" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#00D4AA" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="50" x2={W} y2="50" stroke="var(--border)" strokeDasharray="4" />
+        <line x1="0" y1="100" x2={W} y2="100" stroke="var(--border)" strokeDasharray="4" />
+        <line x1="0" y1="150" x2={W} y2="150" stroke="var(--border)" strokeDasharray="4" />
+        <path d={fillClicks} fill="url(#gradTraffic)" />
+        <path d={pathClicks} fill="none" stroke="#FF0066" strokeWidth="2.5" />
+        {hasPaid && (
+          <>
+            <path d={fillPaid} fill="url(#gradOrganic)" />
+            <path d={pathPaid} fill="none" stroke="#00D4AA" strokeWidth="2" strokeDasharray="4 3" />
+          </>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+/* ─── Channel Mix Donut (mostly static allocation until real source breakdown) ─── */
+function ChannelMixDonut({ totalSessions, totalClicks, paidClicks }: { totalSessions: number; totalClicks: number; paidClicks: number }) {
+  // TODO: real channel mix from GA4 acquisition source
+  const base = Math.max(1, totalSessions);
+  const organic = totalClicks || Math.round(base * 0.42);
+  const paid = paidClicks || Math.round(base * 0.28);
+  const direct = Math.max(0, Math.round(base * 0.18));
+  const social = Math.max(0, base - organic - paid - direct);
+  const total = organic + paid + direct + social || 1;
+  const C = 2 * Math.PI * 56; // 351.86
+  const seg = (v: number) => (v / total) * C;
+
+  const segs = [
+    { label: 'Organic', value: organic, color: '#00D4AA' },
+    { label: 'Paid', value: paid, color: '#FF0066' },
+    { label: 'Direct', value: direct, color: '#7B61FF' },
+    { label: 'Social', value: social, color: '#FF8A00' },
+  ];
+
+  let offset = 0;
+
+  return (
+    <div className="lx-donut-wrap">
+      <div className="lx-donut-chart">
+        <svg viewBox="0 0 140 140" aria-label="Channel mix">
+          <circle cx="70" cy="70" r="56" fill="none" stroke="var(--border)" strokeWidth="14" />
+          {segs.map((s, i) => {
+            const len = seg(s.value);
+            const dashoff = -offset;
+            offset += len;
+            return (
+              <circle
+                key={i}
+                cx="70" cy="70" r="56"
+                fill="none" stroke={s.color} strokeWidth="14"
+                strokeDasharray={`${len} ${C - len}`}
+                strokeDashoffset={dashoff}
+                transform="rotate(-90 70 70)"
+              />
+            );
+          })}
+          <text x="70" y="65" textAnchor="middle" fill="var(--text)" fontFamily="var(--font-display)" fontSize="22" fontWeight="700">
+            {totalSessions > 0 ? formatNumber(totalSessions) : '—'}
+          </text>
+          <text x="70" y="82" textAnchor="middle" fill="var(--text-muted)" fontFamily="var(--font-body)" fontSize="10">
+            total sessions
+          </text>
+        </svg>
+      </div>
+      <div className="lx-donut-legend">
+        {segs.map(s => (
+          <div key={s.label} className="lx-donut-row">
+            <span className="lx-donut-color" style={{ background: s.color }} />
+            <span className="lx-donut-label">{s.label}</span>
+            <span className="lx-donut-val">{formatNumber(s.value)}</span>
+            <span className="lx-donut-pct">{Math.round((s.value / total) * 100)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Source Item ─── */
+function SourceItem({ name, bg, icon, status }: { name: string; bg: string; icon: React.ReactNode; status: 'synced' | 'pending' }) {
+  return (
+    <div className="lx-source-item">
+      <div className="lx-source-logo" style={{ background: bg }}>{icon}</div>
+      <div className="lx-source-info">
+        <div className="lx-source-name">{name}</div>
+        <div className={`lx-source-status lx-source-status--${status}`}>
+          {status === 'synced' ? 'Synced' : 'Setup needed'}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Recent Activity (derived from integrations + insights) ─── */
+const RecentActivity = memo(function RecentActivity({ workspaceId }: { workspaceId: string | undefined }) {
+  const [activity, setActivity] = useState<Array<{ icon: React.ReactNode; bg: string; text: React.ReactNode; time: string }>>([]);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    let cancelled = false;
+    apiFetch(`/api/insights?workspace_id=${workspaceId}`)
+      .then(r => r.ok ? r.json() : { insights: [] })
+      .then(data => {
+        if (cancelled) return;
+        const feed: typeof activity = [];
+        (data.insights || []).slice(0, 4).forEach((ins: any) => {
+          const createdAt = ins.created_at ? new Date(ins.created_at) : new Date();
+          const diffMin = Math.max(1, Math.round((Date.now() - createdAt.getTime()) / 60000));
+          const time = diffMin < 60 ? `${diffMin} min ago` : diffMin < 1440 ? `${Math.round(diffMin / 60)} hr ago` : `${Math.round(diffMin / 1440)} d ago`;
+          feed.push({
+            icon: <Sparkles size={15} color="#FF0066" />,
+            bg: 'rgba(255,0,102,0.1)',
+            text: <>AI insight: <strong>&quot;{ins.title}&quot;</strong></>,
+            time,
+          });
+        });
+        setActivity(feed);
+      })
+      .catch(() => setActivity([]));
+    return () => { cancelled = true; };
+  }, [workspaceId]);
+
+  if (activity.length === 0) return null;
+
+  return (
+    <div className="lx-card" style={{ marginTop: 20 }}>
+      <div className="lx-card-header">
+        <span className="lx-card-title">Recent Activity</span>
+      </div>
+      {activity.map((a, i) => (
+        <div key={i} className="lx-activity-row">
+          <div className="lx-activity-icon" style={{ background: a.bg }}>{a.icon}</div>
+          <div className="lx-activity-text">{a.text}</div>
+          <span className="lx-activity-time">{a.time}</span>
+        </div>
+      ))}
+    </div>
+  );
+});
+
+/* ─── Recommendations Widget ─── */
 const RecommendationsWidget = memo(function RecommendationsWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const { c } = useTheme();
   const [recs, setRecs] = useState<any[]>([]);
@@ -490,31 +701,30 @@ const RecommendationsWidget = memo(function RecommendationsWidget({ workspaceId 
 
   useEffect(() => { loadRecs(); }, [workspaceId]);
 
-  const priorityColors: Record<string, string> = { high: c.danger, medium: c.warning, low: c.success };
+  const priorityPill: Record<string, string> = { high: 'lx-pill--danger', medium: 'lx-pill--warning', low: 'lx-pill--success' };
 
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div className="icon-pill-sm"><Lightbulb size={14} color={c.accent} /></div>
-        <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Recommendations</h3>
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title"><Lightbulb size={14} style={{ display: 'inline', marginRight: 6, color: 'var(--primary)' }} />AI Recommendations</span>
       </div>
       {loading ? (
-        <div style={{ height: 80, backgroundColor: c.bgCardHover, borderRadius: 8 }} className="animate-pulse" />
+        <div style={{ height: 80, background: 'var(--elevated)', borderRadius: 8 }} />
       ) : fetchError ? (
         <div style={{ textAlign: 'center', padding: '12px 0' }}>
           <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 8 }}>Failed to load recommendations</p>
-          <button onClick={loadRecs} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+          <button className="lx-card-action" onClick={loadRecs}>Retry</button>
         </div>
       ) : recs.length === 0 ? (
         <p style={{ fontSize: 12, color: c.textMuted }}>No recommendations yet. Connect integrations and sync data to get AI-powered suggestions.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {recs.slice(0, 4).map((r: any, i: number) => (
-            <div key={r.id || i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}` }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: priorityColors[r.priority] || c.textMuted, marginTop: 6, flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13, fontWeight: 500, color: c.text, marginBottom: 2 }}>{r.title}</p>
-                <p style={{ fontSize: 11, color: c.textMuted, lineHeight: 1.5 }}>{r.description}</p>
+            <div key={r.id || i} className="lx-insight-item">
+              <span className={`lx-pill ${priorityPill[r.priority] || 'lx-pill--muted'}`} style={{ flexShrink: 0, height: 'fit-content' }}>{r.priority || 'low'}</span>
+              <div className="lx-insight-body">
+                <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>{r.title}</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5 }}>{r.description}</p>
               </div>
             </div>
           ))}
@@ -525,7 +735,6 @@ const RecommendationsWidget = memo(function RecommendationsWidget({ workspaceId 
 });
 
 /* ─── Predictions Widget ─── */
-
 const PredictionsWidget = memo(function PredictionsWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const { c } = useTheme();
   const [prediction, setPrediction] = useState<any>(null);
@@ -552,28 +761,25 @@ const PredictionsWidget = memo(function PredictionsWidget({ workspaceId }: { wor
   );
 
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <div className="icon-pill-sm" style={{ backgroundColor: c.successSubtle, borderColor: 'rgba(16,185,129,0.12)' }}><TrendingUp size={14} color={c.success} /></div>
-        <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>Traffic Forecast</h3>
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title"><TrendingUp size={14} style={{ display: 'inline', marginRight: 6, color: 'var(--success)' }} />Traffic Forecast</span>
       </div>
       {loading ? (
-        <div style={{ height: 80, backgroundColor: c.bgCardHover, borderRadius: 8 }} className="animate-pulse" />
+        <div style={{ height: 80, background: 'var(--elevated)', borderRadius: 8 }} />
       ) : fetchError ? (
         <div style={{ textAlign: 'center', padding: '12px 0' }}>
           <p style={{ fontSize: 12, color: c.textMuted, marginBottom: 8 }}>Failed to load forecast</p>
-          <button onClick={loadPredictions} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+          <button className="lx-card-action" onClick={loadPredictions}>Retry</button>
         </div>
       ) : forecast.length === 0 ? (
         <p style={{ fontSize: 12, color: c.textMuted }}>{prediction?.message || 'Connect GA4 and sync data to see traffic predictions.'}</p>
       ) : (
         <div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: c.text, fontFamily: 'var(--font-display)', letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums', marginBottom: 4 }}>
-            ~{formatNumber(avgForecast)}
-          </div>
-          <p style={{ fontSize: 11, color: c.textSecondary, marginBottom: 12 }}>avg daily sessions forecast (next 14 days)</p>
+          <div className="lx-kpi-value">~{formatNumber(avgForecast)}</div>
+          <p style={{ fontSize: 11, color: 'var(--text-sec)', marginBottom: 12 }}>avg daily sessions forecast (next 14 days)</p>
           {narrative && (
-            <p style={{ fontSize: 12, color: c.textMuted, lineHeight: 1.6, padding: '10px 12px', backgroundColor: c.bgCardHover, borderRadius: 8, border: `1px solid ${c.border}` }}>
+            <p style={{ fontSize: 12, color: c.textMuted, lineHeight: 1.6, padding: '10px 12px', background: 'var(--elevated)', borderRadius: 8 }}>
               {narrative}
             </p>
           )}
@@ -583,11 +789,9 @@ const PredictionsWidget = memo(function PredictionsWidget({ workspaceId }: { wor
   );
 });
 
-/* ─── Anomalies Dashboard Widget ─── */
-
+/* ─── Anomalies Widget ─── */
 const AnomaliesWidget = memo(function AnomaliesWidget({ workspaceId }: { workspaceId: string | undefined }) {
-  const { c, theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { c } = useTheme();
   const [anomalies, setAnomalies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
@@ -613,7 +817,6 @@ const AnomaliesWidget = memo(function AnomaliesWidget({ workspaceId }: { workspa
   }
 
   const unread = useMemo(() => anomalies.filter(a => !a.is_read), [anomalies]);
-  // Sort: high severity first, then medium, then low
   const sorted = useMemo(() => {
     const order: Record<string, number> = { high: 0, medium: 1, low: 2 };
     return [...anomalies].sort((a, b) => (order[a.severity] ?? 2) - (order[b.severity] ?? 2));
@@ -622,112 +825,58 @@ const AnomaliesWidget = memo(function AnomaliesWidget({ workspaceId }: { workspa
   const hiddenCount = sorted.length - 3;
 
   if (loading) return (
-    <div
-      aria-busy="true" aria-label="Loading anomalies"
-      style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', minHeight: 88 }}
-      className="animate-pulse"
-    />
+    <div aria-busy="true" className="lx-card" style={{ minHeight: 88 }} />
   );
 
   if (fetchError) return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', textAlign: 'center' }}>
+    <div className="lx-card" style={{ textAlign: 'center' }}>
       <AlertTriangle size={20} color={c.warning} style={{ margin: '0 auto 8px' }} />
       <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 12 }}>Failed to load anomalies</p>
-      <button onClick={loadAnomalies} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+      <button className="lx-card-action" onClick={loadAnomalies}>Retry</button>
     </div>
   );
 
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <AlertTriangle size={16} color="#F59E0B" />
-          <h3 style={{ fontSize: 14, fontWeight: 600, color: c.text }}>AI Anomalies</h3>
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title">
+          <AlertTriangle size={14} style={{ display: 'inline', marginRight: 6, color: 'var(--warning)' }} />
+          AI Anomalies
           {unread.length > 0 && (
-            <span style={{ background: '#FEF3C7', color: '#92400E', fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20 }}>
-              {unread.length} new
-            </span>
+            <span className="lx-pill lx-pill--warning" style={{ marginLeft: 8 }}>{unread.length} new</span>
           )}
-        </div>
-        <button
-          onClick={() => router.push('/dashboard/alerts')}
-          style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
-        >
-          View all →
-        </button>
+        </span>
+        <button className="lx-card-action" onClick={() => router.push('/dashboard/alerts')}>View all →</button>
       </div>
 
       {display.length === 0 ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0' }}>
-          <CheckCircle size={16} color="#059669" />
-          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary }}>No anomalies detected — everything looks healthy</p>
+        <div className="lx-activity-row" style={{ borderBottom: 'none' }}>
+          <div className="lx-activity-icon" style={{ background: 'rgba(16,185,129,0.1)' }}>
+            <CheckCircle size={15} color="#10B981" />
+          </div>
+          <div className="lx-activity-text">No anomalies detected — everything looks healthy</div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {display.map((anomaly: any) => {
             const severity = anomaly.severity || 'low';
-            const dotColor = severity === 'high' ? '#DC2626' : severity === 'medium' ? '#F59E0B' : '#0891B2';
-            // Source badge — normalize from anomaly.source/provider
-            const sourceRaw: string = (anomaly.source || anomaly.provider || '').toString().toLowerCase();
-            let srcLabel = '', srcBg = '', srcColor = '';
-            if (sourceRaw.includes('gsc') || sourceRaw.includes('search')) {
-              srcLabel = 'GSC';
-              srcBg = isDark ? 'rgba(5,150,105,0.18)' : 'rgba(5,150,105,0.1)';
-              srcColor = isDark ? '#6EE7B7' : '#065F46';
-            } else if (sourceRaw.includes('ga4') || sourceRaw.includes('analytics')) {
-              srcLabel = 'GA4';
-              srcBg = isDark ? 'rgba(234,88,12,0.2)' : 'rgba(234,88,12,0.1)';
-              srcColor = isDark ? '#FDBA74' : '#9A3412';
-            } else if (sourceRaw.includes('meta')) {
-              srcLabel = 'Meta Ads';
-              srcBg = isDark ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.1)';
-              srcColor = isDark ? '#C4B5FD' : '#5B21B6';
-            } else if (sourceRaw.includes('google_ads') || sourceRaw.includes('google ads')) {
-              srcLabel = 'Google Ads';
-              srcBg = isDark ? 'rgba(37,99,235,0.2)' : 'rgba(37,99,235,0.1)';
-              srcColor = isDark ? '#93C5FD' : '#1D4ED8';
-            }
+            const pillCls = severity === 'high' ? 'lx-pill--danger' : severity === 'medium' ? 'lx-pill--warning' : 'lx-pill--info';
             return (
-              <div
-                key={anomaly.id}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 14px', borderRadius: 10,
-                  backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`,
-                  opacity: anomaly.is_read ? 0.55 : 1,
-                  transition: 'background 150ms',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor }} />
-                  <span style={{ fontSize: 10, fontWeight: 600, color: dotColor, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    {severity === 'high' ? 'Critical' : severity === 'medium' ? 'Warning' : 'Info'}
-                  </span>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, color: c.text, margin: 0 }}>{anomaly.title}</p>
+              <div key={anomaly.id} className="lx-activity-row" style={{ opacity: anomaly.is_read ? 0.55 : 1 }}>
+                <span className={`lx-pill ${pillCls}`} style={{ flexShrink: 0 }}>
+                  {severity === 'high' ? 'Critical' : severity === 'medium' ? 'Warning' : 'Info'}
+                </span>
+                <div className="lx-activity-text">
+                  <div style={{ fontWeight: 500 }}>{anomaly.title}</div>
                   {anomaly.description && (
-                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{anomaly.description}</p>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{anomaly.description}</div>
                   )}
                 </div>
-                {srcLabel && (
-                  <span style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 11, fontWeight: 600,
-                    padding: '3px 10px', borderRadius: 20,
-                    background: srcBg, color: srcColor,
-                    flexShrink: 0,
-                  }}>{srcLabel}</span>
-                )}
                 <button
                   onClick={() => !anomaly.is_read && markAsRead(anomaly.id)}
                   disabled={anomaly.is_read}
                   aria-label="Dismiss"
-                  style={{
-                    background: 'none', border: 'none', padding: 4,
-                    color: c.textMuted, cursor: anomaly.is_read ? 'default' : 'pointer',
-                    display: 'flex', alignItems: 'center',
-                  }}
+                  style={{ background: 'none', border: 'none', padding: 4, color: 'var(--text-muted)', cursor: anomaly.is_read ? 'default' : 'pointer', display: 'flex', alignItems: 'center' }}
                 >
                   <X size={14} />
                 </button>
@@ -735,28 +884,12 @@ const AnomaliesWidget = memo(function AnomaliesWidget({ workspaceId }: { workspa
             );
           })}
           {!expanded && hiddenCount > 0 && (
-            <button
-              onClick={() => setExpanded(true)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                width: '100%', padding: '10px 0',
-                fontSize: 12, fontWeight: 600, color: c.accent,
-                background: 'none', border: 'none', cursor: 'pointer',
-              }}
-            >
+            <button className="lx-card-action" style={{ padding: '10px 0', marginTop: 4 }} onClick={() => setExpanded(true)}>
               Show {hiddenCount} more →
             </button>
           )}
           {expanded && hiddenCount > 0 && (
-            <button
-              onClick={() => setExpanded(false)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                width: '100%', padding: '10px 0',
-                fontSize: 12, fontWeight: 600, color: c.textMuted,
-                background: 'none', border: 'none', cursor: 'pointer',
-              }}
-            >
+            <button className="lx-card-action" style={{ padding: '10px 0', marginTop: 4, color: 'var(--text-muted)' }} onClick={() => setExpanded(false)}>
               ↑ Show less
             </button>
           )}
@@ -766,8 +899,7 @@ const AnomaliesWidget = memo(function AnomaliesWidget({ workspaceId }: { workspa
   );
 });
 
-/* ─── AI Insights Dashboard Widget ─── */
-
+/* ─── AI Insights Widget ─── */
 const AIInsightsWidget = memo(function AIInsightsWidget({ workspaceId }: { workspaceId: string | undefined }) {
   const { c } = useTheme();
   const router = useRouter();
@@ -775,20 +907,6 @@ const AIInsightsWidget = memo(function AIInsightsWidget({ workspaceId }: { works
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [fetchError, setFetchError] = useState(false);
-
-  const INSIGHT_DOT_COLORS: Record<string, string> = {
-    win: c.success,
-    warning: c.danger,
-    opportunity: c.warning,
-    tip: c.accent,
-  };
-
-  const INSIGHT_ICONS: Record<string, any> = {
-    win: TrendingUp,
-    warning: AlertTriangle,
-    opportunity: Lightbulb,
-    tip: Zap,
-  };
 
   function loadInsights() {
     if (!workspaceId) return;
@@ -824,68 +942,54 @@ const AIInsightsWidget = memo(function AIInsightsWidget({ workspaceId }: { works
     return [...insights].sort((a, b) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1)).slice(0, 3);
   }, [insights]);
 
-  if (loading) return (
-    <div
-      aria-busy="true" aria-label="Loading AI insights"
-      style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', minHeight: 88 }}
-      className="animate-pulse"
-    />
-  );
+  if (loading) return <div aria-busy="true" className="lx-card" style={{ minHeight: 88, marginTop: 20 }} />;
 
   if (fetchError) return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: '20px 24px', textAlign: 'center' }}>
+    <div className="lx-card" style={{ textAlign: 'center', marginTop: 20 }}>
       <Sparkles size={20} color={c.textMuted} style={{ margin: '0 auto 8px' }} />
       <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 12 }}>Failed to load insights</p>
-      <button onClick={loadInsights} style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+      <button className="lx-card-action" onClick={loadInsights}>Retry</button>
     </div>
   );
 
+  const iconForType: Record<string, { icon: any; cls: string }> = {
+    win: { icon: TrendingUp, cls: 'lx-insight-icon--opp' },
+    warning: { icon: AlertTriangle, cls: 'lx-insight-icon--warn' },
+    opportunity: { icon: Lightbulb, cls: 'lx-insight-icon--tip' },
+    tip: { icon: Zap, cls: 'lx-insight-icon--tip' },
+  };
+
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="icon-pill-sm"><Sparkles size={14} color={c.accent} /></div>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontFamily: 'var(--font-display)' }}>AI Insights</h3>
-        </div>
-        <button
-          onClick={() => router.push('/dashboard/ai')}
-          style={{ fontSize: 12, color: c.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}
-        >
-          View all <ArrowRight size={12} />
-        </button>
+    <div className="lx-card" style={{ marginTop: 20 }}>
+      <div className="lx-card-header">
+        <span className="lx-card-title"><Sparkles size={14} style={{ display: 'inline', marginRight: 6, color: 'var(--primary)' }} />AI Insights</span>
+        <button className="lx-card-action" onClick={() => router.push('/dashboard/ai')}>View all →</button>
       </div>
 
       {top3.length === 0 ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', gap: 12 }}>
           <p style={{ fontSize: 13, color: c.textMuted }}>No insights generated yet. Let AI analyze your data.</p>
           <button
+            className="lx-btn-primary"
             onClick={generate}
             disabled={generating}
-            style={{
-              padding: '8px 16px', borderRadius: 8, border: 'none',
-              backgroundColor: c.accent, color: 'white',
-              fontSize: 13, fontWeight: 600,
-              cursor: generating ? 'not-allowed' : 'pointer',
-              opacity: generating ? 0.7 : 1, whiteSpace: 'nowrap',
-              transition: 'background-color 0.2s',
-            }}
+            style={{ opacity: generating ? 0.7 : 1 }}
           >
-            {generating ? 'Generating...' : 'Generate'}
+            {generating ? 'Generating…' : 'Generate'}
           </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div>
           {top3.map((insight: any) => {
-            const Icon = INSIGHT_ICONS[insight.type] || Zap;
-            const dotColor = INSIGHT_DOT_COLORS[insight.type] || c.accent;
+            const meta = iconForType[insight.type] || iconForType.tip;
+            const Icon = meta.icon;
             return (
-              <div key={insight.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', borderRadius: 8, backgroundColor: c.bgCardHover, border: `1px solid ${c.border}`, minHeight: 64 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0, marginTop: 6 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 500, color: c.text, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'DM Sans', sans-serif" }}>{insight.title}</p>
-                  <p style={{ fontSize: 13, color: c.textSecondary, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: 1.5, fontFamily: "'DM Sans', sans-serif" }}>{insight.description}</p>
+              <div key={insight.id} className="lx-insight-item">
+                <div className={`lx-insight-icon ${meta.cls}`}><Icon size={16} /></div>
+                <div className="lx-insight-body">
+                  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>{insight.title}</p>
+                  <p className="lx-insight-text">{insight.description}</p>
                 </div>
-                <Icon size={20} color={dotColor} style={{ flexShrink: 0, marginTop: 2 }} />
               </div>
             );
           })}

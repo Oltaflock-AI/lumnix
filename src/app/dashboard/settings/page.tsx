@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useRef, useEffect } from "react";
 import { Search, BarChart3, Target, Share2, Check, X, RefreshCw, Loader2, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle, Copy, Clock, Link, Database, AlertCircle, Shield, Eye, EyeOff, CreditCard, Calendar, Receipt } from "lucide-react";
 import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
@@ -15,126 +16,161 @@ import {
 } from '@/components/ui/alert-dialog';
 import type { CSSProperties } from "react";
 
-/* ─── Shared Styles Hook (theme-aware) ─── */
+/* ────────────────────────────────────────────────────────────────
+   Inline brand SVGs (official colored logos) for Integrations tab
+   ──────────────────────────────────────────────────────────────── */
+function GSCIcon() {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" width="28" height="28" aria-hidden="true">
+      <circle cx="24" cy="24" r="20" fill="#4285F4" />
+      <path d="M24 4A20 20 0 0 1 44 24H24V4z" fill="#EA4335" />
+      <path d="M24 24H4A20 20 0 0 0 24 44V24z" fill="#34A853" />
+      <path d="M24 24h20A20 20 0 0 1 24 44V24z" fill="#FBBC04" />
+      <circle cx="24" cy="24" r="7" fill="white" />
+    </svg>
+  );
+}
+function GA4Icon() {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" width="28" height="28" aria-hidden="true">
+      <rect x="31" y="4" width="8" height="40" rx="3" fill="#F9AB00" />
+      <rect x="16" y="16" width="8" height="28" rx="3" fill="#E37400" />
+      <circle cx="11" cy="38" r="6" fill="#E37400" />
+    </svg>
+  );
+}
+function GoogleAdsIcon() {
+  return (
+    <svg viewBox="0 0 192 192" fill="none" width="28" height="28" aria-hidden="true">
+      <path d="M8.6 129.4l52.9-91.6c6.3-10.9 20.3-14.6 31.2-8.3s14.6 20.3 8.3 31.2L48 152.3c-6.3 10.9-20.3 14.6-31.2 8.3-10.9-6.3-14.6-20.3-8.2-31.2z" fill="#FBBC04" />
+      <path d="M183.4 129.4l-52.9-91.6c-6.3-10.9-20.3-14.6-31.2-8.3-10.9 6.3-14.6 20.3-8.3 31.2l52.9 91.6c6.3 10.9 20.3 14.6 31.2 8.3 10.9-6.3 14.6-20.3 8.3-31.2z" fill="#4285F4" />
+      <circle cx="38.7" cy="152.5" r="31.7" fill="#34A853" />
+    </svg>
+  );
+}
+function MetaAdsIcon() {
+  return (
+    <svg viewBox="0 0 80 80" fill="none" width="28" height="28" aria-hidden="true">
+      <path d="M16.8 26.4c-4.4 5.2-7.2 12-7.2 17.6 0 6.8 2.4 11.2 6.4 11.2 3.2 0 5.6-2.4 9.6-9.6l5.2-9.6 3.2-5.6c4.8-8.4 8.8-12.8 15.2-12.8 5.6 0 10 3.2 13.6 8.8 4 6.4 6 14.4 6 22.4 0 8-3.6 13.2-10 13.2v-8.4c3.2 0 4.8-2.4 4.8-5.2 0-6-1.6-12.4-4.4-16.8-2-3.2-4.4-4.8-7.2-4.8-3.6 0-6 2.8-10 10l-5.2 9.6-3.2 5.6c-4.4 7.6-8 11.6-14.8 11.6C11.2 63.6 4 56 4 44c0-7.6 3.6-16 9.6-22.4l3.2 4.8z" fill="#0081FB" />
+    </svg>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────
+   Shared styles (kept for state-only pieces still referenced by
+   child components — same names so no handler logic changes)
+   ──────────────────────────────────────────────────────────────── */
 function useStyles() {
   const { c, theme } = useTheme();
-  const inputBase: React.CSSProperties = {
+  const inputBase: CSSProperties = {
     width: '100%',
     height: 40,
     padding: '0 12px',
     borderRadius: 8,
-    border: `1px solid var(--border-default)`,
-    backgroundColor: 'var(--bg-page)',
-    color: 'var(--text-primary)',
-    fontSize: 14,
-    fontFamily: "'DM Sans', sans-serif",
+    border: `1px solid var(--border)`,
+    backgroundColor: 'var(--elevated)',
+    color: 'var(--text)',
+    fontSize: 13,
+    fontFamily: "var(--font-body)",
     boxSizing: 'border-box',
-    transition: 'border-color 150ms, box-shadow 150ms',
+    transition: 'border-color 150ms',
     outline: 'none',
   };
-  const primaryBtn: React.CSSProperties = {
+  const primaryBtn: CSSProperties = {
     display: 'inline-flex', alignItems: 'center', gap: 6,
-    height: 40, padding: '0 20px', borderRadius: 8, border: 'none',
-    background: '#7C3AED',
+    height: 40, padding: '0 18px', borderRadius: 8, border: 'none',
+    background: 'var(--primary)',
     color: '#FFFFFF',
-    fontSize: 14, fontWeight: 600, cursor: 'pointer',
-    fontFamily: "'DM Sans', sans-serif",
-    transition: 'background 150ms, box-shadow 150ms',
+    fontSize: 13, fontWeight: 600, cursor: 'pointer',
+    fontFamily: "var(--font-body)",
   };
-  const ghostBtn: React.CSSProperties = {
+  const ghostBtn: CSSProperties = {
     display: 'inline-flex', alignItems: 'center', gap: 6,
     height: 40, padding: '0 16px', borderRadius: 8,
-    border: `1px solid var(--border-default)`,
+    border: `1px solid var(--border)`,
     backgroundColor: 'transparent',
-    color: 'var(--text-secondary)',
-    fontSize: 14, fontWeight: 500, cursor: 'pointer',
-    fontFamily: "'DM Sans', sans-serif",
-    transition: 'background 150ms, border-color 150ms',
+    color: 'var(--text-sec)',
+    fontSize: 13, fontWeight: 500, cursor: 'pointer',
+    fontFamily: "var(--font-body)",
   };
-  const destructiveBtn: React.CSSProperties = {
-    background: 'transparent', color: '#EF4444',
-    border: '1px solid #FECACA',
+  const destructiveBtn: CSSProperties = {
+    background: 'transparent', color: 'var(--danger)',
+    border: '1px solid var(--danger)',
     borderRadius: 8, height: 40, padding: '0 16px', cursor: 'pointer',
-    fontSize: 14, fontWeight: 500,
-    fontFamily: "'DM Sans', sans-serif",
+    fontSize: 13, fontWeight: 500,
+    fontFamily: "var(--font-body)",
     display: 'inline-flex', alignItems: 'center', gap: 6,
-    transition: 'background 150ms, border-color 150ms',
   };
-  const card: React.CSSProperties = {
-    backgroundColor: 'var(--bg-card)',
-    border: '1px solid var(--border-default)',
-    borderRadius: 12,
-    padding: 24,
-    marginBottom: 16,
+  const card: CSSProperties = {
+    backgroundColor: 'var(--surface)',
+    border: '1px solid var(--border)',
+    borderRadius: 14,
+    padding: 20,
+    marginBottom: 20,
   };
-  const label: React.CSSProperties = {
+  const label: CSSProperties = {
     display: 'block', fontSize: 13, fontWeight: 500,
-    color: 'var(--text-secondary)',
-    fontFamily: "'DM Sans', sans-serif",
-    marginBottom: 6,
+    color: 'var(--text)',
+    fontFamily: "var(--font-body)",
+    marginBottom: 8,
   };
   return { c, inputBase, primaryBtn, ghostBtn, destructiveBtn, card, label };
 }
 
+/* ────────────────────────────────────────────────────────────────
+   Toggle switch (mono styling)
+   ──────────────────────────────────────────────────────────────── */
 function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
-  const { c } = useTheme();
   return (
-    <div
+    <button
+      type="button"
       onClick={onToggle}
-      style={{
-        width: 42, height: 24, borderRadius: 12, cursor: 'pointer',
-        position: 'relative',
-        backgroundColor: on ? c.accent : c.borderStrong,
-        transition: 'background-color 0.2s', flexShrink: 0,
-      }}
-    >
-      <div style={{
-        width: 18, height: 18, borderRadius: '50%', backgroundColor: '#fff',
-        position: 'absolute', top: 3,
-        left: on ? 21 : 3, transition: 'left 0.2s',
-      }} />
-    </div>
+      className={`lx-switch${on ? ' active' : ''}`}
+      aria-pressed={on}
+    />
   );
 }
 
+/* ────────────────────────────────────────────────────────────────
+   Status pill (used by Integrations tab)
+   ──────────────────────────────────────────────────────────────── */
 function StatusPill({ connected, label, variant }: { connected: boolean; label?: string; variant?: 'success' | 'error' | 'warning' | 'default' }) {
-  const resolvedVariant = variant || (connected ? 'success' : 'default');
-  const styles: Record<string, { bg: string; color: string; dot: string }> = {
-    success: { bg: '#DCFCE7', color: '#166534', dot: '#22C55E' },
-    error: { bg: '#FEF2F2', color: '#991B1B', dot: '#EF4444' },
-    warning: { bg: '#FFFBEB', color: '#92400E', dot: '#F59E0B' },
-    default: { bg: '#F1F5F9', color: '#64748B', dot: '#94A3B8' },
+  const resolved = variant || (connected ? 'success' : 'default');
+  const colors: Record<string, string> = {
+    success: 'var(--success)',
+    error: 'var(--danger)',
+    warning: 'var(--warning)',
+    default: 'var(--text-muted)',
   };
-  const s = styles[resolvedVariant];
+  const dot = colors[resolved];
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: 11, fontWeight: 600,
-      padding: '2px 10px', borderRadius: 20,
-      backgroundColor: s.bg, color: s.color,
-    }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: s.dot }} />
+    <span
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        fontSize: 12, color: dot, marginTop: 2,
+      }}
+    >
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot }} />
       {label || (connected ? 'Connected' : 'Disconnected')}
     </span>
   );
 }
 
 const BRAND_COLORS = [
-  { label: 'Purple', value: '#7c3aed' },
-  { label: 'Blue', value: '#3b82f6' },
-  { label: 'Green', value: '#22c55e' },
-  { label: 'Orange', value: '#f59e0b' },
-  { label: 'Pink', value: '#ec4899' },
-  { label: 'Red', value: '#ef4444' },
+  { label: 'Primary', value: '#FF0066' },
+  { label: 'Blue', value: '#3B82F6' },
+  { label: 'Green', value: '#10B981' },
+  { label: 'Yellow', value: '#F59E0B' },
+  { label: 'Pink', value: '#EC4899' },
+  { label: 'Red', value: '#EF4444' },
 ];
 
 function NotificationsTab() {
-  const { c, card, primaryBtn } = useStyles();
   const notifItems = [
-    { id: "traffic", label: "Traffic Alerts", desc: "Get notified when traffic spikes or drops significantly" },
-    { id: "ads", label: "Ad Alerts", desc: "Budget exhaustion, CPC spikes, ROAS drops" },
-    { id: "weekly", label: "Weekly Digest", desc: "A weekly summary of your marketing performance" },
-    { id: "monthly", label: "Monthly Report", desc: "Full monthly marketing report delivered to your inbox" },
+    { id: "traffic", label: "Traffic Alerts", desc: "Get notified when traffic changes significantly" },
+    { id: "ads", label: "Ad Alerts", desc: "Notify me of ad spend anomalies and budget warnings" },
+    { id: "weekly", label: "Weekly Digest", desc: "Summary of top insights and metrics every Monday" },
+    { id: "monthly", label: "Monthly Report", desc: "Comprehensive monthly analytics and performance review" },
   ];
   const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
     try {
@@ -153,39 +189,33 @@ function NotificationsTab() {
   }
 
   return (
-    <div>
-      <div style={{ ...card }}>
-        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Notification Preferences</h3>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Choose which alerts and reports you want to receive.</p>
-        {notifItems.map((item, i) => (
-          <div key={item.id} style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '16px 0', gap: 16,
-            borderBottom: i < notifItems.length - 1 ? '1px solid var(--border-subtle)' : 'none',
-          }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: "'DM Sans', sans-serif" }}>{item.label}</div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginTop: 2 }}>{item.desc}</div>
-            </div>
-            <Toggle on={!!toggles[item.id]} onToggle={() => setToggles(t => ({ ...t, [item.id]: !t[item.id] }))} />
-          </div>
-        ))}
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title">Notification Preferences</span>
       </div>
-      <button onClick={save} style={{
-        ...primaryBtn,
-        backgroundColor: saved ? c.success : '#7C3AED',
-      }}>
-        {saved ? <><Check size={16} /> Saved!</> : "Save Preferences"}
+      <p className="lx-card-desc">Choose which alerts and reports you want to receive.</p>
+
+      {notifItems.map(item => (
+        <div key={item.id} className="lx-toggle-row">
+          <div className="lx-toggle-info">
+            <div className="lx-toggle-title">{item.label}</div>
+            <div className="lx-toggle-desc">{item.desc}</div>
+          </div>
+          <Toggle on={!!toggles[item.id]} onToggle={() => setToggles(t => ({ ...t, [item.id]: !t[item.id] }))} />
+        </div>
+      ))}
+
+      <button onClick={save} className="lx-btn-primary" style={{ marginTop: 16 }}>
+        {saved ? <><Check size={14} /> Saved!</> : 'Save Preferences'}
       </button>
     </div>
   );
 }
 
 function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: () => void; onUpdate?: (w: any) => void }) {
-  const { c, card, label, inputBase, ghostBtn, primaryBtn } = useStyles();
   const { setAccentColor } = useTheme();
   const [brandName, setBrandName] = useState(workspace?.name || '');
-  const [brandColor, setBrandColor] = useState(workspace?.brand_color || '#7c3aed');
+  const [brandColor, setBrandColor] = useState(workspace?.brand_color || '#FF0066');
   const [logoUrl, setLogoUrl] = useState(workspace?.logo_url || '');
   const [logoPreview, setLogoPreview] = useState(workspace?.logo_url || '');
   const [uploading, setUploading] = useState(false);
@@ -197,7 +227,7 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
   useEffect(() => {
     if (workspace) {
       setBrandName(workspace.name || '');
-      setBrandColor(workspace.brand_color || '#7c3aed');
+      setBrandColor(workspace.brand_color || '#FF0066');
       setLogoUrl(workspace.logo_url || '');
       setLogoPreview(workspace.logo_url || '');
     }
@@ -244,7 +274,7 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ name: brandName, brand_color: brandColor, logo_url: logoUrl }),
+        body: JSON.stringify({ workspace_id: workspace?.id, name: brandName, brand_color: brandColor, logo_url: logoUrl }),
       });
       if (res.ok) {
         setSaved(true);
@@ -262,81 +292,87 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
   }
 
   return (
-    <div>
-      <div style={{ ...card }}>
-        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Brand Identity</h3>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Customize your brand name, logo, and colors.</p>
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title">Brand Identity</span>
+      </div>
+      <p className="lx-card-desc">Customize your brand name, logo, and colors.</p>
 
-        {/* Brand Name */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={label}>Brand Name</label>
-          <input
-            type="text"
-            value={brandName}
-            onChange={e => setBrandName(e.target.value)}
-            placeholder="e.g. Acme Corp"
-            style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
-            onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-            onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
-          />
+      <div className="lx-form-row" style={{ marginTop: 16 }}>
+        <label className="lx-form-label">Brand Name</label>
+        <input
+          type="text"
+          className="lx-form-input"
+          value={brandName}
+          onChange={e => setBrandName(e.target.value)}
+          placeholder="Your brand name"
+        />
+      </div>
+
+      {/* Logo */}
+      <div className="lx-logo-section">
+        <div className="lx-logo-current">
+          <div className="lx-logo-avatar" style={{ background: logoPreview ? 'transparent' : `linear-gradient(135deg, ${brandColor}, var(--tertiary))`, overflow: 'hidden' }}>
+            {logoPreview ? (
+              <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <span>{brandName.substring(0, 2).toUpperCase() || 'LX'}</span>
+            )}
+          </div>
+          <span className="lx-logo-label">Current Logo</span>
+        </div>
+        <div className="lx-logo-actions">
+          <button
+            type="button"
+            className="lx-upload-area"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            style={{ width: '100%', background: 'transparent' }}
+          >
+            <div className="lx-upload-text">
+              {uploading ? 'Uploading…' : 'Click to upload or drag and drop'}
+            </div>
+            <div className="lx-upload-hint">PNG, JPG up to 2MB</div>
+          </button>
+          <button
+            type="button"
+            className="lx-btn-outline"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+            {uploading ? 'Uploading…' : 'Upload Logo'}
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
+        </div>
+      </div>
+
+      {/* Brand Color */}
+      <div style={{ paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+        <label className="lx-form-label" style={{ display: 'block', marginBottom: 12 }}>Brand Color</label>
+
+        <div className="lx-color-grid">
+          {BRAND_COLORS.map(bc => (
+            <button
+              key={bc.value}
+              type="button"
+              className={`lx-color-option${brandColor.toLowerCase() === bc.value.toLowerCase() ? ' selected' : ''}`}
+              style={{ background: bc.value }}
+              onClick={() => setBrandColor(bc.value)}
+              title={bc.label}
+            >
+              {bc.value}
+            </button>
+          ))}
         </div>
 
-        {/* Logo */}
-        <div style={{ marginBottom: 20 }}>
-          <label style={label}>Logo</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: 8,
-              backgroundColor: 'var(--bg-card)', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', overflow: 'hidden', flexShrink: 0,
-              border: '1px solid var(--border-default)',
-            }}>
-              {logoPreview ? (
-                <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{ fontSize: 18, fontWeight: 700, color: brandColor }}>{brandName.substring(0, 2).toUpperCase() || 'KR'}</div>
-              )}
-            </div>
-            <div>
-              <button
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-                style={{ ...ghostBtn, padding: '8px 16px', fontSize: 13 }}
-              >
-                {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                {uploading ? 'Uploading...' : 'Upload Logo'}
-              </button>
-              <div style={{ fontSize: 11, color: c.textMuted, marginTop: 4 }}>PNG, JPG up to 2MB</div>
-              <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
-            </div>
-          </div>
+        <div className="lx-color-custom">
+          <span className="lx-color-hint">or pick from presets above</span>
         </div>
 
-        {/* Brand Color Presets */}
-        <div>
-          <label style={{ ...label, marginBottom: 10 }}>Brand Color</label>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {BRAND_COLORS.map(bc => (
-              <button
-                key={bc.value}
-                onClick={() => setBrandColor(bc.value)}
-                title={bc.label}
-                style={{
-                  width: 32, height: 32, borderRadius: '50%',
-                  backgroundColor: bc.value, border: 'none', cursor: 'pointer',
-                  outline: brandColor === bc.value ? `2px solid ${c.accent}` : '2px solid transparent',
-                  outlineOffset: 3, position: 'relative',
-                  transition: 'outline-color 0.15s',
-                }}
-              >
-                {brandColor === bc.value && (
-                  <Check size={14} color="white" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
-                )}
-              </button>
-            ))}
-          </div>
-          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: brandColor, flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
+        <div className="lx-color-custom" style={{ marginTop: 12 }}>
+          <div className="lx-color-input-wrap">
+            <div className="lx-color-preview" style={{ background: brandColor, position: 'relative', overflow: 'hidden' }}>
               <input
                 type="color"
                 value={brandColor}
@@ -347,44 +383,46 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
             </div>
             <input
               type="text"
+              className="lx-color-input"
               value={brandColor}
               onChange={e => { const v = e.target.value; if (/^#[0-9a-fA-F]{0,6}$/.test(v)) setBrandColor(v); }}
-              style={{ ...inputBase, width: 140, fontFamily: 'var(--font-mono)', fontSize: 14, padding: '0 10px' }}
+              placeholder="#FF0066"
               maxLength={7}
             />
-            <span style={{ fontSize: 12, color: c.textMuted }}>or pick from presets above</span>
           </div>
         </div>
       </div>
 
       {error && (
-        <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: 13 }}>
+        <div style={{
+          marginTop: 16, padding: '10px 14px', borderRadius: 8,
+          background: 'rgba(239,68,68,0.08)',
+          border: '1px solid rgba(239,68,68,0.3)',
+          color: 'var(--danger)', fontSize: 13,
+        }}>
           {error}
         </div>
       )}
 
       <button
+        type="button"
         onClick={handleSave}
         disabled={saving}
-        style={{
-          ...primaryBtn,
-          backgroundColor: saved ? c.success : c.accent,
-          opacity: saving ? 0.7 : 1,
-          cursor: saving ? 'wait' : 'pointer',
-        }}
+        className="lx-btn-primary"
+        style={{ marginTop: 20, opacity: saving ? 0.7 : 1, cursor: saving ? 'wait' : 'pointer' }}
       >
-        {saving ? <Loader2 size={16} className="animate-spin" /> : saved ? <Check size={16} /> : null}
-        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Brand Settings'}
+        {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
+        {saving ? 'Saving…' : saved ? 'Saved!' : 'Save Brand Settings'}
       </button>
     </div>
   );
 }
 
 const providers = [
-  { id: "gsc", name: "Google Search Console", icon: Search, logoSlug: "googlesearchconsole", desc: "Track keyword rankings, clicks, and impressions", color: "#4285F4" },
-  { id: "ga4", name: "Google Analytics 4", icon: BarChart3, logoSlug: "googleanalytics", desc: "Website traffic, sessions, and conversion data", color: "#E37400" },
-  { id: "google_ads", name: "Google Ads", icon: Target, logoSlug: "googleads", desc: "Campaign performance, spend, and ROAS tracking", color: "#34A853" },
-  { id: "meta_ads", name: "Meta Ads", icon: Share2, logoSlug: "meta", desc: "Facebook & Instagram ad analytics", color: "#1877F2" },
+  { id: "gsc", name: "Google Search Console", Logo: GSCIcon, bg: 'rgba(66,133,244,0.1)', desc: "Tracks keywords, impressions, clicks, and CTR data" },
+  { id: "ga4", name: "Google Analytics 4", Logo: GA4Icon, bg: 'rgba(249,171,0,0.1)', desc: "Real-time analytics, traffic sources, and user behavior" },
+  { id: "google_ads", name: "Google Ads", Logo: GoogleAdsIcon, bg: 'rgba(66,133,244,0.1)', desc: "Campaign performance, spend, and conversion tracking" },
+  { id: "meta_ads", name: "Meta Ads", Logo: MetaAdsIcon, bg: 'rgba(0,129,251,0.1)', desc: "Facebook and Instagram ad performance and spend" },
 ];
 
 const ALERT_METRICS = [
@@ -400,7 +438,6 @@ const ALERT_METRICS = [
 ];
 
 function AlertsTab({ workspaceId }: { workspaceId: string }) {
-  const { c, card, label, inputBase, primaryBtn, ghostBtn, destructiveBtn } = useStyles();
   const [rules, setRules] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -471,101 +508,84 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
   }
 
   return (
-    <div>
-      {/* Header + Add button */}
-      <div style={{ ...card, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Alert Rules</h3>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", margin: 0 }}>Get notified when metrics cross your thresholds.</p>
-        </div>
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title">Alert Rules</span>
         <button
+          type="button"
+          className="lx-btn-primary"
+          style={{ padding: '8px 14px', fontSize: 12 }}
           onClick={() => setShowForm(f => !f)}
-          style={{ ...primaryBtn, padding: '8px 14px', fontSize: 13 }}
         >
-          <Plus size={14} /> Add Alert
+          <Plus size={12} /> Add Alert
         </button>
       </div>
+      <p className="lx-card-desc">Get notified when metrics cross your thresholds.</p>
 
-      {/* Add alert form */}
       {showForm && (
-        <form onSubmit={handleCreate} style={{ ...card, padding: 20, marginBottom: 20 }}>
+        <form onSubmit={handleCreate} style={{ marginTop: 16, padding: 16, background: 'var(--elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-            <div>
-              <label style={label}>Metric</label>
-              <select value={metric} onChange={e => setMetric(e.target.value)} style={inputBase}>
+            <div className="lx-form-row" style={{ marginBottom: 0 }}>
+              <label className="lx-form-label">Metric</label>
+              <select className="lx-form-select" value={metric} onChange={e => setMetric(e.target.value)}>
                 {ALERT_METRICS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
               </select>
             </div>
-            <div>
-              <label style={label}>Condition</label>
-              <select value={comparison} onChange={e => setComparison(e.target.value)} style={inputBase}>
+            <div className="lx-form-row" style={{ marginBottom: 0 }}>
+              <label className="lx-form-label">Condition</label>
+              <select className="lx-form-select" value={comparison} onChange={e => setComparison(e.target.value)}>
                 <option value="above">Goes above</option>
                 <option value="below">Drops below</option>
                 <option value="equals">Equals</option>
               </select>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-            <div>
-              <label style={label}>Threshold</label>
-              <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} placeholder="e.g. 1000" required style={inputBase}
-                onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-                onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
-              />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div className="lx-form-row" style={{ marginBottom: 0 }}>
+              <label className="lx-form-label">Threshold</label>
+              <input type="number" className="lx-form-input" value={threshold} onChange={e => setThreshold(e.target.value)} placeholder="e.g. 1000" required />
             </div>
-            <div>
-              <label style={label}>Notify Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required style={inputBase}
-                onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-                onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
-              />
+            <div className="lx-form-row" style={{ marginBottom: 0 }}>
+              <label className="lx-form-label">Notify Email</label>
+              <input type="email" className="lx-form-input" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required />
             </div>
           </div>
-          {error && <p style={{ fontSize: 12, color: c.danger, marginBottom: 12 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 10 }}>{error}</p>}
           <div style={{ display: 'flex', gap: 10 }}>
-            <button type="submit" disabled={saving} style={{ ...primaryBtn, padding: '10px 20px', fontSize: 13, opacity: saving ? 0.7 : 1 }}>
-              {saving ? 'Creating...' : 'Create Alert'}
+            <button type="submit" disabled={saving} className="lx-btn-primary" style={{ opacity: saving ? 0.7 : 1 }}>
+              {saving ? 'Creating…' : 'Create Alert'}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} style={ghostBtn}>
-              Cancel
-            </button>
+            <button type="button" onClick={() => setShowForm(false)} className="lx-btn-outline">Cancel</button>
           </div>
         </form>
       )}
 
-      {/* Rules list */}
       {loading ? (
-        <div style={{ padding: 40, textAlign: 'center' }}>
-          <Loader2 size={20} color={c.accent} style={{ animation: 'spin 1s linear infinite' }} />
+        <div style={{ padding: 30, textAlign: 'center' }}>
+          <Loader2 size={18} style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)' }} />
         </div>
       ) : rules.length === 0 ? (
-        <div style={{ ...card, padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <AlertTriangle size={32} color="var(--text-muted)" style={{ marginBottom: 10 }} />
-          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', fontFamily: "'DM Sans', sans-serif", marginBottom: 4 }}>No alert rules yet</p>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif" }}>Click &quot;Add Alert&quot; to create your first rule</p>
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)' }}>
+          <AlertTriangle size={24} style={{ margin: '0 auto 8px' }} />
+          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 4 }}>No alert rules yet</div>
+          <div style={{ fontSize: 12 }}>Click &quot;Add Alert&quot; to create your first rule</div>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {rules.map((rule: any) => {
             const metricLabel = ALERT_METRICS.find(m => m.value === rule.metric)?.label || rule.metric;
             return (
-              <div key={rule.id} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '14px 18px', borderRadius: 12,
-                backgroundColor: c.bgCard,
-                border: `1px solid ${rule.is_active ? 'rgba(124,58,237,0.2)' : c.border}`,
-                opacity: rule.is_active ? 1 : 0.6,
-              }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: c.text, marginBottom: 4 }}>{metricLabel}</div>
-                  <div style={{ fontSize: 12, color: c.textSecondary }}>
-                    {rule.comparison === 'above' ? 'Goes above' : rule.comparison === 'below' ? 'Drops below' : 'Equals'} <strong style={{ fontFamily: 'var(--font-mono)' }}>{Number(rule.threshold).toLocaleString()}</strong> &rarr; {rule.recipient_email}
+              <div key={rule.id} style={{ padding: 14, background: 'var(--elevated)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: rule.is_active ? 1 : 0.6 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 2 }}>{metricLabel}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {rule.comparison === 'above' ? 'Goes above' : rule.comparison === 'below' ? 'Drops below' : 'Equals'} <strong style={{ fontFamily: 'var(--font-mono)' }}>{Number(rule.threshold).toLocaleString()}</strong> → {rule.recipient_email}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <Toggle on={rule.is_active} onToggle={() => handleToggle(rule.id, rule.is_active)} />
-                  <button onClick={() => handleDelete(rule.id)} style={{ ...destructiveBtn, padding: 6, display: 'flex' }} title="Delete rule">
-                    <Trash2 size={14} />
+                  <button type="button" className="lx-btn-danger" style={{ padding: '6px 10px', fontSize: 11 }} onClick={() => handleDelete(rule.id)} title="Delete rule">
+                    <Trash2 size={12} />
                   </button>
                 </div>
               </div>
@@ -574,23 +594,14 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
         </div>
       )}
 
-      {/* Alert history */}
       {history.length > 0 && (
-        <div>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, marginBottom: 12 }}>Alert History</h3>
-          <div style={{ ...card, overflow: 'hidden' }}>
+        <div style={{ marginTop: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 10 }}>Alert History</div>
+          <div style={{ background: 'var(--elevated)', borderRadius: 10, overflow: 'hidden' }}>
             {history.slice(0, 15).map((h: any, i: number) => (
-              <div key={h.id} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 16px',
-                borderBottom: i < Math.min(history.length, 15) - 1 ? `1px solid ${c.border}` : 'none',
-              }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: c.text }}>{h.message}</div>
-                </div>
-                <div style={{ fontSize: 11, color: c.textMuted, whiteSpace: 'nowrap', marginLeft: 12, fontFamily: 'var(--font-mono)' }}>
-                  {new Date(h.triggered_at).toLocaleString()}
-                </div>
+              <div key={h.id} style={{ padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: i < Math.min(history.length, 15) - 1 ? '1px solid var(--border)' : 'none' }}>
+                <div style={{ fontSize: 12, color: 'var(--text)' }}>{h.message}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap', marginLeft: 12 }}>{new Date(h.triggered_at).toLocaleString()}</div>
               </div>
             ))}
           </div>
@@ -601,7 +612,6 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
 }
 
 function ProfileTab() {
-  const { c, card, label, inputBase, primaryBtn } = useStyles();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
@@ -650,510 +660,80 @@ function ProfileTab() {
   }
 
   return (
-    <div style={{ ...card }}>
-      <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Profile Settings</h3>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Update your personal information.</p>
-      <div style={{ marginBottom: 16 }}>
-        <label style={label}>Full Name</label>
-        <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" autoComplete="name" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
-          onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-          onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
-        />
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title">Profile Settings</span>
       </div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={label}>Email</label>
-        <input value={email} readOnly placeholder="your@email.com" autoComplete="email" style={{ ...inputBase, backgroundColor: 'var(--bg-card-secondary)', color: 'var(--text-muted)', cursor: 'not-allowed' }} />
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginTop: 4 }}>Email cannot be changed here</p>
+      <p className="lx-card-desc">Update your personal information.</p>
+
+      <div className="lx-form-row" style={{ marginTop: 16 }}>
+        <label className="lx-form-label">Full Name</label>
+        <input className="lx-form-input" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" autoComplete="name" />
       </div>
-      <div style={{ marginBottom: 20 }}>
-        <label style={label}>Company</label>
-        <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" autoComplete="organization" style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
-          onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-          onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
-        />
+      <div className="lx-form-row">
+        <label className="lx-form-label">Email</label>
+        <input className="lx-form-input" value={email} readOnly placeholder="your@email.com" autoComplete="email" style={{ opacity: 0.6, cursor: 'not-allowed' }} />
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Email cannot be changed here</p>
       </div>
-      {error && <p style={{ fontSize: 13, color: c.danger, marginBottom: 12 }}>{error}</p>}
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        style={{
-          ...primaryBtn,
-          backgroundColor: saved ? c.success : c.accent,
-          opacity: saving ? 0.7 : 1,
-          cursor: saving ? 'wait' : 'pointer',
-        }}
-      >
-        {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : saved ? <Check size={16} /> : null}
-        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+      <div className="lx-form-row">
+        <label className="lx-form-label">Company</label>
+        <input className="lx-form-input" value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" autoComplete="organization" />
+      </div>
+
+      {error && <p style={{ fontSize: 13, color: 'var(--danger)', marginBottom: 12 }}>{error}</p>}
+
+      <button type="button" onClick={handleSave} disabled={saving} className="lx-btn-primary" style={{ marginTop: 8, opacity: saving ? 0.7 : 1 }}>
+        {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
+        {saving ? 'Saving…' : saved ? 'Saved!' : 'Save Changes'}
       </button>
     </div>
   );
 }
 
 export function BillingTab() {
-  const { c, card, inputBase, primaryBtn } = useStyles();
-  const { workspace, refetch: refetchWorkspace } = useWorkspaceCtx();
-  const [loading, setLoading] = useState<string | null>(null);
-  const [error, setError] = useState('');
-  const [couponCode, setCouponCode] = useState('');
-  const [redeeming, setRedeeming] = useState(false);
-  const [redeemResult, setRedeemResult] = useState<{ ok: boolean; text: string } | null>(null);
+  const [loading, setLoading] = useState(true);
   const [subInfo, setSubInfo] = useState<any>(null);
-
-  const currentPlan = workspace?.plan || 'free';
-  const planOrder = ['free', 'starter', 'growth', 'agency'];
-  const currentPlanIndex = planOrder.indexOf(currentPlan);
 
   useEffect(() => {
     async function fetchSubInfo() {
-      if (!workspace?.id) return;
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        const res = await apiFetch(`/api/billing/subscription?workspace_id=${workspace.id}`, {
+        const res = await apiFetch('/api/billing/subscription', {
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
-        const data = await res.json();
-        if (res.ok && data) {
-          setSubInfo(data);
+        if (res.ok) {
+          const d = await res.json();
+          setSubInfo(d);
         }
-      } catch (e) {
-        console.error('Failed to fetch subscription info:', e);
-      }
+      } catch {}
+      setLoading(false);
     }
     fetchSubInfo();
-  }, [workspace?.id]);
+  }, []);
 
-  const plans = [
-    {
-      id: 'free',
-      name: 'Free',
-      price: '₹0',
-      period: '/mo',
-      features: ['2 integrations', '30-day data retention', '2 team members', 'Basic insights'],
-      current: currentPlan === 'free',
-    },
-    {
-      id: 'starter',
-      name: 'Starter',
-      price: '₹2,499',
-      period: '/mo',
-      features: ['4 integrations', '90-day data retention', '5 team members', 'AI insights', 'PDF reports'],
-      current: currentPlan === 'starter',
-      popular: false,
-    },
-    {
-      id: 'growth',
-      name: 'Growth',
-      price: '₹6,499',
-      period: '/mo',
-      features: ['All integrations', '1-year data retention', '15 team members', 'AI insights + chat', 'White-label reports', 'Competitor tracking'],
-      current: currentPlan === 'growth',
-      popular: true,
-    },
-    {
-      id: 'agency',
-      name: 'Agency',
-      price: '₹16,499',
-      period: '/mo',
-      features: ['Unlimited integrations', 'Unlimited data retention', 'Unlimited team members', 'Everything in Growth', 'Multi-workspace', 'Priority support', 'API access'],
-      current: currentPlan === 'agency',
-    },
-  ];
-
-  async function handleRedeem() {
-    if (!couponCode.trim() || !workspace?.id) return;
-    setRedeeming(true);
-    setRedeemResult(null);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setRedeemResult({ ok: false, text: 'Not signed in' }); setRedeeming(false); return; }
-      const res = await apiFetch('/api/billing/redeem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ code: couponCode.trim(), workspace_id: workspace.id }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setRedeemResult({ ok: true, text: data.message });
-        setCouponCode('');
-        refetchWorkspace();
-      } else {
-        setRedeemResult({ ok: false, text: data.error || 'Redemption failed' });
-      }
-    } catch (e: any) {
-      setRedeemResult({ ok: false, text: e.message || 'Something went wrong' });
-    }
-    setRedeeming(false);
-  }
-
-  async function handleUpgrade(planId: string) {
-    if (planId === 'free' || planId === currentPlan) return;
-    setLoading(planId);
-    setError('');
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setError('Not signed in'); setLoading(null); return; }
-      const res = await apiFetch('/api/billing/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-        body: JSON.stringify({ plan: planId, workspace_id: workspace?.id }),
-      });
-      const data = await res.json();
-      if (data.error === 'billing_not_configured') {
-        setError('Billing is not configured yet. Add STRIPE_SECRET_KEY to enable payments.');
-      } else if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setError(data.error || 'Failed to create checkout session');
-      }
-    } catch (e: any) {
-      setError(e.message || 'Failed to start checkout');
-    }
-    setLoading(null);
+  if (loading) {
+    return (
+      <div className="lx-card">
+        <Skeleton className="h-6 w-40 mb-4" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    );
   }
 
   return (
-    <div>
-      {/* ── Subscription Status Card ── */}
-      <div style={{ ...card, marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Receipt size={18} color={c.accent} />
-            <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Subscription</h3>
-          </div>
-          <div style={{
-            padding: '4px 10px', borderRadius: 6,
-            backgroundColor: 'rgba(124,58,237,0.1)',
-            color: '#7C3AED',
-            fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
-            fontFamily: "'DM Sans', sans-serif",
-          }}>
-            {currentPlan} plan
-          </div>
-        </div>
-
-        {/* Status info grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-          {/* Status */}
-          <div style={{
-            padding: '14px 16px', borderRadius: 10,
-            backgroundColor: 'var(--bg-page)',
-            border: '1px solid var(--border-default)',
-          }}>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em' }}>Status</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{
-                width: 7, height: 7, borderRadius: '50%',
-                backgroundColor: !subInfo ? 'var(--text-muted)' : (subInfo.type === 'coupon' && subInfo.is_expired) ? '#EF4444' : currentPlan === 'free' ? 'var(--text-muted)' : '#10B981',
-              }} />
-              <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>
-                {!subInfo ? 'Loading...' : (subInfo.type === 'coupon' && subInfo.is_expired) ? 'Expired' : currentPlan === 'free' ? 'Free Tier' : 'Active'}
-              </p>
-            </div>
-          </div>
-
-          {/* Plan active until / Next billing */}
-          <div style={{
-            padding: '14px 16px', borderRadius: 10,
-            backgroundColor: 'var(--bg-page)',
-            border: '1px solid var(--border-default)',
-          }}>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em' }}>
-              {subInfo?.type === 'coupon' ? 'Active Until' : subInfo?.type === 'stripe' ? 'Next Billing' : 'Active Until'}
-            </p>
-            <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>
-              {!subInfo ? 'Loading...'
-                : subInfo.type === 'coupon' && subInfo.expires_at
-                  ? new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                  : subInfo.type === 'stripe'
-                    ? 'Auto-renews monthly'
-                    : subInfo.type === 'active'
-                      ? 'No expiry'
-                      : currentPlan === 'free' ? 'N/A' : 'Active'}
-            </p>
-          </div>
-
-          {/* Days remaining / Billing cycle */}
-          <div style={{
-            padding: '14px 16px', borderRadius: 10,
-            backgroundColor: 'var(--bg-page)',
-            border: '1px solid var(--border-default)',
-          }}>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px', textTransform: 'uppercase', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em' }}>
-              {subInfo?.type === 'coupon' ? 'Days Left' : 'Billing Cycle'}
-            </p>
-            <p style={{
-              fontSize: 14, margin: 0, fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
-              color: (subInfo?.type === 'coupon' && !subInfo.is_expired && subInfo.days_left <= 7) ? '#EF4444' : 'var(--text-primary)',
-            }}>
-              {!subInfo ? 'Loading...'
-                : subInfo.type === 'coupon'
-                  ? subInfo.is_expired ? 'Expired' : `${subInfo.days_left} day${subInfo.days_left !== 1 ? 's' : ''}`
-                  : subInfo.type === 'stripe'
-                    ? 'Monthly'
-                    : subInfo.type === 'active'
-                      ? 'Unlimited'
-                      : currentPlan === 'free' ? 'N/A' : '-'}
-            </p>
-          </div>
-        </div>
-
-        {/* Expiry warning */}
-        {subInfo?.type === 'coupon' && !subInfo.is_expired && subInfo.days_left <= 7 && (
-          <div style={{
-            marginTop: 14, padding: '10px 14px', borderRadius: 8,
-            backgroundColor: 'rgba(245,158,11,0.06)',
-            border: '1px solid rgba(245,158,11,0.15)',
-            display: 'flex', alignItems: 'center', gap: 8,
-            fontSize: 13, color: '#F59E0B', fontFamily: "'DM Sans', sans-serif",
-          }}>
-            <AlertTriangle size={14} style={{ flexShrink: 0 }} />
-            Your plan expires in {subInfo.days_left} day{subInfo.days_left !== 1 ? 's' : ''}. Add a payment method to continue uninterrupted.
-          </div>
-        )}
-        {subInfo?.type === 'coupon' && subInfo.is_expired && (
-          <div style={{
-            marginTop: 14, padding: '10px 14px', borderRadius: 8,
-            backgroundColor: 'rgba(239,68,68,0.06)',
-            border: '1px solid rgba(239,68,68,0.15)',
-            display: 'flex', alignItems: 'center', gap: 8,
-            fontSize: 13, color: '#EF4444', fontFamily: "'DM Sans', sans-serif",
-          }}>
-            <AlertCircle size={14} style={{ flexShrink: 0 }} />
-            Your plan expired on {new Date(subInfo.expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Upgrade or add a payment method to reactivate.
-          </div>
-        )}
-      </div>
-
-      {error && (
-        <div style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 8, backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, color: c.danger, fontSize: 13 }}>
-          {error}
-        </div>
-      )}
-
-      <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, alignItems: 'start' }}>
-        {plans.map(plan => (
-          <div key={plan.id} style={{
-            backgroundColor: 'var(--bg-card)',
-            border: plan.popular ? '2px solid #7C3AED' : '1px solid var(--border-default)',
-            borderRadius: 12,
-            padding: 20,
-            paddingTop: plan.popular ? 28 : 20,
-            position: 'relative',
-            minWidth: 0,
-            width: '100%',
-          }}>
-            {plan.popular && (
-              <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', padding: '4px 12px', borderRadius: 20, backgroundColor: '#7C3AED', color: 'white', fontSize: 11, fontWeight: 600, fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap' }}>
-                Most Popular
-              </div>
-            )}
-            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{plan.name}</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 12 }}>
-              <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{plan.price}</span>
-              <span style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", verticalAlign: 'middle' }}>{plan.period}</span>
-            </div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: '14px 0 18px 0', display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {plan.features.map((f, i) => (
-                <li key={i} style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', sans-serif" }}>
-                  <Check size={12} color="#10B981" style={{ flexShrink: 0 }} />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            {(() => {
-              const thisPlanIndex = planOrder.indexOf(plan.id);
-              const isLower = thisPlanIndex < currentPlanIndex;
-              const isCurrent = plan.current;
-              const isDisabled = isCurrent || isLower || plan.id === 'free' || loading === plan.id;
-              const label = isCurrent ? '✓ Current Plan' : isLower ? '✓ Included' : plan.id === 'free' ? 'Free' : loading === plan.id ? 'Loading...' : 'Upgrade';
-              const showPurple = !isCurrent && !isLower && plan.id !== 'free';
-              return isCurrent ? (
-                <div style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  padding: '11px 0',
-                  borderRadius: 10,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#065F46',
-                  background: '#ECFDF5',
-                  border: '1px solid #A7F3D0',
-                  fontFamily: "'DM Sans', sans-serif",
-                }}>
-                  ✓ Current Plan
-                </div>
-              ) : isLower ? (
-                <div style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  padding: '10px 0',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: 'var(--text-muted)',
-                  borderTop: '1px solid var(--border-default)',
-                  marginTop: 12,
-                  fontFamily: "'DM Sans', sans-serif",
-                }}>
-                  ✓ Included in your plan
-                </div>
-              ) : (
-                <button
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={isDisabled}
-                  style={{
-                    width: '100%',
-                    height: 40,
-                    borderRadius: 8,
-                    border: showPurple ? 'none' : '1px solid var(--border-default)',
-                    backgroundColor: showPurple ? '#7C3AED' : 'transparent',
-                    color: showPurple ? '#FFFFFF' : 'var(--text-muted)',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    fontFamily: "'DM Sans', sans-serif",
-                    cursor: isDisabled ? 'not-allowed' : 'pointer',
-                    opacity: loading === plan.id ? 0.7 : 1,
-                    transition: 'background-color 150ms',
-                  }}
-                  onMouseEnter={e => { if (showPurple && !isDisabled) e.currentTarget.style.backgroundColor = '#6D28D9'; }}
-                  onMouseLeave={e => { if (showPurple && !isDisabled) e.currentTarget.style.backgroundColor = '#7C3AED'; }}
-                >
-                  {label}
-                </button>
-              );
-            })()}
-          </div>
-        ))}
-      </div>
-
-      {/* ── Payment Methods ── */}
-      <div style={{ ...card, marginTop: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CreditCard size={18} color={c.accent} />
-            <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Payment Methods</h3>
-          </div>
-        </div>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>
-          Add a card or UPI for automatic renewals and upgrades.
-        </p>
-
-        {/* Empty state — no cards yet */}
-        <div style={{
-          padding: '28px 20px', borderRadius: 10,
-          backgroundColor: 'var(--bg-page)',
-          border: '1px dashed var(--border-default)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-          textAlign: 'center',
-        }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: 12,
-            backgroundColor: 'rgba(124,58,237,0.08)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <CreditCard size={20} color="#7C3AED" />
-          </div>
-          <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', margin: 0, fontFamily: "'DM Sans', sans-serif" }}>
-            No payment method added
-          </p>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0, fontFamily: "'DM Sans', sans-serif", maxWidth: 320 }}>
-            Add a debit card, credit card, or UPI to enable automatic renewals when your plan expires.
-          </p>
-          <button
-            onClick={() => {
-              // TODO: Phase 2 — integrate Razorpay checkout
-              setError('Payment gateway coming soon. Use a coupon code to activate your plan for now.');
-              setTimeout(() => setError(''), 4000);
-            }}
-            style={{
-              ...primaryBtn,
-              marginTop: 6,
-              padding: '10px 22px',
-              fontSize: 13,
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-            }}
-          >
-            <Plus size={14} />
-            Add Payment Method
-          </button>
-        </div>
-
-        {/* Billing history link placeholder */}
-        <div style={{
-          marginTop: 16, paddingTop: 16,
-          borderTop: '1px solid var(--border-default)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Calendar size={14} color="var(--text-muted)" />
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: "'DM Sans', sans-serif" }}>Billing History</span>
-          </div>
-          <button
-            onClick={() => {
-              setError('Billing history will be available once the payment gateway is connected.');
-              setTimeout(() => setError(''), 4000);
-            }}
-            style={{
-              background: 'none', border: 'none', padding: 0,
-              fontSize: 13, color: c.accent, fontWeight: 500,
-              fontFamily: "'DM Sans', sans-serif",
-              cursor: 'pointer',
-            }}
-          >
-            View Invoices
-          </button>
-        </div>
-      </div>
-
-      {/* ── Coupon Redemption ── */}
-      <div style={{ ...card, marginTop: 24 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Have a coupon code?</h3>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 16 }}>Enter your early access or promo code to unlock a plan.</p>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-          <input
-            type="text"
-            value={couponCode}
-            onChange={e => setCouponCode(e.target.value.toUpperCase())}
-            placeholder="e.g. EARLYACCESS"
-            style={{ ...inputBase, flex: 1, padding: '12px 14px', fontSize: 14, fontFamily: 'var(--font-mono)', letterSpacing: '0.05em' }}
-            onKeyDown={e => { if (e.key === 'Enter') handleRedeem(); }}
-          />
-          <button
-            onClick={handleRedeem}
-            disabled={redeeming || !couponCode.trim()}
-            style={{
-              ...primaryBtn,
-              padding: '12px 24px',
-              opacity: (redeeming || !couponCode.trim()) ? 0.6 : 1,
-              cursor: (redeeming || !couponCode.trim()) ? 'not-allowed' : 'pointer',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {redeeming ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : null}
-            {redeeming ? 'Redeeming...' : 'Redeem'}
-          </button>
-        </div>
-        {redeemResult && (
-          <div style={{
-            marginTop: 12, padding: '10px 14px', borderRadius: 8,
-            backgroundColor: redeemResult.ok ? c.successSubtle : c.dangerSubtle,
-            border: `1px solid ${redeemResult.ok ? c.successBorder : c.dangerBorder}`,
-            color: redeemResult.ok ? c.success : c.danger,
-            fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-            {redeemResult.ok ? <Check size={13} /> : <X size={13} />}
-            {redeemResult.text}
-          </div>
-        )}
-      </div>
+    <div className="lx-card">
+      <div className="lx-card-header"><span className="lx-card-title">Billing</span></div>
+      <p className="lx-card-desc">Manage your subscription and billing in the Billing section.</p>
+      <a href="/dashboard/billing" className="lx-btn-outline" style={{ marginTop: 12 }}>
+        <CreditCard size={13} />
+        Go to Billing
+      </a>
     </div>
   );
 }
 
-
 function DeleteAccountSection() {
-  const { c, card, destructiveBtn } = useStyles();
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -1175,7 +755,6 @@ function DeleteAccountSection() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Deletion failed'); setDeleting(false); return; }
-      // Sign out and redirect
       await supabase.auth.signOut();
       window.location.href = '/';
     } catch {
@@ -1185,65 +764,53 @@ function DeleteAccountSection() {
   }
 
   return (
-    <div style={{ ...card, marginTop: 40, border: `1px solid rgba(239,68,68,0.3)`, borderRadius: 12, padding: '24px 28px', backgroundColor: 'rgba(239,68,68,0.04)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <AlertTriangle size={16} color="#ef4444" />
-        </div>
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#ef4444' }}>Danger Zone</h3>
+    <div className="lx-card" style={{ borderColor: 'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.04)' }}>
+      <div className="lx-card-header">
+        <span className="lx-card-title" style={{ color: 'var(--danger)' }}>
+          <AlertTriangle size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
+          Danger Zone
+        </span>
       </div>
-      <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 20 }}>
+      <p className="lx-card-desc">
         Permanently delete your account and all associated data. This action cannot be undone.
       </p>
 
       {!showConfirm ? (
-        <button
-          onClick={() => setShowConfirm(true)}
-          style={{ ...destructiveBtn, display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <Trash2 size={14} /> Delete Account
+        <button type="button" className="lx-btn-danger" onClick={() => setShowConfirm(true)} style={{ marginTop: 12 }}>
+          <Trash2 size={13} /> Delete Account
         </button>
       ) : (
-        <div style={{ padding: 20, borderRadius: 10, backgroundColor: c.dangerSubtle, border: `1px solid ${c.danger}` }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: c.danger, marginBottom: 12 }}>
-            Are you absolutely sure?
-          </p>
-          <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 16 }}>
+        <div style={{ marginTop: 14, padding: 18, borderRadius: 10, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.3)' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--danger)', marginBottom: 10 }}>Are you absolutely sure?</p>
+          <p style={{ fontSize: 12, color: 'var(--text-sec)', lineHeight: 1.6, marginBottom: 14 }}>
             This will permanently delete your account, all workspaces, integrations, analytics data, reports, competitors, team members, and everything else. There is no way to recover this data.
           </p>
-          <p style={{ fontSize: 13, color: c.text, marginBottom: 8 }}>
-            Type <strong style={{ color: c.danger }}>DELETE MY ACCOUNT</strong> to confirm:
+          <p style={{ fontSize: 12, color: 'var(--text)', marginBottom: 8 }}>
+            Type <strong style={{ color: 'var(--danger)' }}>DELETE MY ACCOUNT</strong> to confirm:
           </p>
           <input
+            className="lx-form-input"
             value={confirmText}
             onChange={e => setConfirmText(e.target.value)}
             placeholder="DELETE MY ACCOUNT"
-            style={{
-              width: '100%', padding: '10px 12px', borderRadius: 8,
-              border: `1px solid ${c.danger}`, backgroundColor: c.bgPage,
-              color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
-              marginBottom: 12,
-              fontFamily: 'var(--font-mono)',
-            }}
+            style={{ fontFamily: 'var(--font-mono)', marginBottom: 12 }}
           />
-          {error && <p style={{ fontSize: 13, color: c.danger, marginBottom: 12 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 10 }}>{error}</p>}
           <div style={{ display: 'flex', gap: 10 }}>
             <button
+              type="button"
+              className="lx-btn-danger"
               onClick={handleDeleteAccount}
               disabled={deleting || confirmText !== 'DELETE MY ACCOUNT'}
-              style={{
-                ...destructiveBtn,
-                display: 'flex', alignItems: 'center', gap: 8,
-                opacity: deleting || confirmText !== 'DELETE MY ACCOUNT' ? 0.5 : 1,
-                cursor: deleting || confirmText !== 'DELETE MY ACCOUNT' ? 'not-allowed' : 'pointer',
-              }}
+              style={{ opacity: deleting || confirmText !== 'DELETE MY ACCOUNT' ? 0.5 : 1 }}
             >
-              <Trash2 size={14} />
-              {deleting ? 'Deleting everything...' : 'Permanently Delete Account'}
+              <Trash2 size={13} />
+              {deleting ? 'Deleting everything…' : 'Permanently Delete Account'}
             </button>
             <button
+              type="button"
+              className="lx-btn-outline"
               onClick={() => { setShowConfirm(false); setConfirmText(''); setError(''); }}
-              style={{ padding: '10px 20px', borderRadius: 8, border: `1px solid ${c.border}`, background: 'transparent', color: c.textSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
             >
               Cancel
             </button>
@@ -1254,11 +821,7 @@ function DeleteAccountSection() {
   );
 }
 
-function DeleteWorkspaceSection({ workspace, workspaceCount }: {
-  workspace: any;
-  workspaceCount: number;
-}) {
-  const { c, card, destructiveBtn } = useStyles();
+function DeleteWorkspaceSection({ workspace, workspaceCount }: { workspace: any; workspaceCount: number }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -1288,9 +851,6 @@ function DeleteWorkspaceSection({ workspace, workspaceCount }: {
         setDeleting(false);
         return;
       }
-      // Clear stale workspace from localStorage and hard-reload to /dashboard.
-      // A hard navigation guarantees a clean WorkspaceProvider re-mount with
-      // the user's remaining workspaces — React state reset, no stale context.
       try { localStorage.removeItem('lumnix-active-workspace'); } catch {}
       window.location.href = '/dashboard';
     } catch (e: any) {
@@ -1300,79 +860,62 @@ function DeleteWorkspaceSection({ workspace, workspaceCount }: {
   }
 
   return (
-    <div style={{ ...card, marginTop: 32, border: `1px solid rgba(239,68,68,0.3)`, borderRadius: 12, padding: '24px 28px', backgroundColor: 'rgba(239,68,68,0.04)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <AlertTriangle size={16} color="#ef4444" />
-        </div>
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#ef4444', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Delete this workspace</h3>
+    <div className="lx-card" style={{ borderColor: 'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.04)' }}>
+      <div className="lx-card-header">
+        <span className="lx-card-title" style={{ color: 'var(--danger)' }}>
+          <AlertTriangle size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
+          Delete this workspace
+        </span>
       </div>
-      <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 20 }}>
+      <p className="lx-card-desc">
         Permanently delete <strong>{workspace?.name || 'this workspace'}</strong> and all its data — integrations, analytics, competitors, team members, and reports. This cannot be undone.
       </p>
 
       {isOnlyWorkspace && (
-        <div style={{
-          padding: '10px 14px', borderRadius: 8, marginBottom: 16,
-          backgroundColor: 'rgba(245,158,11,0.1)',
-          border: '1px solid rgba(245,158,11,0.3)',
-          color: '#F59E0B', fontSize: 13,
-        }}>
-          You can't delete your only workspace. Create another one first.
+        <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', color: 'var(--warning)', fontSize: 12 }}>
+          You can&apos;t delete your only workspace. Create another one first.
         </div>
       )}
 
       {!showConfirm ? (
         <button
+          type="button"
+          className="lx-btn-danger"
           onClick={() => setShowConfirm(true)}
           disabled={isOnlyWorkspace}
-          style={{
-            ...destructiveBtn,
-            display: 'flex', alignItems: 'center', gap: 8,
-            opacity: isOnlyWorkspace ? 0.5 : 1,
-            cursor: isOnlyWorkspace ? 'not-allowed' : 'pointer',
-          }}
+          style={{ marginTop: 12, opacity: isOnlyWorkspace ? 0.5 : 1 }}
         >
-          <Trash2 size={14} /> Delete workspace
+          <Trash2 size={13} /> Delete workspace
         </button>
       ) : (
-        <div style={{ padding: 20, borderRadius: 10, backgroundColor: c.dangerSubtle, border: `1px solid ${c.danger}` }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: c.danger, marginBottom: 12 }}>
-            This is permanent.
-          </p>
-          <p style={{ fontSize: 13, color: c.text, marginBottom: 8 }}>
-            Type <strong style={{ color: c.danger }}>{requiredText}</strong> to confirm:
+        <div style={{ marginTop: 14, padding: 18, borderRadius: 10, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.3)' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--danger)', marginBottom: 10 }}>This is permanent.</p>
+          <p style={{ fontSize: 12, color: 'var(--text)', marginBottom: 8 }}>
+            Type <strong style={{ color: 'var(--danger)' }}>{requiredText}</strong> to confirm:
           </p>
           <input
+            className="lx-form-input"
             value={confirmText}
             onChange={e => setConfirmText(e.target.value)}
             placeholder={requiredText}
-            style={{
-              width: '100%', padding: '10px 12px', borderRadius: 8,
-              border: `1px solid ${c.danger}`, backgroundColor: c.bgPage,
-              color: c.text, fontSize: 14, boxSizing: 'border-box' as const,
-              marginBottom: 12,
-              fontFamily: 'var(--font-mono)',
-            }}
+            style={{ fontFamily: 'var(--font-mono)', marginBottom: 12 }}
           />
-          {error && <p style={{ fontSize: 13, color: c.danger, marginBottom: 12 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 10 }}>{error}</p>}
           <div style={{ display: 'flex', gap: 10 }}>
             <button
+              type="button"
+              className="lx-btn-danger"
               onClick={handleDelete}
               disabled={deleting || confirmText !== requiredText}
-              style={{
-                ...destructiveBtn,
-                display: 'flex', alignItems: 'center', gap: 8,
-                opacity: deleting || confirmText !== requiredText ? 0.5 : 1,
-                cursor: deleting || confirmText !== requiredText ? 'not-allowed' : 'pointer',
-              }}
+              style={{ opacity: deleting || confirmText !== requiredText ? 0.5 : 1 }}
             >
-              <Trash2 size={14} />
-              {deleting ? 'Deleting...' : 'Permanently delete workspace'}
+              <Trash2 size={13} />
+              {deleting ? 'Deleting…' : 'Permanently delete workspace'}
             </button>
             <button
+              type="button"
+              className="lx-btn-outline"
               onClick={() => { setShowConfirm(false); setConfirmText(''); setError(''); }}
-              style={{ padding: '10px 20px', borderRadius: 8, border: `1px solid ${c.border}`, background: 'transparent', color: c.textSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
             >
               Cancel
             </button>
@@ -1384,7 +927,6 @@ function DeleteWorkspaceSection({ workspace, workspaceCount }: {
 }
 
 function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace: any; loading: boolean; onSaved?: () => void; onUpdate?: (w: any) => void }) {
-  const { c, card, label, inputBase, primaryBtn, ghostBtn } = useStyles();
   const [name, setName] = useState(workspace?.name || '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -1430,7 +972,7 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
 
   if (loading) {
     return (
-      <div style={{ ...card }}>
+      <div className="lx-card">
         <Skeleton className="h-5 w-40 mb-4" />
         <Skeleton className="h-10 w-full mb-4" />
         <Skeleton className="h-10 w-full" />
@@ -1439,73 +981,61 @@ function WorkspaceSection({ workspace, loading, onSaved, onUpdate }: { workspace
   }
 
   return (
-    <div style={{ ...card }}>
-      <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", marginBottom: 4 }}>Workspace</h3>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Your workspace name and ID.</p>
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title">Workspace Settings</span>
+      </div>
+      <p className="lx-card-desc">Your workspace name and ID.</p>
 
-      <div style={{ marginBottom: 16 }}>
-        <label style={label}>Workspace Name</label>
+      <div className="lx-form-row" style={{ marginTop: 16 }}>
+        <label className="lx-form-label">Workspace Name</label>
         <input
           type="text"
+          className="lx-form-input"
           value={name}
           onChange={e => setName(e.target.value)}
           placeholder="My Workspace"
-          style={{ ...inputBase, padding: '12px 14px', fontSize: 14 }}
-          onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-          onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
         />
       </div>
 
-      <div style={{ marginBottom: 20 }}>
-        <label style={label}>Workspace ID</label>
+      <div className="lx-form-row">
+        <label className="lx-form-label">Workspace ID</label>
         <div style={{ display: 'flex', gap: 8 }}>
           <input
             readOnly
+            className="lx-form-input"
             value={workspace?.id || ''}
-            style={{
-              ...inputBase, flex: 1, fontSize: 12,
-              fontFamily: 'var(--font-mono)',
-              color: 'var(--text-muted)', cursor: 'default',
-              backgroundColor: 'var(--bg-card-secondary)',
-            }}
+            style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: 12, cursor: 'default' }}
             onClick={e => (e.target as HTMLInputElement).select()}
           />
-          <button
-            onClick={handleCopyId}
-            style={{
-              ...ghostBtn,
-              padding: '0 12px',
-              fontSize: 13,
-            }}
-          >
+          <button type="button" className="lx-btn-outline" onClick={handleCopyId}>
             {copied ? <Check size={13} /> : <Copy size={13} />}
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
       </div>
 
-      {error && <p style={{ fontSize: 13, color: '#EF4444', marginBottom: 12 }}>{error}</p>}
+      {error && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 12 }}>{error}</p>}
 
       <button
+        type="button"
+        className="lx-btn-primary"
         onClick={handleSave}
         disabled={saving || name.trim() === (workspace?.name || '')}
         style={{
-          ...primaryBtn,
-          backgroundColor: saved ? '#22C55E' : '#7C3AED',
+          marginTop: 12,
           opacity: saving || name.trim() === (workspace?.name || '') ? 0.5 : 1,
           cursor: saving || name.trim() === (workspace?.name || '') ? 'default' : 'pointer',
         }}
       >
-        {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : saved ? <Check size={16} /> : null}
-        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Workspace Name'}
+        {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
+        {saving ? 'Saving…' : saved ? 'Saved!' : 'Save Settings'}
       </button>
     </div>
   );
 }
 
-/* ─── Security Tab ─── */
 function SecurityTab() {
-  const { c, card, label, inputBase, primaryBtn } = useStyles();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -1596,39 +1126,25 @@ function SecurityTab() {
     setSaving(false);
   }
 
-  const passwordInputWrapper: React.CSSProperties = {
-    position: 'relative',
-    width: '100%',
-  };
-
-  const eyeBtn: React.CSSProperties = {
-    position: 'absolute',
-    right: 12,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'none',
-    border: 'none',
-    padding: 0,
-    cursor: 'pointer',
-    color: 'var(--text-muted)',
-    display: 'flex',
-    alignItems: 'center',
+  const pwWrap: CSSProperties = { position: 'relative', width: '100%' };
+  const eyeBtn: CSSProperties = {
+    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+    color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
   };
 
   if (isOAuthUser) {
     return (
-      <div style={{ ...card }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-          <Shield size={18} color={c.accent} />
-          <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Security</h3>
+      <div className="lx-card">
+        <div className="lx-card-header">
+          <span className="lx-card-title">
+            <Shield size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6, color: 'var(--primary)' }} />
+            Security
+          </span>
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Manage your account security.</p>
-        <div style={{
-          padding: '16px 20px', borderRadius: 8,
-          backgroundColor: 'var(--bg-page)',
-          border: '1px solid var(--border-default)',
-        }}>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0 }}>
+        <p className="lx-card-desc">Manage your account security.</p>
+        <div style={{ marginTop: 12, padding: '14px 18px', borderRadius: 10, background: 'var(--elevated)', border: '1px solid var(--border)' }}>
+          <p style={{ fontSize: 13, color: 'var(--text-sec)', margin: 0 }}>
             Your account uses Google sign-in. Password management is handled through your Google account.
           </p>
         </div>
@@ -1637,90 +1153,86 @@ function SecurityTab() {
   }
 
   return (
-    <div style={{ ...card }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-        <Shield size={18} color={c.accent} />
-        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Change Password</h3>
+    <div className="lx-card">
+      <div className="lx-card-header">
+        <span className="lx-card-title">Change Password</span>
       </div>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 20 }}>Update your password to keep your account secure.</p>
+      <p className="lx-card-desc">Update your account password regularly to keep your account secure.</p>
 
-      <form onSubmit={handleUpdatePassword}>
-        <div style={{ marginBottom: 16 }}>
-          <label style={label}>Current Password</label>
-          <div style={passwordInputWrapper}>
+      <form onSubmit={handleUpdatePassword} style={{ marginTop: 16 }}>
+        <div className="lx-form-row">
+          <label className="lx-form-label">Current Password</label>
+          <div style={pwWrap}>
             <input
               type={showCurrent ? 'text' : 'password'}
+              className="lx-form-input"
               value={currentPassword}
               onChange={e => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
+              placeholder="Enter your current password"
               autoComplete="current-password"
               required
-              style={{ ...inputBase, padding: '12px 40px 12px 14px', fontSize: 14 }}
-              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
+              style={{ paddingRight: 40 }}
             />
-            <button type="button" onClick={() => setShowCurrent(!showCurrent)} style={eyeBtn} tabIndex={-1}>
-              {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+            <button type="button" onClick={() => setShowCurrent(!showCurrent)} style={eyeBtn} tabIndex={-1} aria-label="Toggle password visibility">
+              {showCurrent ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
         </div>
 
-        <div style={{ marginBottom: 16 }}>
-          <label style={label}>New Password</label>
-          <div style={passwordInputWrapper}>
+        <div className="lx-form-row">
+          <label className="lx-form-label">New Password</label>
+          <div style={pwWrap}>
             <input
               type={showNew ? 'text' : 'password'}
+              className="lx-form-input"
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
-              placeholder="At least 8 characters"
+              placeholder="Create a strong password"
               autoComplete="new-password"
               required
               minLength={8}
-              style={{ ...inputBase, padding: '12px 40px 12px 14px', fontSize: 14 }}
-              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
+              style={{ paddingRight: 40 }}
             />
-            <button type="button" onClick={() => setShowNew(!showNew)} style={eyeBtn} tabIndex={-1}>
-              {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+            <button type="button" onClick={() => setShowNew(!showNew)} style={eyeBtn} tabIndex={-1} aria-label="Toggle password visibility">
+              {showNew ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
           {newPassword.length > 0 && newPassword.length < 8 && (
-            <p style={{ fontSize: 12, color: c.danger, marginTop: 4 }}>Must be at least 8 characters</p>
+            <p style={{ fontSize: 11, color: 'var(--danger)', marginTop: 4 }}>Must be at least 8 characters</p>
           )}
         </div>
 
-        <div style={{ marginBottom: 20 }}>
-          <label style={label}>Confirm New Password</label>
-          <div style={passwordInputWrapper}>
+        <div className="lx-form-row">
+          <label className="lx-form-label">Confirm Password</label>
+          <div style={pwWrap}>
             <input
               type={showConfirm ? 'text' : 'password'}
+              className="lx-form-input"
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter new password"
+              placeholder="Confirm your new password"
               autoComplete="new-password"
               required
-              style={{ ...inputBase, padding: '12px 40px 12px 14px', fontSize: 14 }}
-              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
+              style={{ paddingRight: 40 }}
             />
-            <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={eyeBtn} tabIndex={-1}>
-              {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+            <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={eyeBtn} tabIndex={-1} aria-label="Toggle password visibility">
+              {showConfirm ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
           {confirmPassword.length > 0 && newPassword !== confirmPassword && (
-            <p style={{ fontSize: 12, color: c.danger, marginTop: 4 }}>Passwords do not match</p>
+            <p style={{ fontSize: 11, color: 'var(--danger)', marginTop: 4 }}>Passwords do not match</p>
           )}
         </div>
 
         {error && (
           <div style={{
-            padding: '10px 14px', borderRadius: 8, marginBottom: 16,
-            backgroundColor: 'rgba(239,68,68,0.06)',
-            border: '1px solid rgba(239,68,68,0.15)',
-            color: '#EF4444', fontSize: 13,
+            padding: '10px 12px', borderRadius: 8, marginBottom: 12,
+            background: 'rgba(239,68,68,0.08)',
+            border: '1px solid rgba(239,68,68,0.25)',
+            color: 'var(--danger)', fontSize: 12,
             display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            <AlertCircle size={14} />
+            <AlertCircle size={12} />
             {error}
           </div>
         )}
@@ -1728,54 +1240,36 @@ function SecurityTab() {
         <button
           type="submit"
           disabled={saving || !currentPassword || !newPassword || !confirmPassword}
+          className="lx-btn-primary"
           style={{
-            ...primaryBtn,
-            backgroundColor: saved ? '#22C55E' : '#7C3AED',
             opacity: (saving || !currentPassword || !newPassword || !confirmPassword) ? 0.5 : 1,
             cursor: (saving || !currentPassword || !newPassword || !confirmPassword) ? 'not-allowed' : 'pointer',
           }}
         >
-          {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : saved ? <Check size={16} /> : <Shield size={16} />}
-          {saving ? 'Updating...' : saved ? 'Password Updated!' : 'Update Password'}
+          {saving ? <Loader2 size={13} className="animate-spin" /> : saved ? <Check size={13} /> : <Shield size={13} />}
+          {saving ? 'Updating…' : saved ? 'Password Updated!' : 'Update Password'}
         </button>
       </form>
 
-      {/* Forgot Password Section */}
-      <div style={{
-        marginTop: 24, paddingTop: 20,
-        borderTop: '1px solid var(--border-default)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-          <Mail size={16} color={c.accent} />
-          <h4 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0 }}>Forgot Your Password?</h4>
+      {/* Forgot Password */}
+      <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
+          <Mail size={12} style={{ display: 'inline', verticalAlign: '-1px', marginRight: 6, color: 'var(--primary)' }} />
+          Forgot Your Password?
         </div>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 14 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
           If you don&apos;t remember your current password, we&apos;ll send a reset link to your email.
         </p>
 
         {resetError && (
-          <div style={{
-            padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-            backgroundColor: 'rgba(239,68,68,0.06)',
-            border: '1px solid rgba(239,68,68,0.15)',
-            color: '#EF4444', fontSize: 13,
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-            <AlertCircle size={14} />
-            {resetError}
+          <div style={{ padding: '9px 12px', borderRadius: 8, marginBottom: 10, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: 'var(--danger)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <AlertCircle size={12} /> {resetError}
           </div>
         )}
 
         {resetSent && (
-          <div style={{
-            padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-            backgroundColor: 'rgba(34,197,94,0.06)',
-            border: '1px solid rgba(34,197,94,0.15)',
-            color: '#22C55E', fontSize: 13,
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-            <Check size={14} />
-            Reset link sent! Check your email inbox.
+          <div style={{ padding: '9px 12px', borderRadius: 8, marginBottom: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', color: 'var(--success)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Check size={12} /> Reset link sent! Check your email inbox.
           </div>
         )}
 
@@ -1783,30 +1277,21 @@ function SecurityTab() {
           type="button"
           onClick={handleResetPassword}
           disabled={resetSending || resetSent}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 500,
-            fontFamily: "'DM Sans', sans-serif",
-            backgroundColor: 'transparent',
-            border: `1px solid ${c.accent}`,
-            color: c.accent,
-            cursor: (resetSending || resetSent) ? 'not-allowed' : 'pointer',
-            opacity: (resetSending || resetSent) ? 0.5 : 1,
-            transition: 'all 0.15s ease',
-          }}
+          className="lx-btn-outline"
+          style={{ opacity: (resetSending || resetSent) ? 0.5 : 1 }}
         >
-          {resetSending ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Mail size={14} />}
-          {resetSending ? 'Sending...' : resetSent ? 'Email Sent!' : 'Send Password Reset Email'}
+          {resetSending ? <Loader2 size={13} className="animate-spin" /> : <Mail size={13} />}
+          {resetSending ? 'Sending…' : resetSent ? 'Email Sent!' : 'Send Password Reset Email'}
         </button>
       </div>
     </div>
   );
 }
 
+/* ────────────────────────────────────────────────────────────────
+   Main Page
+   ──────────────────────────────────────────────────────────────── */
 export default function SettingsPage() {
-  const { c, card, inputBase, primaryBtn, ghostBtn, destructiveBtn } = useStyles();
-  const { toggle, theme } = useTheme();
-  const isDark = theme === 'dark';
   const [activeTab, setActiveTab] = useState("general");
   const { workspace, workspaces, loading: wsLoading, refetch: refetchWorkspace, setWorkspace } = useWorkspaceCtx();
   const { integrations, loading: intLoading, refetch } = useIntegrations(workspace?.id);
@@ -1900,7 +1385,6 @@ export default function SettingsPage() {
     const connectedProvider = params.get("connected");
     if (!connectedProvider || !workspace?.id) return;
     window.history.replaceState({}, "", "/dashboard/settings");
-    // Refetch integrations then auto-sync the newly connected provider
     (async () => {
       try {
         const res = await apiFetch(`/api/integrations/list?workspace_id=${workspace.id}`);
@@ -1989,319 +1473,192 @@ export default function SettingsPage() {
     setSyncing(null);
   }
 
+  const tabs: { id: string; label: string }[] = [
+    { id: 'general', label: 'General' },
+    { id: 'security', label: 'Security' },
+    { id: 'brand', label: 'Brand' },
+    { id: 'integrations', label: 'Integrations' },
+    { id: 'team', label: 'Team' },
+    { id: 'alerts', label: 'Alerts' },
+  ];
+
   return (
-    <div style={{ backgroundColor: 'var(--bg-page)', minHeight: '100vh' }}>
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '32px 24px' }}>
-      <div style={{ marginBottom: 4 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Settings</h1>
+    <div className="lx-content">
+      {/* Page Header */}
+      <div className="lx-page-header">
+        <div>
+          <h1 className="lx-page-title">Settings</h1>
+          <p className="lx-page-desc">Manage integrations, brand, and preferences</p>
+        </div>
       </div>
-      <p style={{ fontSize: 14, color: 'var(--text-muted)', fontFamily: "'DM Sans', sans-serif", marginBottom: 28 }}>Manage integrations, brand, and preferences</p>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div style={{
-          display: 'inline-flex',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-default)',
-          borderRadius: 10,
-          padding: 4,
-          gap: 2,
-          marginBottom: 28,
-        }}>
-          {(['general', 'security', 'brand', 'integrations', 'team', 'alerts'] as const).map((tab) => (
+        {/* Tab bar — mono styled */}
+        <div className="lx-tabs">
+          {tabs.map(t => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: '7px 16px',
-                borderRadius: 7,
-                fontSize: 13,
-                fontWeight: 500,
-                fontFamily: "'DM Sans', sans-serif",
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                border: 'none',
-                background: activeTab === tab ? '#7C3AED' : 'transparent',
-                color: activeTab === tab ? '#FFFFFF' : 'var(--text-muted)',
-                transition: 'background 150ms, color 150ms',
-              }}
-              onMouseEnter={e => { if (activeTab !== tab) { e.currentTarget.style.background = 'rgba(124,58,237,0.06)'; e.currentTarget.style.color = 'var(--text-secondary)'; } }}
-              onMouseLeave={e => { if (activeTab !== tab) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; } }}
+              key={t.id}
+              type="button"
+              className={`lx-tab${activeTab === t.id ? ' active' : ''}`}
+              onClick={() => setActiveTab(t.id)}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {t.label}
             </button>
           ))}
         </div>
 
-        {/* ─── General Tab ─── */}
+        {/* ─── GENERAL ─── */}
         <TabsContent value="general">
-          <div>
-            {/* Workspace section */}
-            <WorkspaceSection workspace={workspace} loading={wsLoading} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
-
-            {/* Profile section */}
-            <div style={{ marginTop: 32 }}>
-              <ProfileTab />
-            </div>
-
-            {/* Delete this workspace */}
-            {workspace && (
-              <DeleteWorkspaceSection
-                workspace={workspace}
-                workspaceCount={workspaces.length}
-              />
-            )}
-
-            {/* Danger Zone — Delete Account */}
-            <DeleteAccountSection />
-          </div>
+          <WorkspaceSection workspace={workspace} loading={wsLoading} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
+          <ProfileTab />
+          {workspace && (
+            <DeleteWorkspaceSection workspace={workspace} workspaceCount={workspaces.length} />
+          )}
+          <DeleteAccountSection />
         </TabsContent>
 
-        {/* ─── Security Tab ─── */}
+        {/* ─── SECURITY ─── */}
         <TabsContent value="security">
           <SecurityTab />
         </TabsContent>
 
-        {/* ─── Brand Tab ─── */}
+        {/* ─── BRAND ─── */}
         <TabsContent value="brand">
           <BrandTab workspace={workspace} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
         </TabsContent>
 
-        {/* ─── Integrations Tab ─── */}
+        {/* ─── INTEGRATIONS ─── */}
         <TabsContent value="integrations">
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-              <p style={{ fontSize: 14, color: c.textSecondary, margin: 0 }}>
-                Connect your marketing accounts to start syncing real data.
-                {wsLoading && " Loading..."}
-                {workspace && <span style={{ color: c.success }}> &middot; {workspace.name}</span>}
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 11, color: c.textMuted }}>Auto-syncs daily at 2AM UTC</span>
-                <button
-                  onClick={handleSyncAll}
-                  disabled={syncing === 'all'}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    height: 36, padding: '0 16px', borderRadius: 8, border: 'none',
-                    background: '#7C3AED', color: '#FFFFFF',
-                    fontSize: 13, fontWeight: 600, cursor: syncing === 'all' ? 'not-allowed' : 'pointer',
-                    fontFamily: "'DM Sans', sans-serif",
-                    opacity: syncing === 'all' ? 0.7 : 1,
-                  }}
-                  onMouseEnter={e => { if (syncing !== 'all') e.currentTarget.style.background = '#6D28D9'; }}
-                  onMouseLeave={e => { if (syncing !== 'all') e.currentTarget.style.background = '#7C3AED'; }}
-                >
-                  <RefreshCw size={13} style={{ animation: syncing === 'all' ? 'spin 1s linear infinite' : 'none' }} />
-                  {syncing === 'all' ? 'Syncing...' : 'Sync All Now'}
-                </button>
+          <div className="lx-card" style={{ marginBottom: 24 }}>
+            <div className="lx-card-header">
+              <div>
+                <span className="lx-card-title">Connected Integrations</span>
+                <p className="lx-card-desc" style={{ marginTop: 4 }}>Connect your marketing accounts to start syncing real data.</p>
               </div>
             </div>
-            <div className="integration-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              {providers.map(p => {
-                const Icon = p.icon;
-                const connected = isConnected(p.id);
-                const int = getIntegration(p.id);
-                const isSyncing = syncing === p.id;
-                const isErrored = int?.status === 'error';
-                const syncResult = syncResults[p.id];
-                const lastSyncTime = int?.last_sync_at ? new Date(int.last_sync_at) : null;
-                const syncAge = lastSyncTime ? Date.now() - lastSyncTime.getTime() : null;
-                const isStale = syncAge ? syncAge > 24 * 60 * 60 * 1000 : false;
-
-                const borderColor = isErrored
-                  ? 'rgba(239,68,68,0.4)'
-                  : connected && isSynced(p.id)
-                    ? 'rgba(16,185,129,0.3)'
-                    : connected
-                      ? 'rgba(245,158,11,0.4)'
-                      : c.border;
-
-                return (
-                  <div key={p.id} style={{
-                    ...card,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: 12,
-                    padding: 20,
-                  }}>
-                    {/* Header: icon + name + status */}
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: `${p.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <img src={`https://cdn.simpleicons.org/${p.logoSlug}/${p.color.replace('#', '')}`} width={26} height={26} alt={p.name} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                        </div>
-                        <div>
-                          <div style={{ fontSize: 15, fontWeight: 700, color: c.text }}>{p.name}</div>
-                          <div style={{ marginTop: 4 }}>
-                            <StatusPill
-                              connected={connected}
-                              variant={isErrored ? 'error' : connected ? 'success' : 'default'}
-                              label={
-                                isErrored ? 'Sync Error'
-                                : connected ? (int?.display_name ? `Connected \u00b7 ${int.display_name}` : 'Connected')
-                                : 'Disconnected'
-                              }
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 12, lineHeight: 1.4 }}>{p.desc}</p>
-
-                    {/* Sync details block — shown when connected */}
-                    {connected && (
-                      <div style={{
-                        padding: '10px 12px', borderRadius: 8, marginBottom: 14,
-                        backgroundColor: isErrored ? 'rgba(239,68,68,0.05)' : 'var(--bg-page)',
-                        border: `1px solid ${isErrored ? 'rgba(239,68,68,0.15)' : 'var(--border-default)'}`,
-                      }}>
-                        {/* Last sync timestamp */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: lastSyncTime ? 6 : 0 }}>
-                          <Clock size={11} color={c.textMuted} />
-                          <span style={{ fontSize: 12, color: c.textSecondary }}>
-                            {lastSyncTime
-                              ? <>Last sync: <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 500 }}>{lastSyncTime.toLocaleString()}</span>
-                                {isStale && <span style={{ color: '#F59E0B', marginLeft: 6, fontWeight: 600 }}>(stale)</span>}
-                              </>
-                              : 'Never synced'
-                            }
-                          </span>
-                        </div>
-
-                        {/* Sync status from last sync attempt */}
-                        {lastSyncTime && !isErrored && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: syncResult?.rows !== undefined ? 6 : 0 }}>
-                            <Check size={11} color="#22C55E" />
-                            <span style={{ fontSize: 12, color: '#166534', fontWeight: 500 }}>Last sync succeeded</span>
-                          </div>
-                        )}
-
-                        {/* Row count — from latest manual sync result */}
-                        {syncResult?.rows !== undefined && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <Database size={11} color={c.textMuted} />
-                            <span style={{ fontSize: 12, color: c.textSecondary }}>
-                              Rows synced: <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: c.text }}>{syncResult.rows.toLocaleString()}</span>
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Error message (from sync result or status) */}
-                        {(isErrored || syncResult?.error) && (
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginTop: 4 }}>
-                            <AlertCircle size={12} color="#EF4444" style={{ marginTop: 1, flexShrink: 0 }} />
-                            <span style={{ fontSize: 12, color: '#EF4444', lineHeight: 1.4 }}>
-                              {syncResult?.error || 'Sync failed. Re-authenticate or try syncing again.'}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Action buttons */}
-                    <div style={{ display: 'flex', flexDirection: 'row', gap: 8, alignItems: 'center', width: '100%', marginTop: 12 }}>
-                      {!connected ? (
-                        <button
-                          onClick={() => handleConnect(p.id)}
-                          style={{
-                            width: '100%', height: 44, borderRadius: 8, border: 'none',
-                            backgroundColor: '#7C3AED', color: 'white',
-                            fontSize: 14, fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
-                            cursor: 'pointer', transition: 'background-color 150ms',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#6D28D9')}
-                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#7C3AED')}
-                        >
-                          Connect
-                        </button>
-                      ) : isErrored ? (
-                        <>
-                          <button
-                            style={{
-                              flex: 1, height: 40, borderRadius: 8, border: 'none',
-                              backgroundColor: '#7C3AED', color: '#FFFFFF',
-                              fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                              fontFamily: "'DM Sans', sans-serif",
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                            }}
-                            onClick={() => handleConnect(p.id)}
-                            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#6D28D9')}
-                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#7C3AED')}
-                          >
-                            <RefreshCw size={13} />
-                            Reconnect
-                          </button>
-                          <button
-                            style={{
-                              height: 40, padding: '0 16px', borderRadius: 8,
-                              border: '1px solid var(--border-default)',
-                              backgroundColor: 'transparent', color: 'var(--text-secondary)',
-                              fontSize: 14, fontWeight: 500, cursor: isSyncing ? 'not-allowed' : 'pointer',
-                              fontFamily: "'DM Sans', sans-serif",
-                              display: 'flex', alignItems: 'center', gap: 6,
-                              opacity: isSyncing ? 0.7 : 1,
-                            }}
-                            onClick={() => handleSync(p.id)}
-                            disabled={isSyncing}
-                          >
-                            <RefreshCw size={13} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
-                            {isSyncing ? 'Retrying...' : 'Retry Sync'}
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleSync(p.id)}
-                            disabled={isSyncing}
-                            style={{
-                              flex: 1, height: 40, borderRadius: 8,
-                              border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : '#E2E8F0'}`,
-                              backgroundColor: 'transparent',
-                              color: isDark ? '#CBD5E1' : '#374151',
-                              fontSize: 14, fontWeight: 500, fontFamily: "'DM Sans', sans-serif",
-                              cursor: isSyncing ? 'not-allowed' : 'pointer',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                              transition: 'background-color 150ms',
-                              opacity: isSyncing ? 0.7 : 1,
-                            }}
-                            onMouseEnter={e => { if (!isSyncing) e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.05)' : '#F9FAFB'; }}
-                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
-                          >
-                            <RefreshCw size={16} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
-                            {isSyncing ? 'Syncing...' : 'Sync Now'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (!int) return;
-                              setDisconnectTarget({ id: int.id, name: p.name });
-                            }}
-                            style={{
-                              height: 40, padding: '0 16px', borderRadius: 8,
-                              border: '1px solid #FCA5A5',
-                              backgroundColor: 'transparent',
-                              color: '#EF4444',
-                              fontSize: 14, fontWeight: 500, fontFamily: "'DM Sans', sans-serif",
-                              cursor: 'pointer',
-                              display: 'flex', alignItems: 'center', gap: 6,
-                              transition: 'background-color 150ms, border-color 150ms',
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEF2F2'; e.currentTarget.style.borderColor = '#EF4444'; }}
-                            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = '#FCA5A5'; }}
-                          >
-                            <X size={16} />
-                            Disconnect
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: 'var(--elevated)', borderRadius: 8, flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Workspace:</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--primary)', background: 'var(--primary-glow)', padding: '3px 8px', borderRadius: 6 }}>
+                {workspace?.name || (wsLoading ? 'Loading…' : '—')}
+              </span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>Auto-syncs daily at 2AM UTC</span>
+              <button
+                type="button"
+                className="lx-btn-primary"
+                style={{ padding: '8px 14px', fontSize: 12, opacity: syncing === 'all' ? 0.7 : 1, cursor: syncing === 'all' ? 'not-allowed' : 'pointer' }}
+                onClick={handleSyncAll}
+                disabled={syncing === 'all'}
+              >
+                <RefreshCw size={12} style={{ animation: syncing === 'all' ? 'spin 1s linear infinite' : 'none' }} />
+                {syncing === 'all' ? 'Syncing…' : 'Sync All Now'}
+              </button>
             </div>
-
           </div>
 
-          {/* Disconnect Confirmation Modal */}
+          <div className="lx-integration-grid">
+            {providers.map(p => {
+              const Logo = p.Logo;
+              const connected = isConnected(p.id);
+              const int = getIntegration(p.id);
+              const isSyncing = syncing === p.id;
+              const isErrored = int?.status === 'error';
+              const syncResult = syncResults[p.id];
+              const lastSyncTime = int?.last_sync_at ? new Date(int.last_sync_at) : null;
+
+              let statusNode: React.ReactNode;
+              if (isErrored) {
+                statusNode = <div className="lx-integration-status pending" style={{ color: 'var(--danger)' }}>Sync Error</div>;
+              } else if (connected) {
+                statusNode = <div className="lx-integration-status">Connected{int?.display_name ? ` · ${int.display_name}` : ''}</div>;
+              } else {
+                statusNode = <div className="lx-integration-status pending">Not Connected</div>;
+              }
+
+              let syncLineText = 'Click to authorize account and begin syncing data.';
+              if (connected && lastSyncTime) {
+                syncLineText = `Last sync: ${lastSyncTime.toLocaleString()} | Last sync ${isErrored ? 'failed' : 'succeeded ✓'}`;
+              } else if (connected) {
+                syncLineText = 'Connected — waiting for first sync.';
+              } else if (p.id === 'google_ads') {
+                syncLineText = 'Waiting for Google developer token approval. This usually takes 1-3 business days.';
+              }
+
+              return (
+                <div key={p.id} className="lx-integration-card">
+                  <div className="lx-integration-header">
+                    <div className="lx-integration-icon" style={{ background: p.bg }}>
+                      <Logo />
+                    </div>
+                    <div>
+                      <div className="lx-integration-name">{p.name}</div>
+                      {statusNode}
+                    </div>
+                  </div>
+
+                  <p className="lx-integration-desc">{p.desc}</p>
+
+                  <div className="lx-integration-sync">{syncLineText}</div>
+
+                  {syncResult?.rows !== undefined && (
+                    <div className="lx-integration-sync" style={{ marginTop: 6 }}>
+                      Rows synced: {syncResult.rows.toLocaleString()}
+                    </div>
+                  )}
+                  {syncResult?.error && (
+                    <div className="lx-integration-sync" style={{ marginTop: 6, color: 'var(--danger)' }}>
+                      {syncResult.error}
+                    </div>
+                  )}
+
+                  <div className="lx-integration-actions">
+                    {!connected ? (
+                      <button type="button" className="lx-btn-primary" onClick={() => handleConnect(p.id)}>
+                        Connect {p.name.split(' ').slice(-1)[0]}
+                      </button>
+                    ) : isErrored ? (
+                      <>
+                        <button type="button" className="lx-btn-primary" onClick={() => handleConnect(p.id)}>
+                          <RefreshCw size={12} /> Reconnect
+                        </button>
+                        <button
+                          type="button"
+                          className="lx-btn-outline"
+                          onClick={() => handleSync(p.id)}
+                          disabled={isSyncing}
+                          style={{ opacity: isSyncing ? 0.7 : 1 }}
+                        >
+                          <RefreshCw size={12} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+                          {isSyncing ? 'Retrying…' : 'Retry Sync'}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="lx-btn-outline"
+                          onClick={() => handleSync(p.id)}
+                          disabled={isSyncing}
+                          style={{ opacity: isSyncing ? 0.7 : 1 }}
+                        >
+                          <RefreshCw size={12} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
+                          {isSyncing ? 'Syncing…' : 'Sync Now'}
+                        </button>
+                        <button
+                          type="button"
+                          className="lx-btn-danger"
+                          onClick={() => { if (!int) return; setDisconnectTarget({ id: int.id, name: p.name }); }}
+                        >
+                          Disconnect
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Disconnect Confirmation */}
           <AlertDialog open={!!disconnectTarget} onOpenChange={(open) => { if (!open) setDisconnectTarget(null); }}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -2335,339 +1692,288 @@ export default function SettingsPage() {
           </AlertDialog>
         </TabsContent>
 
-        {/* ─── Team Tab ─── */}
+        {/* ─── TEAM ─── */}
         <TabsContent value="team">
-          <div>
-            {/* Slots indicator */}
-            <div style={{
-              ...card,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Crown size={16} color={c.warning} />
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: c.text, textTransform: 'capitalize' }}>{workspace?.plan || 'free'} Plan</div>
-                  <div style={{ fontSize: 12, color: c.textSecondary }}>{workspace?.plan === 'agency' ? 'Unlimited' : `Up to ${teamData?.maxSlots || 2}`} team members</div>
+          {/* Slots / Plan indicator */}
+          <div className="lx-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Crown size={16} color="var(--warning)" />
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', textTransform: 'capitalize', fontFamily: 'var(--font-display)' }}>
+                  {workspace?.plan || 'free'} Plan
                 </div>
-              </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: 'var(--font-display)' }}>
-                {teamData?.slotsUsed || 0} / {teamData?.maxSlots || 2}
-                <span style={{ fontSize: 12, color: c.textSecondary, fontWeight: 400, marginLeft: 4 }}>used</span>
+                <div style={{ fontSize: 12, color: 'var(--text-sec)' }}>
+                  {workspace?.plan === 'agency' ? 'Unlimited' : `Up to ${teamData?.maxSlots || 2}`} team members
+                </div>
               </div>
             </div>
-
-            {/* Invite form */}
-            <div style={{ ...card, padding: '20px 24px', marginBottom: 20 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 4 }}>Invite a team member</h3>
-              <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>They&#39;ll receive an email with a link to sign up and join your workspace.</p>
-              <form onSubmit={handleInvite} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
-                  <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: c.textMuted }} />
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={e => setInviteEmail(e.target.value)}
-                    placeholder="colleague@company.com"
-                    autoComplete="email"
-                    required
-                    disabled={teamData?.canInviteMore === false}
-                    style={{
-                      ...inputBase,
-                      padding: '10px 14px 10px 36px',
-                      opacity: teamData?.canInviteMore === false ? 0.5 : 1,
-                    }}
-                    onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-                    onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
-                  />
-                </div>
-                <select
-                  value={inviteRole}
-                  onChange={e => setInviteRole(e.target.value)}
-                  style={{ ...inputBase, width: 'auto', padding: '10px 12px', fontWeight: 500, cursor: 'pointer' }}
-                >
-                  <option value="admin">Admin</option>
-                  <option value="member">Member</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-                <button
-                  type="submit"
-                  disabled={inviting || !inviteEmail || teamData?.canInviteMore === false}
-                  style={{
-                    ...primaryBtn,
-                    opacity: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 0.5 : 1,
-                    cursor: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {inviting ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Mail size={14} />}
-                  {inviting ? "Sending..." : "Send Invite"}
-                </button>
-              </form>
-              {teamData?.canInviteMore === false && (
-                <p style={{ fontSize: 12, color: c.warning, marginTop: 10 }}>Member limit reached. Upgrade to add more.</p>
-              )}
-              {inviteMsg && (
-                <div style={{
-                  marginTop: 12, padding: '10px 14px', borderRadius: 8,
-                  backgroundColor: inviteMsg.ok ? c.successSubtle : c.dangerSubtle,
-                  border: `1px solid ${inviteMsg.ok ? c.successBorder : c.dangerBorder}`,
-                  color: inviteMsg.ok ? c.success : c.danger,
-                  fontSize: 13,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {inviteMsg.ok ? <Check size={13} /> : <X size={13} />}
-                    {inviteMsg.text}
-                  </div>
-                  {inviteMsg.inviteUrl && (
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                      <input
-                        readOnly
-                        value={inviteMsg.inviteUrl}
-                        style={{
-                          ...inputBase,
-                          flex: 1,
-                          fontSize: 12,
-                          fontFamily: 'var(--font-mono)',
-                          color: c.textSecondary,
-                        }}
-                        onClick={e => (e.target as HTMLInputElement).select()}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => { navigator.clipboard.writeText(inviteMsg.inviteUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-                        style={{ ...ghostBtn, height: 32, padding: '0 12px', fontSize: 13 }}
-                      >
-                        {copied ? <Check size={13} /> : <Copy size={13} />}
-                        {copied ? 'Copied!' : 'Copy link'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+            <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', fontFamily: 'var(--font-display)' }}>
+              {teamData?.slotsUsed || 0} / {teamData?.maxSlots || 2}
+              <span style={{ fontSize: 12, color: 'var(--text-sec)', fontWeight: 400, marginLeft: 4 }}>used</span>
             </div>
+          </div>
 
-            {/* Active members — avatar + name + role badge rows */}
-            {teamData?.members && teamData.members.length > 0 && (
-              <div style={{ ...card, padding: '20px 24px', marginBottom: 20 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Team Members</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {teamData.members.map((m: any) => {
-                    const isOwner = m.role === 'owner';
-                    const roleColors: Record<string, { bg: string; color: string }> = {
-                      owner: { bg: c.warningSubtle, color: c.warning },
-                      admin: { bg: c.accentSubtle, color: c.accent },
-                      member: { bg: 'rgba(59,130,246,0.08)', color: '#3b82f6' },
-                      viewer: { bg: 'rgba(85,85,85,0.08)', color: c.textMuted },
-                    };
-                    const rc = roleColors[m.role] || roleColors.member;
-                    return (
-                      <div key={m.id} style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '12px 14px', borderRadius: 8,
-                        backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`,
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{
-                            width: 36, height: 36, borderRadius: '50%',
-                            backgroundColor: '#7C3AED',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 14, fontWeight: 600, color: '#FFFFFF', textTransform: 'uppercase',
-                            fontFamily: "'Plus Jakarta Sans', sans-serif",
-                          }}>
-                            {(m.name || m.email || '?').substring(0, 2)}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>
-                              {m.name || 'Unknown'}{isOwner ? ' (You)' : ''}
-                            </div>
-                            <div style={{ fontSize: 12, color: c.textMuted }}>{m.email}</div>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {isOwner ? (
-                            <span style={{
-                              fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20,
-                              backgroundColor: '#FEF3C7', color: '#92400E',
-                              fontFamily: "'DM Sans', sans-serif",
-                            }}>
-                              Owner
-                            </span>
-                          ) : (
-                            <>
-                              <select
-                                value={m.role}
-                                onChange={async (e) => {
-                                  const newRole = e.target.value;
-                                  const session = (await supabase.auth.getSession()).data.session;
-                                  if (!session) return;
-                                  try {
-                                    const res = await apiFetch('/api/team/member', {
-                                      method: 'PATCH',
-                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                                      body: JSON.stringify({ workspace_id: workspace.id, member_id: m.id, role: newRole }),
-                                    });
-                                    if (res.ok) refreshTeamData();
-                                  } catch {}
-                                }}
-                                style={{
-                                  height: 32, fontSize: 13, fontWeight: 500, padding: '0 10px', borderRadius: 8,
-                                  backgroundColor: 'transparent', color: 'var(--text-secondary)',
-                                  border: '1px solid var(--border-default)',
-                                  fontFamily: "'DM Sans', sans-serif",
-                                  cursor: 'pointer', appearance: 'auto',
-                                }}
-                              >
-                                <option value="admin">Admin</option>
-                                <option value="member">Member</option>
-                                <option value="viewer">Viewer</option>
-                              </select>
-                              <button
-                                onClick={() => {
-                                  setConfirmState({
-                                    title: `Remove ${m.name || m.email}?`,
-                                    description: "They'll immediately lose access to this workspace, including integrations, data, and shared reports. You can re-invite them later.",
-                                    confirmLabel: 'Remove',
-                                    danger: true,
-                                    onConfirm: async () => {
-                                      setConfirmState(null);
-                                      const session = (await supabase.auth.getSession()).data.session;
-                                      if (!session) return;
-                                      try {
-                                        const res = await apiFetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
-                                          method: 'DELETE',
-                                          headers: { Authorization: `Bearer ${session.access_token}` },
-                                        });
-                                        if (res.ok) refreshTeamData();
-                                      } catch {}
-                                    },
-                                  });
-                                }}
-                                style={{
-                                  height: 32, padding: '0 12px', borderRadius: 8,
-                                  background: 'transparent', color: '#EF4444',
-                                  border: '1px solid #FECACA',
-                                  fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                                  fontFamily: "'DM Sans', sans-serif",
-                                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                                }}
-                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEF2F2'; e.currentTarget.style.borderColor = '#EF4444'; }}
-                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = '#FECACA'; }}
-                              >
-                                Remove
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+          {/* Invite form */}
+          <div className="lx-card">
+            <div className="lx-card-header">
+              <span className="lx-card-title">Invite a team member</span>
+            </div>
+            <p className="lx-card-desc">They&apos;ll receive an email with a link to sign up and join your workspace.</p>
+
+            <form onSubmit={handleInvite} style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+                <Mail size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="email"
+                  className="lx-form-input"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  placeholder="colleague@company.com"
+                  autoComplete="email"
+                  required
+                  disabled={teamData?.canInviteMore === false}
+                  style={{ paddingLeft: 34, opacity: teamData?.canInviteMore === false ? 0.5 : 1 }}
+                />
               </div>
+              <select
+                className="lx-form-select"
+                value={inviteRole}
+                onChange={e => setInviteRole(e.target.value)}
+                style={{ width: 'auto', fontWeight: 500, cursor: 'pointer' }}
+              >
+                <option value="admin">Admin</option>
+                <option value="member">Member</option>
+                <option value="viewer">Viewer</option>
+              </select>
+              <button
+                type="submit"
+                disabled={inviting || !inviteEmail || teamData?.canInviteMore === false}
+                className="lx-btn-primary"
+                style={{
+                  opacity: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 0.5 : 1,
+                  cursor: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {inviting ? <Loader2 size={13} className="animate-spin" /> : <Mail size={13} />}
+                {inviting ? 'Sending…' : 'Send Invite'}
+              </button>
+            </form>
+
+            {teamData?.canInviteMore === false && (
+              <p style={{ fontSize: 12, color: 'var(--warning)', marginTop: 10 }}>Member limit reached. Upgrade to add more.</p>
             )}
 
-            {/* Pending invites */}
-            {teamData?.invites && teamData.invites.filter((inv: any) => inv.status === 'pending').length > 0 && (
-              <div style={{ ...card, padding: '20px 24px' }}>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Pending Invites</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {teamData.invites.filter((inv: any) => inv.status === 'pending').map((inv: any) => {
-                    const roleColors: Record<string, { bg: string; color: string }> = {
-                      admin: { bg: c.accentSubtle, color: c.accent },
-                      member: { bg: 'rgba(59,130,246,0.08)', color: '#3b82f6' },
-                      viewer: { bg: 'rgba(85,85,85,0.08)', color: c.textMuted },
-                    };
-                    const rc = roleColors[inv.role] || roleColors.member;
-                    const expiresAt = inv.expires_at ? new Date(inv.expires_at) : null;
-                    const daysLeft = expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
-                    const invUrl = inv.token ? `${window.location.origin}/auth/signup?invite=${inv.token}` : null;
-                    return (
-                      <div key={inv.id || inv.email} style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '12px 14px', borderRadius: 8,
-                        backgroundColor: c.surfaceElevated, border: `1px solid ${c.border}`,
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{
-                            width: 34, height: 34, borderRadius: '50%',
-                            backgroundColor: c.accentSubtle,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 13, fontWeight: 700, color: c.accent,
-                          }}>
-                            {inv.email[0].toUpperCase()}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 500, color: c.text }}>{inv.email}</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                              <span style={{
-                                fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6,
-                                backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
-                              }}>
-                                {inv.role || 'member'}
-                              </span>
-                              {daysLeft !== null && (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, color: daysLeft <= 1 ? c.danger : c.textMuted }}>
-                                  <Clock size={10} />
-                                  Expires in {daysLeft} day{daysLeft !== 1 ? 's' : ''}
-                                </span>
-                              )}
-                            </div>
-                          </div>
+            {inviteMsg && (
+              <div style={{
+                marginTop: 12, padding: '10px 14px', borderRadius: 8,
+                background: inviteMsg.ok ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+                border: `1px solid ${inviteMsg.ok ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
+                color: inviteMsg.ok ? 'var(--success)' : 'var(--danger)',
+                fontSize: 13,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {inviteMsg.ok ? <Check size={13} /> : <X size={13} />}
+                  {inviteMsg.text}
+                </div>
+                {inviteMsg.inviteUrl && (
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <input
+                      readOnly
+                      className="lx-form-input"
+                      value={inviteMsg.inviteUrl}
+                      style={{ flex: 1, fontSize: 12, fontFamily: 'var(--font-mono)' }}
+                      onClick={e => (e.target as HTMLInputElement).select()}
+                    />
+                    <button
+                      type="button"
+                      className="lx-btn-outline"
+                      onClick={() => { navigator.clipboard.writeText(inviteMsg.inviteUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                      style={{ padding: '8px 12px', fontSize: 12 }}
+                    >
+                      {copied ? <Check size={12} /> : <Copy size={12} />}
+                      {copied ? 'Copied!' : 'Copy link'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Team members */}
+          {teamData?.members && teamData.members.length > 0 && (
+            <div className="lx-card">
+              <div className="lx-card-header">
+                <span className="lx-card-title">Team Members</span>
+              </div>
+              <p className="lx-card-desc">Manage who has access to your workspace and their roles.</p>
+
+              <div style={{ marginTop: 12 }}>
+                {teamData.members.map((m: any, idx: number) => {
+                  const isOwner = m.role === 'owner';
+                  return (
+                    <div
+                      key={m.id}
+                      style={{
+                        padding: '12px 0',
+                        borderBottom: idx < teamData.members.length - 1 ? '1px solid var(--border)' : 'none',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8,
+                          background: 'linear-gradient(135deg, var(--primary), var(--tertiary))',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'white', fontSize: 11, fontWeight: 700, flexShrink: 0, textTransform: 'uppercase',
+                        }}>
+                          {(m.name || m.email || '?').substring(0, 2)}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {invUrl && (
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>
+                            {m.name || 'Unknown'}{isOwner ? ' (You)' : ''}
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{m.email}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {isOwner ? (
+                          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary)', background: 'var(--primary-glow)', padding: '4px 8px', borderRadius: 6 }}>
+                            Admin
+                          </span>
+                        ) : (
+                          <>
+                            <select
+                              className="lx-form-select"
+                              value={m.role}
+                              onChange={async (e) => {
+                                const newRole = e.target.value;
+                                const session = (await supabase.auth.getSession()).data.session;
+                                if (!session) return;
+                                try {
+                                  const res = await apiFetch('/api/team/member', {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                                    body: JSON.stringify({ workspace_id: workspace.id, member_id: m.id, role: newRole }),
+                                  });
+                                  if (res.ok) refreshTeamData();
+                                } catch {}
+                              }}
+                              style={{ width: 'auto', padding: '6px 10px', fontSize: 11 }}
+                            >
+                              <option value="admin">Admin</option>
+                              <option value="member">Member</option>
+                              <option value="viewer">Viewer</option>
+                            </select>
                             <button
                               type="button"
-                              onClick={() => { navigator.clipboard.writeText(invUrl); }}
-                              style={{ ...ghostBtn, height: 32, padding: '0 12px', fontSize: 13 }}
+                              className="lx-btn-danger"
+                              style={{ padding: '6px 12px', fontSize: 11 }}
+                              onClick={() => {
+                                setConfirmState({
+                                  title: `Remove ${m.name || m.email}?`,
+                                  description: "They'll immediately lose access to this workspace, including integrations, data, and shared reports. You can re-invite them later.",
+                                  confirmLabel: 'Remove',
+                                  danger: true,
+                                  onConfirm: async () => {
+                                    setConfirmState(null);
+                                    const session = (await supabase.auth.getSession()).data.session;
+                                    if (!session) return;
+                                    try {
+                                      const res = await apiFetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
+                                        method: 'DELETE',
+                                        headers: { Authorization: `Bearer ${session.access_token}` },
+                                      });
+                                      if (res.ok) refreshTeamData();
+                                    } catch {}
+                                  },
+                                });
+                              }}
                             >
-                              <Link size={12} />
-                              Copy link
+                              Remove
                             </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Pending invitations */}
+          {teamData?.invites && teamData.invites.filter((inv: any) => inv.status === 'pending').length > 0 && (
+            <div className="lx-card">
+              <div className="lx-card-header">
+                <span className="lx-card-title">Pending Invitations</span>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                {teamData.invites.filter((inv: any) => inv.status === 'pending').map((inv: any, idx: number, arr: any[]) => {
+                  const expiresAt = inv.expires_at ? new Date(inv.expires_at) : null;
+                  const daysLeft = expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null;
+                  const invUrl = inv.token && typeof window !== 'undefined' ? `${window.location.origin}/auth/signup?invite=${inv.token}` : null;
+                  return (
+                    <div
+                      key={inv.id || inv.email}
+                      style={{
+                        padding: '12px 0',
+                        borderBottom: idx < arr.length - 1 ? '1px solid var(--border)' : 'none',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{inv.email}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <span>Role: <strong style={{ textTransform: 'capitalize' }}>{inv.role || 'member'}</strong></span>
+                          {daysLeft !== null && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: daysLeft <= 1 ? 'var(--danger)' : 'var(--text-muted)' }}>
+                              <Clock size={10} /> Expires in {daysLeft} day{daysLeft !== 1 ? 's' : ''}
+                            </span>
                           )}
-                          <button
-                            type="button"
-                            onClick={() => handleRevokeInvite(inv.id)}
-                            disabled={revokingId === inv.id}
-                            title="Revoke invite"
-                            style={{
-                              height: 32, padding: '0 12px', borderRadius: 8,
-                              background: 'transparent', color: '#EF4444',
-                              border: '1px solid #FECACA',
-                              fontSize: 13, fontWeight: 500, cursor: 'pointer',
-                              fontFamily: "'DM Sans', sans-serif",
-                              display: 'inline-flex', alignItems: 'center', gap: 4,
-                              opacity: revokingId === inv.id ? 0.6 : 1,
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEF2F2'; e.currentTarget.style.borderColor = '#EF4444'; }}
-                            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = '#FECACA'; }}
-                          >
-                            {revokingId === inv.id
-                              ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
-                              : <Trash2 size={12} />
-                            }
-                            {revokingId === inv.id ? 'Revoking...' : 'Revoke'}
-                          </button>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {invUrl && (
+                          <button
+                            type="button"
+                            className="lx-btn-outline"
+                            style={{ padding: '6px 12px', fontSize: 11 }}
+                            onClick={() => { navigator.clipboard.writeText(invUrl); }}
+                          >
+                            <Link size={11} /> Copy link
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="lx-btn-danger"
+                          style={{ padding: '6px 12px', fontSize: 11, opacity: revokingId === inv.id ? 0.6 : 1 }}
+                          onClick={() => handleRevokeInvite(inv.id)}
+                          disabled={revokingId === inv.id}
+                          title="Revoke invite"
+                        >
+                          {revokingId === inv.id
+                            ? <Loader2 size={11} className="animate-spin" />
+                            : <Trash2 size={11} />
+                          }
+                          {revokingId === inv.id ? 'Revoking…' : 'Revoke'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        </TabsContent>
-
-        {/* ─── Alerts Tab ─── */}
-        <TabsContent value="alerts">
-          <div>
-            <NotificationsTab />
-            <div style={{ marginTop: 32 }}>
-              {workspace?.id && <AlertsTab workspaceId={workspace.id} />}
             </div>
-          </div>
+          )}
         </TabsContent>
 
+        {/* ─── ALERTS ─── */}
+        <TabsContent value="alerts">
+          <NotificationsTab />
+          {workspace?.id && <AlertsTab workspaceId={workspace.id} />}
+        </TabsContent>
       </Tabs>
-      </div>
+
       <ConfirmDialog
         open={confirmState !== null}
         title={confirmState?.title || ''}

@@ -30,7 +30,7 @@ const reportTypes = [
     id: 'analytics',
     label: 'Traffic & Analytics Report',
     icon: BarChart3,
-    color: '#7C3AED',
+    color: '#FF0066',
     desc: 'Sessions, users, traffic sources, top pages, engagement',
     sections: ['Executive Summary', 'Traffic Overview', 'Traffic Sources', 'Top Pages', 'Trend Analysis', 'AI Recommendations'],
   },
@@ -69,7 +69,7 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
 
   const posRanges = [
     { label: '1–3 (Top 3)', count: top3.length, color: '#22c55e' },
-    { label: '4–10 (Page 1)', count: gscKeywords.filter((k: any) => k.position > 3 && k.position <= 10).length, color: '#7C3AED' },
+    { label: '4–10 (Page 1)', count: gscKeywords.filter((k: any) => k.position > 3 && k.position <= 10).length, color: '#FF0066' },
     { label: '11–20 (Page 2)', count: page2.length, color: '#f59e0b' },
     { label: '21+ (Page 3+)', count: gscKeywords.filter((k: any) => k.position > 20).length, color: '#ef4444' },
   ];
@@ -278,7 +278,7 @@ function buildAnalyticsReport(
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
   .cover { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 260px; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; }
   .cover-brand { display: flex; align-items: center; gap: 12px; }
-  .cover-dot { width: 10px; height: 10px; border-radius: 50%; background: #7C3AED; }
+  .cover-dot { width: 10px; height: 10px; border-radius: 50%; background: #FF0066; }
   .cover-lumnix { font-size: 15px; font-weight: 700; color: #93c5fd; letter-spacing: 1px; text-transform: uppercase; }
   .cover-title { font-size: 36px; font-weight: 900; color: #fff; line-height: 1.15; letter-spacing: -1px; margin-top: 24px; }
   .cover-sub { font-size: 16px; color: #94a3b8; margin-top: 8px; }
@@ -286,7 +286,7 @@ function buildAnalyticsReport(
   .cover-meta-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
   .cover-meta-val { font-size: 14px; color: #e2e8f0; font-weight: 600; }
   .body { padding: 40px 48px; }
-  h2 { font-size: 13px; font-weight: 700; color: #7C3AED; text-transform: uppercase; letter-spacing: 1.5px; margin: 36px 0 16px; display: flex; align-items: center; gap: 8px; }
+  h2 { font-size: 13px; font-weight: 700; color: #FF0066; text-transform: uppercase; letter-spacing: 1.5px; margin: 36px 0 16px; display: flex; align-items: center; gap: 8px; }
   h2::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
   p { font-size: 14px; color: #374151; line-height: 1.7; margin-bottom: 10px; }
   .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
@@ -300,12 +300,12 @@ function buildAnalyticsReport(
   .bar-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
   .bar-label { font-size: 13px; color: #374151; width: 140px; flex-shrink: 0; font-weight: 500; text-transform: capitalize; }
   .bar-track { flex: 1; background: #f1f5f9; border-radius: 4px; height: 8px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; background: #7C3AED; }
+  .bar-fill { height: 100%; border-radius: 4px; background: #FF0066; }
   .bar-val { font-size: 13px; font-weight: 700; color: #111827; width: 60px; text-align: right; }
   .bar-pct { font-size: 12px; color: #9ca3af; width: 40px; text-align: right; }
   .spark { display: flex; align-items: flex-end; gap: 3px; height: 60px; padding: 8px 0; }
   .spark-bar { flex: 1; background: #dbeafe; border-radius: 3px 3px 0 0; position: relative; min-width: 12px; }
-  .spark-bar.above { background: #7C3AED; }
+  .spark-bar.above { background: #FF0066; }
   .rec { display: flex; gap: 14px; padding: 16px; border-radius: 10px; border: 1px solid #e5e7eb; margin-bottom: 10px; background: #fafafa; }
   .rec-num { width: 28px; height: 28px; border-radius: 8px; background: #dbeafe; color: #1d4ed8; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .rec-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px; }
@@ -313,7 +313,7 @@ function buildAnalyticsReport(
   .highlight-box { background: linear-gradient(135deg, #eff6ff, #f0fdf4); border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px 24px; margin: 16px 0; }
   .highlight-box p { color: #374151; font-size: 14px; line-height: 1.75; }
   .footer { background: #f8fafc; border-top: 2px solid #e2e8f0; padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; margin-top: 48px; }
-  .footer-brand { font-size: 13px; font-weight: 700; color: #7C3AED; }
+  .footer-brand { font-size: 13px; font-weight: 700; color: #FF0066; }
   .footer-note { font-size: 12px; color: #9ca3af; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 </style>
@@ -360,7 +360,7 @@ function buildAnalyticsReport(
         const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="flex:1;width:100%;display:flex;align-items:flex-end">
-            <div style="width:100%;height:${h}%;background:${isAbove ? '#7C3AED' : '#bfdbfe'};border-radius:3px 3px 0 0;min-height:4px"></div>
+            <div style="width:100%;height:${h}%;background:${isAbove ? '#FF0066' : '#bfdbfe'};border-radius:3px 3px 0 0;min-height:4px"></div>
           </div>
           <div style="font-size:9px;color:#9ca3af;white-space:nowrap">${label}</div>
           <div style="font-size:10px;font-weight:700;color:#374151">${val}</div>
@@ -567,7 +567,7 @@ function buildFullReport(
     <div class="metric-block">
       <div class="metric-block-title">Ranking Distribution</div>
       <div class="metric-row"><span class="metric-key">Top 3 positions</span><span class="metric-val" style="color:#22c55e">${top3.length} keywords</span></div>
-      <div class="metric-row"><span class="metric-key">Page 1 (top 10)</span><span class="metric-val" style="color:#7C3AED">${page1.length} keywords</span></div>
+      <div class="metric-row"><span class="metric-key">Page 1 (top 10)</span><span class="metric-val" style="color:#FF0066">${page1.length} keywords</span></div>
       <div class="metric-row"><span class="metric-key">Page 2 (11–20)</span><span class="metric-val" style="color:#f59e0b">${gscKeywords.filter((k: any) => k.position > 10 && k.position <= 20).length} keywords</span></div>
       <div class="metric-row"><span class="metric-key">Total tracked</span><span class="metric-val">${gscKeywords.length} keywords</span></div>
     </div>
@@ -859,7 +859,7 @@ function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport:
             <>
               {/* Fake cover block */}
               <div style={{
-                background: `linear-gradient(135deg, ${c.surfaceElevated}, rgba(124,58,237,0.1))`,
+                background: `linear-gradient(135deg, ${c.surfaceElevated}, rgba(255,0,102,0.1))`,
                 borderRadius: 8,
                 padding: 20,
                 marginBottom: 20,
@@ -1291,18 +1291,45 @@ export default function ReportsPage() {
     setGenerating(null);
   }
 
-  return (
-    <PageShell title="Reports" description="Client-ready marketing reports with real data and AI insights" icon={FileText} badge="Client-Ready">
-      {/* ── Date Range Picker ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: c.textSecondary, fontSize: 13, fontWeight: 600 }}>
-          <Calendar size={15} color={c.textSecondary} />
-          <span>Reporting Period</span>
-        </div>
+  // Suppress unused import warning — PageShell kept for prop compatibility
+  void PageShell;
 
-        {/* Date preset ghost buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          {DATE_PRESETS.filter(p => p.days > 0).map((p, i) => (
+  return (
+    <div className="lx-content" style={{ padding: 28 }}>
+      {/* Page Header */}
+      <div className="lx-page-header" style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 24 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          background: 'var(--elevated)', border: '1px solid var(--border)',
+        }}>
+          <FileText size={22} style={{ color: 'var(--text-sec)' }} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em' }}>Reports</h1>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center',
+              padding: '3px 10px', borderRadius: 6,
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase',
+              background: 'rgba(0,212,170,0.1)', color: 'var(--secondary)',
+            }}>Client-Ready</span>
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Client-ready marketing reports with real data and AI insights</p>
+        </div>
+      </div>
+
+      {/* Date Range Selector */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 4,
+        padding: 4, borderRadius: 10,
+        background: 'var(--surface)', border: '1px solid var(--border)',
+        marginBottom: 24, flexWrap: 'wrap',
+      }}>
+        <Calendar size={14} style={{ marginLeft: 6, color: 'var(--text-muted)' }} />
+        {DATE_PRESETS.filter(p => p.days > 0).map((p, i) => {
+          const isActive = !showCustom && DATE_PRESETS[selectedPreset].days === p.days;
+          return (
             <button
               key={i}
               onClick={() => {
@@ -1311,112 +1338,89 @@ export default function ReportsPage() {
                 setShowCustom(false);
               }}
               style={{
-                padding: '6px 12px',
-                borderRadius: 8,
-                border: `1px solid ${DATE_PRESETS[selectedPreset].days === p.days ? c.accent : c.borderStrong}`,
-                backgroundColor: DATE_PRESETS[selectedPreset].days === p.days ? c.accentSubtle : 'transparent',
-                color: DATE_PRESETS[selectedPreset].days === p.days ? c.accent : c.textSecondary,
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'background-color 0.15s ease, border-color 0.15s ease',
-              }}
-              onMouseEnter={e => {
-                if (DATE_PRESETS[selectedPreset].days !== p.days) {
-                  (e.target as HTMLButtonElement).style.backgroundColor = c.surfaceElevated;
-                }
-              }}
-              onMouseLeave={e => {
-                if (DATE_PRESETS[selectedPreset].days !== p.days) {
-                  (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
-                }
+                padding: '6px 14px', borderRadius: 7, border: 'none',
+                background: isActive ? 'var(--primary)' : 'transparent',
+                color: isActive ? 'white' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: isActive ? 600 : 500,
+                fontFamily: 'var(--font-body)',
+                cursor: 'pointer', transition: 'all 0.15s ease',
               }}
             >
-              {p.label.replace('Last ', '')}
+              {p.label.replace('Last ', '').replace(' days', ' days')}
             </button>
-          ))}
-          <button
-            onClick={() => {
-              setSelectedPreset(5);
-              setShowCustom(true);
-            }}
-            style={{
-              padding: '6px 12px',
-              borderRadius: 8,
-              border: `1px solid ${showCustom ? c.accent : c.borderStrong}`,
-              backgroundColor: showCustom ? c.accentSubtle : 'transparent',
-              color: showCustom ? c.accent : c.textSecondary,
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'background-color 0.15s ease, border-color 0.15s ease',
-            }}
-            onMouseEnter={e => {
-              if (!showCustom) (e.target as HTMLButtonElement).style.backgroundColor = c.surfaceElevated;
-            }}
-            onMouseLeave={e => {
-              if (!showCustom) (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
-            }}
-          >
-            Custom
-          </button>
-        </div>
+          );
+        })}
+        <button
+          onClick={() => { setSelectedPreset(5); setShowCustom(true); }}
+          style={{
+            padding: '6px 14px', borderRadius: 7, border: 'none',
+            background: showCustom ? 'var(--primary)' : 'transparent',
+            color: showCustom ? 'white' : 'var(--text-muted)',
+            fontSize: 12, fontWeight: showCustom ? 600 : 500,
+            fontFamily: 'var(--font-body)',
+            cursor: 'pointer', transition: 'all 0.15s ease',
+          }}
+        >
+          Custom
+        </button>
 
         {showCustom && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 6 }}>
             <input
               type="date"
               value={customStart}
               onChange={e => setCustomStart(e.target.value)}
               style={{
-                padding: '7px 10px', borderRadius: 8,
-                border: `1px solid ${c.border}`,
-                backgroundColor: c.bgCard, color: c.text, fontSize: 13,
+                padding: '5px 8px', borderRadius: 6,
+                border: '1px solid var(--border)',
+                background: 'var(--elevated)', color: 'var(--text)',
+                fontSize: 12, fontFamily: 'var(--font-body)',
               }}
-              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
             />
-            <span style={{ color: c.textMuted, fontSize: 13 }}>to</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>to</span>
             <input
               type="date"
               value={customEnd}
               onChange={e => setCustomEnd(e.target.value)}
               style={{
-                padding: '7px 10px', borderRadius: 8,
-                border: `1px solid ${c.border}`,
-                backgroundColor: c.bgCard, color: c.text, fontSize: 13,
+                padding: '5px 8px', borderRadius: 6,
+                border: '1px solid var(--border)',
+                background: 'var(--elevated)', color: 'var(--text)',
+                fontSize: 12, fontFamily: 'var(--font-body)',
               }}
-              onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
-              onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
             />
           </div>
         )}
 
-        {loading && <Loader2 size={14} color={c.accent} style={{ animation: 'spin 1s linear infinite' }} />}
-        {!loading && hasData && (
-          <span style={{ fontSize: 12, color: c.textMuted }}>
-            {periodLabel}
-          </span>
-        )}
+        <div style={{ marginLeft: 'auto', marginRight: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {loading && <Loader2 size={14} style={{ color: 'var(--primary)', animation: 'spin 1s linear infinite' }} />}
+          {!loading && hasData && (
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{periodLabel}</span>
+          )}
+        </div>
       </div>
 
       {!hasData && !loading && (
-        <div style={{ padding: 40, borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, textAlign: 'center', marginBottom: 24 }}>
-          <FileText size={36} color={c.borderStrong} style={{ marginBottom: 14 }} />
-          <p style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 6 }}>No data for this date range</p>
-          <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>
+        <div style={{
+          padding: 40, borderRadius: 14,
+          background: 'var(--surface)', border: '1px solid var(--border)',
+          textAlign: 'center', marginBottom: 16,
+        }}>
+          <FileText size={36} style={{ color: 'var(--border-strong)', marginBottom: 14 }} />
+          <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>No data for this date range</p>
+          <p style={{ fontSize: 13, color: 'var(--text-sec)', marginBottom: 16 }}>
             No GSC or GA4 data found for the selected period. Try a longer date range (30, 60, or 90 days) or sync your data first.
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button onClick={() => { setSelectedPreset(2); setShowCustom(false); }} style={{
-              fontSize: 13, color: c.accent, fontWeight: 600,
-              padding: '8px 16px', borderRadius: 8, border: `1px solid ${c.accent}`,
-              backgroundColor: c.accentSubtle, cursor: 'pointer',
+              fontSize: 13, color: 'var(--primary)', fontWeight: 600,
+              padding: '8px 16px', borderRadius: 8, border: '1px solid var(--primary)',
+              background: 'var(--primary-glow)', cursor: 'pointer', fontFamily: 'var(--font-body)',
             }}>Try Last 30 days</button>
             <a href="/dashboard/settings" style={{
-              fontSize: 13, color: c.textSecondary, textDecoration: 'none', fontWeight: 600,
-              padding: '8px 16px', borderRadius: 8, border: `1px solid ${c.borderStrong}`,
-              backgroundColor: 'transparent',
+              fontSize: 13, color: 'var(--text-sec)', textDecoration: 'none', fontWeight: 600,
+              padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border-strong)',
+              background: 'transparent',
             }}>Connect integrations</a>
           </div>
         </div>
@@ -1425,9 +1429,9 @@ export default function ReportsPage() {
       {hasData && (
         <div style={{
           padding: '12px 16px', borderRadius: 8,
-          backgroundColor: c.successSubtle,
-          border: `1px solid ${c.successBorder}`,
-          fontSize: 13, color: c.success,
+          background: 'rgba(16,185,129,0.1)',
+          border: '1px solid rgba(16,185,129,0.25)',
+          fontSize: 13, color: 'var(--success)',
           display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24,
         }}>
           <Sparkles size={14} />
@@ -1435,116 +1439,109 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* ── Report Type Cards ── */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: 4 }}>
-            Choose Report Type
-          </div>
-          {reportTypes.map(rt => {
-            const Icon = rt.icon;
-            const isSelected = selectedReportType === rt.id;
-            return (
-              <button
-                key={rt.id}
-                onClick={() => setSelectedReportType(isSelected ? null : rt.id)}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 14,
-                  padding: 18, borderRadius: 12, textAlign: 'left' as const,
-                  backgroundColor: isSelected ? c.accentSubtle : c.bgCard,
-                  border: `1px solid ${isSelected ? c.accent : c.border}`,
-                  cursor: 'pointer',
-                  transition: 'background-color 0.15s ease, border-color 0.15s ease',
-                }}
-                onMouseEnter={e => {
-                  if (!isSelected) {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.surfaceElevated;
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = c.borderStrong;
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!isSelected) {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCard;
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = c.border;
-                  }
-                }}
-              >
-                <div style={{
-                  width: 42, height: 42, borderRadius: 10,
-                  backgroundColor: isSelected ? 'rgba(124,58,237,0.12)' : c.surfaceElevated,
-                  border: `1px solid ${isSelected ? 'rgba(124,58,237,0.2)' : c.border}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}>
-                  <Icon size={20} color={isSelected ? c.accent : c.textSecondary} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: c.text, marginBottom: 4 }}>{rt.label}</div>
-                  <div style={{ fontSize: 12, color: c.textSecondary, lineHeight: 1.5, marginBottom: 10 }}>{rt.desc}</div>
+      {/* Section Title */}
+      <div style={{
+        fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+        letterSpacing: '0.04em', color: 'var(--text-muted)',
+        marginBottom: 12, padding: '0 4px', fontFamily: 'var(--font-body)',
+      }}>Choose Report Type</div>
 
-                  {/* Section tags */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6, marginTop: 4 }}>
-                    {rt.sections.map(s => (
-                      <span key={s} style={{
-                        fontSize: 11, fontWeight: 600,
-                        color: isSelected ? '#5B21B6' : c.textSecondary,
-                        background: isSelected ? '#EDE9FF' : c.surfaceElevated,
-                        padding: '4px 10px',
-                        borderRadius: 6,
-                        fontFamily: "'DM Sans', sans-serif",
-                        letterSpacing: '0.01em',
-                      }}>
-                        {s}
-                      </span>
-                    ))}
-                  </div>
+      {/* Report Cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 16 }}>
+        {reportTypes.map(rt => {
+          const Icon = rt.icon;
+          const isSelected = selectedReportType === rt.id;
+          return (
+            <div
+              key={rt.id}
+              onClick={() => setSelectedReportType(isSelected ? null : rt.id)}
+              style={{
+                background: 'var(--surface)',
+                border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                borderRadius: 14, padding: 20, marginBottom: 16,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                if (!isSelected) (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-strong)';
+              }}
+              onMouseLeave={e => {
+                if (!isSelected) (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)';
+              }}
+            >
+              <div style={{
+                width: 40, height: 40, borderRadius: 10,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 12, background: 'var(--elevated)',
+              }}>
+                <Icon size={20} style={{ color: 'var(--primary)' }} />
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 15, fontWeight: 600, color: 'var(--text)', marginBottom: 4,
+              }}>{rt.label}</div>
+              <div style={{
+                fontSize: 12, color: 'var(--text-muted)',
+                marginBottom: 12, lineHeight: 1.4,
+              }}>{rt.desc}</div>
 
-                  {/* Action buttons */}
-                  {isSelected && (
-                    <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleGenerate(rt.id, 'download'); }}
-                        disabled={!!generating || loading || !hasData}
-                        style={{
-                          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                          padding: '10px 16px', borderRadius: 8, border: 'none',
-                          backgroundColor: (!hasData || loading) ? c.borderStrong : c.accent,
-                          color: 'white', fontSize: 13, fontWeight: 700,
-                          cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
-                          opacity: (!hasData || loading) ? 0.4 : 1,
-                          transition: 'background-color 0.15s ease',
-                        }}
-                        onMouseEnter={e => { if (!generating && hasData && !loading) (e.target as HTMLButtonElement).style.backgroundColor = c.accentHover; }}
-                        onMouseLeave={e => { if (!generating && hasData && !loading) (e.target as HTMLButtonElement).style.backgroundColor = c.accent; }}
-                      >
-                        {generating === `${rt.id}-download` ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={14} />}
-                        {generating === `${rt.id}-download` ? 'Generating...' : 'Generate & Download'}
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleGenerate(rt.id, 'print'); }}
-                        disabled={!!generating || loading || !hasData}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                          padding: '10px 14px', borderRadius: 8,
-                          border: `1px solid ${c.borderStrong}`,
-                          backgroundColor: 'transparent',
-                          color: c.textSecondary, fontSize: 13, fontWeight: 600,
-                          cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
-                          opacity: (!hasData || loading) ? 0.4 : 1,
-                          transition: 'background-color 0.15s ease, border-color 0.15s ease',
-                        }}
-                        onMouseEnter={e => { if (!generating && hasData && !loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.surfaceElevated; }}
-                        onMouseLeave={e => { if (!generating && hasData && !loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
-                      >
-                        {generating === `${rt.id}-print` ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <FileDown size={13} />}
-                        Print
-                      </button>
-                    </div>
-                  )}
+              {/* Tags */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {rt.sections.map(s => (
+                  <span key={s} className="lx-pill lx-pill--muted" style={{
+                    display: 'inline-flex', alignItems: 'center',
+                    padding: '3px 10px', borderRadius: 20,
+                    fontSize: 11, fontWeight: 600,
+                    background: 'var(--elevated)', color: 'var(--text-sec)',
+                  }}>
+                    {s}
+                  </span>
+                ))}
+              </div>
+
+              {/* Action buttons */}
+              {isSelected && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleGenerate(rt.id, 'download'); }}
+                    disabled={!!generating || loading || !hasData}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                      padding: '10px 16px', borderRadius: 8, border: 'none',
+                      background: (!hasData || loading) ? 'var(--border-strong)' : 'var(--primary)',
+                      color: 'white', fontSize: 13, fontWeight: 700,
+                      fontFamily: 'var(--font-body)',
+                      cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
+                      opacity: (!hasData || loading) ? 0.4 : 1,
+                      transition: 'background 0.15s ease',
+                    }}
+                  >
+                    {generating === `${rt.id}-download` ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={14} />}
+                    {generating === `${rt.id}-download` ? 'Generating...' : 'Generate & Download'}
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleGenerate(rt.id, 'print'); }}
+                    disabled={!!generating || loading || !hasData}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: '10px 14px', borderRadius: 8,
+                      border: '1px solid var(--border-strong)',
+                      background: 'transparent',
+                      color: 'var(--text-sec)', fontSize: 13, fontWeight: 600,
+                      fontFamily: 'var(--font-body)',
+                      cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
+                      opacity: (!hasData || loading) ? 0.4 : 1,
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {generating === `${rt.id}-print` ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <FileDown size={13} />}
+                    Print
+                  </button>
                 </div>
-              </button>
-            );
-          })}
-        </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Custom PDF Builder */}
@@ -1552,13 +1549,13 @@ export default function ReportsPage() {
 
       <div style={{
         marginTop: 20, padding: '14px 18px', borderRadius: 8,
-        backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
-        fontSize: 12, color: c.textSecondary, lineHeight: 1.6,
+        background: 'var(--surface)', border: '1px solid var(--border)',
+        fontSize: 12, color: 'var(--text-sec)', lineHeight: 1.6,
       }}>
-        <strong style={{ color: c.text }}>How to send to a client:</strong> Click &quot;Generate &amp; Download&quot; to get a PDF file, or use &quot;Print&quot; to open in a new tab and save as PDF via Cmd/Ctrl+P. Use the Custom PDF Builder above to generate a React PDF with selected sections.
+        <strong style={{ color: 'var(--text)' }}>How to send to a client:</strong> Click &quot;Generate &amp; Download&quot; to get a PDF file, or use &quot;Print&quot; to open in a new tab and save as PDF via Cmd/Ctrl+P. Use the Custom PDF Builder above to generate a React PDF with selected sections.
       </div>
 
       {workspace?.id && <ScheduledReports workspaceId={workspace.id} />}
-    </PageShell>
+    </div>
   );
 }

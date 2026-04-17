@@ -1,6 +1,7 @@
 'use client';
-import { useState, useRef, useEffect, useMemo, memo, type ReactElement } from 'react';
-import { Brain, Send, BarChart3, TrendingUp, Zap, Search, Target, Copy, Check, Trash2, Database, Wifi, WifiOff, AlertTriangle, Lightbulb, RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
+
+import { useState, useRef, useEffect, memo, type ReactElement } from 'react';
+import { Brain, Send, TrendingUp, Zap, Search, Target, Copy, Check, Trash2, Database, Wifi, WifiOff, AlertTriangle, Lightbulb, RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useIntegrations } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
@@ -22,22 +23,21 @@ interface Insight {
   created_at: string;
 }
 
-const INSIGHT_CONFIG: Record<InsightType, { color: string; bg: string; icon: any; label: string }> = {
-  win:         { color: '#059669', bg: 'rgba(5,150,105,0.08)',  icon: TrendingUp,    label: 'Win' },
-  warning:     { color: '#DC2626', bg: 'rgba(220,38,38,0.08)',  icon: AlertTriangle,  label: 'Warning' },
-  opportunity: { color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', icon: Lightbulb,      label: 'Opportunity' },
-  tip:         { color: '#7C3AED', bg: 'rgba(124,58,237,0.08)', icon: Zap,            label: 'Tip' },
+// Mockup colors: WIN=success, OPPORTUNITY=warning, TIP=tertiary(purple), WARNING=danger
+const INSIGHT_CONFIG: Record<InsightType, { color: string; label: string }> = {
+  win:         { color: 'var(--success)',  label: 'Win' },
+  warning:     { color: 'var(--danger)',   label: 'Warning' },
+  opportunity: { color: 'var(--warning)',  label: 'Opportunity' },
+  tip:         { color: 'var(--tertiary)', label: 'Tip' },
 };
 
 /* ─── Chat suggestions ─── */
 
 const SUGGESTIONS = [
-  { icon: Sparkles, text: 'Give me a full marketing overview across all channels', category: 'Cross-Channel' },
-  { icon: TrendingUp, text: 'Compare my organic vs paid performance this month', category: 'Cross-Channel' },
-  { icon: Search, text: 'What are my top 10 keywords by clicks?', category: 'SEO' },
-  { icon: Target, text: 'How are my Google Ads and Meta Ads campaigns performing?', category: 'Paid' },
-  { icon: Zap, text: 'Give me 3 quick wins to improve my SEO', category: 'Strategy' },
-  { icon: Brain, text: 'What should I focus on this week?', category: 'Strategy' },
+  { icon: Target,     text: 'Give me a full marketing overview across all channels', emojiBg: 'rgba(255,0,102,0.1)' },
+  { icon: TrendingUp, text: 'Compare my organic vs paid performance this month',     emojiBg: 'rgba(0,212,170,0.1)' },
+  { icon: Search,     text: 'What are my top 10 keywords by clicks?',                 emojiBg: 'rgba(123,97,255,0.1)' },
+  { icon: Zap,        text: 'How are my Google Ads and Meta Ads campaigns performing?', emojiBg: 'rgba(255,138,0,0.1)' },
 ];
 
 type Message = { role: 'user' | 'assistant'; content: string; timestamp?: Date };
@@ -123,8 +123,7 @@ function CopyButton({ text }: { text: string }) {
 /* ─── Insights Tab ─── */
 
 function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
-  const { c, theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { c } = useTheme();
   const [insights, setInsights] = useState<Insight[]>([]);
   const [lastGenerated, setLastGenerated] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -176,13 +175,13 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
   // Loading skeleton
   if (loading) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
         {[1, 2, 3, 4].map(i => (
-          <div key={i} style={{ backgroundColor: c.bgCard, borderRadius: 12, padding: 20, border: `1px solid ${c.border}` }}>
-            <div style={{ height: 14, width: '40%', backgroundColor: c.surfaceElevated, borderRadius: 6, marginBottom: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
-            <div style={{ height: 18, width: '80%', backgroundColor: c.surfaceElevated, borderRadius: 6, marginBottom: 10, animation: 'pulse 1.5s ease-in-out infinite' }} />
-            <div style={{ height: 12, width: '100%', backgroundColor: c.surfaceElevated, borderRadius: 6, marginBottom: 6, animation: 'pulse 1.5s ease-in-out infinite' }} />
-            <div style={{ height: 12, width: '60%', backgroundColor: c.surfaceElevated, borderRadius: 6, animation: 'pulse 1.5s ease-in-out infinite' }} />
+          <div key={i} style={{ background: 'var(--surface)', borderRadius: 12, padding: 18, border: '1px solid var(--border)', borderLeft: '4px solid var(--border)' }}>
+            <div style={{ height: 12, width: '35%', background: 'var(--elevated)', borderRadius: 6, marginBottom: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
+            <div style={{ height: 16, width: '75%', background: 'var(--elevated)', borderRadius: 6, marginBottom: 10, animation: 'pulse 1.5s ease-in-out infinite' }} />
+            <div style={{ height: 12, width: '100%', background: 'var(--elevated)', borderRadius: 6, marginBottom: 6, animation: 'pulse 1.5s ease-in-out infinite' }} />
+            <div style={{ height: 12, width: '60%', background: 'var(--elevated)', borderRadius: 6, animation: 'pulse 1.5s ease-in-out infinite' }} />
           </div>
         ))}
       </div>
@@ -196,13 +195,13 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
         <div style={{ width: 64, height: 64, borderRadius: 16, background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
           <Sparkles size={28} color={c.accent} />
         </div>
-        <h3 style={{ fontSize: 18, fontWeight: 700, color: c.text, marginBottom: 8 }}>No insights yet</h3>
-        <p style={{ fontSize: 14, color: c.textSecondary, maxWidth: 400, lineHeight: 1.6, marginBottom: 24 }}>
-          Generate AI-powered insights from your marketing data. We'll analyze your traffic, keywords, and performance to find wins, warnings, and opportunities.
+        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No insights yet</h3>
+        <p style={{ fontSize: 14, color: 'var(--text-muted)', maxWidth: 400, lineHeight: 1.6, marginBottom: 24 }}>
+          Generate AI-powered insights from your marketing data. We&apos;ll analyze your traffic, keywords, and performance to find wins, warnings, and opportunities.
         </p>
         <button
           onClick={generateInsights}
-          style={{ padding: '12px 24px', borderRadius: 10, border: 'none', backgroundColor: c.accent, color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
+          style={{ padding: '12px 24px', borderRadius: 10, border: 'none', background: 'var(--primary)', color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
         >
           <Sparkles size={16} /> Generate Insights
         </button>
@@ -212,9 +211,9 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
 
   return (
     <div>
-      {/* Header bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 400, color: c.textMuted }}>
+      {/* Last Generated Info */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, padding: '0 4px' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-muted)' }}>
           {lastGenerated ? `Last generated: ${timeAgo(lastGenerated)}` : ''}
         </span>
         <button
@@ -222,19 +221,20 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
           disabled={generating}
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            padding: '8px 14px', borderRadius: 8,
-            border: `1px solid ${c.border}`,
+            padding: '6px 12px', borderRadius: 8,
+            border: '1px solid var(--border)',
             background: 'transparent',
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 13, fontWeight: 500,
-            color: generating ? c.textMuted : c.text,
+            color: generating ? 'var(--text-muted)' : 'var(--text-sec)',
+            fontSize: 12, fontWeight: 500,
+            fontFamily: 'var(--font-body)',
             cursor: generating ? 'not-allowed' : 'pointer',
+            transition: 'all 0.15s ease',
             opacity: generating ? 0.7 : 1,
           }}
-          onMouseEnter={e => { if (!generating) (e.currentTarget as HTMLButtonElement).style.backgroundColor = c.bgCardHover; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+          onMouseEnter={e => { if (!generating) { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--text)'; } }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = generating ? 'var(--text-muted)' : 'var(--text-sec)'; }}
         >
-          <RefreshCw size={13} style={{ transition: 'transform 0.6s ease', transform: generating ? 'rotate(360deg)' : 'rotate(0deg)' }} className={generating ? 'animate-spin' : ''} />
+          <RefreshCw size={14} className={generating ? 'animate-spin' : ''} />
           {generating ? 'Generating...' : 'Refresh Insights'}
         </button>
       </div>
@@ -243,114 +243,112 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
       {generating && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, marginBottom: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <RefreshCw size={24} color={c.accent} className="animate-spin" />
-            <p style={{ fontSize: 14, color: c.textSecondary }}>Analyzing your marketing data...</p>
+            <RefreshCw size={24} color="var(--primary)" className="animate-spin" />
+            <p style={{ fontSize: 14, color: 'var(--text-sec)' }}>Analyzing your marketing data...</p>
           </div>
         </div>
       )}
 
       {/* Insights grid */}
       {!generating && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, alignItems: 'stretch' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
           {insights.map(insight => {
             const config = INSIGHT_CONFIG[insight.type] || INSIGHT_CONFIG.tip;
-            const prioBg = insight.priority === 'high'
-              ? (isDark ? 'rgba(220,38,38,0.2)' : 'rgba(220,38,38,0.1)')
-              : insight.priority === 'medium'
-                ? (isDark ? 'rgba(245,158,11,0.2)' : 'rgba(245,158,11,0.1)')
-                : (isDark ? 'rgba(124,58,237,0.18)' : 'rgba(124,58,237,0.08)');
-            const prioColor = insight.priority === 'high'
-              ? (isDark ? '#FCA5A5' : '#DC2626')
-              : insight.priority === 'medium'
-                ? (isDark ? '#FCD34D' : '#F59E0B')
-                : c.textMuted;
+            const priorityLabel = insight.priority.toUpperCase();
+            const isPriorityHigh = insight.priority === 'high';
             return (
-              <div key={insight.id} style={{
-                backgroundColor: c.bgCard,
-                borderRadius: 12,
-                padding: 20,
-                border: `1px solid ${c.border}`,
-                borderLeft: `3px solid ${config.color}`,
-                display: 'flex', flexDirection: 'column',
-              }}>
-                {/* Type label + priority */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div
+                key={insight.id}
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderLeft: `4px solid ${config.color}`,
+                  borderRadius: 12,
+                  padding: 18,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.borderLeftColor = config.color; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.borderLeftColor = config.color; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                   <span style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    fontSize: 10, fontWeight: 700, letterSpacing: '0.02em',
+                    textTransform: 'uppercase',
                     color: config.color,
                   }}>{config.label}</span>
                   <span style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em',
+                    display: 'inline-flex', alignItems: 'center',
                     padding: '2px 8px', borderRadius: 4,
-                    background: prioBg, color: prioColor,
+                    fontSize: 10, fontWeight: 600,
+                    background: 'var(--elevated)',
+                    color: isPriorityHigh ? 'var(--danger)' : 'var(--text-muted)',
                   }}>
-                    {insight.priority}
+                    {priorityLabel}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h4 style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 15, fontWeight: 600, color: c.text,
-                  marginTop: 0, marginBottom: 6, lineHeight: 1.3,
-                }}>{insight.title}</h4>
+                <h3 style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 14, fontWeight: 700,
+                  color: 'var(--text)',
+                  marginBottom: 6, lineHeight: 1.3,
+                }}>{insight.title}</h3>
 
                 {/* Description */}
                 <p style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: 14, fontWeight: 400, color: c.textSecondary,
-                  lineHeight: 1.6, margin: '0 0 12px',
+                  fontSize: 12, color: 'var(--text-muted)',
+                  marginBottom: 12, lineHeight: 1.4,
                 }}>{insight.description}</p>
 
-                {/* Metric + Change badges */}
+                {/* Metric */}
                 {(insight.metric || insight.change) && (
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {insight.metric && (
                       <span style={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        fontSize: 12, fontWeight: 600,
-                        padding: '4px 10px', borderRadius: 6,
-                        background: c.bgCardHover, color: c.text,
-                        fontVariantNumeric: 'tabular-nums',
-                      }}>
-                        {insight.metric}
-                      </span>
+                        display: 'inline-flex', alignItems: 'center',
+                        padding: '4px 10px',
+                        background: 'var(--elevated)',
+                        borderRadius: 6,
+                        fontSize: 11, color: 'var(--text)',
+                        fontWeight: 500,
+                      }}>{insight.metric}</span>
                     )}
                     {insight.change && (
                       <span style={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        fontSize: 12, fontWeight: 600,
-                        padding: '4px 10px', borderRadius: 6,
-                        background: insight.change.startsWith('+') ? (isDark ? 'rgba(5,150,105,0.2)' : 'rgba(5,150,105,0.1)') : insight.change.startsWith('-') ? (isDark ? 'rgba(220,38,38,0.2)' : 'rgba(220,38,38,0.1)') : c.bgCardHover,
-                        color: insight.change.startsWith('+') ? (isDark ? '#34D399' : '#059669') : insight.change.startsWith('-') ? (isDark ? '#FCA5A5' : '#DC2626') : c.textMuted,
-                        fontVariantNumeric: 'tabular-nums',
-                      }}>
-                        {insight.change}
-                      </span>
+                        display: 'inline-flex', alignItems: 'center',
+                        padding: '4px 10px',
+                        background: 'var(--elevated)',
+                        borderRadius: 6,
+                        fontSize: 11, fontWeight: 500,
+                        color: insight.change.startsWith('+') ? 'var(--success)' : insight.change.startsWith('-') ? 'var(--danger)' : 'var(--text-muted)',
+                      }}>{insight.change}</span>
                     )}
                   </div>
                 )}
 
-                {/* Action link */}
-                {insight.action && (() => {
-                  const cfg = INSIGHT_CONFIG[insight.type];
-                  return (
-                    <button style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: 13, fontWeight: 600, color: cfg.color,
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      padding: '10px 0 0', marginTop: 'auto',
-                      borderTop: `1px solid ${c.border}`,
-                      width: '100%', textAlign: 'left',
-                    }}>
-                      <ArrowRight size={14} />
-                      <span style={{ lineHeight: 1.5 }}>{insight.action}</span>
-                    </button>
-                  );
-                })()}
+                {/* Action */}
+                {insight.action && (
+                  <button style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    marginTop: 12,
+                    fontSize: 12, fontWeight: 500,
+                    color: 'var(--primary)',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    padding: 0, textAlign: 'left',
+                    transition: 'opacity 0.15s',
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = '0.8'; }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+                  >
+                    <span>{insight.action}</span>
+                    <ArrowRight size={13} />
+                  </button>
+                )}
               </div>
             );
           })}
@@ -363,8 +361,7 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
 /* ─── Main Page ─── */
 
 export default function AIPage() {
-  const { c, theme } = useTheme();
-  const isDark = theme === 'dark';
+  const { c } = useTheme();
   const { workspace } = useWorkspaceCtx();
   const { integrations } = useIntegrations(workspace?.id);
   const [activeTab, setActiveTab] = useState<'insights' | 'chat'>('insights');
@@ -458,237 +455,238 @@ export default function AIPage() {
   return (
     <PageShell title="AI Assistant" description="AI-powered insights and chat for your marketing data" icon={Brain} badge="Claude AI">
       {/* Tab bar */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderBottom: `1px solid ${c.border}` }}>
-        {(['insights', 'chat'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: '10px 20px',
-              fontSize: 14,
-              fontWeight: activeTab === tab ? 600 : 400,
-              color: activeTab === tab ? c.accent : c.textMuted,
-              background: 'none',
-              border: 'none',
-              borderBottom: activeTab === tab ? `2px solid ${c.accent}` : '2px solid transparent',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              marginBottom: -1,
-            }}
-          >
-            {tab === 'insights' ? <Sparkles size={15} /> : <Brain size={15} />}
-            {tab === 'insights' ? 'Insights' : 'Chat'}
-          </button>
-        ))}
+      <div className="lx-tabs" style={{ marginBottom: 20 }}>
+        <button
+          className={`lx-tab${activeTab === 'insights' ? ' active' : ''}`}
+          onClick={() => setActiveTab('insights')}
+          type="button"
+        >
+          <Sparkles size={16} />
+          Insights
+        </button>
+        <button
+          className={`lx-tab${activeTab === 'chat' ? ' active' : ''}`}
+          onClick={() => setActiveTab('chat')}
+          type="button"
+        >
+          <Brain size={16} />
+          Chat
+        </button>
       </div>
 
       {/* Insights tab */}
-      {activeTab === 'insights' && <InsightsTab workspaceId={workspace?.id} />}
+      {activeTab === 'insights' && (
+        <>
+          {/* Data sources bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 16px', borderRadius: 10, background: 'var(--elevated)', border: '1px solid var(--border)', marginBottom: 20, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-sec)' }}>AI has access to:</span>
+            {hasData ? connectedSources.map(s => {
+              const key = s.toLowerCase();
+              const pill = key.includes('meta')
+                ? { label: 'Meta Ads', color: '#0891B2' }
+                : key.includes('ga4') || key.includes('analytics')
+                ? { label: 'GA4', color: 'var(--warning)' }
+                : key.includes('gsc') || key.includes('search')
+                ? { label: 'GSC', color: 'var(--success)' }
+                : key.includes('google_ads') || key.includes('google ads')
+                ? { label: 'Google Ads', color: 'var(--success)' }
+                : { label: s.replace('_', ' ').toUpperCase(), color: 'var(--primary)' };
+              return (
+                <span key={s} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: pill.color, flexShrink: 0 }} />
+                  {pill.label}
+                </span>
+              );
+            }) : (
+              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>No data connected yet — connect integrations in Settings</span>
+            )}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--secondary)', marginLeft: 'auto' }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--secondary)', animation: 'pulse 2s infinite' }} />
+              Live data context
+            </span>
+          </div>
+
+          <InsightsTab workspaceId={workspace?.id} />
+        </>
+      )}
 
       {/* Chat tab */}
       {activeTab === 'chat' && (
-        <>
-          {/* Data context bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '10px 16px', borderRadius: 10, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, flexWrap: 'wrap' }}>
-            {hasData ? <Wifi size={14} color="#10B981" /> : <WifiOff size={14} color={c.textMuted} />}
-            {hasData ? (
-              <>
-                <span style={{ fontSize: 12, color: c.textSecondary }}>AI has access to:</span>
-                {connectedSources.map(s => {
-                  const key = s.toLowerCase();
-                  const pill = key.includes('meta')
-                    ? { label: 'Meta Ads', color: '#1877F2', bg: isDark ? 'rgba(24,119,242,0.15)' : '#EFF6FF' }
-                    : key.includes('ga4') || key.includes('analytics')
-                    ? { label: 'GA4', color: '#E37400', bg: isDark ? 'rgba(227,116,0,0.15)' : '#FFF7ED' }
-                    : key.includes('gsc') || key.includes('search')
-                    ? { label: 'GSC', color: '#34A853', bg: isDark ? 'rgba(52,168,83,0.15)' : '#F0FDF4' }
-                    : key.includes('google_ads') || key.includes('google ads')
-                    ? { label: 'Google Ads', color: '#4285F4', bg: isDark ? 'rgba(66,133,244,0.15)' : '#EFF6FF' }
-                    : { label: s.replace('_', ' ').toUpperCase(), color: c.accent, bg: c.accentSubtle };
-                  return (
-                    <span key={s} style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: 11, fontWeight: 600,
-                      padding: '3px 9px', borderRadius: 20,
-                      background: pill.bg, color: pill.color,
-                    }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: pill.color }} />
-                      {pill.label}
-                    </span>
-                  );
-                })}
-              </>
-            ) : (
-              <span style={{ fontSize: 12, color: c.textSecondary }}>
-                No data connected yet — connect integrations in Settings for data-aware answers
-              </span>
-            )}
-            <Database size={12} color={c.textMuted} style={{ marginLeft: 'auto' }} />
-            <span style={{ fontSize: 11, color: c.textMuted }}>Live data context</span>
-          </div>
-
-          <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 12, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 320px)', minHeight: 500, overflow: 'hidden' }}>
-            {/* Chat area */}
-            <div style={{ flex: 1, padding: 20, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-              {messages.length === 0 ? (
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                  <div style={{ width: 64, height: 64, borderRadius: 16, background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                    <Brain size={28} color={c.accent} />
-                  </div>
-                  <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>What can I help you with?</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, maxWidth: 560, width: '100%' }}>
-                    {SUGGESTIONS.slice(0, 4).map(s => {
-                      const Icon = s.icon;
-                      return (
-                        <button
-                          key={s.text}
-                          onClick={() => { setInput(s.text); inputRef.current?.focus(); }}
-                          style={{
-                            minHeight: 48,
-                            padding: '12px 16px', borderRadius: 12,
-                            border: '1px solid var(--border-default)',
-                            backgroundColor: 'var(--bg-card)',
-                            color: 'var(--text-primary)',
-                            fontSize: 13, fontWeight: 500,
-                            cursor: 'pointer', textAlign: 'left', lineHeight: 1.4,
-                            fontFamily: "'DM Sans', sans-serif",
-                            display: 'flex', alignItems: 'center', gap: 10,
-                            transition: 'border-color 150ms, background 150ms, transform 150ms',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.backgroundColor = 'rgba(124,58,237,0.04)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}
-                        >
-                          <span style={{ width: 28, height: 28, borderRadius: 8, background: c.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            <Icon size={15} color={c.accent} />
-                          </span>
-                          <span>{s.text}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 300px)', minHeight: 520, overflow: 'hidden' }}>
+          {/* Chat area */}
+          <div style={{ flex: 1, padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+            {messages.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', textAlign: 'center', flex: 1 }}>
+                {/* Lumi avatar */}
+                <div style={{ width: 120, height: 120, marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src="/lumi-avatar.svg" alt="Lumi" width={120} height={120} style={{ display: 'block' }} />
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {messages.map((msg, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: 10 }}>
-                      {msg.role === 'assistant' && (
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #7C3AED, #0891B2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2, fontWeight: 700, fontSize: 13, color: '#FFFFFF', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                          L
-                        </div>
-                      )}
-                      <div style={{ maxWidth: msg.role === 'user' ? '70%' : '75%' }}>
-                        <div style={{
-                          padding: '12px 16px',
-                          borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                          backgroundColor: msg.role === 'user' ? '#7C3AED' : 'var(--bg-card-secondary)',
-                        }}>
-                          {msg.role === 'user' ? (
-                            <p style={{ color: '#FFFFFF', fontSize: 14, lineHeight: 1.5, margin: 0, fontFamily: "'DM Sans', sans-serif" }}>{msg.content}</p>
-                          ) : msg.content ? (
-                            <MarkdownRenderer content={msg.content} />
-                          ) : (
-                            <span style={{ color: c.textSecondary, fontSize: 14 }}>&#9679;&#9679;&#9679;</span>
-                          )}
-                          {msg.role === 'assistant' && streaming && i === messages.length - 1 && msg.content && (
-                            <span style={{ display: 'inline-block', width: 2, height: 14, backgroundColor: c.accent, marginLeft: 2, verticalAlign: 'middle' }} />
-                          )}
-                        </div>
-                        {msg.role === 'assistant' && msg.content && !streaming && (
-                          <div style={{ display: 'flex', gap: 4, marginTop: 4, paddingLeft: 4 }}>
-                            <CopyButton text={msg.content} />
-                            <span style={{ fontSize: 11, color: c.textMuted, alignSelf: 'center' }}>
-                              {msg.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
+
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--text)', marginBottom: 24, letterSpacing: '-0.02em' }}>
+                  What can I help you with?
+                </h2>
+
+                {/* Suggested Prompts Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, maxWidth: 600, width: '100%', marginBottom: 8 }}>
+                  {SUGGESTIONS.map(s => {
+                    const Icon = s.icon;
+                    return (
+                      <button
+                        key={s.text}
+                        onClick={() => { setInput(s.text); inputRef.current?.focus(); }}
+                        type="button"
+                        style={{
+                          background: 'var(--surface)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 12,
+                          padding: 16,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 12,
+                          textAlign: 'left',
+                          transition: 'all 0.2s ease',
+                          fontFamily: 'var(--font-body)',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                      >
+                        <span style={{ width: 32, height: 32, borderRadius: 8, background: s.emojiBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Icon size={16} color="var(--primary)" />
+                        </span>
+                        <span style={{ fontSize: 12, color: 'var(--text)', fontWeight: 500, lineHeight: 1.4 }}>{s.text}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {messages.map((msg, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: 10 }}>
+                    {msg.role === 'assistant' && (
+                      <img src="/lumi-avatar.svg" alt="Lumi" width={32} height={32} style={{ borderRadius: '50%', flexShrink: 0, marginTop: 2 }} />
+                    )}
+                    <div style={{ maxWidth: msg.role === 'user' ? '70%' : '75%' }}>
+                      <div style={{
+                        padding: '12px 16px',
+                        borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                        background: msg.role === 'user' ? 'var(--primary)' : 'var(--elevated)',
+                      }}>
+                        {msg.role === 'user' ? (
+                          <p style={{ color: '#FFFFFF', fontSize: 14, lineHeight: 1.5, margin: 0, fontFamily: 'var(--font-body)' }}>{msg.content}</p>
+                        ) : msg.content ? (
+                          <MarkdownRenderer content={msg.content} />
+                        ) : (
+                          <span style={{ color: c.textSecondary, fontSize: 14 }}>&#9679;&#9679;&#9679;</span>
+                        )}
+                        {msg.role === 'assistant' && streaming && i === messages.length - 1 && msg.content && (
+                          <span style={{ display: 'inline-block', width: 2, height: 14, background: 'var(--primary)', marginLeft: 2, verticalAlign: 'middle' }} />
                         )}
                       </div>
+                      {msg.role === 'assistant' && msg.content && !streaming && (
+                        <div style={{ display: 'flex', gap: 4, marginTop: 4, paddingLeft: 4 }}>
+                          <CopyButton text={msg.content} />
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)', alignSelf: 'center' }}>
+                            {msg.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  ))}
-                  {loading && (
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 8, background: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: 13, color: '#FFFFFF', fontFamily: 'var(--font-display)' }}>
-                        L
-                      </div>
-                      <div style={{ padding: '12px 16px', borderRadius: '18px 18px 18px 4px', backgroundColor: 'var(--bg-card-secondary)', color: 'var(--text-primary)', fontSize: 13 }} className="animate-pulse">
-                        Lumi is thinking...
-                      </div>
+                  </div>
+                ))}
+                {loading && (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <img src="/lumi-avatar.svg" alt="Lumi" width={32} height={32} style={{ borderRadius: '50%', flexShrink: 0 }} />
+                    <div style={{ padding: '12px 16px', borderRadius: '18px 18px 18px 4px', background: 'var(--elevated)', color: 'var(--text)', fontSize: 13 }} className="animate-pulse">
+                      Lumi is thinking...
                     </div>
-                  )}
-                  <div ref={bottomRef} />
-                </div>
-              )}
-            </div>
-
-            {error && (
-              <div style={{ margin: '0 24px', padding: '10px 16px', backgroundColor: c.dangerSubtle, border: `1px solid ${c.dangerBorder}`, borderRadius: 8, color: c.danger, fontSize: 13 }}>
-                {error}
+                  </div>
+                )}
+                <div ref={bottomRef} />
               </div>
             )}
+          </div>
 
-            {/* Input bar */}
-            <div style={{ padding: 16, borderTop: '1px solid var(--border-default)', backgroundColor: 'var(--bg-card)' }}>
-              {messages.length > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-                  <button
-                    onClick={() => { setMessages([]); try { localStorage.removeItem('lumnix-chat-history'); } catch {} }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border-default)', backgroundColor: 'transparent', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--bg-card-secondary)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
-                  >
-                    <Trash2 size={11} /> Clear chat
-                  </button>
-                </div>
-              )}
-              <div style={{ position: 'relative' }}>
-                <input
-                  ref={inputRef}
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-                  placeholder="Ask anything about your marketing data..."
-                  disabled={!isIdle}
-                  style={{
-                    width: '100%', minHeight: 44,
-                    padding: '10px 50px 10px 14px',
-                    borderRadius: 10,
-                    border: '1px solid var(--border-default)',
-                    backgroundColor: 'var(--bg-page)',
-                    color: 'var(--text-primary)',
-                    fontSize: 14, fontFamily: "'DM Sans', sans-serif",
-                    opacity: !isIdle ? 0.7 : 1,
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
-                  onFocus={e => { e.currentTarget.style.borderColor = '#7C3AED'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)'; }}
-                  onBlur={e => { e.currentTarget.style.borderColor = 'var(--border-default)'; e.currentTarget.style.boxShadow = 'none'; }}
-                />
+          {error && (
+            <div style={{ margin: '0 24px', padding: '10px 16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: 'var(--danger)', fontSize: 13 }}>
+              {error}
+            </div>
+          )}
+
+          {/* Input bar */}
+          <div style={{ padding: 16, borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+            {messages.length > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
                 <button
-                  onClick={() => sendMessage(input)}
-                  disabled={!isIdle || !input.trim()}
-                  style={{
-                    position: 'absolute', right: 10, bottom: 6,
-                    width: 32, height: 32, borderRadius: 8,
-                    border: 'none',
-                    backgroundColor: (!isIdle || !input.trim()) ? 'var(--border-default)' : '#7C3AED',
-                    color: 'white',
-                    cursor: (!isIdle || !input.trim()) ? 'not-allowed' : 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                  onMouseEnter={e => { if (isIdle && input.trim()) e.currentTarget.style.backgroundColor = '#6D28D9'; }}
-                  onMouseLeave={e => { if (isIdle && input.trim()) e.currentTarget.style.backgroundColor = '#7C3AED'; }}
+                  onClick={() => { setMessages([]); try { localStorage.removeItem('lumnix-chat-history'); } catch {} }}
+                  type="button"
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--font-body)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--elevated)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                 >
-                  <Send size={16} />
+                  <Trash2 size={11} /> Clear chat
                 </button>
               </div>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, textAlign: 'center', fontFamily: "'DM Sans', sans-serif" }}>
-                Powered by Claude AI · Context: {connectedSources.length} data source{connectedSources.length !== 1 ? 's' : ''} connected
-              </p>
+            )}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
+                placeholder="Ask anything about your marketing data..."
+                disabled={!isIdle}
+                style={{
+                  flex: 1, minHeight: 40,
+                  padding: '10px 14px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--elevated)',
+                  color: 'var(--text)',
+                  fontSize: 13, fontFamily: 'var(--font-body)',
+                  opacity: !isIdle ? 0.7 : 1,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--primary)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+              />
+              <button
+                onClick={() => sendMessage(input)}
+                disabled={!isIdle || !input.trim()}
+                type="button"
+                style={{
+                  width: 36, height: 36, borderRadius: 8,
+                  border: 'none',
+                  background: (!isIdle || !input.trim()) ? 'var(--border)' : 'var(--primary)',
+                  color: 'white',
+                  cursor: (!isIdle || !input.trim()) ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={e => { if (isIdle && input.trim()) e.currentTarget.style.background = 'var(--primary-hover)'; }}
+                onMouseLeave={e => { if (isIdle && input.trim()) e.currentTarget.style.background = 'var(--primary)'; }}
+              >
+                <Send size={18} />
+              </button>
             </div>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 12, textAlign: 'center', fontFamily: 'var(--font-body)' }}>
+              Powered by Claude AI · Context: {connectedSources.length} data source{connectedSources.length !== 1 ? 's' : ''} connected
+            </p>
+            {!hasData && (
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)' }}>
+                <WifiOff size={11} /> No integrations connected
+              </p>
+            )}
+            {hasData && (
+              <p style={{ fontSize: 11, color: 'var(--secondary)', marginTop: 4, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontFamily: 'var(--font-body)' }}>
+                <Wifi size={11} /> <Database size={11} /> Live data context active
+              </p>
+            )}
           </div>
-        </>
+        </div>
       )}
     </PageShell>
   );

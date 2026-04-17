@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DollarSign, TrendingUp, Target, MousePointerClick, RefreshCw, AlertCircle, BarChart3, Zap, Star } from 'lucide-react';
+import { DollarSign, RefreshCw, AlertCircle, MousePointerClick, TrendingUp } from 'lucide-react';
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useIntegrations, useGoogleAdsData } from '@/lib/hooks';
@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { formatNumber, formatINR, formatROAS } from '@/lib/format';
+import { Sparkline } from '@/components/Sparkline';
 
 function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: string; label: string; value: string; sub?: string }) {
   const { c } = useTheme();
@@ -28,7 +29,16 @@ function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: 
   );
 }
 
-/* StatusBadge now imported from @/components/ui/status-badge */
+/* Inline Google Ads brand logo (colored) */
+function GoogleAdsLogo({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 192 192" fill="none" aria-hidden="true">
+      <path d="M8.6 129.4l52.9-91.6c6.3-10.9 20.3-14.6 31.2-8.3s14.6 20.3 8.3 31.2L48 152.3c-6.3 10.9-20.3 14.6-31.2 8.3-10.9-6.3-14.6-20.3-8.2-31.2z" fill="#FBBC04" />
+      <path d="M183.4 129.4l-52.9-91.6c-6.3-10.9-20.3-14.6-31.2-8.3-10.9 6.3-14.6 20.3-8.3 31.2l52.9 91.6c6.3 10.9 20.3 14.6 31.2 8.3 10.9-6.3 14.6-20.3 8.3-31.2z" fill="#4285F4" />
+      <circle cx="38.7" cy="152.5" r="31.7" fill="#34A853" />
+    </svg>
+  );
+}
 
 export default function GoogleAdsPage() {
   const { c, theme } = useTheme();
@@ -43,11 +53,20 @@ export default function GoogleAdsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const integration = integrations.find(i => i.provider === 'google_ads');
+  const connected = !!integration;
   const loading = wsLoading || intLoading;
 
   const campaigns = adsData?.campaigns || [];
   const totals = adsData?.totals;
+  const daily: any[] = adsData?.daily || [];
   const hasData = campaigns.length > 0;
+
+  const dailySpend = daily.map((d: any) => d.spend || 0);
+  const dailyClicksArr = daily.map((d: any) => d.clicks || 0);
+  const dailyCPC = daily.map((d: any) => (d.clicks > 0 ? (d.spend || 0) / d.clicks : 0));
+  const dailyConversions = daily.map((d: any) => d.conversions || 0);
+  // ROAS daily not exposed by API — fall back to spend trend as requested
+  const dailyROAS = dailySpend;
 
   async function handleSync() {
     if (!integration || !workspace) return;
@@ -80,39 +99,46 @@ export default function GoogleAdsPage() {
   const avgCPC = totals?.avg_cpc || 0;
   const roas = totals?.roas || 0;
 
+  // Ad group mix for donut (from campaign types)
+  const enabledCampaigns = campaigns.filter((camp: any) => camp.status === 'ENABLED').length;
+
   return (
     <PageShell title="Google Ads" description="Campaign performance & spend tracking" icon={DollarSign}>
-
       {loading || dataLoading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
-          {[1,2,3,4,5,6].map(i => (
-            <Skeleton key={i} className="h-[90px] w-full rounded-xl" />
+          {[1, 2, 3, 4].map(i => (
+            <Skeleton key={i} className="h-[120px] w-full rounded-xl" />
           ))}
         </div>
-      ) : !integration ? (
-        <EmptyState
-          icon={DollarSign}
-          title="Connect Google Ads"
-          description="Link your Google Ads account to track campaign performance, spend, ROAS, and get AI-powered optimization recommendations."
-          actionLabel="Connect in Settings"
-          onAction={() => router.push('/dashboard/settings')}
-        />
+      ) : !connected ? (
+        <div className="lx-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
+          <div style={{ width: 56, height: 56, borderRadius: 12, background: 'rgba(66,133,244,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <GoogleAdsLogo size={28} />
+          </div>
+          <div className="lx-card-title" style={{ fontSize: 18, marginBottom: 8 }}>Connect Google Ads</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20, maxWidth: 420, margin: '0 auto 20px' }}>
+            Link your Google Ads account to track campaign performance, spend, ROAS, and get AI-powered optimization recommendations.
+          </div>
+          <Button onClick={() => router.push('/dashboard/settings')}>
+            Connect in Settings
+          </Button>
+        </div>
       ) : (
         <>
           {/* Header row */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: c.textMuted }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <DateRangePicker value={days} onChange={setDays} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: c.textMuted }}>
-              {integration.last_sync_at ? (
-                <>
-                  Last synced {new Date(integration.last_sync_at).toLocaleString()}
-                  {Date.now() - new Date(integration.last_sync_at).getTime() > 24 * 60 * 60 * 1000 && (
-                    <span style={{ fontSize: 11, color: c.warning, fontWeight: 600 }}>Stale</span>
-                  )}
-                </>
-              ) : 'Never synced'}
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                {integration?.last_sync_at ? (
+                  <>
+                    Last synced {new Date(integration.last_sync_at).toLocaleString()}
+                    {Date.now() - new Date(integration.last_sync_at).getTime() > 24 * 60 * 60 * 1000 && (
+                      <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--warning)', fontWeight: 600 }}>Stale</span>
+                    )}
+                  </>
+                ) : 'Never synced'}
+              </div>
             </div>
             <Button variant="outline" size="sm" onClick={handleSync} disabled={syncing}>
               <RefreshCw size={14} style={{ animation: syncing ? 'spin 1s linear infinite' : 'none' }} />
@@ -138,159 +164,156 @@ export default function GoogleAdsPage() {
 
           {/* No data yet */}
           {!hasData && !error && (
-            <div style={{ backgroundColor: c.bgCard, border: `1px dashed ${c.border}`, borderRadius: 14, padding: '48px 24px', textAlign: 'center', marginBottom: 20 }}>
-              <BarChart3 size={32} color={c.borderStrong} style={{ margin: '0 auto 12px' }} />
-              <div style={{ fontSize: 15, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>No campaign data yet</div>
-              <div style={{ fontSize: 13, color: c.textMuted, marginBottom: 20 }}>Click "Sync Now" to pull your Google Ads campaigns.</div>
+            <div className="lx-card" style={{ padding: '48px 24px', textAlign: 'center', borderStyle: 'dashed' }}>
+              <GoogleAdsLogo size={32} />
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-sec)', margin: '12px 0 6px' }}>No campaign data yet</div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Click &quot;Sync Now&quot; to pull your Google Ads campaigns.</div>
             </div>
           )}
 
-          {/* Stats cards */}
+          {/* KPI Grid — mono mockup style */}
           {hasData && (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 20 }}>
-                {/* Total Spend */}
-                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Spend</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    {formatINR(totalSpend, 2)}
+              <div className="lx-kpi-grid">
+                {/* Spend */}
+                <div className="lx-kpi-card">
+                  <div className="lx-kpi-top">
+                    <span className="lx-kpi-label">Spend</span>
+                    <div className="lx-icon-pill lx-icon-pill--ads">
+                      <GoogleAdsLogo />
+                    </div>
                   </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>Last {days} days</div>
-                </div>
-                {/* Total Clicks */}
-                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Total Clicks</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    {formatNumber(totalClicks)}
+                  <div className="lx-kpi-value">{totalSpend > 0 ? formatINR(totalSpend, 0) : '—'}</div>
+                  <Sparkline data={dailySpend} color="#EF4444" className="lx-sparkline" ariaLabel="Daily spend trend" />
+                  <div className="lx-kpi-footer">
+                    <span className="lx-kpi-compare">Last {days} days</span>
                   </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{formatNumber(totalImpressions)} impressions</div>
                 </div>
+
+                {/* Clicks */}
+                <div className="lx-kpi-card">
+                  <div className="lx-kpi-top">
+                    <span className="lx-kpi-label">Clicks</span>
+                    <div className="lx-icon-pill lx-icon-pill--ads">
+                      <GoogleAdsLogo />
+                    </div>
+                  </div>
+                  <div className="lx-kpi-value">{totalClicks > 0 ? formatNumber(totalClicks) : '—'}</div>
+                  <Sparkline data={dailyClicksArr} color="var(--primary)" className="lx-sparkline" ariaLabel="Daily clicks trend" />
+                  <div className="lx-kpi-footer">
+                    <span className="lx-kpi-compare">{totalImpressions > 0 ? `${formatNumber(totalImpressions)} impressions` : '—'}</span>
+                  </div>
+                </div>
+
+                {/* CPC */}
+                <div className="lx-kpi-card">
+                  <div className="lx-kpi-top">
+                    <span className="lx-kpi-label">CPC</span>
+                    <div className="lx-icon-pill lx-icon-pill--ads">
+                      <GoogleAdsLogo />
+                    </div>
+                  </div>
+                  <div className="lx-kpi-value">{avgCPC > 0 ? `₹${avgCPC.toFixed(2)}` : '—'}</div>
+                  <Sparkline data={dailyCPC} color="#4285F4" className="lx-sparkline" ariaLabel="Daily CPC trend" />
+                  <div className="lx-kpi-footer">
+                    <span className="lx-kpi-compare">Per click avg</span>
+                  </div>
+                </div>
+
                 {/* Conversions */}
-                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Conversions</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    {formatNumber(Math.round(totalConversions))}
+                <div className="lx-kpi-card">
+                  <div className="lx-kpi-top">
+                    <span className="lx-kpi-label">Conversions</span>
+                    <div className="lx-icon-pill lx-icon-pill--conv">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden="true">
+                        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                        <polyline points="16 7 22 7 22 13" />
+                      </svg>
+                    </div>
                   </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{formatINR(totalConvValue)} value</div>
-                </div>
-                {/* ROAS — hero */}
-                <div style={{
-                  background: isDark ? 'rgba(5,150,105,0.12)' : 'rgba(5,150,105,0.06)',
-                  border: isDark ? '1px solid rgba(5,150,105,0.4)' : '1px solid #A7F3D0',
-                  borderRadius: 12, padding: 18,
-                }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, color: isDark ? '#6EE7B7' : '#065F46', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>ROAS</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 32, fontWeight: 700, color: isDark ? '#34D399' : '#065F46', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    {formatROAS(roas, totalConvValue > 0)}
+                  <div className="lx-kpi-value">{totalConversions > 0 ? formatNumber(Math.round(totalConversions)) : '—'}</div>
+                  <Sparkline data={dailyConversions} color="#10B981" className="lx-sparkline" ariaLabel="Daily conversions trend" />
+                  <div className="lx-kpi-footer">
+                    <span className="lx-kpi-compare">{totalConvValue > 0 ? `${formatINR(totalConvValue, 0)} value` : '—'}</span>
                   </div>
-                  <span style={{
-                    display: 'inline-block', marginTop: 6,
-                    padding: '2px 10px', borderRadius: 20,
-                    background: isDark ? 'rgba(5,150,105,0.25)' : '#DCFCE7',
-                    color: isDark ? '#6EE7B7' : '#166534',
-                    fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600,
-                  }}>
-                    {roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : 'Losing money'}
-                  </span>
-                </div>
-                {/* Avg CPC */}
-                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Avg CPC</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: avgCPC < 5 ? (isDark ? '#34D399' : '#059669') : c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    ₹{avgCPC.toFixed(2)}
-                  </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>Per click average</div>
-                </div>
-                {/* Campaigns */}
-                <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, padding: 18 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Campaigns</div>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 700, color: c.text, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                    {campaigns.length}
-                  </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 4 }}>{campaigns.filter((c: any) => c.status === 'ENABLED').length} active</div>
                 </div>
               </div>
 
-              {/* Top performer highlight */}
-              {(() => {
-                const best = [...campaigns].filter(c => c.roas > 0).sort((a, b) => b.roas - a.roas)[0];
-                if (!best) return null;
-                return (
-                  <div style={{
-                    background: isDark ? 'rgba(5,150,105,0.1)' : 'rgba(5,150,105,0.05)',
-                    border: isDark ? '1px solid rgba(5,150,105,0.3)' : '1px solid #A7F3D0',
-                    borderLeft: '3px solid #059669',
-                    borderRadius: 12, padding: '14px 18px', marginBottom: 16,
-                    display: 'flex', alignItems: 'center', gap: 14,
-                  }}>
-                    <Star size={18} color={isDark ? '#34D399' : '#059669'} fill={isDark ? '#34D399' : '#059669'} style={{ flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 700, color: isDark ? '#6EE7B7' : '#065F46', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Best ROAS</div>
-                      <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 600, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{best.campaign_name}</div>
-                      <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: c.textMuted, marginTop: 2 }}>
-                        <span style={{ color: isDark ? '#34D399' : '#059669', fontWeight: 700 }}>{formatROAS(best.roas, true)}</span>
-                        {' · '}{formatINR(best.cost || 0, 2)} spend · {formatNumber(best.clicks || 0)} clicks · {formatNumber(Math.round(best.conversions || 0))} conversions
-                      </div>
+              {/* ROAS strip */}
+              <div className="lx-card" style={{ marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(16,185,129,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <TrendingUp size={20} color="#10B981" />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>ROAS</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+                      {formatROAS(roas, totalConvValue > 0)}
                     </div>
                   </div>
-                );
-              })()}
+                </div>
+                <span className={`lx-pill ${roas >= 3 ? 'lx-pill--success' : roas >= 1 ? 'lx-pill--info' : 'lx-pill--primary'}`}>
+                  {roas >= 3 ? 'Healthy' : roas >= 1 ? 'Breakeven' : roas > 0 ? 'Losing money' : '—'}
+                </span>
+              </div>
 
-              {/* Campaign table */}
-              {(() => {
-                const sortedCampaigns = [...campaigns].sort((a, b) => (b.cost || 0) - (a.cost || 0));
-                const maxSpend = Math.max(...sortedCampaigns.map(c => c.cost || 0));
-                return (
-                  <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 14, padding: 24 }}>
-                    <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 600, color: c.text, marginBottom: 16 }}>Campaigns</h2>
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 700 }}>
-                        <caption className="sr-only">Google Ads campaign performance</caption>
-                        <thead>
-                          <tr>
-                            {['Campaign', 'Status', 'Spend ↓', 'Clicks', 'Impressions', 'Conversions', 'CPC', 'ROAS'].map(h => (
-                              <th key={h} scope="col" style={{ textAlign: 'left', fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', paddingBottom: 10, borderBottom: `1px solid ${c.border}`, paddingRight: 12, whiteSpace: 'nowrap' }}>{h}</th>
-                            ))}
+              {/* Daily Spend vs Conversions chart (static mockup — real data pending) */}
+              <div className="lx-card" style={{ marginBottom: 24 }}>
+                <div className="lx-card-header">
+                  <span className="lx-card-title">Daily Spend vs Conversions</span>
+                  <span className="lx-card-action">View details →</span>
+                </div>
+                <div className="lx-chart-area">
+                  <Sparkline data={dailyROAS} color="var(--primary)" width={600} height={200} ariaLabel="Daily spend trend" />
+                </div>
+                <div className="lx-chart-legend">
+                  <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#4285F4' }} />Daily Spend</span>
+                  <span className="lx-legend-item"><span className="lx-legend-dot" style={{ background: '#34A853' }} />Conversions</span>
+                </div>
+              </div>
+
+              {/* Campaign Performance table */}
+              <div className="lx-card" style={{ marginBottom: 24 }}>
+                <div className="lx-card-header">
+                  <span className="lx-card-title">Campaign Performance</span>
+                  <span className="lx-pill lx-pill--primary">{enabledCampaigns} active</span>
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="lx-table">
+                    <caption className="sr-only">Google Ads campaign performance</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Campaign</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Spend</th>
+                        <th scope="col">Clicks</th>
+                        <th scope="col">Impressions</th>
+                        <th scope="col">Conversions</th>
+                        <th scope="col">CPC</th>
+                        <th scope="col">ROAS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[...campaigns].sort((a: any, b: any) => (b.cost || 0) - (a.cost || 0)).map((camp: any, i: number) => {
+                        const cRoas = camp.roas > 0 ? `${camp.roas.toFixed(2)}x` : '—';
+                        const cCpc = camp.avg_cpc > 0 ? `₹${camp.avg_cpc.toFixed(2)}` : '—';
+                        return (
+                          <tr key={camp.campaign_id || i}>
+                            <td><strong>{camp.campaign_name || '—'}</strong></td>
+                            <td><StatusBadge status={camp.status} /></td>
+                            <td>{camp.cost > 0 ? formatINR(camp.cost, 0) : '—'}</td>
+                            <td>{camp.clicks > 0 ? formatNumber(camp.clicks) : '—'}</td>
+                            <td>{camp.impressions > 0 ? formatNumber(camp.impressions) : '—'}</td>
+                            <td>{camp.conversions > 0 ? formatNumber(Math.round(camp.conversions)) : '—'}</td>
+                            <td>{cCpc}</td>
+                            <td>{cRoas}</td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {sortedCampaigns.map((camp: any, i: number) => {
-                            const cRoas = camp.roas > 0 ? camp.roas.toFixed(2) : '—';
-                            const cCpc = camp.avg_cpc > 0 ? camp.avg_cpc.toFixed(2) : '—';
-                            const roasVal = parseFloat(cRoas as string);
-                            const roasColor = roasVal >= 3 ? (isDark ? '#34D399' : '#065F46') : roasVal >= 1 ? '#F59E0B' : '#DC2626';
-                            const spendPct = maxSpend > 0 ? ((camp.cost || 0) / maxSpend) * 100 : 0;
-                            return (
-                              <tr
-                                key={camp.campaign_id || i}
-                                style={{ borderBottom: `1px solid ${c.border}` }}
-                                onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = c.bgCardHover}
-                                onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = 'transparent'}
-                              >
-                                <td style={{ padding: '12px 12px 12px 0', maxWidth: 240 }}>
-                                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{camp.campaign_name}</div>
-                                  <div style={{ marginTop: 4, height: 3, borderRadius: 2, backgroundColor: c.bgCardHover, overflow: 'hidden' }}>
-                                    <div style={{ height: '100%', borderRadius: 2, background: '#7C3AED', width: `${spendPct}%` }} />
-                                  </div>
-                                </td>
-                                <td style={{ padding: '12px 12px 12px 0' }}><StatusBadge status={camp.status} /></td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.text, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{formatINR(camp.cost || 0, 2)}</td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{formatNumber(camp.clicks || 0)}</td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{formatNumber(camp.impressions || 0)}</td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: c.textSecondary, fontVariantNumeric: 'tabular-nums' }}>{formatNumber(Math.round(camp.conversions || 0))}</td>
-                                <td style={{ padding: '12px 12px 12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontVariantNumeric: 'tabular-nums', color: cCpc !== '—' && parseFloat(cCpc) < 5 ? (isDark ? '#34D399' : '#059669') : c.textSecondary, fontWeight: cCpc !== '—' && parseFloat(cCpc) < 5 ? 600 : 400 }}>{cCpc !== '—' ? `₹${cCpc}` : '—'}</td>
-                                <td style={{ padding: '12px 0', fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: roasColor }}>
-                                  {cRoas !== '—' ? `${cRoas}x` : '—'}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                );
-              })()}
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </>
           )}
         </>
