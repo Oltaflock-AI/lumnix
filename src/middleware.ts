@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { timingSafeEqual } from 'crypto';
+
+// Constant-time string compare. Web-Crypto compatible; safe in Edge runtime
+// (unlike node:crypto `timingSafeEqual`, which breaks Turbopack parsing).
+function timingSafeStringEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = new Set([
@@ -48,8 +56,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.json({ error: 'Cron not configured' }, { status: 503 });
     }
     const expected = `Bearer ${cronSecret}`;
-    if (!authHeader || authHeader.length !== expected.length ||
-        !timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected))) {
+    if (!authHeader || !timingSafeStringEqual(authHeader, expected)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return NextResponse.next();

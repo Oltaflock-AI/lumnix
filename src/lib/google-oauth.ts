@@ -31,6 +31,24 @@ export async function exchangeCodeForTokens(code: string, redirectUri: string) {
   return res.json();
 }
 
+/**
+ * Best-effort Google token revoke. Fire-and-forget; callers must swallow errors.
+ * Google returns 200 on success, 400 for already-revoked / invalid tokens —
+ * treat any response as terminal.
+ */
+export async function revokeGoogleToken(token: string): Promise<boolean> {
+  if (!token) return false;
+  try {
+    const res = await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(token)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function refreshAccessToken(refreshToken: string) {
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',

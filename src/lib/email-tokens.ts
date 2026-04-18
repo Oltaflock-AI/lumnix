@@ -26,7 +26,14 @@ export function signUnsubscribeToken(userId: string): string {
   return `${b64}.${sig}`;
 }
 
-export function verifyUnsubscribeToken(token: string): string | null {
+// Default unsubscribe-token lifetime: 2 years. Long enough that legitimate
+// old marketing emails still work; short enough that a leaked link expires.
+const UNSUBSCRIBE_TOKEN_TTL_MS = 2 * 365 * 24 * 60 * 60 * 1000;
+
+export function verifyUnsubscribeToken(
+  token: string,
+  maxAgeMs: number = UNSUBSCRIBE_TOKEN_TTL_MS,
+): string | null {
   const [b64, sig] = (token || '').split('.');
   if (!b64 || !sig) return null;
 
@@ -42,7 +49,7 @@ export function verifyUnsubscribeToken(token: string): string | null {
   try {
     const payload: UnsubscribePayload = JSON.parse(Buffer.from(b64, 'base64url').toString());
     if (!payload.user_id || typeof payload.user_id !== 'string') return null;
-    // No hard expiry — emails may be opened years later. Only care about authenticity.
+    if (!payload.issued_at || Date.now() - payload.issued_at > maxAgeMs) return null;
     return payload.user_id;
   } catch {
     return null;

@@ -7,12 +7,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
   try {
     const { token } = await params;
 
-    // Public endpoint → brute-force guard. Limit by IP: 60 req / minute.
+    // Public endpoint → brute-force guard. Token lookup is unauthenticated,
+    // so keep the limit tight to frustrate share_token enumeration.
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       || req.headers.get('x-real-ip')
       || 'unknown';
-    const limited = rateLimit(`share:${ip}`, 60, 60_000);
+    const limited = rateLimit(`share:${ip}`, 10, 60_000);
     if (limited) return limited;
+
+    // Entropy guard: share_token column carries >=32 chars. Reject malformed
+    // tokens before hitting the DB (cheap way to drop bot noise).
+    if (!token || token.length < 24 || !/^[A-Za-z0-9_\-]+$/.test(token)) {
+      return NextResponse.json({ error: 'Dashboard not found or inactive' }, { status: 404 });
+    }
 
     const db = getSupabaseAdmin();
 

@@ -91,8 +91,8 @@ function DataDeletionInner() {
             </div>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: c.text, marginBottom: 8 }}>Request Received</h3>
             <p style={{ fontSize: 14, color: c.textSecondary, margin: 0, lineHeight: 1.7 }}>
-              We&apos;ve received your data deletion request for <strong style={{ color: c.text }}>{email}</strong>.
-              <br />You&apos;ll receive a confirmation email within 48 hours. All data will be deleted within 30 days.
+              If <strong style={{ color: c.text }}>{email}</strong> matches a real inbox, a confirmation link is on its way.
+              <br />Click the link within 24 hours to start deletion. Data will be removed within 30 days of confirmation.
             </p>
           </div>
         ) : (

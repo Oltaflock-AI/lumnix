@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForTokens } from '@/lib/google-oauth';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-import { verifyState } from '@/lib/oauth-state';
+import { verifyState, parseState } from '@/lib/oauth-state';
 import { safeRelativeRedirect } from '@/lib/url-guard';
 
 // GET /api/integrations/callback?code=...&state=...
@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard/settings?error=missing_params', req.url));
     }
 
-    // Verify HMAC-signed state — prevents CSRF / state forgery
-    const state = verifyState(signedState);
+    // Verify HMAC-signed state + consume nonce (single-use, CSRF + replay).
+    const state = await verifyState(signedState);
     if (!state) {
       return NextResponse.redirect(new URL('/dashboard/settings?error=invalid_state', req.url));
     }
@@ -166,7 +166,8 @@ export async function GET(req: NextRequest) {
     const stateStr = req.nextUrl.searchParams.get('state');
     let returnTo = '/dashboard/settings';
     if (stateStr) {
-      const s = verifyState(stateStr);
+      // Error-recovery path: just parse for return_to, do NOT consume nonce.
+      const s = parseState(stateStr);
       if (s?.return_to) returnTo = safeRelativeRedirect(s.return_to, '/dashboard/settings');
     }
     return NextResponse.redirect(new URL(`${returnTo}?error=unknown`, req.url));

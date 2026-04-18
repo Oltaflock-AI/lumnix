@@ -48,12 +48,13 @@ async function completeSyncJob(db: ReturnType<typeof getSupabaseAdmin>, jobId: s
   }).eq('id', jobId);
 }
 
-// GET /api/cron/sync — called by Vercel Cron every 24h
-// Also callable manually: GET /api/cron/sync?workspace_id=xxx
+// GET /api/cron/sync — called by Vercel Cron every 24h.
+// Runs unconditionally across ALL connected integrations. Per-workspace
+// targeting via query param was removed (security: a single CRON_SECRET leak
+// could then be used to force-sync any tenant).
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  const workspaceIdParam = req.nextUrl.searchParams.get('workspace_id');
 
   if (!cronSecret) {
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 });
@@ -68,16 +69,10 @@ export async function GET(req: NextRequest) {
 
   try {
     // Get all active integrations — now includes all 4 providers
-    let query = db.from('integrations')
+    const { data: integrations, error } = await db.from('integrations')
       .select('id, workspace_id, provider, status, oauth_meta, oauth_tokens(id, access_token, refresh_token, expires_at)')
       .eq('status', 'connected')
       .in('provider', ['gsc', 'ga4', 'google_ads', 'meta_ads']);
-
-    if (workspaceIdParam) {
-      query = query.eq('workspace_id', workspaceIdParam);
-    }
-
-    const { data: integrations, error } = await query;
     if (error) return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 
     for (const integration of integrations || []) {
