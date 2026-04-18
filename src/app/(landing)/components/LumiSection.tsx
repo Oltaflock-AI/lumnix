@@ -30,8 +30,8 @@ function LumiAvatar({ size = 32 }: { size?: number }) {
 
 const convos = [
   { q: 'Why did my traffic drop last week?', a: "Your top GSC keyword 'promunch' dropped from position 1.2 to position 3.8 between Apr 8–10. This coincides with a new Mamaearth campaign targeting the same search intent. Recommend: strengthen the page's internal linking and update the meta title.", Icon: Activity },
-  { q: 'What should I focus on this week?', a: "3 quick wins on page 1: 'soya mini chunks' (190 impressions, 0% CTR), 'soya munch' (8 impressions, 0% CTR), 'peri peri soya' (1 impression, 1 click). Fixing meta titles on these 3 pages could add ~20 organic clicks/week at zero cost.", Icon: Clock },
-  { q: 'Compare my organic vs paid this month', a: 'Organic: 214 clicks, ₹0 spend, estimated ₹6,200 value at avg CPC. Paid: 18,038 clicks, ₹8,159 spend, ₹0.45 CPC. Organic CTR 26% vs paid CTR 3.87%. Your organic is significantly more efficient — consider doubling down on content.', Icon: BarChart3 },
+  { q: 'What are my 3 quickest wins this week?', a: "Three pages rank on page 1 with a 0% CTR — 'soya mini chunks' (190 impressions), 'soya munch' (8 impressions), 'peri peri soya' (1 click on 1 impression). Rewriting the meta titles could add ~20 organic clicks/week at zero ad spend.", Icon: Clock },
+  { q: 'Is my organic or paid channel more efficient right now?', a: 'Organic: 214 clicks, ₹0 spend, ~₹6,200 equivalent value. Paid: 18,038 clicks, ₹8,159 spend, ₹0.45 CPC. Your organic CTR is 26% vs paid 3.87% — shift ₹15k of next month\'s ad budget into content and you\'ll likely net more traffic for the same spend.', Icon: BarChart3 },
 ];
 
 export function LumiSection() {
@@ -42,7 +42,7 @@ export function LumiSection() {
       <div className="wr-container wr-grid-2-equal" style={{ alignItems: 'center' }}>
         <div>
           <ScrollReveal>
-            <span className="wr-label" style={{ display: 'inline-block', marginBottom: 20 }}>AI ASSISTANT — LUMI</span>
+            <span className="wr-label" style={{ display: 'inline-block', marginBottom: 20 }}>PILLAR 5 · LUMI, YOUR AI MARKETER</span>
             <h2 className="wr-section-headline" style={{ marginBottom: 24 }}>
               Stop pulling reports.
               <br /><span className="wr-text-accent">Start asking questions.</span>
@@ -51,7 +51,7 @@ export function LumiSection() {
 
           <ScrollReveal delay={0.15}>
             <p className="wr-body-large" style={{ marginBottom: 28 }}>
-              Not a chatbot. Lumi reads <strong style={{ color: '#fff' }}>your actual data</strong> — keywords, campaigns, competitors — and tells you what to do next.
+              Lumi isn&apos;t a chatbot. It&apos;s plugged into <strong style={{ color: '#fff' }}>your</strong> GSC, GA4, Meta Ads, Google Ads, and competitor feeds. Ask anything — get answers with your actual numbers, not generic advice.
             </p>
           </ScrollReveal>
 

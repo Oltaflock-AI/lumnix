@@ -39,24 +39,24 @@ export function Hero() {
         <div>
           <span className="wr-badge">
             <span className="wr-pulse-dot" />
-            Now in early access
+            For D2C brands and marketing agencies · Now in early access
           </span>
 
           <h1 className="wr-hero-headline" style={{ marginBottom: 28 }}>
-            Your competitors
-            <br />know something
-            <br /><span className="wr-shimmer">you don&apos;t.</span>
+            Your marketing data
+            <br />lives in 5 tools.
+            <br />Your decisions should
+            <br />live in <span className="wr-shimmer">one.</span>
           </h1>
 
           <p className="wr-sub-headline" style={{ marginBottom: 20, maxWidth: 540 }}>
-            While you&apos;re switching between 5 dashboards,
-            they&apos;re making decisions in <strong style={{ color: '#fff' }}>one.</strong>
+            Lumnix is the AI marketing platform for D2C brands and agencies. <strong style={{ color: '#fff' }}>SEO, analytics, paid ads, competitor intel, and creative</strong> — in one place, with an AI that reads your data and tells you what to do next.
           </p>
           <p className="wr-body-large" style={{ marginBottom: 36, maxWidth: 480 }}>
-            Your team wastes <span className="wr-text-danger">14 hours/week</span> stitching data across tools that don&apos;t talk to each other.
+            Your team is losing <span className="wr-text-danger">14 hours a week</span> stitching GSC, GA4, Meta Ads, Google Ads, and a shared sheet nobody trusts. Your competitors aren&apos;t.
           </p>
           <p className="wr-hero-tagline">
-            Lumnix ends that. Today.
+            One stack. One AI. One place to make decisions.
           </p>
 
           <div className="wr-hero-ctas">
@@ -64,15 +64,15 @@ export function Hero() {
               Get early access — it&apos;s free <span style={{ fontSize: 20 }}>→</span>
             </Link>
             <a href="#features" className="wr-cta-ghost">
-              See how it works ↓
+              See how it replaces your stack ↓
             </a>
           </div>
           <p className="wr-hero-savings">
-            <span className="wr-text-danger">₹75,000/mo</span> in tools → replaced by <span className="wr-text-green">₹2,499/mo</span>
+            Your stack today: <span className="wr-text-danger">₹17,000–₹55,000/mo</span> → Lumnix: <span className="wr-text-green">from ₹2,499/mo</span>
           </p>
 
           <div className="wr-hero-proof">
-            <p className="wr-hero-proof-text">Join the waitlist — limited early access spots</p>
+            <p className="wr-hero-proof-text">Built for D2C brands doing ₹50L–₹50Cr ARR and agencies managing 3–30 clients.</p>
           </div>
         </div>
 

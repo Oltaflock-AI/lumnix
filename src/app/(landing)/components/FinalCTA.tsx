@@ -14,7 +14,7 @@ export function FinalCTA() {
 
       <div className="wr-container" style={{ position: 'relative', maxWidth: 800 }}>
         <ScrollReveal>
-          <span className="wr-label" style={{ display: 'inline-block', marginBottom: 28, background: 'rgba(255,0,102,0.12)', border: '1px solid rgba(255,0,102,0.25)', padding: '8px 16px', borderRadius: 24 }}>STOP GUESSING</span>
+          <span className="wr-label" style={{ display: 'inline-block', marginBottom: 28, background: 'rgba(255,0,102,0.12)', border: '1px solid rgba(255,0,102,0.25)', padding: '8px 16px', borderRadius: 24 }}>STOP GUESSING. START KNOWING.</span>
           <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 800, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 20 }}>
             Marketing that guesses
             <br />is <span style={{ color: '#F87171' }}>expensive.</span>
@@ -25,8 +25,7 @@ export function FinalCTA() {
 
         <ScrollReveal delay={0.15}>
           <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.55)', marginBottom: 32, lineHeight: 1.6 }}>
-            Join the <strong style={{ color: 'rgba(255,255,255,0.85)' }}>early-access waitlist</strong> of marketers who stopped
-            exporting CSVs and started making decisions.
+            Join the <strong style={{ color: 'rgba(255,255,255,0.85)' }}>early-access waitlist</strong> of D2C brands and agencies who stopped exporting CSVs and started making decisions. Setup takes 3 minutes. Your stack takes 3 hours to build every month.
           </p>
         </ScrollReveal>
 

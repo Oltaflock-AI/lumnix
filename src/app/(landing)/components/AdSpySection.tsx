@@ -5,9 +5,10 @@ import { IntelCard } from './IntelCard';
 import { ScrollReveal } from './ScrollReveal';
 
 const points = [
-  'Add competitor by name, website, or Facebook URL',
-  '90-day longevity = proven winner signal',
-  'AI brief: exactly what hooks, pain points, and offers they use',
+  'Add any competitor — by brand name, website, or Facebook Page URL',
+  'We filter to the top 10% of winners — longevity, engagement, ad frequency',
+  'AI brief on every ad: hook, pain point, offer, format, and why it works',
+  'Your swipe file, always current — new winners land weekly',
 ];
 
 export function AdSpySection() {
@@ -16,20 +17,20 @@ export function AdSpySection() {
       <div className="wr-container wr-grid-2" style={{ alignItems: 'center' }}>
         <div>
           <ScrollReveal>
-            <span className="wr-label" style={{ display: 'inline-block', marginBottom: 20 }}>COMPETITOR AD SPY</span>
+            <span className="wr-label" style={{ display: 'inline-block', marginBottom: 20 }}>PILLAR 1 · COMPETITOR INTEL</span>
             <h2 className="wr-section-headline" style={{ marginBottom: 28 }}>
-              They&apos;ve been testing ads
+              They&apos;ve been A/B testing ads
               <br />for <span style={{ color: '#F87171' }}>6 months.</span>
-              <br /><span className="wr-text-accent">You&apos;re about to see every single one.</span>
+              <br /><span className="wr-text-accent">You&apos;re about to see every winner.</span>
             </h2>
           </ScrollReveal>
 
           <ScrollReveal delay={0.15}>
             <p className="wr-body-large" style={{ marginBottom: 20 }}>
-              Who has time to check <span style={{ color: '#fff', fontWeight: 600 }}>500 ads per competitor</span>? Nobody.
+              Nobody has time to scroll <span style={{ color: '#fff', fontWeight: 600 }}>500 ads per competitor</span> in the Meta Ad Library. Lumnix does — and tells you which ones are worth stealing.
             </p>
             <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.55)', marginBottom: 28, lineHeight: 1.6 }}>
-              Ad running <span style={{ color: '#34D399', fontWeight: 700 }}>90+ days</span> = Meta kept serving it = <strong style={{ color: '#fff' }}>it works.</strong> Our AI tells you exactly why.
+              Rule of thumb: an ad running <span style={{ color: '#34D399', fontWeight: 700 }}>90+ days</span> is an ad Meta keeps serving because <strong style={{ color: '#fff' }}>it converts.</strong> Those are the only ones worth your attention.
             </p>
           </ScrollReveal>
 

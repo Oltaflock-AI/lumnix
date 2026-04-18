@@ -58,12 +58,12 @@ const tools: Tool[] = [
     title: 'Google Search Console',
     Logo: GSCLogo,
     knows: (
-      <>Your keyword <strong>&ldquo;promunch&rdquo;</strong> ranks <strong>#1</strong></>
+      <>You rank <strong>#1</strong> for <strong>&ldquo;promunch&rdquo;</strong> with 3,400 monthly impressions</>
     ),
     blind: (
-      <>Has no idea you&rsquo;re paying <strong>₹4,200/mo</strong> to bid on the same keyword in Google Ads</>
+      <>That <strong>3 of your top-10 keywords have a 0% CTR</strong> — meta titles haven&rsquo;t been touched in a year, and the click is going to whoever owns the SERP snippet</>
     ),
-    cost: <><span className="wr-tool-cost-dot" />₹0/mo spent here</>,
+    cost: <><span className="wr-tool-cost-dot" />~200 organic clicks/month, gone</>,
   },
   {
     color: '#F9AB00',
@@ -87,9 +87,9 @@ const tools: Tool[] = [
       <>You spent <strong>₹8,159</strong> this month</>
     ),
     blind: (
-      <>Doesn&rsquo;t know your competitors are spending <strong>10×</strong> and stealing your audience with hooks you&rsquo;ve never seen</>
+      <>Which of <strong>your</strong> ads is actually driving orders (Meta&rsquo;s attribution is optimistic) — and which <strong>hooks and offers</strong> are working for your competitors right now</>
     ),
-    cost: <><span className="wr-tool-cost-dot" />₹8,159/mo and climbing</>,
+    cost: <><span className="wr-tool-cost-dot" />₹8,159/mo spent blind — nothing to double down on, nothing to kill</>,
   },
 ];
 
@@ -166,15 +166,14 @@ export function VillainSection() {
       <div className="wr-container">
         <ScrollReveal>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <span className="wr-label" style={{ display: 'inline-block', marginBottom: 20 }}>THE PROBLEM</span>
+            <span className="wr-label" style={{ display: 'inline-block', marginBottom: 20 }}>THE REAL COST OF YOUR STACK</span>
             <h2 className="wr-section-headline" style={{ marginBottom: 24 }}>
-              You&apos;re paying for{' '}
-              <span className="wr-text-danger">5 tools</span>
-              <br />that can&apos;t see each other.
+              You&apos;re paying <span className="wr-text-danger">5 tools</span>
+              <br />to tell you 5 different stories.
             </h2>
             <p className="wr-sub-headline" style={{ maxWidth: 620, margin: '0 auto' }}>
-              Every tool knows <em>something</em>. None of them know <strong style={{ color: '#fff' }}>everything</strong>.
-              <br />That gap is where you&apos;re losing money.
+              Every tool knows one slice. None of them know <strong style={{ color: '#fff' }}>the full picture</strong>.
+              <br />That gap is where campaigns go wrong, budgets get wasted, and agencies lose retainers.
             </p>
           </div>
         </ScrollReveal>
@@ -193,7 +192,7 @@ export function VillainSection() {
               None of your tools know what your <span className="wr-text-danger">competitors</span> are doing.
             </p>
             <p className="wr-gut-punch-cta">
-              <span className="wr-shimmer">Until now.</span>
+              <span className="wr-shimmer">Lumnix does.</span>
             </p>
           </div>
         </ScrollReveal>

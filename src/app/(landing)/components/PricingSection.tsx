@@ -5,10 +5,10 @@ import { Check, TrendingUp } from 'lucide-react';
 import { ScrollReveal } from './ScrollReveal';
 
 const plans = [
-  { name: 'Free', tagline: 'Get your bearings', price: '₹0', period: '/mo', features: ['2 integrations', '30-day data retention', '2 team members', 'Basic insights'], cta: 'Get started', primary: false },
-  { name: 'Starter', tagline: 'For early-stage brands', price: '₹2,499', period: '/mo', features: ['4 integrations', '90-day retention', '5 team members', 'AI insights', 'PDF reports'], cta: 'Try Starter free', primary: false },
-  { name: 'Growth', tagline: 'For scaling brands', price: '₹6,499', period: '/mo', features: ['All integrations', '1-year retention', '15 team members', 'AI chat + insights', 'White-label reports', 'Competitor tracking'], cta: 'Try Growth free →', primary: true, popular: true },
-  { name: 'Agency', tagline: 'For multi-brand agencies', price: '₹16,499', period: '/mo', features: ['Unlimited everything', 'Unlimited retention', 'Unlimited team', 'Everything in Growth', 'Multi-workspace', 'Priority support', 'API access'], cta: 'Try Agency free', primary: false },
+  { name: 'Free', tagline: 'See if Lumnix fits', price: '₹0', period: '/mo', features: ['2 integrations', '30-day data retention', '2 team members', 'Basic insights'], cta: 'Get started', primary: false },
+  { name: 'Starter', tagline: 'Early-stage D2C · ₹50L–₹2Cr ARR', price: '₹2,499', period: '/mo', features: ['4 integrations', '90-day retention', '5 team members', 'AI insights', 'PDF reports'], cta: 'Try Starter free', primary: false },
+  { name: 'Growth', tagline: 'Scaling D2C · ₹2Cr–₹50Cr ARR', price: '₹6,499', period: '/mo', features: ['All integrations', '1-year retention', '15 team members', 'AI chat + insights', 'White-label reports', 'Competitor tracking'], cta: 'Try Growth free →', primary: true, popular: true },
+  { name: 'Agency', tagline: 'Agencies managing 3–30 client brands', price: '₹16,499', period: '/mo', features: ['Unlimited everything', 'Unlimited retention', 'Unlimited team', 'Everything in Growth', 'Multi-workspace', 'Priority support', 'API access'], cta: 'Try Agency free', primary: false },
 ];
 
 export function PricingSection() {
@@ -18,10 +18,10 @@ export function PricingSection() {
         <ScrollReveal>
           <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 12 }}>
-              Less than the cost of one bad ad.
+              Less than the cost of one bad ad week.
             </h2>
             <p style={{ fontSize: 18, color: '#9CA3AF', maxWidth: 480, margin: '0 auto 12px' }}>
-              The tools you&apos;re replacing cost ₹75,000/mo combined.
+              Replace ₹17,000–₹55,000/mo of disconnected tools with one platform.
             </p>
             <p style={{ fontSize: 16, color: '#FF0066', fontWeight: 600 }}>
               Lumnix starts at ₹2,499. <span style={{ color: '#059669', fontWeight: 700 }}>Try any plan free for 7 days.</span>
