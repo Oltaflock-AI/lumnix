@@ -39,24 +39,23 @@ export function Hero() {
         <div>
           <span className="wr-badge">
             <span className="wr-pulse-dot" />
-            For D2C brands and marketing agencies · Now in early access
+            For D2C brands and agencies · Early access
           </span>
 
           <h1 className="wr-hero-headline" style={{ marginBottom: 28 }}>
-            Your marketing data
-            <br />lives in 5 tools.
-            <br />Your decisions should
-            <br />live in <span className="wr-shimmer">one.</span>
+            5 tools.
+            <br />5 different answers.
+            <br /><span className="wr-shimmer">One</span> stack.
           </h1>
 
           <p className="wr-sub-headline" style={{ marginBottom: 20, maxWidth: 540 }}>
-            Lumnix is the AI marketing platform for D2C brands and agencies. <strong style={{ color: '#fff' }}>SEO, analytics, paid ads, competitor intel, and creative</strong> — in one place, with an AI that reads your data and tells you what to do next.
+            Lumnix is the AI marketing platform for <strong style={{ color: '#fff' }}>D2C brands and agencies.</strong>
           </p>
           <p className="wr-body-large" style={{ marginBottom: 36, maxWidth: 480 }}>
-            Your team is losing <span className="wr-text-danger">14 hours a week</span> stitching GSC, GA4, Meta Ads, Google Ads, and a shared sheet nobody trusts. Your competitors aren&apos;t.
+            Your team wastes <span className="wr-text-danger">14 hours a week</span> stitching GA4, GSC, Meta Ads, and Google Ads. Lumnix ends that.
           </p>
           <p className="wr-hero-tagline">
-            One stack. One AI. One place to make decisions.
+            SEO · Analytics · Paid ads · Competitor intel · Creative.
           </p>
 
           <div className="wr-hero-ctas">
@@ -68,11 +67,11 @@ export function Hero() {
             </a>
           </div>
           <p className="wr-hero-savings">
-            Your stack today: <span className="wr-text-danger">₹17,000–₹55,000/mo</span> → Lumnix: <span className="wr-text-green">from ₹2,499/mo</span>
+            <span className="wr-text-danger">₹17k–₹55k/mo</span> in tools → <span className="wr-text-green">from ₹2,499/mo</span>
           </p>
 
           <div className="wr-hero-proof">
-            <p className="wr-hero-proof-text">Built for D2C brands doing ₹50L–₹50Cr ARR and agencies managing 3–30 clients.</p>
+            <p className="wr-hero-proof-text">D2C brands · ₹50L–₹50Cr ARR · agencies managing 3–30 clients</p>
           </div>
         </div>
 

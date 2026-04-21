@@ -25,7 +25,7 @@ export function FinalCTA() {
 
         <ScrollReveal delay={0.15}>
           <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.55)', marginBottom: 32, lineHeight: 1.6 }}>
-            Join the <strong style={{ color: 'rgba(255,255,255,0.85)' }}>early-access waitlist</strong> of D2C brands and agencies who stopped exporting CSVs and started making decisions. Setup takes 3 minutes. Your stack takes 3 hours to build every month.
+            Join the <strong style={{ color: 'rgba(255,255,255,0.85)' }}>early-access waitlist</strong> of D2C brands and agencies who stopped exporting CSVs and started making decisions.
           </p>
         </ScrollReveal>
 
