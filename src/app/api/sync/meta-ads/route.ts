@@ -3,6 +3,11 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchMetaAdAccounts, fetchMetaCampaigns, fetchMetaInsights } from '@/lib/connectors/meta-ads';
 import { rateLimit } from '@/lib/rate-limit';
 import { verifyIntegrationInWorkspace } from '@/lib/auth-guard';
+import {
+  exchangeForLongLivedToken,
+  isMetaTokenExpired,
+  shouldRefreshMetaToken,
+} from '@/lib/meta-oauth';
 
 // Lumnix is India-first — all money is persisted and displayed in INR,
 // regardless of the raw account currency returned by Meta.
@@ -39,8 +44,6 @@ async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
   throw new Error(`${label} failed after ${MAX_RETRIES} attempts`);
 }
 
-const FIVE_MINUTES_MS = 5 * 60 * 1000;
-
 export async function POST(req: NextRequest) {
   try {
     const { integration_id, workspace_id, ad_account_id } = await req.json();
@@ -62,22 +65,48 @@ export async function POST(req: NextRequest) {
 
     if (!tokenRow) return NextResponse.json({ error: 'No tokens found' }, { status: 404 });
 
-    // Check if Meta token is expired or expiring within 5 minutes
-    // Meta uses long-lived tokens (60 days) — if expired, user must reconnect
+    // Meta uses 60-day long-lived tokens. Instead of bailing the moment they
+    // expire (requires user to reconnect manually), we proactively refresh via
+    // fb_exchange_token whenever <7 days remain. A long-lived token can be
+    // re-exchanged for another 60 days as long as it's still valid — so this
+    // keeps the integration healthy indefinitely without user intervention.
     let accessToken = tokenRow.access_token;
-    if (tokenRow.expires_at && new Date(tokenRow.expires_at).getTime() < Date.now() + FIVE_MINUTES_MS) {
-      console.error('Meta Ads token expired or expiring soon for integration:', integration_id);
+
+    if (isMetaTokenExpired(tokenRow.expires_at)) {
+      // Already dead — can't refresh a dead token. User must reconnect.
+      console.error('Meta Ads token is past expiry for integration:', integration_id);
       await db.from('integrations').update({ status: 'error' }).eq('id', integration_id);
       await db.from('sync_jobs').insert({
         workspace_id,
         integration_id,
         job_type: 'manual',
         status: 'error',
-        error_message: 'Token refresh failed — user must reconnect',
+        error_message: 'Meta token expired — user must reconnect',
         started_at: new Date().toISOString(),
         completed_at: new Date().toISOString(),
       });
-      return NextResponse.json({ error: 'Token refresh failed — user must reconnect' }, { status: 401 });
+      return NextResponse.json({ error: 'Meta token expired — user must reconnect' }, { status: 401 });
+    }
+
+    if (shouldRefreshMetaToken(tokenRow.expires_at, 7)) {
+      try {
+        const refreshed = await exchangeForLongLivedToken(accessToken);
+        accessToken = refreshed.access_token;
+        const newExpiresAt = refreshed.expires_in
+          ? new Date(Date.now() + refreshed.expires_in * 1000).toISOString()
+          : null;
+        await db.from('oauth_tokens').update({
+          access_token: refreshed.access_token,
+          expires_at: newExpiresAt,
+          last_refreshed_at: new Date().toISOString(),
+        }).eq('id', tokenRow.id);
+        console.log(`Meta token proactively refreshed for integration ${integration_id}; new expiry: ${newExpiresAt}`);
+      } catch (err: any) {
+        // Refresh failed on a token that was still technically valid — rare,
+        // but we shouldn't block the sync. Log and keep going with the current
+        // token; next cron run will try again.
+        console.warn(`Meta proactive refresh failed (non-fatal): ${err.message}`);
+      }
     }
 
     // Get the integration to check saved ad_account_id

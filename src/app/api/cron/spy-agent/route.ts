@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { getMetaAdLibraryToken } from '@/lib/meta-ad-library-token';
 
 const META_AD_LIBRARY_URL = 'https://graph.facebook.com/v19.0/ads_archive';
 
@@ -237,8 +238,10 @@ export async function GET(req: NextRequest) {
 
   const db = getSupabaseAdmin();
 
-  // Try env var first, then fall back to any connected Meta integration token
-  let metaToken = process.env.META_ACCESS_TOKEN || '';
+  // Prefer the never-expiring app access token (META_APP_ID|META_APP_SECRET)
+  // for Ad Library calls, then fall back to a user token or a connected
+  // Meta integration's stored token.
+  let metaToken = getMetaAdLibraryToken() || '';
   if (!metaToken) {
     const { data: metaIntegration } = await db
       .from('integrations')
@@ -259,7 +262,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (!metaToken) {
-    return NextResponse.json({ error: 'No Meta access token available. Connect Meta Ads or set META_ACCESS_TOKEN env var.', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'No Meta access token available. Set META_APP_ID + META_APP_SECRET (preferred) or META_ACCESS_TOKEN, or connect Meta Ads.', success: false }, { status: 500 });
   }
 
   const results: any[] = [];

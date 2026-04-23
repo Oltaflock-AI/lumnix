@@ -5,6 +5,11 @@ import { fetchGA4Data, fetchGA4Properties, GA4_REPORTS } from '@/lib/connectors/
 import { fetchGoogleAdsCampaigns, fetchGoogleAdsAccounts } from '@/lib/connectors/google-ads';
 import { fetchMetaAdAccounts, fetchMetaInsights } from '@/lib/connectors/meta-ads';
 import { refreshAccessToken } from '@/lib/google-oauth';
+import {
+  exchangeForLongLivedToken,
+  isMetaTokenExpired,
+  shouldRefreshMetaToken,
+} from '@/lib/meta-oauth';
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
@@ -89,14 +94,35 @@ export async function GET(req: NextRequest) {
       const FIVE_MINUTES_MS = 5 * 60 * 1000;
       let accessToken = tokenRow.access_token;
 
-      // For Meta Ads: check if long-lived token is expired/expiring — user must reconnect
-      if (integration.provider === 'meta_ads' && tokenRow.expires_at && new Date(tokenRow.expires_at).getTime() < Date.now() + FIVE_MINUTES_MS) {
-        const errMsg = 'Token refresh failed — user must reconnect';
-        await db.from('integrations').update({ status: 'error' }).eq('id', integration.id);
-        if (jobId) await completeSyncJob(db, jobId, 'failed', null, errMsg);
-        errors.push({ id: integration.id, provider: integration.provider, error: errMsg });
-        results.push({ id: integration.id, provider: integration.provider, status: 'token_expired' });
-        continue;
+      // Meta Ads: 60-day long-lived tokens can be re-exchanged for another 60
+      // days as long as they're still valid. Proactively refresh when <7 days
+      // remain so users never have to reconnect. Only bail when the token is
+      // actually past expiry (which means we missed too many crons).
+      if (integration.provider === 'meta_ads') {
+        if (isMetaTokenExpired(tokenRow.expires_at)) {
+          const errMsg = 'Meta token expired — user must reconnect';
+          await db.from('integrations').update({ status: 'error' }).eq('id', integration.id);
+          if (jobId) await completeSyncJob(db, jobId, 'failed', null, errMsg);
+          errors.push({ id: integration.id, provider: integration.provider, error: errMsg });
+          results.push({ id: integration.id, provider: integration.provider, status: 'token_expired' });
+          continue;
+        }
+        if (shouldRefreshMetaToken(tokenRow.expires_at, 7)) {
+          try {
+            const refreshed = await exchangeForLongLivedToken(accessToken);
+            accessToken = refreshed.access_token;
+            await db.from('oauth_tokens').update({
+              access_token: refreshed.access_token,
+              expires_at: refreshed.expires_in
+                ? new Date(Date.now() + refreshed.expires_in * 1000).toISOString()
+                : null,
+              last_refreshed_at: new Date().toISOString(),
+            }).eq('id', tokenRow.id);
+          } catch (err: any) {
+            // Non-fatal: keep running with the current token; next cron will retry.
+            console.warn(`Meta proactive refresh failed for integration ${integration.id}: ${err.message}`);
+          }
+        }
       }
 
       if (integration.provider !== 'meta_ads' && tokenRow.expires_at && new Date(tokenRow.expires_at).getTime() < Date.now() + FIVE_MINUTES_MS) {

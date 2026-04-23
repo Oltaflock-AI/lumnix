@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { safeFetchUrl } from '@/lib/url-guard';
+import { getMetaAdLibraryToken } from '@/lib/meta-ad-library-token';
 
-function getMetaToken(): string | null {
-  if (process.env.META_ACCESS_TOKEN) return process.env.META_ACCESS_TOKEN;
-  // Fallback: app-level token for read-only Ad Library access
-  if (process.env.META_APP_ID && process.env.META_APP_SECRET) {
-    return `${process.env.META_APP_ID}|${process.env.META_APP_SECRET}`;
-  }
-  return null;
-}
+const getMetaToken = getMetaAdLibraryToken;
 
 async function resolveFromFacebookUrl(slug: string, token: string) {
   try {
@@ -76,7 +70,9 @@ async function searchAdLibrary(query: string, token: string) {
   const params = new URLSearchParams({
     search_terms: query,
     ad_type: 'ALL',
-    ad_reached_countries: JSON.stringify(['IN', 'US', 'GB']),
+    // Match competitors/scrape's country set so a brand discovered via search
+    // and then scraped has the same coverage at both ends.
+    ad_reached_countries: JSON.stringify(['IN', 'US', 'GB', 'AU', 'CA']),
     fields: 'page_id,page_name',
     limit: '50',
     access_token: token,

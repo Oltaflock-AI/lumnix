@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
-
-function getMetaToken(): string | null {
-  if (process.env.META_ACCESS_TOKEN) return process.env.META_ACCESS_TOKEN;
-  if (process.env.META_APP_ID && process.env.META_APP_SECRET) {
-    return `${process.env.META_APP_ID}|${process.env.META_APP_SECRET}`;
-  }
-  return null;
-}
+import { getMetaAdLibraryToken } from '@/lib/meta-ad-library-token';
 
 export async function POST(req: NextRequest) {
   const { workspace_id, competitor_id } = await req.json();
@@ -16,7 +9,7 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = getSupabaseAdmin();
-  const token = getMetaToken();
+  const token = getMetaAdLibraryToken();
   if (!token) {
     return NextResponse.json({ error: 'Meta token not configured', needsToken: true }, { status: 500 });
   }
