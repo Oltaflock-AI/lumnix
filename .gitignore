@@ -8,3 +8,8 @@ build
 next-env.d.ts
 
 .vercel
+
+# Local scratch / disposable (per CLAUDE.md)
+.tmp/
+*.code-workspace
+tools/_probe_*
