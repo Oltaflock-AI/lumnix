@@ -175,7 +175,7 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
   // Loading skeleton
   if (loading) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+      <div className="lx-grid-resp-2">
         {[1, 2, 3, 4].map(i => (
           <div key={i} style={{ background: 'var(--surface)', borderRadius: 12, padding: 18, border: '1px solid var(--border)', borderLeft: '4px solid var(--border)' }}>
             <div style={{ height: 12, width: '35%', background: 'var(--elevated)', borderRadius: 6, marginBottom: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
@@ -251,7 +251,7 @@ function InsightsTab({ workspaceId }: { workspaceId: string | undefined }) {
 
       {/* Insights grid */}
       {!generating && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+        <div className="lx-grid-resp-2">
           {insights.map(insight => {
             const config = INSIGHT_CONFIG[insight.type] || INSIGHT_CONFIG.tip;
             const priorityLabel = insight.priority.toUpperCase();
@@ -527,7 +527,7 @@ export default function AIPage() {
                 </h2>
 
                 {/* Suggested Prompts Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, maxWidth: 600, width: '100%', marginBottom: 8 }}>
+                <div className="lx-grid-resp-2" style={{ gap: 12, maxWidth: 600, width: '100%', marginBottom: 8 }}>
                   {SUGGESTIONS.map(s => {
                     const Icon = s.icon;
                     return (

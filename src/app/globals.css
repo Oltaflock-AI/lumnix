@@ -507,6 +507,11 @@ code, pre, kbd, samp {
   gap: 16px;
   margin-bottom: 24px;
 }
+.lx-grid-resp-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
 
 @media (max-width: 1024px) {
   .pricing-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -518,6 +523,7 @@ code, pre, kbd, samp {
 }
 @media (max-width: 640px) {
   .pricing-grid { grid-template-columns: 1fr !important; }
+  .lx-grid-resp-2 { grid-template-columns: 1fr !important; gap: 12px !important; }
 }
 
 @media (max-width: 768px) {
