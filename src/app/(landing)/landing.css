@@ -976,6 +976,21 @@
   grid-template-columns: 1fr;
   gap: 48px;
 }
+
+.wr-grid-2 > *,
+.wr-grid-2-equal > *,
+.wr-grid-4 > * {
+  min-width: 0;
+}
+
+.wr-kpi-cell {
+  min-width: 0;
+}
+
+.wr-kpi-cell svg {
+  max-width: 100%;
+  height: auto;
+}
 @media (min-width: 1024px) {
   .wr-grid-2 { grid-template-columns: 1fr 440px; gap: 80px; }
 }

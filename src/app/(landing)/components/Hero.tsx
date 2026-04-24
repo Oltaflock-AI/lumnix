@@ -14,7 +14,7 @@ function Sparkline({ color = '#FF0066', data = [3,5,4,7,6,8,7,9,8,11,10,14,12,15
   const w = 120, h = 32;
   const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / (max - min)) * h}`).join(' ');
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none" style={{ display: 'block' }}>
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" fill="none" style={{ display: 'block', width: '100%', height: h, maxWidth: '100%' }}>
       <defs>
         <linearGradient id={`spark-${id}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.2" />
