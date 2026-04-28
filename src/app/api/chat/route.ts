@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkAIChatLimit } from '@/lib/plan-limits';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 // Tool definitions for function calling
 const tools = [
@@ -400,16 +401,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify user has access to this workspace
+    const auth = await verifyWorkspaceAccess(req, workspace_id);
+    if (auth instanceof NextResponse) return auth;
+
     const db = getSupabaseAdmin();
-    const { data: member } = await db
-      .from('workspace_members')
-      .select('role')
-      .eq('workspace_id', workspace_id)
-      .eq('user_id', userId)
-      .single();
-    if (!member) {
-      return new Response('Access denied', { status: 403 });
-    }
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {

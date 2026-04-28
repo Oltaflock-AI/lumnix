@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchGoogleAdsCampaigns, fetchGoogleAdsAccounts } from '@/lib/connectors/google-ads';
 import { refreshAccessToken } from '@/lib/google-oauth';
 import { rateLimit } from '@/lib/rate-limit';
-import { verifyIntegrationInWorkspace } from '@/lib/auth-guard';
+import { verifyIntegrationInWorkspace, verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000];
@@ -28,6 +28,9 @@ export async function POST(req: NextRequest) {
   let workspace_id: string | undefined;
   try {
     ({ integration_id, workspace_id } = await req.json());
+
+    const auth = await verifyWorkspaceAccess(req, workspace_id);
+    if (auth instanceof NextResponse) return auth;
 
     const rateLimited = rateLimit(`sync:gads:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;
@@ -177,6 +180,6 @@ export async function POST(req: NextRequest) {
         console.error('Failed to record sync_jobs error row:', logErr);
       }
     }
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

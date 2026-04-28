@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { callClaude } from '@/lib/anthropic';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 /**
  * Simple linear regression for forecasting
@@ -50,6 +51,9 @@ function forecast(
 export async function GET(req: NextRequest) {
   const workspaceId = req.nextUrl.searchParams.get('workspace_id');
   if (!workspaceId) return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
+
+  const auth = await verifyWorkspaceAccess(req, workspaceId);
+  if (auth instanceof NextResponse) return auth;
 
   const metric = req.nextUrl.searchParams.get('metric') || 'sessions';
   const forecastDays = parseInt(req.nextUrl.searchParams.get('days') || '14');

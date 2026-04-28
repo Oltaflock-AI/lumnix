@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { rateLimit } from '@/lib/rate-limit';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 function simpleHash(str: string): string {
   let hash = 0;
@@ -18,6 +19,9 @@ export async function POST(req: NextRequest) {
   if (!workspace_id || !competitor_id) {
     return NextResponse.json({ error: 'workspace_id and competitor_id required' }, { status: 400 });
   }
+
+  const auth = await verifyWorkspaceAccess(req, workspace_id);
+  if (auth instanceof NextResponse) return auth;
 
   const rateLimited = rateLimit(`monitor:${workspace_id}`, 3, 60 * 1000);
   if (rateLimited) return rateLimited;
@@ -116,6 +120,9 @@ export async function GET(req: NextRequest) {
   const competitorId = req.nextUrl.searchParams.get('competitor_id');
 
   if (!workspaceId) return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
+
+  const auth = await verifyWorkspaceAccess(req, workspaceId);
+  if (auth instanceof NextResponse) return auth;
 
   const db = getSupabaseAdmin();
   let query = db.from('competitor_snapshots')

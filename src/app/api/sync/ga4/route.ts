@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchGA4Data, fetchGA4Properties, GA4_REPORTS } from '@/lib/connectors/ga4';
 import { refreshAccessToken } from '@/lib/google-oauth';
 import { rateLimit } from '@/lib/rate-limit';
-import { verifyIntegrationInWorkspace } from '@/lib/auth-guard';
+import { verifyIntegrationInWorkspace, verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 const MAX_RETRIES = 3;
 const RETRY_DELAYS = [1000, 2000];
@@ -28,6 +28,9 @@ const FIVE_MINUTES_MS = 5 * 60 * 1000;
 export async function POST(req: NextRequest) {
   try {
     const { integration_id, workspace_id, days = 90 } = await req.json();
+
+    const auth = await verifyWorkspaceAccess(req, workspace_id);
+    if (auth instanceof NextResponse) return auth;
 
     const rateLimited = rateLimit(`sync:ga4:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { fetchMetaAdAccounts, fetchMetaCampaigns, fetchMetaInsights } from '@/lib/connectors/meta-ads';
 import { rateLimit } from '@/lib/rate-limit';
-import { verifyIntegrationInWorkspace } from '@/lib/auth-guard';
+import { verifyIntegrationInWorkspace, verifyWorkspaceAccess } from '@/lib/auth-guard';
 import {
   exchangeForLongLivedToken,
   isMetaTokenExpired,
@@ -47,6 +47,9 @@ async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
 export async function POST(req: NextRequest) {
   try {
     const { integration_id, workspace_id, ad_account_id } = await req.json();
+
+    const auth = await verifyWorkspaceAccess(req, workspace_id);
+    if (auth instanceof NextResponse) return auth;
 
     const rateLimited = rateLimit(`sync:meta:${workspace_id}`, 5, 60 * 1000);
     if (rateLimited) return rateLimited;
@@ -224,6 +227,6 @@ export async function POST(req: NextRequest) {
     if (msg.includes('OAuthException') || msg.includes('permission') || msg.includes('token') || msg.includes('Session has expired') || msg.includes('Error validating access token')) {
       return NextResponse.json({ error: 'Meta token expired or missing permissions. Please reconnect Meta Ads in Settings.' }, { status: 401 });
     }
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
