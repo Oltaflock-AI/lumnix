@@ -23,7 +23,7 @@ export interface AuthContext {
  */
 export async function authenticateRequest(
   req: NextRequest,
-  options?: { workspaceIdParam?: string }
+  options?: { workspaceIdParam?: string; body?: Record<string, unknown> }
 ): Promise<AuthContext | NextResponse> {
   const authHeader = req.headers.get('authorization');
   if (!authHeader) {
@@ -36,9 +36,12 @@ export async function authenticateRequest(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Get workspace_id from query params or request body
+  // Get workspace_id from query params first, then from pre-parsed body
   const paramName = options?.workspaceIdParam || 'workspace_id';
-  const workspaceId = req.nextUrl.searchParams.get(paramName);
+  const workspaceId =
+    req.nextUrl.searchParams.get(paramName) ||
+    (options?.body?.[paramName] as string | undefined) ||
+    null;
 
   if (!workspaceId) {
     return NextResponse.json({ error: 'Missing workspace_id' }, { status: 400 });

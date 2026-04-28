@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { callClaude } from '@/lib/anthropic';
 import { rateLimit } from '@/lib/rate-limit';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 // GET /api/competitors/keyword-gap?workspace_id=xxx&competitor_id=yyy
 export async function GET(req: NextRequest) {
@@ -11,6 +12,9 @@ export async function GET(req: NextRequest) {
   if (!workspaceId) {
     return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
   }
+
+  const auth = await verifyWorkspaceAccess(req, workspaceId);
+  if (auth instanceof NextResponse) return auth;
 
   const db = getSupabaseAdmin();
 
@@ -50,6 +54,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { workspace_id, competitor_id } = body;
+
+  const auth = await verifyWorkspaceAccess(req, workspace_id);
+  if (auth instanceof NextResponse) return auth;
 
   // Rate limit: 3 analysis requests per minute per workspace
   if (workspace_id) {

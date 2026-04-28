@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { checkPlanLimit } from '@/lib/plan-limits';
 import { safeFetchUrl } from '@/lib/url-guard';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 function sanitizeHttpsUrl(input: unknown): string | null {
   if (typeof input !== 'string' || !input.trim()) return null;
@@ -27,6 +28,9 @@ export async function POST(req: NextRequest) {
   if (facebook_page_name.length > 200) {
     return NextResponse.json({ error: 'facebook_page_name too long' }, { status: 400 });
   }
+
+  const auth = await verifyWorkspaceAccess(req, workspace_id);
+  if (auth instanceof NextResponse) return auth;
 
   const supabase = getSupabaseAdmin();
 

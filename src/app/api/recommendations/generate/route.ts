@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { callClaude } from '@/lib/anthropic';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 // GET /api/recommendations/generate?workspace_id=xxx
 export async function GET(req: NextRequest) {
   const workspaceId = req.nextUrl.searchParams.get('workspace_id');
   if (!workspaceId) return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
+
+  const auth = await verifyWorkspaceAccess(req, workspaceId);
+  if (auth instanceof NextResponse) return auth;
 
   const db = getSupabaseAdmin();
 
@@ -110,6 +114,9 @@ Prioritize: high-impact quick wins > anomalies to address > competitive gaps > g
 export async function PATCH(req: NextRequest) {
   const { id, workspace_id } = await req.json();
   if (!id || !workspace_id) return NextResponse.json({ error: 'id and workspace_id required' }, { status: 400 });
+
+  const auth = await verifyWorkspaceAccess(req, workspace_id);
+  if (auth instanceof NextResponse) return auth;
 
   const db = getSupabaseAdmin();
   await db.from('recommendations').update({ is_dismissed: true }).eq('id', id).eq('workspace_id', workspace_id);

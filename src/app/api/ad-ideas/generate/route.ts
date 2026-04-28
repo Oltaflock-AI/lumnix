@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { callClaude } from '@/lib/anthropic';
 import { rateLimit } from '@/lib/rate-limit';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 // POST /api/ad-ideas/generate
 // Body: { workspace_id, competitor_id?, platform: 'google_ads' | 'meta_ads', context?: string }
@@ -11,6 +12,9 @@ export async function POST(req: NextRequest) {
   if (!workspace_id || !platform) {
     return NextResponse.json({ error: 'workspace_id and platform required' }, { status: 400 });
   }
+
+  const auth = await verifyWorkspaceAccess(req, workspace_id);
+  if (auth instanceof NextResponse) return auth;
 
   const rateLimited = rateLimit(`adgen:${workspace_id}`, 5, 60 * 1000);
   if (rateLimited) return rateLimited;
@@ -24,8 +28,8 @@ export async function POST(req: NextRequest) {
   // Gather context: workspace keywords, competitor info, existing ads
   const [gscRes, competitorRes, gapRes] = await Promise.allSettled([
     db.from('gsc_data').select('query, clicks, impressions').eq('workspace_id', workspace_id).order('clicks', { ascending: false }).limit(30),
-    competitor_id ? db.from('competitors').select('name, domain').eq('id', competitor_id).single() : Promise.resolve({ data: null }),
-    competitor_id ? db.from('keyword_gaps').select('keyword, recommended_action').eq('competitor_id', competitor_id).limit(10) : Promise.resolve({ data: [] }),
+    competitor_id ? db.from('competitors').select('name, domain').eq('id', competitor_id).eq('workspace_id', workspace_id).single() : Promise.resolve({ data: null }),
+    competitor_id ? db.from('keyword_gaps').select('keyword, recommended_action').eq('competitor_id', competitor_id).eq('workspace_id', workspace_id).limit(10) : Promise.resolve({ data: [] }),
   ]);
 
   const topKeywords = (gscRes.status === 'fulfilled' ? gscRes.value.data || [] : []).map((r: any) => r.query).slice(0, 15);

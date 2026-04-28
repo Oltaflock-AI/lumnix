@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 type AttributionModel = 'first_touch' | 'last_touch' | 'linear';
 
@@ -135,6 +136,9 @@ function mapSourceToChannel(source: string): string {
 export async function GET(req: NextRequest) {
   const workspaceId = req.nextUrl.searchParams.get('workspace_id');
   if (!workspaceId) return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
+
+  const auth = await verifyWorkspaceAccess(req, workspaceId);
+  if (auth instanceof NextResponse) return auth;
 
   const model = (req.nextUrl.searchParams.get('model') || 'last_touch') as AttributionModel;
   const now = new Date();
