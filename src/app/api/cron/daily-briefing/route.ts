@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { escapeHtml } from '@/lib/html-escape';
 
-// GET /api/cron/daily-briefing — generates daily briefing for all workspaces
+// GET /api/cron/daily-briefing — generates monthly briefing for all workspaces (1st of month, 8 AM UTC)
+// Route name retained for backwards compatibility; cadence is monthly.
 export async function GET(req: NextRequest) {
   // Auth validated by middleware — defense-in-depth check
   const cronSecret = process.env.CRON_SECRET;
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
   const db = getSupabaseAdmin();
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+  const weekAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
 
   // Get all workspaces with connected integrations
   const { data: integrations } = await db.from('integrations')
@@ -52,10 +53,10 @@ export async function GET(req: NextRequest) {
 
       // Build changes array
       const changes: any[] = [];
-      if (sessions > 0) changes.push({ metric: 'Sessions', value: sessions, period: '7d' });
-      if (gscClicks > 0) changes.push({ metric: 'Organic Clicks', value: gscClicks, period: '7d' });
-      if (totalSpend > 0) changes.push({ metric: 'Ad Spend', value: `₹${totalSpend.toFixed(0)}`, period: '7d' });
-      if (roas > 0) changes.push({ metric: 'ROAS', value: `${roas}x`, period: '7d' });
+      if (sessions > 0) changes.push({ metric: 'Sessions', value: sessions, period: '30d' });
+      if (gscClicks > 0) changes.push({ metric: 'Organic Clicks', value: gscClicks, period: '30d' });
+      if (totalSpend > 0) changes.push({ metric: 'Ad Spend', value: `₹${totalSpend.toFixed(0)}`, period: '30d' });
+      if (roas > 0) changes.push({ metric: 'ROAS', value: `${roas}x`, period: '30d' });
 
       // Build recommendations
       const recommendations: any[] = [];
@@ -71,8 +72,8 @@ export async function GET(req: NextRequest) {
       if (totalSpend > 0) parts.push(`₹${totalSpend.toFixed(0)} ad spend (${roas}x ROAS)`);
       const anomalyNote = unreadAnomalies.length > 0 ? `${unreadAnomalies.length} anomalies need attention.` : 'No anomalies detected.';
       let summary = parts.length > 0
-        ? `Weekly snapshot: ${parts.join(', ')}. ${anomalyNote}`
-        : `No new data this week. ${anomalyNote} Connect more integrations to get richer briefings.`;
+        ? `Monthly snapshot (last 30 days): ${parts.join(', ')}. ${anomalyNote}`
+        : `No new data this month. ${anomalyNote} Connect more integrations to get richer briefings.`;
 
       const apiKey = process.env.ANTHROPIC_API_KEY;
       if (apiKey && changes.length > 0) {
@@ -83,7 +84,7 @@ export async function GET(req: NextRequest) {
             body: JSON.stringify({
               model: 'claude-haiku-4-5-20251001',
               max_tokens: 300,
-              messages: [{ role: 'user', content: `Write a 2-3 sentence daily marketing briefing based on this data: ${JSON.stringify({ changes, recommendations, anomalies: unreadAnomalies.length })}. Be concise, mention specific numbers, and end with one actionable suggestion.` }],
+              messages: [{ role: 'user', content: `Write a 2-3 sentence monthly marketing briefing (last 30 days) based on this data: ${JSON.stringify({ changes, recommendations, anomalies: unreadAnomalies.length })}. Be concise, mention specific numbers, and end with one actionable suggestion.` }],
             }),
           });
           if (aiRes.ok) {
@@ -117,9 +118,9 @@ export async function GET(req: NextRequest) {
               body: JSON.stringify({
                 from: 'Lumnix <hello@oltaflock.ai>',
                 to: [email],
-                subject: `Lumnix Daily Briefing — ${String(workspace.name).slice(0, 60)}`,
+                subject: `Lumnix Monthly Briefing — ${String(workspace.name).slice(0, 60)}`,
                 html: `<div style="font-family: -apple-system, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px; background: #0A0A0A; color: #E5E5E5;">
-                  <h2 style="color: #7C3AED; margin-bottom: 16px;">Daily Briefing</h2>
+                  <h2 style="color: #7C3AED; margin-bottom: 16px;">Monthly Briefing</h2>
                   <p style="line-height: 1.7; font-size: 15px;">${escapeHtml(summary)}</p>
                   ${recommendations.length > 0 ? `<hr style="border: none; border-top: 1px solid #222; margin: 20px 0;">
                   <h3 style="font-size: 14px; color: #888; margin-bottom: 10px;">Recommended Actions</h3>

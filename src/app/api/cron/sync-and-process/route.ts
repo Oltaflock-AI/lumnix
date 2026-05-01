@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET /api/cron/sync-and-process — consolidated daily cron (2 AM UTC)
-// Runs in order: sync → sync-all → detect-anomalies → spy-agent → generate-recommendations → daily-briefing
+// Runs in order: sync → sync-all → detect-anomalies → spy-agent → generate-recommendations
+// Note: daily-briefing moved to monthly cron (see vercel.json) — was generating noisy daily emails.
 export async function GET(req: NextRequest) {
   // Auth validated by middleware — defense-in-depth check
   const cronSecret = process.env.CRON_SECRET;
@@ -18,7 +19,6 @@ export async function GET(req: NextRequest) {
     { name: 'detect-anomalies', path: '/api/cron/detect-anomalies' },
     { name: 'spy-agent', path: '/api/cron/spy-agent' },
     { name: 'generate-recommendations', path: '/api/cron/generate-recommendations' },
-    { name: 'daily-briefing', path: '/api/cron/daily-briefing' },
   ];
 
   const results: Record<string, { status: string; duration_ms: number; error?: string }> = {};
