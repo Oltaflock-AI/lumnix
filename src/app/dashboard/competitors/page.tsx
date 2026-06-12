@@ -11,6 +11,7 @@ import { useWorkspaceCtx } from '@/lib/workspace-context';
 import { useCompetitors } from '@/lib/hooks';
 import { apiFetch } from '@/lib/api-fetch';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { AdCreativeBreakdown } from '@/components/AdCreativeBreakdown';
 
 /* ── Helpers ── */
 function timeAgo(s: string | null): string {
@@ -38,6 +39,7 @@ export default function CompetitorsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('ads');
+  const [breakdownAd, setBreakdownAd] = useState<any | null>(null);
 
   // Add competitor modal
   const [showAddModal, setShowAddModal] = useState(false);
@@ -405,6 +407,7 @@ export default function CompetitorsPage() {
               isScraping={isCompScraping(selectedCompetitor)}
               onRefresh={() => fetchAds(selectedId!, adsFilter)}
               competitorName={selectedCompetitor.name}
+              onOpenAd={setBreakdownAd}
             />
           ) : (
             <BriefTabContent
@@ -553,6 +556,8 @@ export default function CompetitorsPage() {
         onCancel={() => setPendingDeleteId(null)}
         onConfirm={confirmDelete}
       />
+
+      <AdCreativeBreakdown ad={breakdownAd} onClose={() => setBreakdownAd(null)} />
     </PageShell>
   );
 }
@@ -707,7 +712,7 @@ function CompetitorCard({
 
 /* ═════ ADS TAB ═════ */
 function AdsTabContent({
-  c, ads, allAds, loading, filter, setFilter, total, isScraping, onRefresh, competitorName,
+  c, ads, allAds, loading, filter, setFilter, total, isScraping, onRefresh, competitorName, onOpenAd,
 }: {
   c: any;
   ads: any[];
@@ -719,6 +724,7 @@ function AdsTabContent({
   isScraping: boolean;
   onRefresh: () => void;
   competitorName: string;
+  onOpenAd: (ad: any) => void;
 }) {
   if (isScraping && allAds.length === 0) {
     return (
@@ -786,7 +792,7 @@ function AdsTabContent({
       ) : (
         <div className="lx-spy-ads">
           {allAds.map((ad: any) => (
-            <AdRow key={ad.id} ad={ad} competitorName={competitorName} />
+            <AdRow key={ad.id} ad={ad} competitorName={competitorName} onOpen={onOpenAd} />
           ))}
         </div>
       )}
@@ -795,7 +801,7 @@ function AdsTabContent({
 }
 
 /* ═════ AD ROW ═════ */
-function AdRow({ ad, competitorName }: { ad: any; competitorName: string }) {
+function AdRow({ ad, competitorName, onOpen }: { ad: any; competitorName: string; onOpen: (ad: any) => void }) {
   const tier = ad.performance_tier === 'top_performer'
     ? { label: 'Top', className: 'lx-spy-status--top' }
     : ad.performance_tier === 'winning'
@@ -805,7 +811,13 @@ function AdRow({ ad, competitorName }: { ad: any; competitorName: string }) {
     : { label: 'Active', className: 'lx-spy-status--active' };
 
   return (
-    <div className="lx-spy-ad">
+    <div
+      className="lx-spy-ad lx-spy-ad--clickable"
+      onClick={() => onOpen(ad)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(ad); } }}
+    >
       <div className="lx-spy-ad-icon">
         {ad.image_url ? <img src={ad.image_url} alt="" /> : 'FB'}
       </div>
@@ -831,17 +843,13 @@ function AdRow({ ad, competitorName }: { ad: any; competitorName: string }) {
           )}
         </div>
       </div>
-      <span className={`lx-spy-status ${tier.className}`}>{tier.label}</span>
-      {ad.ad_snapshot_url && (
-        <a
-          href={ad.ad_snapshot_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="lx-spy-ad-link"
-        >
-          View <ExternalLink size={11} />
-        </a>
+      {ad.ai_analyzed && (
+        <span className="lx-spy-ad-analyzed"><Sparkles size={11} /> Breakdown</span>
       )}
+      <span className={`lx-spy-status ${tier.className}`}>{tier.label}</span>
+      <span className="lx-spy-ad-link" aria-hidden="true">
+        Analyze <ChevronRight size={13} />
+      </span>
     </div>
   );
 }
