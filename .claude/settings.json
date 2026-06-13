@@ -39,7 +39,8 @@
       "Bash(awk 'NR>=185 && NR<=215' src/app/dashboard/competitors/page.tsx)",
       "Bash(awk 'NR>=1 && NR<=45' src/app/mono.css)",
       "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('src/app/mono.css','utf8'\\); const o=\\(s.match\\(/{/g\\)||[]\\).length, c=\\(s.match\\(/}/g\\)||[]\\).length; console.log\\('open',o,'close',c, o===c?'OK':'MISMATCH'\\)\")",
-      "Bash(gh pr create --base main --head khush0030/ad-spy-supabase-worker --title 'Ad-spy: Supabase queue + Windows/VPS worker + cleaner breakdown UI' --body ' *)"
+      "Bash(gh pr create --base main --head khush0030/ad-spy-supabase-worker --title 'Ad-spy: Supabase queue + Windows/VPS worker + cleaner breakdown UI' --body ' *)",
+      "Bash(gh pr *)"
     ]
   }
 }

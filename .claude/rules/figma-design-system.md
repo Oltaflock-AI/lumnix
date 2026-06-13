@@ -116,7 +116,7 @@ Defined in globals.css — use these instead of re-implementing:
 
 - [CLAUDE.md](../../CLAUDE.md) — root project instructions
 - [LUMNIX_MASTER_PLAN.md](../../LUMNIX_MASTER_PLAN.md) — product vision, pillars
-- `UI:UX-SKILL.md` (if present) — 99 UI rules, pre-delivery checklist
+- `UI-UX-SKILL.md` (if present) — 99 UI rules, pre-delivery checklist
 - `CLAUDE_CODE_MASTER.md` (if present) — single source of truth per user memory
 
 ## What to Reject from Figma Output
