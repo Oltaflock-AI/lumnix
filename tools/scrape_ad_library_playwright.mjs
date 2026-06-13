@@ -24,6 +24,16 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 
+// ── env (for standalone runs; when spawned by spy_pipeline the parent's
+//    process.env — incl. SCRAPER_PROXY — is already inherited) ───────────
+const ENV_FILE = fs.existsSync('.env.local') ? '.env.local' : fs.existsSync('.env') ? '.env' : null;
+if (ENV_FILE) {
+  for (const line of fs.readFileSync(ENV_FILE, 'utf8').split('\n')) {
+    const m = line.match(/^([A-Z_][A-Z0-9_]*)=["']?(.*?)["']?$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+}
+
 // ── args ────────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const flag = (name) => {
@@ -38,6 +48,24 @@ const COUNTRY = flag('country') || 'ALL';
 const MAX_ADS = parseInt(flag('max') || '50', 10);
 const HEADFUL = has('headful');
 const DUMP_RAW = has('raw');
+
+// ── proxy (residential exit so Meta doesn't soft-block the datacenter IP) ──
+// Accepts a full URL: http://user:pass@host:port  (or socks5://...)
+const PROXY_URL = flag('proxy') || process.env.SCRAPER_PROXY || '';
+function parseProxy(url) {
+  if (!url) return undefined;
+  try {
+    const u = new URL(url);
+    const proxy = { server: `${u.protocol}//${u.host}` };
+    if (u.username) proxy.username = decodeURIComponent(u.username);
+    if (u.password) proxy.password = decodeURIComponent(u.password);
+    return proxy;
+  } catch {
+    console.error(`⚠️  invalid proxy value, ignoring: ${url}`);
+    return undefined;
+  }
+}
+const PROXY = parseProxy(PROXY_URL);
 
 if (!QUERY && !PAGE_ID) {
   console.error('Usage: node tools/scrape_ad_library_playwright.mjs --q "<brand>" [--country IN] [--max 50]');
@@ -150,9 +178,11 @@ console.log(`─── Meta Ad Library scrape ───`);
 console.log(`target : ${QUERY ? `q="${QUERY}"` : `page_id=${PAGE_ID}`} country=${COUNTRY} max=${MAX_ADS}`);
 console.log(`url    : ${URL}\n`);
 
+if (PROXY) console.log(`proxy  : ${PROXY.server}${PROXY.username ? ' (authed)' : ''}`);
 const browser = await chromium.launch({
   headless: !HEADFUL,
   args: ['--disable-blink-features=AutomationControlled'],
+  ...(PROXY ? { proxy: PROXY } : {}),
 });
 const ctx = await browser.newContext({
   locale: 'en-US',

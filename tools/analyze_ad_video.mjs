@@ -69,18 +69,21 @@ function videoDuration(file) {
 
 function extractFrames(file, dir) {
   const dur = videoDuration(file);
-  // Dense in the hook window (first 3s), then spread across the rest. Max 12.
-  const times = [0.3, 1.0, 2.0, 3.0];
-  const rest = Math.min(8, Math.max(2, Math.floor(dur / 4)));
+  // Dense across the hook (first 5s — capture every caption/scene change), then
+  // sample the rest. Up to ~18 frames so Claude can read the on-screen script
+  // and track every scene transition.
+  const times = [0.3, 0.8, 1.5, 2.2, 3.0, 4.0, 5.0];
+  const rest = Math.min(11, Math.max(3, Math.floor((dur - 5) / 3)));
   for (let i = 1; i <= rest; i++) {
-    const t = 3 + ((dur - 3.5) * i) / rest;
-    if (t > 3.2 && t < dur) times.push(parseFloat(t.toFixed(1)));
+    const t = 5 + ((dur - 5.5) * i) / rest;
+    if (t > 5.2 && t < dur) times.push(parseFloat(t.toFixed(1)));
   }
   const frames = [];
   for (const t of times) {
+    if (t >= dur) continue;
     const out = path.join(dir, `f_${t}.jpg`);
     try {
-      execFileSync('ffmpeg', ['-ss', String(t), '-i', file, '-frames:v', '1', '-vf', 'scale=720:-2', '-q:v', '4', '-y', out], { stdio: 'pipe' });
+      execFileSync('ffmpeg', ['-ss', String(t), '-i', file, '-frames:v', '1', '-vf', 'scale=768:-2', '-q:v', '3', '-y', out], { stdio: 'pipe' });
       if (fs.existsSync(out) && fs.statSync(out).size > 1000) frames.push({ t, file: out });
     } catch { /* frame beyond EOF — skip */ }
   }
@@ -88,28 +91,76 @@ function extractFrames(file, dir) {
 }
 
 // ── analysis schema (what we ask Claude to fill) ─────────────────────────
-const SYSTEM = `You are a world-class direct-response creative strategist who reverse-engineers winning Meta ads for B2C brands. You are given frames from a competitor's ad video (timestamps labeled), plus its metadata (ad copy, CTA, days running — long run time on Meta means the ad is profitable). Captions burned into frames usually carry the spoken script — read them.
+const SYSTEM = `You are a world-class direct-response creative strategist and performance-marketing analyst who reverse-engineers winning Meta/Instagram ads for B2C brands. You are given timestamped frames from a competitor's ad video plus metadata (ad copy, CTA, days running — a long run on Meta means the ad is profitable and worth copying). Burned-in captions usually carry the spoken script — read them carefully and reconstruct the script.
 
-Analyze WHY this ad works so a brand can recreate the mechanics (not plagiarize the content). Respond with ONLY a JSON object, no markdown fences, matching exactly:
+Produce a DEEP, SPECIFIC teardown — not generic marketing platitudes. Reference exactly what you see in the frames (expressions, products, text, scenes). The goal: a brand reads this and can shoot their own version for a DIFFERENT product without guessing.
+
+Respond with ONLY a JSON object (no markdown fences) matching this exact shape. Fill every field; use null/empty array only if truly not inferable:
 
 {
-  "hook": {
-    "description": "what happens in the first 3 seconds, visually and in text",
-    "type": "one of: question | bold_claim | pattern_interrupt | problem_callout | social_proof | curiosity_gap | before_after | demonstration | ugc_testimonial | other",
-    "why_it_stops_scroll": "the psychological mechanism"
+  "one_liner": "one punchy sentence: what kind of ad this is and its core mechanic",
+  "summary": "3-4 sentence verdict a strategist would give — what it is, why it converts, who it's for",
+  "scores": {
+    "hook_strength": 0, "scroll_stop_power": 0, "message_clarity": 0,
+    "emotional_pull": 0, "cta_strength": 0, "overall": 0,
+    "_note": "each 1-10 integer; overall is your weighted judgment, not an average"
   },
-  "pain_point": "the customer problem the ad targets, in one sentence",
-  "offer_structure": "what is being offered and how it is framed (discount/bundle/trial/claim)",
-  "emotional_triggers": ["list", "of", "triggers"],
-  "structure": [
-    {"phase": "hook | problem | agitation | solution | proof | cta", "timestamp": "0-3s", "what_happens": "..."}
-  ],
-  "visual_style": "format and production style in one sentence (ugc/studio/talking-head/product-demo/text-overlay etc.)",
-  "cta_type": "the CTA approach used",
-  "target_audience": "who this speaks to",
-  "why_it_works": ["3-5 specific reasons, referencing what you see"],
-  "replicable_formula": "a step-by-step template (numbered, one line per beat with timing) a brand could follow to make their own version for a different product",
-  "summary": "2-3 sentence plain-language verdict for a dashboard card"
+  "hook": {
+    "first_3s": "literally what happens in the first 3 seconds",
+    "visual_hook": "the visual that stops the scroll",
+    "verbal_hook": "the exact spoken/caption line that opens (quote it if visible)",
+    "text_overlay_hook": "on-screen text in the opening, or null",
+    "type": "one of: question | bold_claim | pattern_interrupt | problem_callout | social_proof | curiosity_gap | before_after | demonstration | ugc_testimonial | shock | relatable_moment | other",
+    "why_it_stops_scroll": "the precise psychological mechanism, 1-2 sentences"
+  },
+  "content_format": {
+    "format": "e.g. UGC talking-head, product demo, founder story, testimonial montage, unboxing, before/after, listicle, skit",
+    "production_style": "raw/iphone-shot vs studio-polished etc., described specifically",
+    "talent": "who's on camera (influencer/creator/founder/actor/none) and their vibe",
+    "shot_types": ["e.g. selfie close-up", "product macro", "mirror demo"],
+    "pacing": "cut frequency / energy — slow & calm vs fast jump-cuts",
+    "editing_tricks": ["zooms", "text pop-ups", "trending audio", "captions", ...],
+    "audio": "voiceover / on-camera talking / trending music / VO + music — what you can infer",
+    "captions_style": "describe the burned-in caption style, or null",
+    "aspect_ratio": "vertical 9:16 | square | horizontal — infer from frames"
+  },
+  "script": {
+    "framework": "the copy framework used: PAS | AIDA | BAB | PASTOR | star-story-solution | hook-retain-reward | other",
+    "reconstructed_script": "your best reconstruction of the spoken+text script, as flowing text",
+    "beats": [
+      {"timestamp": "0-3s", "label": "Hook", "spoken_or_text": "what is said/shown", "purpose": "what this beat does for the sale"}
+    ]
+  },
+  "messaging": {
+    "core_value_prop": "the single biggest promise",
+    "value_props": ["all distinct benefits claimed"],
+    "claims": ["specific product claims made"],
+    "objections_handled": ["objections the ad preempts"],
+    "key_phrases": ["memorable lines worth swiping"]
+  },
+  "psychology": {
+    "pain_point": "the customer problem targeted",
+    "desire": "the end-state the viewer wants",
+    "emotional_triggers": ["specific emotions evoked"],
+    "persuasion_principles": ["social_proof | authority | scarcity | reciprocity | liking | commitment | loss_aversion ..."],
+    "awareness_level": "unaware | problem_aware | solution_aware | product_aware | most_aware",
+    "target_audience": "the specific avatar this speaks to"
+  },
+  "offer": {
+    "what_is_offered": "the product/offer as framed",
+    "pricing_or_discount": "any price/discount/bundle shown, or null",
+    "urgency_or_scarcity": "any urgency device, or null",
+    "risk_reversal": "guarantee/free-trial/return, or null",
+    "cta_text": "the exact call to action",
+    "cta_type": "soft (learn more) vs hard (shop now / comment X)"
+  },
+  "why_it_works": ["4-6 SPECIFIC reasons referencing the actual creative — each a full sentence"],
+  "strengths": ["what's excellent about this ad"],
+  "weaknesses": ["honest gaps / what a brand could do better when copying it"],
+  "replicable_playbook": {
+    "steps": ["numbered, one line per beat WITH timing — a shoot-this checklist for a different product"],
+    "script_template": "a fill-in-the-blank script with [BRACKETS] the brand swaps for their product, mirroring this ad's structure and pacing"
+  }
 }`;
 
 function buildUserContent(ad, frames, duration) {
@@ -169,7 +220,7 @@ for (const ad of targets) {
     // 3. Claude
     const stream = client.messages.stream({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: 8000,
       thinking: { type: 'adaptive' },
       system: SYSTEM,
       messages: [{ role: 'user', content: buildUserContent(ad, frames, duration) }],
@@ -193,10 +244,10 @@ for (const ad of targets) {
       db: {
         ai_analyzed: true,
         ai_hook_type: analysis.hook?.type ?? null,
-        ai_pain_point: analysis.pain_point ?? null,
-        ai_offer_structure: analysis.offer_structure ?? null,
-        ai_visual_style: analysis.visual_style ?? null,
-        ai_cta_type: analysis.cta_type ?? null,
+        ai_pain_point: analysis.psychology?.pain_point ?? null,
+        ai_offer_structure: analysis.offer?.what_is_offered ?? null,
+        ai_visual_style: analysis.content_format?.format ?? null,
+        ai_cta_type: analysis.offer?.cta_type ?? null,
         ai_summary: analysis.summary ?? null,
         ai_analysis: analysis, // full rich payload — rendered by the dashboard breakdown view
       },
@@ -204,7 +255,8 @@ for (const ad of targets) {
     const out = `.tmp/analysis_${id}.json`;
     fs.writeFileSync(out, JSON.stringify(result, null, 2));
     console.log(`  ✅ ${out}`);
-    console.log(`  hook: [${analysis.hook?.type}] ${(analysis.hook?.description || '').slice(0, 90)}`);
+    console.log(`  hook: [${analysis.hook?.type}] ${(analysis.hook?.first_3s || '').slice(0, 90)}`);
+    console.log(`  scores: hook ${analysis.scores?.hook_strength}/10 · overall ${analysis.scores?.overall}/10`);
     console.log(`  why:  ${(analysis.why_it_works?.[0] || '').slice(0, 110)}`);
   } catch (e) {
     console.error(`  ❌ ${id}: ${e.message}`);
