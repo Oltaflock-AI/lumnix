@@ -19,10 +19,8 @@ you'll paste them on the Windows PC in Step 4:
 2. `SUPABASE_SERVICE_ROLE_KEY=...`
 3. `ANTHROPIC_API_KEY=...`
 
-You also need a **GitHub Personal Access Token** (PAT) to clone the private
-repo: github.com → Settings → Developer settings → Personal access tokens →
-Fine-grained token → give it read access to the `Oltaflock-AI/lumnix` repo →
-copy the token (starts with `github_pat_...`).
+That's it — the repo is public, so no GitHub login or token is needed to
+download it.
 
 ---
 
@@ -53,11 +51,11 @@ and try again (the installer needs a fresh session to update PATH).
 
 ## Step 2 — Download the project
 
-In PowerShell, paste this — **replace `YOUR_TOKEN`** with your GitHub PAT:
+In PowerShell, paste this:
 
 ```powershell
 cd $HOME
-git clone https://YOUR_TOKEN@github.com/Oltaflock-AI/lumnix.git
+git clone https://github.com/Oltaflock-AI/lumnix.git
 cd lumnix
 ```
 
