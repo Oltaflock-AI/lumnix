@@ -13,3 +13,5 @@ next-env.d.ts
 .tmp/
 *.code-workspace
 tools/_probe_*
+.claude/worktrees/
+supabase/.temp/
