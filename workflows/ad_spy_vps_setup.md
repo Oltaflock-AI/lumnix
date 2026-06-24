@@ -73,8 +73,7 @@ as in §3 — WSL2 still exits via the host's residential IP.
 ## 3. Provision the worker
 
 ```bash
-# private repo → use a GitHub PAT with repo:read
-export REPO_URL="https://<PAT>@github.com/Oltaflock-AI/lumnix.git"
+# repo is public — no PAT needed
 curl -fsSL https://raw.githubusercontent.com/Oltaflock-AI/lumnix/main/tools/vps_bootstrap.sh | bash
 ```
 

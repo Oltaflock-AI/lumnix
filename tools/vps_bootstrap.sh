@@ -3,18 +3,18 @@
 # as the ad-spy worker: Node 20 + Chromium + ffmpeg + the queue daemon.
 #
 # Usage (as a sudo-capable user on the VPS):
-#   export REPO_URL="https://<token>@github.com/Oltaflock-AI/lumnix.git"
-#   curl -fsSL <raw-url>/tools/vps_bootstrap.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/Oltaflock-AI/lumnix/main/tools/vps_bootstrap.sh | bash
 #   # …or copy this file over and: bash vps_bootstrap.sh
 #
-# After it finishes, drop secrets into /opt/lumnix/.env.local (it prints the
-# template) and: sudo systemctl restart lumnix-spy
+# Repo is public — no PAT needed. After it finishes, drop secrets into
+# /opt/lumnix/.env.local (it prints the template) and:
+#   sudo systemctl restart lumnix-spy
 set -euo pipefail
 
 APP_DIR="/opt/lumnix"
 SERVICE="lumnix-spy"
 NODE_MAJOR=20
-REPO_URL="${REPO_URL:-}"
+REPO_URL="${REPO_URL:-https://github.com/Oltaflock-AI/lumnix.git}"
 
 log() { printf '\033[1;36m▶ %s\033[0m\n' "$*"; }
 
@@ -38,7 +38,7 @@ if [ -d "$APP_DIR/.git" ]; then
   sudo git -C "$APP_DIR" pull --ff-only
 else
   if [ -z "$REPO_URL" ]; then
-    echo "REPO_URL not set and $APP_DIR has no repo. Set REPO_URL (with a PAT for the private repo) and re-run." >&2
+    echo "REPO_URL empty and $APP_DIR has no repo. Set REPO_URL and re-run." >&2
     exit 1
   fi
   log "cloning into $APP_DIR"
