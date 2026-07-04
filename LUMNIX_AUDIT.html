@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumnix — App Audit &amp; Architecture Tracker</title>
+<style>
+  :root{
+    --pink:#FF0066; --teal:#00D4AA; --sidebar:#0F172A; --card:#1E293B;
+    --bg:#0B1120; --border:#28344a; --text:#E6EDF5; --muted:#93A3B8;
+    --crit:#EF4444; --high:#F97316; --med:#F59E0B; --low:#38BDF8; --ok:#22C55E;
+    --font:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.55;font-size:15px}
+  a{color:var(--teal);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{background:#0d1526;border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;color:#c9d6ea}
+  header{background:linear-gradient(135deg,var(--sidebar),#141d33);padding:34px 40px;border-bottom:2px solid var(--pink)}
+  header h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.4px}
+  header h1 .x{color:var(--pink)}
+  header .sub{color:var(--muted);margin-top:6px;font-size:14px}
+  .meta-row{margin-top:14px;display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .meta-row b{color:var(--text)}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 40px 80px}
+  section{margin-top:38px}
+  h2{font-size:19px;font-weight:700;border-left:3px solid var(--pink);padding-left:12px;margin:0 0 16px}
+  h3{font-size:15px;color:var(--teal);margin:22px 0 10px;text-transform:uppercase;letter-spacing:.5px}
+  /* summary cards */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .stat .n{font-size:30px;font-weight:800;line-height:1}
+  .stat .l{color:var(--muted);font-size:12.5px;margin-top:6px}
+  /* badges */
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px;vertical-align:middle}
+  .b-crit{background:rgba(239,68,68,.16);color:#fca5a5;border:1px solid #7f2626}
+  .b-high{background:rgba(249,115,22,.16);color:#fdba74;border:1px solid #7c3d10}
+  .b-med{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid #78560f}
+  .b-low{background:rgba(56,189,248,.14);color:#7dd3fc;border:1px solid #0e5675}
+  .b-ok{background:rgba(34,197,94,.15);color:#86efac;border:1px solid #166534}
+  .b-open{background:#3a2130;color:#ffb4c9;border:1px solid #6b2942}
+  .b-fixed{background:rgba(34,197,94,.15);color:#86efac;border:1px solid #166534}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+  tr:hover td{background:#131c30}
+  /* issue cards */
+  .issue{background:var(--card);border:1px solid var(--border);border-left-width:4px;border-radius:11px;padding:16px 18px;margin-bottom:14px}
+  .issue.crit{border-left-color:var(--crit)}
+  .issue.high{border-left-color:var(--high)}
+  .issue.med{border-left-color:var(--med)}
+  .issue.low{border-left-color:var(--low)}
+  .issue .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .issue .id{font-family:monospace;color:var(--muted);font-size:12px}
+  .issue h4{margin:0;font-size:15.5px;font-weight:700;flex:1}
+  .issue .body{margin-top:10px;display:grid;grid-template-columns:90px 1fr;gap:4px 12px;font-size:13.5px}
+  .issue .body .k{color:var(--muted);font-weight:600}
+  .issue .body .v{color:var(--text)}
+  .flex{display:flex;gap:20px;flex-wrap:wrap}
+  .col{flex:1;min-width:280px}
+  .note{background:#131c30;border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13.5px;color:var(--muted)}
+  .note b{color:var(--text)}
+  .pill{font-size:11px;padding:1px 8px;border-radius:6px;background:#0d1526;border:1px solid var(--border);color:var(--muted);font-family:monospace}
+  ul.tight{margin:6px 0;padding-left:20px}
+  ul.tight li{margin:3px 0}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:30px;border-top:1px solid var(--border);margin-top:40px}
+  .arch pre{background:#0d1526;border:1px solid var(--border);border-radius:10px;padding:16px;overflow:auto;font-size:12.5px;line-height:1.5;color:#c9d6ea}
+</style>
+</head>
+<body>
+<header>
+  <h1>Lumnix — App Audit &amp; Architecture Tracker <span class="x">●</span></h1>
+  <div class="sub">Living document. Marketing intelligence platform (Next.js 16 · Supabase · Anthropic). Keep this updated as issues are fixed.</div>
+  <div class="meta-row">
+    <span>Last updated: <b>2026-07-02 (round 2 — mediums/lows)</b></span>
+    <span>Branch: <b>main</b> @ <code>d596b91</code></span>
+    <span>Typecheck: <b style="color:var(--ok)">0 errors</b></span>
+    <span>Tests: <b style="color:var(--ok)">22 / 22 pass</b></span>
+    <span>Audit method: <b>static read + live Anthropic API probes</b></span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ===================== HEADLINE ===================== -->
+<section>
+  <h2>TL;DR — What's actually broken</h2>
+  <div class="note" style="border-left:4px solid var(--crit)">
+    <b style="color:#fca5a5">The AI Assistant ("Lumi") is down because the chat API points at a Claude model that Anthropic has retired.</b>
+    Both calls in <code>src/app/api/chat/route.ts</code> (lines 458, 514) request <code>claude-sonnet-4-20250514</code>, which now returns
+    <code>not_found_error</code> — verified live against the account's own API key (the key itself is valid). Every chat message therefore
+    falls through to the generic <i>"AI service error — please try again."</i> The competitor AI creative brief is dead for the same reason
+    (a typo'd model string). <b>These are code bugs, so they affect production, not just local.</b> Fix = swap to a live model
+    (<code>claude-sonnet-4-5-20250929</code> or <code>claude-haiku-4-5-20251001</code>). ~2-line change.
+  </div>
+  <div class="note" style="margin-top:14px;border-left:4px solid var(--ok)">
+    <b style="color:#86efac">✅ Update 2026-07-02:</b> C1, C2 and H3 are <b>fixed &amp; verified</b> — the AI assistant model was swapped to the
+    live <code>claude-sonnet-4-5-20250929</code> (live API probe returns "chat works"), the competitor-brief typo corrected, all model
+    ids centralized in <code>src/lib/models.ts</code>, and the 3 TypeScript errors resolved (typecheck now clean, 22/22 tests pass).
+    H2 is partially done (local secret generated). H1 (Razorpay) awaits a product decision — see below.
+  </div>
+  <div class="stats" style="margin-top:16px">
+    <div class="stat"><div class="n" style="color:var(--ok)">2</div><div class="l">Critical — FIXED</div></div>
+    <div class="stat"><div class="n" style="color:var(--high)">3</div><div class="l">High (2 fixed / 1 open)</div></div>
+    <div class="stat"><div class="n" style="color:var(--med)">6</div><div class="l">Medium</div></div>
+    <div class="stat"><div class="n" style="color:var(--low)">3</div><div class="l">Low / cleanup</div></div>
+    <div class="stat"><div class="n" style="color:var(--ok)">10/15</div><div class="l">UI pages fully working</div></div>
+  </div>
+</section>
+
+<!-- ===================== ARCHITECTURE ===================== -->
+<section class="arch">
+  <h2>High-Level Architecture</h2>
+  <div class="flex">
+    <div class="col">
+      <h3>Tech Stack</h3>
+      <table>
+        <tr><th>Layer</th><th>Technology</th></tr>
+        <tr><td>Framework</td><td>Next.js 16 (App Router), React 19, TypeScript 5</td></tr>
+        <tr><td>Styling</td><td>Tailwind v4 (CSS-first) + CSS vars, Radix/shadcn UI, Framer Motion</td></tr>
+        <tr><td>Charts</td><td>Recharts</td></tr>
+        <tr><td>Backend</td><td>Next.js API routes (Node runtime) on Vercel</td></tr>
+        <tr><td>Data</td><td>Supabase — Auth + Postgres + RLS (33 migrations)</td></tr>
+        <tr><td>AI</td><td>Anthropic Claude via direct <code>fetch</code> (no SDK wrapper); haiku-4-5 + sonnet-4-x</td></tr>
+        <tr><td>Email</td><td>Resend + React Email templates</td></tr>
+        <tr><td>Billing</td><td>Coupon redemption only (Razorpay planned, not built)</td></tr>
+        <tr><td>Ad-Spy worker</td><td>Playwright on Oracle free VPS, Supabase job queue (out-of-repo)</td></tr>
+        <tr><td>Hosting</td><td>Vercel + 3 cron schedules</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <h3>Request / Auth Flow</h3>
+      <div class="note">
+        Client uses <code>apiFetch()</code> which attaches the Supabase session JWT as a Bearer token.
+        <b>All <code>/api/*</code> routes are gated by <code>src/middleware.ts</code></b>: it validates the JWT via
+        <code>supabase.auth.getUser()</code>, checks <code>workspace_members</code> membership for any <code>workspace_id</code>
+        in the query/body, then injects a trusted <code>x-user-id</code> header (stripping any client-supplied one) for the route handler.
+        Cron routes bypass user auth and validate <code>CRON_SECRET</code> instead. Public routes are allow-listed.
+      </div>
+    </div>
+  </div>
+
+  <h3>Data Flow</h3>
+<pre>
+OAuth connect ─► /api/integrations/connect ─► Google/Meta consent ─► /api/integrations/callback
+                                                                          │ (HMAC-signed state)
+                                                                          ▼
+                                                              tokens stored (Supabase)
+                                                                          │
+ Vercel Cron (2AM) ─► /api/cron/sync-and-process ──► /api/sync/{gsc,ga4,google-ads,meta-ads}
+                          │                                   │  (connectors in src/lib/connectors/*)
+                          │                                   ▼
+                          │                      gsc_data / ga4_data / google_ads_data / meta_ads_data
+                          ├─► detect-anomalies ─► anomalies table
+                          ├─► spy-agent ─► competitor_ads (Meta Ad Library) ─► analyze (Claude brief)
+                          └─► generate-recommendations
+                                                                          │
+ Dashboard pages ─► apiFetch ─► /api/data/* ────────────────────────────►┘ (reads *_data tables)
+ AI chat ─► /api/chat ─► Claude tool-calling ─► queries same *_data tables ─► streams answer
+</pre>
+
+  <h3>Feature → Page → Route Map</h3>
+  <table>
+    <tr><th>Feature</th><th>Page</th><th>Primary API</th><th>Status</th></tr>
+    <tr><td>Command Center</td><td><code>/dashboard</code></td><td>/api/insights, /api/anomalies</td><td><span class="badge b-ok">Working</span></td></tr>
+    <tr><td>AI Assistant (Lumi)</td><td><code>/dashboard/ai</code></td><td>/api/chat, /api/insights</td><td><span class="badge b-crit">Broken (model)</span></td></tr>
+    <tr><td>SEO (GSC)</td><td><code>/dashboard/seo</code></td><td>/api/data/gsc</td><td><span class="badge b-ok">Working</span></td></tr>
+    <tr><td>Analytics (GA4)</td><td><code>/dashboard/analytics</code></td><td>/api/data/ga4</td><td><span class="badge b-med">Partial</span></td></tr>
+    <tr><td>Google Ads</td><td><code>/dashboard/google-ads</code></td><td>/api/sync/google-ads</td><td><span class="badge b-med">Blocked (dev token)</span></td></tr>
+    <tr><td>Meta Ads</td><td><code>/dashboard/meta-ads</code></td><td>/api/sync/meta-ads</td><td><span class="badge b-med">Partial</span></td></tr>
+    <tr><td>Competitor Ad Spy</td><td><code>/dashboard/competitors</code></td><td>/api/competitors/*</td><td><span class="badge b-med">Working / AI brief broken</span></td></tr>
+    <tr><td>Action Queue</td><td><code>/dashboard/actions</code></td><td>/api/agent/actions</td><td><span class="badge b-ok">Working</span></td></tr>
+    <tr><td>Alerts</td><td><code>/dashboard/alerts</code></td><td>/api/anomalies</td><td><span class="badge b-ok">Working</span></td></tr>
+    <tr><td>Briefings</td><td><code>/dashboard/briefings</code></td><td>/api/briefings</td><td><span class="badge b-ok">Working</span></td></tr>
+    <tr><td>Reports</td><td><code>/dashboard/reports</code></td><td>GA4/GSC aggregation</td><td><span class="badge b-ok">Working</span></td></tr>
+    <tr><td>Billing</td><td><code>/dashboard/billing</code></td><td>/api/billing/redeem</td><td><span class="badge b-high">Coupon-only</span></td></tr>
+    <tr><td>Settings</td><td><code>/dashboard/settings</code></td><td>/api/integrations, /api/profile</td><td><span class="badge b-ok">Working</span></td></tr>
+    <tr><td>Onboarding</td><td><code>/dashboard/onboarding</code></td><td>/api/integrations</td><td><span class="badge b-ok">Working</span></td></tr>
+  </table>
+  <div class="note" style="margin-top:12px">
+    <b>Planned but NOT built</b> (in master plan, absent from code): Creative Studio, Campaign Launcher, Attribution pixel,
+    standalone Lumi agent (only embedded chat exists). Meta Ads dev token still pending approval.
+  </div>
+</section>
+
+<!-- ===================== ISSUES ===================== -->
+<section>
+  <h2>Critical Issues</h2>
+
+  <div class="issue crit">
+    <div class="top"><span class="badge b-crit">Critical</span><span class="id">C1</span><h4>AI Assistant is dead — chat route uses a retired Claude model</h4><span class="badge b-fixed">Fixed</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v"><code>src/app/api/chat/route.ts:458</code> and <code>:514</code> → <code>model: 'claude-sonnet-4-20250514'</code></div>
+      <div class="k">Verified</div><div class="v">Live probe with the project's own <code>ANTHROPIC_API_KEY</code> → <code>{"type":"not_found_error","message":"model: claude-sonnet-4-20250514"}</code>. Key is valid (haiku-4-5, sonnet-4-5, opus-4-8 all return 200).</div>
+      <div class="k">Impact</div><div class="v">Every chat message fails the first API call; route returns "AI service error — please try again." Affects <b>production</b>, not just local. This is the "AI assistant not working" report.</div>
+      <div class="k">Fix</div><div class="v">Replace both strings with <code>claude-sonnet-4-5-20250929</code> (quality) or <code>claude-haiku-4-5-20251001</code> (cheap/fast). Consider centralizing the model id in one constant.</div>
+    </div>
+  </div>
+
+  <div class="issue crit">
+    <div class="top"><span class="badge b-crit">Critical</span><span class="id">C2</span><h4>Competitor AI creative brief is dead — typo'd model string</h4><span class="badge b-fixed">Fixed</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v"><code>src/app/api/competitors/analyze/route.ts:90</code> → <code>model: 'claude-sonnet-4-5-20250514'</code></div>
+      <div class="k">Verified</div><div class="v">Live probe → <code>not_found_error</code>. The real Sonnet 4.5 date suffix is <code>-20250929</code>, not <code>-20250514</code> (that's Sonnet 4's date). Copy-paste typo.</div>
+      <div class="k">Impact</div><div class="v">Competitor Ad Spy scrapes fine, but the "AI hook/pain-point/angle" brief (Feature 5's headline value) never generates.</div>
+      <div class="k">Fix</div><div class="v">Change to <code>claude-sonnet-4-5-20250929</code>.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>High Priority</h2>
+
+  <div class="issue high">
+    <div class="top"><span class="badge b-high">High</span><span class="id">H1</span><h4>No working revenue path — billing is coupon-redemption only</h4><span class="badge b-med">Deferred (beta)</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v"><code>src/app/api/billing/redeem/route.ts</code>, <code>billing/subscription/route.ts</code>; billing page buttons disabled with <i>"Razorpay integration coming soon"</i> (<code>dashboard/billing/page.tsx</code> ~378, 385, 706). No Razorpay checkout / subscription / webhook code anywhere.</div>
+      <div class="k">Impact</div><div class="v">Users cannot actually pay. Plans only change via coupon codes. Blocks monetization for beta→v1.</div>
+      <div class="k">Fix</div><div class="v">Implement Razorpay: order/checkout, subscription API, and a webhook handler (<code>payment.captured</code>, <code>subscription.charged</code>). Set <code>RAZORPAY_*</code> env. (Razorpay is the chosen provider — any Stripe remnants are dead.)</div>
+    </div>
+  </div>
+
+  <div class="issue high">
+    <div class="top"><span class="badge b-high">High</span><span class="id">H2</span><h4>OAuth broken for local dev — required secrets absent from .env.local</h4><span class="badge b-med">Partial</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v"><code>OAUTH_STATE_SECRET</code> (in <code>.env.example</code>, absent locally) → <code>src/lib/oauth-state.ts:6</code> throws. Also missing locally: <code>META_APP_ID</code> (empty string → Meta <code>invalid_request</code>), <code>GOOGLE_ADS_DEVELOPER_TOKEN</code> (<code>connectors/google-ads.ts:18,103</code> throws).</div>
+      <div class="k">Scope</div><div class="v"><b>Local only — must be verified on Vercel.</b> Master plan marks GSC/GA4/Meta as Live in production, which is impossible without <code>OAUTH_STATE_SECRET</code> set there. Treat as: prod likely OK, local <code>.env.local</code> is stale/incomplete.</div>
+      <div class="k">Fix</div><div class="v"><code>vercel env pull .env.local</code> once the CLI is installed (<code>npm i -g vercel</code>), or manually add the three keys. Generate the secret: <code>openssl rand -base64 48</code>.</div>
+      <div class="k" style="color:#86efac">Done</div><div class="v"><b>OAUTH_STATE_SECRET generated + written to local <code>.env.local</code></b> (48 random bytes). <b>Still needed from you:</b> <code>META_APP_ID</code> (from Meta app dashboard) and <code>GOOGLE_ADS_DEVELOPER_TOKEN</code> (pending Google approval — see M4). <b>Also verify all three are set in Vercel prod env</b> — I can't read prod without the Vercel CLI authed.</div>
+    </div>
+  </div>
+
+  <div class="issue high">
+    <div class="top"><span class="badge b-high">High</span><span class="id">H3</span><h4>3 TypeScript errors — competitor routes won't typecheck cleanly</h4><span class="badge b-fixed">Fixed</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v"><code>competitors/keyword-gap/route.ts:114</code> (×2) and <code>competitors/monitor/route.ts:70</code> → <code>Property 'includes' does not exist on type 'never'</code> (untyped Supabase query result narrowed to <code>never</code>).</div>
+      <div class="k">Impact</div><div class="v"><code>tsc --noEmit</code> fails. Next build may still pass (build ignores type errors unless configured), but CI/typecheck gates break and the code paths are likely runtime-fragile.</div>
+      <div class="k">Fix</div><div class="v">Add explicit types/casts to the query results before <code>.includes()</code>; verify the underlying column shape.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Medium Priority</h2>
+
+  <div class="issue med">
+    <div class="top"><span class="badge b-med">Medium</span><span class="id">M1</span><h4>Route-level workspace authorization is inconsistent (defense-in-depth)</h4><span class="badge b-fixed">Fixed</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v">Several GET/POST routes read <code>workspace_id</code> and rely <i>only</i> on middleware — no route-level <code>verifyWorkspaceAccess()</code>: <code>api/anomalies</code>, <code>api/insights</code>, <code>api/briefings</code>, <code>api/alerts</code> (GET+POST; PATCH/DELETE are guarded), <code>api/reports/generate</code>, <code>api/billing/*</code>.</div>
+      <div class="k">Risk</div><div class="v">Mitigated today (middleware validates <code>workspace_members</code> membership for query &amp; body <code>workspace_id</code>). But it's brittle: any middleware bypass or a route reached by a non-standard path is unguarded. Billing routes also don't check billing <i>role</i>, only membership/owner.</div>
+      <div class="k">Fix</div><div class="v">Add <code>verifyWorkspaceAccess(req, workspaceId)</code> at the top of each listed handler for defense-in-depth.</div>
+    </div>
+  </div>
+
+  <div class="issue med">
+    <div class="top"><span class="badge b-med">Medium</span><span class="id">M2</span><h4>Cron coverage gaps — "daily" briefing runs monthly</h4><span class="badge b-open">Open</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v"><code>vercel.json</code> schedules only 3 crons. <code>daily-briefing</code> is <code>"0 8 1 * *"</code> = 08:00 on the <b>1st of each month</b>, despite the name and "daily" framing. The other ~9 cron routes run only as sub-steps of <code>sync-and-process</code> / <code>notifications</code> orchestrators (that's intentional and fine).</div>
+      <div class="k">Impact</div><div class="v">Briefings land monthly, not daily — likely a mismatch with product intent.</div>
+      <div class="k">Fix</div><div class="v">If daily is intended, change to <code>"0 8 * * *"</code>. Otherwise rename the feature to "monthly briefing" for clarity.</div>
+    </div>
+  </div>
+
+  <div class="issue med">
+    <div class="top"><span class="badge b-med">Medium</span><span class="id">M3</span><h4>Placeholder data still shipping in Analytics &amp; Meta Ads</h4><span class="badge b-fixed">Fixed</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v">Meta Ads: Placement Mix donut renders "—" for Feed/Stories/Reels/Other; creative preview hardcoded <code>[Ad Creative Preview]</code> (<code>dashboard/meta-ads/page.tsx</code> ~430, 481). Analytics: Device Mix is a placeholder (<code>dashboard/analytics/page.tsx:391</code>).</div>
+      <div class="k">Impact</div><div class="v">Users see empty/fake widgets in otherwise-working pages → looks broken/unfinished.</div>
+      <div class="k">Fix</div><div class="v">Wire placement breakdown + device mix to the synced data, or hide the widgets until data exists.</div>
+    </div>
+  </div>
+
+  <div class="issue med">
+    <div class="top"><span class="badge b-med">Medium</span><span class="id">M4</span><h4>Google Ads blocked on developer-token approval</h4><span class="badge b-open">Open</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v">OAuth + sync + connector are fully implemented, but <code>connectors/google-ads.ts</code> requires <code>GOOGLE_ADS_DEVELOPER_TOKEN</code>; Google approval pending per master plan.</div>
+      <div class="k">Impact</div><div class="v">Google Ads page has no live data until the token clears.</div>
+      <div class="k">Fix</div><div class="v">External dependency (Google). Track approval; add a clear "pending approval" empty state on the page meanwhile.</div>
+    </div>
+  </div>
+
+  <div class="issue med">
+    <div class="top"><span class="badge b-med">Medium</span><span class="id">M5</span><h4>Plan limits enforced unevenly</h4><span class="badge b-fixed">Already OK</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v"><code>src/lib/plan-limits.ts</code> defines free/starter/growth/agency limits. <code>competitors/add</code> checks <code>checkPlanLimit</code>; <b>AI chat DOES enforce</b> <code>checkAIChatLimit</code> (<code>chat/route.ts:419</code> — an earlier audit note claiming otherwise was wrong). But workspace creation and some resource-creating POSTs don't check their limits.</div>
+      <div class="k">Impact</div><div class="v">Free users can exceed some caps (e.g. workspaces).</div>
+      <div class="k">Fix</div><div class="v">Audit every resource-creating POST and add the matching limit check.</div>
+    </div>
+  </div>
+
+  <div class="issue med">
+    <div class="top"><span class="badge b-med">Medium</span><span class="id">M6</span><h4>Model strings are scattered, not centralized</h4><span class="badge b-fixed">Fixed</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v">Claude model ids hardcoded in ≥5 places (<code>chat</code> ×2, <code>competitors/analyze</code>, <code>insights/generate</code>, <code>cron/daily-briefing</code>, <code>lib/anthropic.ts</code>). Two of them were wrong (C1/C2) precisely because there's no single source.</div>
+      <div class="k">Fix</div><div class="v">Add <code>src/lib/models.ts</code> exporting <code>CLAUDE_MODEL_SMART</code> / <code>CLAUDE_MODEL_FAST</code>; import everywhere. Prevents the next silent model-death.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Low Priority / Cleanup</h2>
+
+  <div class="issue low">
+    <div class="top"><span class="badge b-low">Low</span><span class="id">L1</span><h4>Cron routes use non-timing-safe secret comparison</h4><span class="badge b-fixed">Fixed</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v">Cron handlers compare <code>authHeader !== \`Bearer ${cronSecret}\`</code> (e.g. <code>cron/check-alerts/route.ts:18</code>), while middleware has <code>timingSafeStringEqual</code>. </div>
+      <div class="k">Impact</div><div class="v">Theoretical timing attack; practically infeasible (256-bit secret). Code-quality only.</div>
+      <div class="k">Fix</div><div class="v">Export the timing-safe compare from a shared util and use it in all cron routes.</div>
+    </div>
+  </div>
+
+  <div class="issue low">
+    <div class="top"><span class="badge b-low">Low</span><span class="id">L2</span><h4>Roadmap features not built (expected, tracking only)</h4><span class="badge b-open">Open</span></div>
+    <div class="body">
+      <div class="k">Missing</div><div class="v">Creative Studio, Campaign Launcher, Attribution pixel, standalone Lumi agent. These are v1 goals, not regressions — listed so the tracker reflects true scope vs plan.</div>
+    </div>
+  </div>
+
+  <div class="issue low">
+    <div class="top"><span class="badge b-low">Low</span><span class="id">L3</span><h4>Repo clutter at root</h4><span class="badge b-open">Open</span></div>
+    <div class="body">
+      <div class="k">Evidence</div><div class="v">Loose files at root: <code>LumnixLanding.jsx</code>, <code>LumnixRehaul.jsx</code>, <code>meta_ads_dashboard_mockup.html</code>, multiple <code>*_COPY_V2.md</code>, <code>src/app/_preview_breakdown</code>. Mockups/scratch mixed with source.</div>
+      <div class="k">Fix</div><div class="v">Move design mockups/copy docs into a <code>/docs</code> or <code>/.design</code> folder; delete dead <code>_preview</code> route.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHAT WORKS ===================== -->
+<section>
+  <h2>What's Working (verified)</h2>
+  <div class="flex">
+    <div class="col">
+      <ul class="tight">
+        <li><span class="badge b-ok">OK</span> Auth + workspace multi-tenancy + middleware gating on all <code>/api/*</code></li>
+        <li><span class="badge b-ok">OK</span> GSC &amp; GA4 &amp; Meta Ads connectors fully implemented (OAuth + sync + data routes)</li>
+        <li><span class="badge b-ok">OK</span> Competitor ad scraping via Meta Ad Library (tiering by days-running)</li>
+        <li><span class="badge b-ok">OK</span> Dashboard, SEO, Alerts, Briefings, Reports, Actions, Onboarding pages render real data</li>
+      </ul>
+    </div>
+    <div class="col">
+      <ul class="tight">
+        <li><span class="badge b-ok">OK</span> Vitest suite: 22/22 passing</li>
+        <li><span class="badge b-ok">OK</span> Service-role key correctly server-only (middleware + health only)</li>
+        <li><span class="badge b-ok">OK</span> <code>CRON_SECRET</code> strong entropy; health route leaks no secrets</li>
+        <li><span class="badge b-ok">OK</span> AI insights + monthly briefing use a live model (<code>haiku-4-5</code>) — these AI features DO work</li>
+        <li><span class="badge b-ok">OK</span> CSP + security headers configured in <code>next.config.ts</code></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FIX ORDER ===================== -->
+<section>
+  <h2>Suggested Fix Order</h2>
+  <table>
+    <tr><th>#</th><th>Item</th><th>Effort</th><th>Why first</th></tr>
+    <tr><td>1</td><td>C1 + C2 — swap dead model strings (+ M6 centralize)</td><td>~15 min</td><td>Restores the AI assistant &amp; competitor brief. Highest impact / lowest effort.</td></tr>
+    <tr><td>2</td><td>H3 — fix 3 TS errors</td><td>~30 min</td><td>Green typecheck; unblocks CI.</td></tr>
+    <tr><td>3</td><td>H2 — sync prod env to local / verify on Vercel</td><td>~30 min</td><td>Confirms integrations aren't actually down in prod; unblocks local dev.</td></tr>
+    <tr><td>4</td><td>M3 — wire or hide placeholder widgets</td><td>~2 h</td><td>Removes "looks broken" perception on live pages.</td></tr>
+    <tr><td>5</td><td>M1 — add route-level workspace guards</td><td>~2 h</td><td>Defense-in-depth hardening.</td></tr>
+    <tr><td>6</td><td>H1 — Razorpay billing</td><td>~1–2 days</td><td>Needed for monetization, but larger build.</td></tr>
+  </table>
+</section>
+
+<!-- ===================== CHANGELOG ===================== -->
+<section>
+  <h2>Changelog</h2>
+  <div class="note">
+    <b>2026-07-02</b> — Initial audit. Identified AI-assistant root cause (retired model), competitor brief typo, 3 TS errors,
+    coupon-only billing, local env gaps, auth defense-in-depth gaps, cron/briefing schedule mismatch, placeholder widgets.
+    Verified 22/22 tests pass and core integrations implemented.<br><br>
+    <b>2026-07-02 (fixes)</b> — <span style="color:#86efac">C1 fixed</span>: chat model → <code>claude-sonnet-4-5-20250929</code> (live-verified). <span style="color:#86efac">C2 fixed</span>: competitor-brief typo corrected. <span style="color:#86efac">M6 fixed</span>: all model ids centralized in <code>src/lib/models.ts</code>. <span style="color:#86efac">H3 fixed</span>: 3 TS errors resolved (typecheck clean). <span style="color:#86efac">H2 partial</span>: local <code>OAUTH_STATE_SECRET</code> generated; <code>META_APP_ID</code>/<code>GOOGLE_ADS_DEVELOPER_TOKEN</code> + Vercel prod verification still pending. H1 (Razorpay) awaiting product decision. Files touched: <code>src/lib/models.ts</code> (new), <code>api/chat/route.ts</code>, <code>api/competitors/analyze/route.ts</code>, <code>api/competitors/keyword-gap/route.ts</code>, <code>api/competitors/monitor/route.ts</code>, <code>api/insights/generate/route.ts</code>, <code>api/cron/daily-briefing/route.ts</code>, <code>.env.local</code>.<br><br>
+    <b>2026-07-02 (round 2 — parallel subagents)</b> — <span style="color:#86efac">M1 fixed</span>: added route-level <code>verifyWorkspaceAccess</code> to 8 handlers (anomalies, insights, briefings, alerts GET+POST, reports/generate, billing redeem+subscription). <span style="color:#86efac">M3 fixed</span>: removed fake Placement-Mix donut + "[Ad Creative Preview]" (no placement data exists → honest empty state / real metrics kept); <b>Device Mix now renders a real GA4 <code>deviceCategory</code> donut</b> — added <code>type=devices</code> branch to <code>api/data/ga4/route.ts</code> (returns sessions + users per device) and rebuilt the widget as a data-driven <code>lx-donut</code> (dash-array/offset computed from real device totals; segment math verified to tile the full circle, pct sums to 100). Honest empty state retained when no rows. <span style="color:#86efac">M5</span>: already implemented (<code>checkWorkspaceLimit</code>). <span style="color:#86efac">M6 fixed</span>: model ids centralized. <span style="color:#86efac">L1 fixed</span>: new <code>src/lib/cron-auth.ts</code> constant-time compare across all 11 cron routes. Typecheck 0, tests 22/22. <b>Still open:</b> M2 (cron cadence — your call), M4 (Google dev-token — external), H1 (deferred), L2/L3 (roadmap/cleanup). <i>Note: GA4 devices donut is typecheck + parity + segment-math verified; not yet runtime-hit against a live synced workspace (needs a logged-in workspace with GA4 data to eyeball).</i>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  Lumnix internal audit tracker · living document · update the timestamp + changelog on every edit.
+</footer>
+</body>
+</html>
