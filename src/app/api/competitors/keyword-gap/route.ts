@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
     if (sitemapRes.ok) {
       const sitemapText = await sitemapRes.text();
       // Extract URLs from sitemap
-      const urlMatches = sitemapText.match(/https?:\/\/[^\s<>"]+/g) || [];
+      const urlMatches: string[] = sitemapText.match(/https?:\/\/[^\s<>"]+/g) || [];
       const pageUrls = urlMatches
         .filter(u => !u.includes('.xml') && !u.includes('.gz'))
         .slice(0, 10);

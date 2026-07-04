@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
   const contentHash = simpleHash(content.slice(0, 5000));
   const description = content.slice(0, 500);
-  const pageLinks = (content.match(/https?:\/\/[^\s)>"]+/g) || []).filter(u => u.includes(domain)).length;
+  const pageLinks = ((content.match(/https?:\/\/[^\s)>"]+/g) || []) as string[]).filter(u => u.includes(domain)).length;
 
   const snapshotData = {
     title,
