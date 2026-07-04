@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { callClaude } from '@/lib/anthropic';
+import { timingSafeStringEqual } from '@/lib/cron-auth';
 
 // GET /api/cron/detect-anomalies — daily at 8am UTC
 export async function GET(req: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!authHeader || !timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

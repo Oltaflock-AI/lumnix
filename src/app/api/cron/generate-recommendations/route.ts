@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { timingSafeStringEqual } from '@/lib/cron-auth';
 
 // GET /api/cron/generate-recommendations — weekly cron to pre-generate recommendations
 export async function GET(req: NextRequest) {
@@ -7,7 +8,7 @@ export async function GET(req: NextRequest) {
   if (!cronSecret) return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
 
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!authHeader || !timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

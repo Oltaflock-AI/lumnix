@@ -10,6 +10,7 @@ import {
   isMetaTokenExpired,
   shouldRefreshMetaToken,
 } from '@/lib/meta-oauth';
+import { timingSafeStringEqual } from '@/lib/cron-auth';
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
@@ -64,7 +65,7 @@ export async function GET(req: NextRequest) {
   if (!cronSecret) {
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 });
   }
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!authHeader || !timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

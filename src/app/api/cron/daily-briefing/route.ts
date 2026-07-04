@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { CLAUDE_MODEL_FAST } from '@/lib/models';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { escapeHtml } from '@/lib/html-escape';
+import { isValidCronAuth } from '@/lib/cron-auth';
 
 // GET /api/cron/daily-briefing — generates monthly briefing for all workspaces (1st of month, 8 AM UTC)
 // Route name retained for backwards compatibility; cadence is monthly.
 export async function GET(req: NextRequest) {
   // Auth validated by middleware — defense-in-depth check
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || req.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+  if (!isValidCronAuth(req.headers.get('authorization'))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -82,7 +83,7 @@ export async function GET(req: NextRequest) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
             body: JSON.stringify({
-              model: 'claude-haiku-4-5-20251001',
+              model: CLAUDE_MODEL_FAST,
               max_tokens: 300,
               messages: [{ role: 'user', content: `Write a 2-3 sentence monthly marketing briefing (last 30 days) based on this data: ${JSON.stringify({ changes, recommendations, anomalies: unreadAnomalies.length })}. Be concise, mention specific numbers, and end with one actionable suggestion.` }],
             }),

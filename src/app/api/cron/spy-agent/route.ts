@@ -5,6 +5,7 @@ import { getMetaAdLibraryToken } from '@/lib/meta-ad-library-token';
 const META_AD_LIBRARY_URL = 'https://graph.facebook.com/v19.0/ads_archive';
 
 import { callClaude } from '@/lib/anthropic';
+import { timingSafeStringEqual } from '@/lib/cron-auth';
 
 async function callOpenAI(messages: any[], maxTokens: number) {
   return callClaude(
@@ -232,7 +233,7 @@ export async function GET(req: NextRequest) {
   if (!cronSecret) return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
 
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!authHeader || !timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

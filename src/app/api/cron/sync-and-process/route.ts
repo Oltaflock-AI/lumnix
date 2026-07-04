@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isValidCronAuth } from '@/lib/cron-auth';
 
 // GET /api/cron/sync-and-process — consolidated daily cron (2 AM UTC)
 // Runs in order: sync → sync-all → detect-anomalies → spy-agent → generate-recommendations
@@ -6,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(req: NextRequest) {
   // Auth validated by middleware — defense-in-depth check
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || req.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+  if (!isValidCronAuth(req.headers.get('authorization'))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

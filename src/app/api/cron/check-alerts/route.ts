@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { Resend } from 'resend';
 import { escapeHtml } from '@/lib/html-escape';
+import { timingSafeStringEqual } from '@/lib/cron-auth';
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!authHeader || !timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

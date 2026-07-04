@@ -5,6 +5,7 @@ import { ConnectSourcesEmail } from '@/emails/connect-sources'
 import { FirstInsightEmail } from '@/emails/first-insight'
 import { FeatureSpotlightEmail } from '@/emails/feature-spotlight'
 import { CheckinEmail } from '@/emails/checkin'
+import { timingSafeStringEqual } from '@/lib/cron-auth'
 
 // GET /api/cron/emails — process pending scheduled emails (runs every hour)
 export async function GET(req: NextRequest) {
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (!cronSecret) {
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 503 })
   }
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!authHeader || !timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

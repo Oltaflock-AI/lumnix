@@ -5,6 +5,7 @@ import { fetchGA4Data, fetchGA4Properties, GA4_REPORTS } from '@/lib/connectors/
 import { fetchGoogleAdsCampaigns, fetchGoogleAdsAccounts } from '@/lib/connectors/google-ads';
 import { fetchMetaAdAccounts, fetchMetaInsights } from '@/lib/connectors/meta-ads';
 import { refreshAccessToken } from '@/lib/google-oauth';
+import { timingSafeStringEqual } from '@/lib/cron-auth';
 
 // GET /api/cron/sync-all — called by Vercel Cron every 6 hours
 export async function GET(req: NextRequest) {
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
   }
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!authHeader || !timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

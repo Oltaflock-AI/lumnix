@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { Resend } from 'resend';
 import { escapeHtml } from '@/lib/html-escape';
+import { timingSafeStringEqual } from '@/lib/cron-auth';
 
 function getNextSendDate(frequency: string): string {
   const now = new Date();
@@ -81,7 +82,7 @@ export async function GET(req: NextRequest) {
   }
 
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!authHeader || !timingSafeStringEqual(authHeader, `Bearer ${cronSecret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
