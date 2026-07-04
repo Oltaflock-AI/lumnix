@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkAIChatLimit } from '@/lib/plan-limits';
 import { verifyWorkspaceAccess } from '@/lib/auth-guard';
+import { CLAUDE_MODEL_SMART } from '@/lib/models';
 
 // Tool definitions for function calling
 const tools = [
@@ -455,7 +456,7 @@ IMPORTANT RULES:
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: CLAUDE_MODEL_SMART,
         max_tokens: 1500,
         system: systemPrompt,
         messages: anthropicMessages,
@@ -511,7 +512,7 @@ IMPORTANT RULES:
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: CLAUDE_MODEL_SMART,
         max_tokens: 1500,
         system: systemPrompt,
         messages: followUpMessages,

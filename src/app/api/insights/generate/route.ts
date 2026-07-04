@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { CLAUDE_MODEL_FAST } from '@/lib/models';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 export async function POST(req: NextRequest) {
@@ -199,7 +200,7 @@ Return ONLY a JSON array (no markdown, no code fences) of objects with these fie
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: CLAUDE_MODEL_FAST,
         max_tokens: 2048,
         messages: [{ role: 'user', content: prompt }],
       }),

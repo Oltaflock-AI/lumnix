@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { CLAUDE_MODEL_SMART } from '@/lib/models';
 
 export async function POST(req: NextRequest) {
   const { competitor_id, workspace_id } = await req.json();
@@ -87,7 +88,7 @@ CTA: ${ad.call_to_action || 'none'}
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250514',
+        model: CLAUDE_MODEL_SMART,
         max_tokens: 2000,
         messages: [{
           role: 'user',
