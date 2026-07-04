@@ -74,7 +74,7 @@
   <h1>Lumnix — App Audit &amp; Architecture Tracker <span class="x">●</span></h1>
   <div class="sub">Living document. Marketing intelligence platform (Next.js 16 · Supabase · Anthropic). Keep this updated as issues are fixed.</div>
   <div class="meta-row">
-    <span>Last updated: <b>2026-07-02 (round 2 — mediums/lows)</b></span>
+    <span>Last updated: <b>2026-07-04 (round 3 — sweep)</b></span>
     <span>Branch: <b>main</b> @ <code>d596b91</code></span>
     <span>Typecheck: <b style="color:var(--ok)">0 errors</b></span>
     <span>Tests: <b style="color:var(--ok)">22 / 22 pass</b></span>
@@ -255,7 +255,7 @@ OAuth connect ─► /api/integrations/connect ─► Google/Meta consent ─►
   </div>
 
   <div class="issue med">
-    <div class="top"><span class="badge b-med">Medium</span><span class="id">M2</span><h4>Cron coverage gaps — "daily" briefing runs monthly</h4><span class="badge b-open">Open</span></div>
+    <div class="top"><span class="badge b-med">Medium</span><span class="id">M2</span><h4>Cron coverage gaps — "daily" briefing runs monthly</h4><span class="badge b-fixed">Fixed</span></div>
     <div class="body">
       <div class="k">Evidence</div><div class="v"><code>vercel.json</code> schedules only 3 crons. <code>daily-briefing</code> is <code>"0 8 1 * *"</code> = 08:00 on the <b>1st of each month</b>, despite the name and "daily" framing. The other ~9 cron routes run only as sub-steps of <code>sync-and-process</code> / <code>notifications</code> orchestrators (that's intentional and fine).</div>
       <div class="k">Impact</div><div class="v">Briefings land monthly, not daily — likely a mismatch with product intent.</div>
@@ -312,14 +312,14 @@ OAuth connect ─► /api/integrations/connect ─► Google/Meta consent ─►
   </div>
 
   <div class="issue low">
-    <div class="top"><span class="badge b-low">Low</span><span class="id">L2</span><h4>Roadmap features not built (expected, tracking only)</h4><span class="badge b-open">Open</span></div>
+    <div class="top"><span class="badge b-low">Low</span><span class="id">L2</span><h4>Roadmap features not built (expected, tracking only)</h4><span class="badge b-med">Roadmap</span></div>
     <div class="body">
       <div class="k">Missing</div><div class="v">Creative Studio, Campaign Launcher, Attribution pixel, standalone Lumi agent. These are v1 goals, not regressions — listed so the tracker reflects true scope vs plan.</div>
     </div>
   </div>
 
   <div class="issue low">
-    <div class="top"><span class="badge b-low">Low</span><span class="id">L3</span><h4>Repo clutter at root</h4><span class="badge b-open">Open</span></div>
+    <div class="top"><span class="badge b-low">Low</span><span class="id">L3</span><h4>Repo clutter at root</h4><span class="badge b-fixed">Fixed</span></div>
     <div class="body">
       <div class="k">Evidence</div><div class="v">Loose files at root: <code>LumnixLanding.jsx</code>, <code>LumnixRehaul.jsx</code>, <code>meta_ads_dashboard_mockup.html</code>, multiple <code>*_COPY_V2.md</code>, <code>src/app/_preview_breakdown</code>. Mockups/scratch mixed with source.</div>
       <div class="k">Fix</div><div class="v">Move design mockups/copy docs into a <code>/docs</code> or <code>/.design</code> folder; delete dead <code>_preview</code> route.</div>
@@ -373,7 +373,8 @@ OAuth connect ─► /api/integrations/connect ─► Google/Meta consent ─►
     coupon-only billing, local env gaps, auth defense-in-depth gaps, cron/briefing schedule mismatch, placeholder widgets.
     Verified 22/22 tests pass and core integrations implemented.<br><br>
     <b>2026-07-02 (fixes)</b> — <span style="color:#86efac">C1 fixed</span>: chat model → <code>claude-sonnet-4-5-20250929</code> (live-verified). <span style="color:#86efac">C2 fixed</span>: competitor-brief typo corrected. <span style="color:#86efac">M6 fixed</span>: all model ids centralized in <code>src/lib/models.ts</code>. <span style="color:#86efac">H3 fixed</span>: 3 TS errors resolved (typecheck clean). <span style="color:#86efac">H2 partial</span>: local <code>OAUTH_STATE_SECRET</code> generated; <code>META_APP_ID</code>/<code>GOOGLE_ADS_DEVELOPER_TOKEN</code> + Vercel prod verification still pending. H1 (Razorpay) awaiting product decision. Files touched: <code>src/lib/models.ts</code> (new), <code>api/chat/route.ts</code>, <code>api/competitors/analyze/route.ts</code>, <code>api/competitors/keyword-gap/route.ts</code>, <code>api/competitors/monitor/route.ts</code>, <code>api/insights/generate/route.ts</code>, <code>api/cron/daily-briefing/route.ts</code>, <code>.env.local</code>.<br><br>
-    <b>2026-07-02 (round 2 — parallel subagents)</b> — <span style="color:#86efac">M1 fixed</span>: added route-level <code>verifyWorkspaceAccess</code> to 8 handlers (anomalies, insights, briefings, alerts GET+POST, reports/generate, billing redeem+subscription). <span style="color:#86efac">M3 fixed</span>: removed fake Placement-Mix donut + "[Ad Creative Preview]" (no placement data exists → honest empty state / real metrics kept); <b>Device Mix now renders a real GA4 <code>deviceCategory</code> donut</b> — added <code>type=devices</code> branch to <code>api/data/ga4/route.ts</code> (returns sessions + users per device) and rebuilt the widget as a data-driven <code>lx-donut</code> (dash-array/offset computed from real device totals; segment math verified to tile the full circle, pct sums to 100). Honest empty state retained when no rows. <span style="color:#86efac">M5</span>: already implemented (<code>checkWorkspaceLimit</code>). <span style="color:#86efac">M6 fixed</span>: model ids centralized. <span style="color:#86efac">L1 fixed</span>: new <code>src/lib/cron-auth.ts</code> constant-time compare across all 11 cron routes. Typecheck 0, tests 22/22. <b>Still open:</b> M2 (cron cadence — your call), M4 (Google dev-token — external), H1 (deferred), L2/L3 (roadmap/cleanup). <i>Note: GA4 devices donut is typecheck + parity + segment-math verified; not yet runtime-hit against a live synced workspace (needs a logged-in workspace with GA4 data to eyeball).</i>
+    <b>2026-07-02 (round 2 — parallel subagents)</b> — <span style="color:#86efac">M1 fixed</span>: added route-level <code>verifyWorkspaceAccess</code> to 8 handlers (anomalies, insights, briefings, alerts GET+POST, reports/generate, billing redeem+subscription). <span style="color:#86efac">M3 fixed</span>: removed fake Placement-Mix donut + "[Ad Creative Preview]" (no placement data exists → honest empty state / real metrics kept); <b>Device Mix now renders a real GA4 <code>deviceCategory</code> donut</b> — added <code>type=devices</code> branch to <code>api/data/ga4/route.ts</code> (returns sessions + users per device) and rebuilt the widget as a data-driven <code>lx-donut</code> (dash-array/offset computed from real device totals; segment math verified to tile the full circle, pct sums to 100). Honest empty state retained when no rows. <span style="color:#86efac">M5</span>: already implemented (<code>checkWorkspaceLimit</code>). <span style="color:#86efac">M6 fixed</span>: model ids centralized. <span style="color:#86efac">L1 fixed</span>: new <code>src/lib/cron-auth.ts</code> constant-time compare across all 11 cron routes. Typecheck 0, tests 22/22. <b>Still open:</b> M2 (cron cadence — your call), M4 (Google dev-token — external), H1 (deferred), L2/L3 (roadmap/cleanup). <i>Note: GA4 devices donut is typecheck + parity + segment-math verified; not yet runtime-hit against a live synced workspace (needs a logged-in workspace with GA4 data to eyeball).</i><br><br>
+    <b>2026-07-04 (round 3 — final sweep)</b> — <span style="color:#86efac">M2 fixed</span>: daily-briefing cron changed from monthly (<code>0 8 1 * *</code>) to daily (<code>0 8 * * *</code>) in <code>vercel.json</code>, matching the feature's name and UI; note this raises Claude usage from 1 to ~30 haiku calls per workspace/month. <span style="color:#86efac">L3 fixed</span>: root mockups &amp; landing-copy docs (<code>LumnixLanding.jsx</code>, <code>LumnixRehaul.jsx</code>, <code>meta_ads_dashboard_mockup.html</code>, <code>APPLY_LANDING_COPY_V2.md</code>, <code>LANDING_COPY_V2.md</code>) moved to <code>docs/design-archive/</code> via git mv (verified unreferenced by app code first); <code>src/app/_preview_breakdown</code> kept — underscore folders are App Router private (not a routable dead route) and it's an intentional dev preview tool. <span style="color:#fcd34d">L2 reclassified as Roadmap</span>: Creative Studio, Campaign Launcher, Attribution, standalone Lumi are unbuilt product features, not defects — each is a separate multi-day build. <b>Remaining non-code items:</b> M4 (Google dev-token approval — external), H2 remainder (<code>META_APP_ID</code> credential + Vercel prod env verification), H1 (Razorpay — deferred by product decision).
   </div>
 </section>
 
