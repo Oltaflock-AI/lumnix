@@ -107,6 +107,24 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: pages });
     }
 
+    if (type === 'devices') {
+      // Device category breakdown (deviceCategory dimension) — sessions + users
+      const deviceMap = new Map<string, { sessions: number; users: number }>();
+      for (const row of rawData) {
+        if (row.dimension_name !== 'deviceCategory') continue;
+        const existing = deviceMap.get(row.dimension_value) || { sessions: 0, users: 0 };
+        if (row.metric_type === 'sessions') existing.sessions += row.value;
+        if (row.metric_type === 'totalUsers') existing.users += row.value;
+        deviceMap.set(row.dimension_value, existing);
+      }
+
+      const devices = Array.from(deviceMap.entries())
+        .map(([device, d]) => ({ device, sessions: d.sessions, users: d.users }))
+        .sort((a, b) => b.sessions - a.sessions);
+
+      return NextResponse.json({ data: devices });
+    }
+
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

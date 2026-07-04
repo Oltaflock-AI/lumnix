@@ -73,12 +73,36 @@ export default function AnalyticsPage() {
   const { data: overviewResp, loading: overviewLoading } = useGA4Data(workspaceId, 'overview', days);
   const { data: sourcesResp, loading: sourcesLoading } = useGA4Data(workspaceId, 'sources', days);
   const { data: pagesResp, loading: pagesLoading } = useGA4Data(workspaceId, 'pages', days);
+  const { data: devicesResp } = useGA4Data(workspaceId, 'devices', days);
 
   const loading = wsLoading || overviewLoading || sourcesLoading || pagesLoading;
 
   const overviewData: any[] = overviewResp?.data || [];
   const sourcesData: any[] = sourcesResp?.data || [];
   const pagesData: any[] = pagesResp?.data || [];
+  const devices: any[] = devicesResp?.data || [];
+  const deviceTotal = devices.reduce((s: number, d: any) => s + (d.sessions || 0), 0);
+  // Precompute donut segments (dash length + cumulative offset) from real device sessions.
+  const DEVICE_COLORS = ['#FF0066', '#00D4AA', '#7B61FF', '#F59E0B', '#38BDF8'];
+  const DONUT_CIRC = 2 * Math.PI * 56; // r=56 → circumference ≈ 351.86
+  const deviceSegments = (() => {
+    let offset = 0;
+    return devices.map((d: any, i: number) => {
+      const sessions = d.sessions || 0;
+      const frac = deviceTotal > 0 ? sessions / deviceTotal : 0;
+      const len = frac * DONUT_CIRC;
+      const seg = {
+        label: d.device || 'unknown',
+        color: DEVICE_COLORS[i % DEVICE_COLORS.length],
+        sessions,
+        pct: frac * 100,
+        len,
+        offset: -offset,
+      };
+      offset += len;
+      return seg;
+    });
+  })();
 
   const hasData = overviewData.length > 0;
   const { data: anyDataCheck } = useGA4Data(workspaceId, 'overview', 90);
@@ -380,47 +404,51 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            {/* Device Mix Donut — placeholder until GA4 device dim is wired */}
+            {/* Device Mix — real deviceCategory donut from GA4 (via /api/data/ga4?type=devices) */}
             <div className="lx-card">
               <div className="lx-card-header">
                 <span className="lx-card-title">Device Mix</span>
                 <span className="lx-pill lx-pill--primary">{days} days</span>
               </div>
-              <div className="lx-donut-wrap">
-                <div className="lx-donut-chart">
-                  {/* TODO: real device-breakdown data points */}
-                  <svg viewBox="0 0 140 140">
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="var(--border)" strokeWidth="14" />
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="#FF0066" strokeWidth="14" strokeDasharray="173.9 360" strokeDashoffset="0" transform="rotate(-90 70 70)" />
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="#00D4AA" strokeWidth="14" strokeDasharray="87.1 360" strokeDashoffset="-173.9" transform="rotate(-90 70 70)" />
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="#7B61FF" strokeWidth="14" strokeDasharray="19.6 360" strokeDashoffset="-261" transform="rotate(-90 70 70)" />
-                    <text x="70" y="65" textAnchor="middle" fill="var(--text)" fontFamily="Outfit" fontSize="22" fontWeight="700">
-                      {totalPageviews >= 1000 ? `${(totalPageviews / 1000).toFixed(1)}K` : totalPageviews || '—'}
-                    </text>
-                    <text x="70" y="82" textAnchor="middle" fill="var(--text-muted)" fontSize="10">total views</text>
-                  </svg>
-                </div>
-                <div className="lx-donut-legend">
-                  <div className="lx-donut-row">
-                    <span className="lx-donut-color" style={{ background: '#FF0066' }} />
-                    <span className="lx-donut-label">Desktop</span>
-                    <span className="lx-donut-val">—</span>
-                    <span className="lx-donut-pct">—</span>
+              {deviceSegments.length > 0 && deviceTotal > 0 ? (
+                <div className="lx-donut-wrap">
+                  <div className="lx-donut-chart">
+                    <svg viewBox="0 0 140 140">
+                      <circle cx="70" cy="70" r="56" fill="none" stroke="var(--border)" strokeWidth="14" />
+                      {deviceSegments.map((seg, i) => (
+                        <circle
+                          key={i}
+                          cx="70" cy="70" r="56" fill="none"
+                          stroke={seg.color} strokeWidth="14"
+                          strokeDasharray={`${seg.len} ${DONUT_CIRC}`}
+                          strokeDashoffset={seg.offset}
+                          transform="rotate(-90 70 70)"
+                        />
+                      ))}
+                      <text x="70" y="65" textAnchor="middle" fill="var(--text)" fontFamily="Outfit" fontSize="22" fontWeight="700">
+                        {deviceTotal >= 1000 ? `${(deviceTotal / 1000).toFixed(1)}K` : deviceTotal}
+                      </text>
+                      <text x="70" y="82" textAnchor="middle" fill="var(--text-muted)" fontSize="10">sessions</text>
+                    </svg>
                   </div>
-                  <div className="lx-donut-row">
-                    <span className="lx-donut-color" style={{ background: '#00D4AA' }} />
-                    <span className="lx-donut-label">Mobile</span>
-                    <span className="lx-donut-val">—</span>
-                    <span className="lx-donut-pct">—</span>
-                  </div>
-                  <div className="lx-donut-row">
-                    <span className="lx-donut-color" style={{ background: '#7B61FF' }} />
-                    <span className="lx-donut-label">Tablet</span>
-                    <span className="lx-donut-val">—</span>
-                    <span className="lx-donut-pct">—</span>
+                  <div className="lx-donut-legend">
+                    {deviceSegments.map((seg, i) => (
+                      <div className="lx-donut-row" key={i}>
+                        <span className="lx-donut-color" style={{ background: seg.color }} />
+                        <span className="lx-donut-label" style={{ textTransform: 'capitalize' }}>{seg.label}</span>
+                        <span className="lx-donut-val">{seg.sessions.toLocaleString('en-US')}</span>
+                        <span className="lx-donut-pct">{seg.pct.toFixed(0)}%</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div style={{ padding: '32px 16px', textAlign: 'center', color: c.textMuted, fontSize: 13, lineHeight: 1.6 }}>
+                  <BarChart3 size={22} style={{ opacity: 0.4, marginBottom: 8 }} />
+                  <div style={{ fontWeight: 600, color: c.textSecondary, marginBottom: 4 }}>Device breakdown not available yet</div>
+                  <div>{hasSyncedBefore ? 'No device data in this range.' : 'Sync your GA4 property to collect device data.'}</div>
+                </div>
+              )}
             </div>
           </div>
 

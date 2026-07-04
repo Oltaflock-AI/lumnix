@@ -14,6 +14,9 @@ import { formatNumber, formatINR } from '@/lib/format';
 import { apiFetch } from '@/lib/api-fetch';
 import { Sparkline } from '@/components/Sparkline';
 
+// Brand palette for creative-tile initials (no real thumbnails in current sync)
+const COLORS = ['#FF0066', '#00D4AA', '#7B61FF', '#FF8A00', '#EF4444', '#3B82F6'];
+
 function exportCampaignsCSV(campaigns: any[]) {
   const headers = ['Campaign', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'Conversions', 'ROAS'];
   const rows = campaigns.map((c: any) => [
@@ -139,10 +142,6 @@ export default function MetaAdsPage() {
     ? formatINR((totals.spend / totals.impressions) * 1000, 2)
     : '—';
   const roasDisplay = totals && totals.roas > 0 ? totals.roas.toFixed(2) + 'x' : '—';
-
-  // Placement mix aggregation — TODO: plug real placement breakdown when API exposes it
-  // For now show — when no breakdown. impressionsTotal used for donut center label.
-  const impressionsTotal = totals?.impressions ?? 0;
 
   // Daily series for KPI sparklines
   const dailySpendArr = useMemo(() => daily.map((d: any) => d.spend || 0), [daily]);
@@ -427,47 +426,13 @@ export default function MetaAdsPage() {
                 <span className="lx-card-title">Placement Mix</span>
                 <span className="lx-pill lx-pill--primary">{days} days</span>
               </div>
-              {/* TODO: replace placeholder placement breakdown with real API data when Meta insights placement-level field is added */}
-              <div className="lx-donut-wrap">
-                <div className="lx-donut-chart">
-                  <svg viewBox="0 0 140 140">
-                    <circle cx="70" cy="70" r="56" fill="none" stroke={c.border} strokeWidth="14"/>
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="#FF0066" strokeWidth="14" strokeDasharray="145.6 253.4" strokeDashoffset="0" transform="rotate(-90 70 70)"/>
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="#00D4AA" strokeWidth="14" strokeDasharray="79.7 298.4" strokeDashoffset="-145.6" transform="rotate(-90 70 70)"/>
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="#7B61FF" strokeWidth="14" strokeDasharray="39.8 338.3" strokeDashoffset="-225.3" transform="rotate(-90 70 70)"/>
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="#FF8A00" strokeWidth="14" strokeDasharray="21.1 359.4" strokeDashoffset="-265.1" transform="rotate(-90 70 70)"/>
-                    <text x="70" y="65" textAnchor="middle" fill={c.text} fontFamily="Outfit" fontSize="20" fontWeight="700">
-                      {impressionsTotal > 0 ? formatNumber(impressionsTotal) : '—'}
-                    </text>
-                    <text x="70" y="82" textAnchor="middle" fill={c.textMuted} fontFamily="Plus Jakarta Sans" fontSize="10">impressions</text>
-                  </svg>
-                </div>
-                <div className="lx-donut-legend">
-                  <div className="lx-donut-row">
-                    <span className="lx-donut-color" style={{ background: '#FF0066' }}></span>
-                    <span className="lx-donut-label">Feed</span>
-                    <span className="lx-donut-val">—</span>
-                    <span className="lx-donut-pct">—</span>
-                  </div>
-                  <div className="lx-donut-row">
-                    <span className="lx-donut-color" style={{ background: '#00D4AA' }}></span>
-                    <span className="lx-donut-label">Stories</span>
-                    <span className="lx-donut-val">—</span>
-                    <span className="lx-donut-pct">—</span>
-                  </div>
-                  <div className="lx-donut-row">
-                    <span className="lx-donut-color" style={{ background: '#7B61FF' }}></span>
-                    <span className="lx-donut-label">Reels</span>
-                    <span className="lx-donut-val">—</span>
-                    <span className="lx-donut-pct">—</span>
-                  </div>
-                  <div className="lx-donut-row">
-                    <span className="lx-donut-color" style={{ background: '#FF8A00' }}></span>
-                    <span className="lx-donut-label">Other</span>
-                    <span className="lx-donut-val">—</span>
-                    <span className="lx-donut-pct">—</span>
-                  </div>
-                </div>
+              {/* Meta insights are synced at campaign level only — the current sync
+                  (meta_ads_data) carries no placement dimension (Feed/Stories/Reels),
+                  so we show an honest empty state rather than fabricated splits. */}
+              <div style={{ padding: '32px 16px', textAlign: 'center', color: c.textMuted, fontSize: 13, lineHeight: 1.6 }}>
+                <Eye size={22} style={{ opacity: 0.4, marginBottom: 8 }} />
+                <div style={{ fontWeight: 600, color: c.textSecondary, marginBottom: 4 }}>No placement breakdown yet</div>
+                <div>Placement-level insights (Feed, Stories, Reels) aren&apos;t part of the current Meta sync.</div>
               </div>
             </div>
           </div>
@@ -478,11 +443,24 @@ export default function MetaAdsPage() {
               <span className="lx-card-title">Creative Performance</span>
               <span className="lx-card-action">Top campaigns by spend</span>
             </div>
-            {/* TODO: swap card preview for real ad creative thumbnails when Meta creative API is integrated */}
+            {/* The Meta sync stores campaign performance only — no creative asset URLs —
+                so the preview tile shows the campaign initial instead of a fabricated thumbnail.
+                The metrics below (spend, CTR) are real synced values. */}
             <div className="lx-grid-3" style={{ margin: 0 }}>
-              {activeCampaigns.slice(0, 3).map((camp: any, i: number) => (
+              {activeCampaigns.slice(0, 3).map((camp: any, i: number) => {
+                const label = (camp.campaign_name || camp.name || '?').trim();
+                return (
                 <div key={`creative-${i}`} className="lx-ad-card">
-                  <div className="lx-ad-preview">[Ad Creative Preview]</div>
+                  <div className="lx-ad-preview" style={{ flexDirection: 'column', gap: 6 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: `${COLORS[i % COLORS.length]}22`, color: COLORS[i % COLORS.length], fontWeight: 700, fontSize: 18,
+                      fontFamily: 'var(--font-display)',
+                    }}>
+                      {label.charAt(0).toUpperCase()}
+                    </div>
+                    <span style={{ fontSize: 11 }}>No creative preview</span>
+                  </div>
                   <div className="lx-ad-info">
                     <div className="lx-ad-title">
                       {camp.campaign_name || camp.name || 'Unknown'}
@@ -493,7 +471,8 @@ export default function MetaAdsPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               {activeCampaigns.length === 0 && (
                 <div style={{ gridColumn: '1 / -1', padding: 16, color: c.textMuted, fontSize: 13 }}>
                   No active creatives to display.
