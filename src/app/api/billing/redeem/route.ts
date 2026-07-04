@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 function getUserClient(authHeader: string) {
   return createClient(
@@ -25,6 +26,9 @@ export async function POST(req: NextRequest) {
     if (!/^[A-Za-z0-9_-]{3,64}$/.test(trimmedCode) || !workspace_id) {
       return NextResponse.json({ error: 'Missing coupon code or workspace' }, { status: 400 });
     }
+
+    const auth = await verifyWorkspaceAccess(req, workspace_id);
+    if (auth instanceof NextResponse) return auth;
 
     const db = getSupabaseAdmin();
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { createClient } from '@supabase/supabase-js';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 function getUserClient(authHeader: string) {
   return createClient(
@@ -22,6 +23,9 @@ export async function POST(req: NextRequest) {
 
     const { workspace_id, sections, days } = await req.json();
     if (!workspace_id) return NextResponse.json({ error: 'Missing workspace_id' }, { status: 400 });
+
+    const auth = await verifyWorkspaceAccess(req, workspace_id);
+    if (auth instanceof NextResponse) return auth;
 
     const db = getSupabaseAdmin();
     const dateOffset = days || 30;

@@ -33,6 +33,9 @@ export async function GET(req: NextRequest) {
     const workspaceId = req.nextUrl.searchParams.get('workspace_id');
     if (!workspaceId) return NextResponse.json({ error: 'Missing workspace_id' }, { status: 400 });
 
+    const auth = await verifyWorkspaceAccess(req, workspaceId);
+    if (auth instanceof NextResponse) return auth;
+
     const db = getSupabaseAdmin();
 
     const [rulesRes, historyRes] = await Promise.all([
@@ -63,6 +66,9 @@ export async function POST(req: NextRequest) {
     if (!workspace_id || !metric || threshold === undefined || !comparison || !recipient_email) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    const auth = await verifyWorkspaceAccess(req, workspace_id);
+    if (auth instanceof NextResponse) return auth;
 
     const validMetrics = ['gsc_clicks', 'gsc_impressions', 'gsc_avg_position', 'ga4_sessions', 'ga4_users', 'google_ads_spend', 'google_ads_clicks', 'meta_ads_spend', 'meta_ads_roas'];
     if (!validMetrics.includes(metric)) {

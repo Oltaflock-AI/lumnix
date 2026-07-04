@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { verifyWorkspaceAccess } from '@/lib/auth-guard';
 
 // GET /api/anomalies?workspace_id=xxx
 export async function GET(req: NextRequest) {
@@ -7,6 +8,9 @@ export async function GET(req: NextRequest) {
   if (!workspaceId) {
     return NextResponse.json({ error: 'workspace_id required' }, { status: 400 });
   }
+
+  const auth = await verifyWorkspaceAccess(req, workspaceId);
+  if (auth instanceof NextResponse) return auth;
 
   const db = getSupabaseAdmin();
   const { data, error } = await db
