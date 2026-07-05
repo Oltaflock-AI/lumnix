@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getMetaAdLibraryToken } from '@/lib/meta-ad-library-token';
+import { generateCompetitorBrief } from '@/lib/competitor-brief';
 
 export async function POST(req: NextRequest) {
   const { workspace_id, competitor_id } = await req.json();
@@ -148,17 +149,15 @@ export async function POST(req: NextRequest) {
       active_ads_count: upsertRows.filter(r => r.is_active).length,
     }).eq('id', competitor_id);
 
-    // Trigger AI analysis if any ads were scraped (analyze route falls back
-    // to top-30 by days_running when no winners ≥90d exist yet).
+    // Trigger AI analysis if any ads were scraped (brief generator falls back
+    // to top-30 by days_running when no winners ≥90d exist yet). Called
+    // directly — the old fetch() to /api/competitors/analyze carried no auth
+    // header, so middleware 401'd it and the brief never generated.
     if (allAds.length > 0) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       after(async () => {
         try {
-          await fetch(`${appUrl}/api/competitors/analyze`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ competitor_id, workspace_id }),
-          });
+          const result = await generateCompetitorBrief(competitor_id, workspace_id);
+          if (!result.ok) console.error('Analyze trigger failed:', result.error);
         } catch (e) {
           console.error('Analyze trigger failed:', e);
         }

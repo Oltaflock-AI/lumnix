@@ -5,6 +5,7 @@ import { getMetaAdLibraryToken } from '@/lib/meta-ad-library-token';
 const META_AD_LIBRARY_URL = 'https://graph.facebook.com/v19.0/ads_archive';
 
 import { callClaude } from '@/lib/anthropic';
+import { generateCompetitorBrief } from '@/lib/competitor-brief';
 import { timingSafeStringEqual } from '@/lib/cron-auth';
 
 async function callOpenAI(messages: any[], maxTokens: number) {
@@ -167,13 +168,13 @@ async function runAIAnalysis(
     .select('*')
     .eq('competitor_id', competitorId)
     .order('is_active', { ascending: false })
-    .order('impressions_upper', { ascending: false })
+    .order('days_running', { ascending: false })
     .limit(60);
 
   if (!ads || ads.length < 3) return null; // Not enough data
 
   const adSummary = ads.map((ad: any, i: number) =>
-    `[${i + 1}][${ad.is_active ? 'ACTIVE' : 'PAUSED'}] "${ad.ad_creative_link_title ?? 'N/A'}" | "${(ad.ad_creative_body ?? 'N/A').slice(0, 100)}" | Impressions: ${ad.impressions_lower ?? 0}-${ad.impressions_upper ?? 0} | ${(ad.platforms ?? []).join('/')}`
+    `[${i + 1}][${ad.is_active ? 'ACTIVE' : 'PAUSED'}][${ad.performance_tier ?? 'active'}] "${ad.headline ?? 'N/A'}" | "${(ad.ad_copy ?? 'N/A').slice(0, 100)}" | CTA: ${ad.call_to_action ?? 'N/A'} | Running ${ad.days_running ?? 0}d | ${ad.ad_format ?? ''}`
   ).join('\n');
 
   // Pattern analysis
@@ -285,10 +286,25 @@ export async function GET(req: NextRequest) {
       // Step 1: Scrape ads
       const scrapeResult = await scrapeCompetitorAds(db, competitor, metaToken);
 
-      // Step 2: AI analysis (only if new ads found or no recent analysis)
-      let analysisResult = null;
-      if (scrapeResult.newAds > 0 || !competitor.fb_page_id) {
-        analysisResult = await runAIAnalysis(db, competitor.id, competitor.name);
+      // Step 2: AI analysis. Post-pivot, scraping is owned by the VPS worker
+      // queue, so the legacy Meta-API diff above usually reports 0 new ads —
+      // gate on runAIAnalysis's own 24h cache instead of the diff.
+      const analysisResult = await runAIAnalysis(db, competitor.id, competitor.name);
+
+      // Step 2b: Ensure a creative brief exists once ads are present. The
+      // worker writes ads; briefs come from here or the scrape route's
+      // after() hook (which previously 401'd and never ran).
+      const { data: existingBrief } = await db
+        .from('competitor_briefs')
+        .select('id')
+        .eq('competitor_id', competitor.id)
+        .limit(1)
+        .maybeSingle();
+      if (!existingBrief) {
+        const brief = await generateCompetitorBrief(competitor.id, competitor.workspace_id);
+        if (!brief.ok && brief.error !== 'No ads to analyze') {
+          console.error(`Brief generation failed for ${competitor.name}:`, brief.error);
+        }
       }
 
       // Step 3: Save trend snapshot
